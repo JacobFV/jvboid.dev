@@ -1,0 +1,15 @@
+---
+title: multi-graph-former
+date: 2020-09-02
+endDate: 2021-05-16
+lane: building
+status: shipped
+tags: []
+summary: "Like a transformer, but for graph2graph instead of seq2seq"
+links: 
+  github: https://github.com/JacobFV/multi-graph-former
+---
+- Sequences are just a special class of graphs. The multi-graph-former can process any kind of graph.
+- Supports intra- and inter-graph attention, vert updates, and edge updates with dynamic structure
+- Implemented gated-update mechanism for both vertices and edges with einsum-based operations
+- [Example](https://github.com/JacobFV/multi-graph-former/blob/master/multi_graph_former/modules/language_wm_graph_former_test2.py) applies multi-graph-former to  building a graph-structured hidden state for a recurrent neural network that encodes a sequence of words

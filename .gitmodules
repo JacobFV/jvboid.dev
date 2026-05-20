@@ -1,7 +1,0 @@
-[submodule "assets/resumeszzz"]
-	path = assets/resumeszzz
-	url = https://github.com/JacobFV/resumeszzz
-
-[submodule "assets/cover-letter"]
-	path = assets/cover-letter
-	url = https://github.com/JacobFV/cover-letter

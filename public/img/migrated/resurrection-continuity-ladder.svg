@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" role="img" aria-labelledby="title desc" font-family="Inter, system-ui, Arial, sans-serif">
+  <title id="title">A ladder of resurrection claims</title>
+  <desc id="desc">Five rungs of increasing strength: memetic persistence, behavioral reconstruction, structural reconstruction, causal-attractor inheritance, and phenomenological continuation.</desc>
+  <style>
+    :root { --svg-primary: #0f172a; --svg-secondary: #64748b; --svg-muted: #94a3b8; --svg-soft: #475569; --svg-line: #cbd5e1; --svg-divider: #e2e8f0; --svg-inverse: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --svg-primary: #e5e7eb; --svg-secondary: #a1a1aa; --svg-muted: #71717a; --svg-soft: #cbd5e1; --svg-line: #52525b; --svg-divider: #3f3f46; --svg-inverse: #111827; }
+    }
+  </style>
+
+  <text x="60" y="56" font-size="22" font-weight="500" fill="var(--svg-primary)" letter-spacing="-0.01em">Not every continuity claim is resurrection</text>
+  <text x="60" y="80" font-size="13" fill="var(--svg-secondary)">An empirical program starts low. Strong resurrection sits at the hardest rung &#8212; and may remain partly metaphysical.</text>
+
+  <!-- ladder rails -->
+  <g stroke="var(--svg-primary)" stroke-width="1" fill="none">
+    <line x1="120" y1="130" x2="120" y2="500"/>
+    <line x1="780" y1="130" x2="780" y2="500"/>
+  </g>
+
+  <!-- rail end caps -->
+  <g fill="var(--svg-primary)">
+    <circle cx="120" cy="130" r="2"/>
+    <circle cx="780" cy="130" r="2"/>
+    <circle cx="120" cy="500" r="2"/>
+    <circle cx="780" cy="500" r="2"/>
+  </g>
+
+  <!-- rung positions: y = 480, 410, 340, 270, 200 (bottom = easiest) -->
+  <g stroke="var(--svg-primary)" stroke-width="1">
+    <line x1="120" y1="480" x2="780" y2="480"/>
+    <line x1="120" y1="410" x2="780" y2="410"/>
+    <line x1="120" y1="340" x2="780" y2="340"/>
+    <line x1="120" y1="270" x2="780" y2="270"/>
+    <line x1="120" y1="200" x2="780" y2="200"/>
+  </g>
+
+  <!-- rung labels (number + title + description) -->
+  <g font-family="Inter, system-ui, Arial, sans-serif">
+    <g transform="translate(140 480)">
+      <text x="0" y="-22" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">01</text>
+      <text x="32" y="-22" font-size="14" font-weight="500" fill="var(--svg-primary)">memetic persistence</text>
+      <text x="32" y="-6" font-size="12" fill="var(--svg-secondary)">a person affects the world through ordinary traces</text>
+    </g>
+    <g transform="translate(140 410)">
+      <text x="0" y="-22" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">02</text>
+      <text x="32" y="-22" font-size="14" font-weight="500" fill="var(--svg-primary)">behavioral reconstruction</text>
+      <text x="32" y="-6" font-size="12" fill="var(--svg-secondary)">a new system imitates the target</text>
+    </g>
+    <g transform="translate(140 340)">
+      <text x="0" y="-22" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">03</text>
+      <text x="32" y="-22" font-size="14" font-weight="500" fill="var(--svg-primary)">structural reconstruction</text>
+      <text x="32" y="-6" font-size="12" fill="var(--svg-secondary)">a new system shares identity-relevant organization</text>
+    </g>
+    <g transform="translate(140 270)">
+      <text x="0" y="-22" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">04</text>
+      <text x="32" y="-22" font-size="14" font-weight="500" fill="var(--svg-primary)">causal-attractor inheritance</text>
+      <text x="32" y="-6" font-size="12" fill="var(--svg-secondary)">the target&#8217;s past structure helps determine the new system</text>
+    </g>
+    <g transform="translate(140 200)">
+      <text x="0" y="-22" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">05</text>
+      <text x="32" y="-22" font-size="14" font-weight="500" fill="var(--svg-primary)">phenomenological continuation</text>
+      <text x="32" y="-6" font-size="12" fill="var(--svg-secondary)">the prior first-person subject resumes, branches, or reappears</text>
+    </g>
+  </g>
+
+  <!-- rail anchors: conservative (bottom) → strong resurrection (top) -->
+  <g font-size="11" fill="var(--svg-secondary)" letter-spacing="0.06em">
+    <text x="120" y="524" text-anchor="middle">CONSERVATIVE</text>
+    <text x="780" y="524" text-anchor="middle">STRONG</text>
+  </g>
+
+  <!-- direction arrow on right rail -->
+  <g stroke="var(--svg-primary)" stroke-width="1" fill="none">
+    <path d="M820 480 L820 200" marker-end="url(#dirArr)"/>
+  </g>
+  <defs>
+    <marker id="dirArr" markerWidth="10" markerHeight="10" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="var(--svg-primary)"/>
+    </marker>
+  </defs>
+  <text x="836" y="346" font-size="11" fill="var(--svg-secondary)" letter-spacing="0.06em">HARDER</text>
+</svg>

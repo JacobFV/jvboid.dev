@@ -1,0 +1,29 @@
+---
+title: agent-twitter-client
+date: 2024-07-13
+lane: building
+status: shipped
+tags: [agents, tools]
+summary: "A Twitter client for agents — no API key necessary."
+links:
+  github: https://github.com/JacobFV/agent-twitter-client
+influences: []
+realizes: []
+critiques: []
+---
+
+## Problem
+The Twitter API is rate-limited, paid, and increasingly hostile to automation. But agents still need to read and write to Twitter for many real-world tasks (monitoring, alerting, social presence).
+
+## Solution
+A client that drives the Twitter web app the way a human would — no API key, no developer account, just a session.
+
+## How
+- **Stack:** TypeScript-friendly bindings.
+- **Approach:** session-based browser automation against the public web UI.
+
+## Results
+Used as the Twitter integration in downstream agent projects.
+
+## Lessons
+"API surface" and "automatable surface" are different. When the API gates access, the web UI often doesn't.

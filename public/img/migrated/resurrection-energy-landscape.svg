@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" role="img" aria-labelledby="title desc" font-family="Inter, system-ui, Arial, sans-serif">
+  <title id="title">Historical-bias energy landscape</title>
+  <desc id="desc">A one-dimensional energy landscape where local, viability, and coherence terms produce many possible wells, and an additional history term deepens one specific well, biasing the sampled future toward an identity attractor.</desc>
+  <style>
+    :root { --svg-primary: #0f172a; --svg-secondary: #64748b; --svg-muted: #94a3b8; --svg-soft: #475569; --svg-line: #cbd5e1; --svg-divider: #e2e8f0; --svg-inverse: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --svg-primary: #e5e7eb; --svg-secondary: #a1a1aa; --svg-muted: #71717a; --svg-soft: #cbd5e1; --svg-line: #52525b; --svg-divider: #3f3f46; --svg-inverse: #111827; }
+    }
+  </style>
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L8,5 L0,10 Z" fill="var(--svg-primary)"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="56" font-size="22" font-weight="500" fill="var(--svg-primary)" letter-spacing="-0.01em">Future formation as weighted descent</text>
+  <text x="60" y="80" font-size="13" fill="var(--svg-secondary)">Most futures aren&#8217;t forbidden &#8212; they&#8217;re weighted. The history term deepens one well in an otherwise local landscape.</text>
+
+  <!-- axes -->
+  <line x1="80" y1="450" x2="920" y2="450" stroke="var(--svg-primary)" stroke-width="1"/>
+  <line x1="80" y1="140" x2="80" y2="450" stroke="var(--svg-primary)" stroke-width="1"/>
+
+  <text x="40" y="280" font-size="12" fill="var(--svg-secondary)" transform="rotate(-90 40 280)">E(G)</text>
+  <text x="500" y="488" text-anchor="middle" font-size="12" fill="var(--svg-secondary)">G  &#8212;  candidate future graphs</text>
+
+  <!-- baseline curve (without history term) - hairline dashed -->
+  <path d="M 90 300
+           C 130 260, 160 200, 200 220
+           C 240 240, 260 320, 300 310
+           C 340 300, 360 230, 400 240
+           C 440 250, 470 320, 510 310
+           C 550 300, 580 230, 620 240
+           C 660 250, 690 320, 730 310
+           C 770 300, 800 240, 840 250
+           C 880 260, 905 280, 915 290"
+        fill="none" stroke="var(--svg-muted)" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- with-history curve: deepened well at x≈620 -->
+  <path d="M 90 300
+           C 130 260, 160 200, 200 220
+           C 240 240, 260 320, 300 310
+           C 340 300, 360 230, 400 240
+           C 440 250, 470 320, 510 320
+           C 540 320, 560 360, 590 400
+           C 605 420, 620 425, 635 420
+           C 665 410, 685 360, 720 320
+           C 760 280, 800 240, 840 250
+           C 880 260, 905 280, 915 290"
+        fill="none" stroke="var(--svg-primary)" stroke-width="1.25"/>
+
+  <!-- subtle minima dots -->
+  <g fill="var(--svg-muted)">
+    <circle cx="305" cy="310" r="2"/>
+    <circle cx="510" cy="320" r="2"/>
+    <circle cx="730" cy="310" r="2"/>
+  </g>
+
+  <!-- the deepened well marker -->
+  <circle cx="620" cy="425" r="5" fill="var(--svg-primary)"/>
+
+  <!-- annotation arrow + label -->
+  <line x1="780" y1="170" x2="640" y2="418" stroke="var(--svg-primary)" stroke-width="1" marker-end="url(#arr)"/>
+  <g transform="translate(720 138)">
+    <text x="0" y="14" font-size="13" font-weight="500" fill="var(--svg-primary)">past identity attractor</text>
+    <text x="0" y="32" font-size="12" fill="var(--svg-secondary)">deepened by E_history</text>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(100 138)">
+    <text x="0" y="14" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">CURVES</text>
+    <line x1="0" y1="34" x2="28" y2="34" stroke="var(--svg-muted)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="38" y="38" font-size="12" fill="var(--svg-secondary)">local + viability + coherence</text>
+    <line x1="0" y1="56" x2="28" y2="56" stroke="var(--svg-primary)" stroke-width="1.25"/>
+    <text x="38" y="60" font-size="12" fill="var(--svg-secondary)">+ history term</text>
+  </g>
+
+  <text x="490" y="528" text-anchor="middle" font-size="12" fill="var(--svg-secondary)" font-style="italic">P(G) &#8733; exp[ &#8722;E_local &#8722; E_viability &#8722; E_coherence &#8722; E_history ]</text>
+</svg>

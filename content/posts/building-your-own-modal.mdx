@@ -1,0 +1,375 @@
+---
+title: "Building Your Own Modal: A First-Principles Guide to Serverless GPU Infrastructure"
+date: 2025-01-14
+lane: building
+tags: [engineering, infrastructure, serverless, gpu, containers]
+summary: "How I'd build a Modal-like platform from scratch, with deep dives into cold start optimization, container orchestration, and the hard problems nobody talks about."
+---
+## Why Modal Matters
+
+Modal has quietly become one of the most impressive pieces of infrastructure in the ML ecosystem. The core value proposition is deceptively simple: write Python, decorate it, and it runs in the cloud with GPUs. No Dockerfiles. No Kubernetes manifests. No SSH sessions into EC2 instances. Just `@app.function(gpu="A100")` and you're training models on hardware that costs $30,000.
+
+But underneath that simple API is a genuinely hard engineering problem. How do you make remote execution feel local? How do you spin up GPU containers in milliseconds instead of minutes? How do you serialize arbitrary Python functions with their closures and dependencies?
+
+I've been thinking about how I'd build this from scratch. Not because I'm planning to compete with Modal[^1], but because understanding the architecture reveals fundamental insights about distributed computing, container orchestration, and the physics of cold starts.
+
+[^1]: They've raised $100M+ and have a team of systems engineers who've been working on this for years. I'm not delusional.
+
+## The Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│   Client SDK    │────▶│   Control Plane  │────▶│   Worker Pool   │
+│  (local Python) │     │   (API + Queue)  │     │  (containers)   │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+```
+
+This looks simple but each arrow represents months of engineering. Let's break it down.
+
+### Function Serialization: The Hard Part
+
+The fundamental challenge is capturing a Python function and everything it needs to run. This includes:
+
+- The function bytecode itself
+- Closure variables (anything referenced from enclosing scopes)
+- Module dependencies (imports)
+- Global state (unfortunately)
+
+```python
+import cloudpickle
+
+def serialize_function(fn):
+    return cloudpickle.dumps(fn)
+```
+
+Cloudpickle does the heavy lifting here, but it's not magic. It walks the function's `__code__` object, captures `__globals__`, and recursively serializes referenced objects. This works remarkably well until it doesn't—try serializing a function that references a database connection or a file handle and watch it explode.
+
+Modal gets around this with careful API design. Functions decorated with `@app.function` are analyzed at definition time, and their dependencies are explicitly declared through the `Image` class. This is why you write `Image().pip_install("torch")` instead of just having torch in your requirements.txt. The system needs to know exactly what goes into the container before your function ever runs.
+
+### The Decorator API
+
+```python
+class App:
+    def __init__(self, name):
+        self.name = name
+        self.functions = {}
+
+    def function(self, image=None, gpu=None, memory=None):
+        def decorator(fn):
+            wrapped = RemoteFunction(fn, image, gpu, memory)
+            self.functions[fn.__name__] = wrapped
+            return wrapped
+        return decorator
+
+class RemoteFunction:
+    def __init__(self, fn, image, gpu, memory):
+        self.fn = fn
+        self.config = {"image": image, "gpu": gpu, "memory": memory}
+
+    def remote(self, *args, **kwargs):
+        payload = serialize_function(self.fn)
+        return submit_job(payload, args, kwargs, self.config)
+
+    def local(self, *args, **kwargs):
+        return self.fn(*args, **kwargs)
+```
+
+The `.remote()` vs `.local()` distinction is crucial. During development, you call `.local()` to test on your machine. In production, `.remote()` ships the function to the cloud. Same code, different execution context. This is what makes Modal feel seamless.
+
+### Image Building: Two Approaches
+
+**Approach A: Dockerfile generation (simpler)**
+
+```python
+class Image:
+    def __init__(self):
+        self.commands = ["FROM python:3.11-slim"]
+
+    def pip_install(self, *packages):
+        self.commands.append(f"RUN pip install {' '.join(packages)}")
+        return self
+
+    def to_dockerfile(self):
+        return "\n".join(self.commands)
+```
+
+This works but it's slow. Every `pip_install` becomes a Docker layer, and rebuilding means re-running pip from scratch if anything changes.
+
+**Approach B: Layered snapshots (what Modal actually does)**
+
+Instead of generating Dockerfiles, build images incrementally:
+
+1. Start from a base image with Python and common packages pre-installed
+2. Hash each `.pip_install()` / `.apt_install()` call by its contents
+3. Check if a layer with that hash already exists
+4. If yes, reuse it. If no, create it and cache it.
+
+This is why Modal rebuilds are fast. When you change one dependency, only that layer gets rebuilt. The graph of layer dependencies is a DAG, and Modal caches aggressively at every node.
+
+## The Cold Start Problem
+
+This is where things get interesting. Cold start = time from job submission to function execution. Let's break down where time goes:
+
+| Phase | Time | Notes |
+|-------|------|-------|
+| Scheduling decision | 10-50ms | Fast if you're not stupid |
+| Image pull | 5-60s | **The killer** |
+| Container creation | 100-500ms | Varies by runtime |
+| Python interpreter init | 200-500ms | Unavoidable |
+| Import dependencies | 1-10s | **Second killer** |
+| App init (load model) | 1-60s | User code, hard to optimize |
+
+For ML workloads, a 30-second cold start is unacceptable. Imagine a user hitting your inference endpoint and waiting half a minute for PyTorch to import. This is why Modal's cold start optimization is their core competitive advantage.
+
+### Strategy 1: Warm Pools
+
+The most effective solution is to just... not have cold starts. Keep containers running and idle, ready to accept work:
+
+```python
+class WarmPoolManager:
+    def __init__(self):
+        self.pools = {}  # image_hash -> list of warm containers
+
+    async def get_container(self, image_hash, config):
+        pool = self.pools.get(image_hash, [])
+        if pool:
+            return pool.pop()  # Instant!
+        return await self.create_container(image_hash, config)  # Slow
+
+    async def return_container(self, container, image_hash):
+        await container.reset()  # Clear state, keep process
+        self.pools[image_hash].append(container)
+```
+
+The economics here are interesting. A warm A100 container costs ~$2/hour even when idle. But if your customers are paying $3/hour when active and experiencing 10x better latency, the math works out. Modal keeps per-customer, per-function warm pools. Expensive, but necessary.
+
+### Strategy 2: Lazy Image Pulling with eStargz
+
+Traditional container pulls download the entire image before starting. But what if you could start immediately and fetch files on-demand?
+
+eStargz (Seekable tar.gz) reformats container layers so individual files can be fetched via HTTP range requests. The container starts with a stub filesystem, and files are pulled lazily on first access.
+
+```bash
+# Convert image to estargz format
+ctr-remote image optimize docker.io/myimage:latest
+```
+
+In practice, this means your container starts in ~500ms, and the first import of torch takes an extra second while the .so files are fetched. Total time: 1.5s instead of 30s. The files are cached locally after first access, so subsequent runs are instant.
+
+### Strategy 3: CRIU Snapshots
+
+CRIU (Checkpoint/Restore In Userspace) can snapshot a running Linux process—memory, file descriptors, network connections, everything—and restore it later. This is how AWS Lambda achieves sub-100ms cold starts.
+
+```python
+# First run: initialize everything (slow, ~30s)
+container = start_container()
+container.exec("python -c 'import torch; model = load_model()'")
+
+# Checkpoint the entire process state
+container.checkpoint("/snapshots/my-model-ready")
+
+# Later cold starts: restore from checkpoint (~100ms)
+container = restore_checkpoint("/snapshots/my-model-ready")
+```
+
+For ML workloads where model loading dominates cold start time, this is transformative. Instead of loading a 7GB model from disk every time, you restore a process that already has the model in memory.
+
+The catch: GPU state is tricky. CUDA contexts don't checkpoint cleanly, so you need to reinitialize the GPU after restore. There are workarounds (checkpoint before GPU init, then init on restore), but it's not seamless.
+
+### Strategy 4: Fork-Based Isolation
+
+Instead of starting new containers, fork from a warm parent:
+
+```python
+# Parent process (warm, imports loaded)
+import torch
+import transformers
+
+while True:
+    job = queue.get()
+    pid = os.fork()
+    if pid == 0:
+        # Child: already has torch in memory via COW
+        run_job(job)
+        os._exit(0)
+    else:
+        os.waitpid(pid, 0)
+```
+
+Copy-on-write semantics mean the fork is nearly instant. The child process shares memory pages with the parent until it writes to them. For read-heavy workloads (inference), this means you get the parent's entire import tree for free.
+
+This is how Gunicorn's prefork model works, and it's remarkably effective. The limitation is isolation—forked processes share file descriptors and can interfere with each other in subtle ways.
+
+## Let's Do Some Math
+
+How much does all this optimization matter? Let's compute.
+
+Assume you're running an inference service that handles 1000 requests/day, with each request taking 2 seconds of GPU time. Without warm pools:
+
+- Cold start: 30s average
+- Compute: 2s
+- Total latency: 32s
+- Daily GPU hours: 1000 × 32s = 8.9 hours
+
+With warm pools (assume 90% warm hit rate):
+
+- 900 requests × 2s = 1800s
+- 100 requests × 32s = 3200s
+- Total: 5000s = 1.4 hours
+- Daily GPU hours: 1.4 hours compute + 24 hours warm pool = 25.4 hours
+
+Wait, that's worse! The warm pool costs more than the cold starts saved.
+
+But here's what the math misses: latency matters. Users won't wait 32 seconds. They'll leave. If warm pools increase your conversion rate by 50%, the economics flip entirely. This is why Modal can charge premium prices—they're not just selling compute, they're selling latency.
+
+Let's redo the math with CRIU snapshots:
+
+- Cold start with snapshot: 200ms
+- 900 warm requests × 2s = 1800s
+- 100 cold requests × 2.2s = 220s
+- Total: 2020s = 0.56 hours
+- No warm pool cost
+- Daily GPU hours: 0.56 hours
+
+Now we're talking. Snapshots give you the latency benefits of warm pools without the idle cost. This is why AWS invested so heavily in Firecracker + snapshotting for Lambda.
+
+## The Control Plane
+
+Let's talk about the orchestration layer. You need:
+
+- **API server**: Receives job submissions, returns handles
+- **Job queue**: Distributes work to workers
+- **Scheduler**: Decides which worker runs which job
+- **Metadata store**: Tracks job state, logs, results
+
+Technology choices:
+
+| Component | Options | My pick |
+|-----------|---------|---------|
+| API | FastAPI, gRPC | gRPC for perf, FastAPI for dev speed |
+| Queue | Redis Streams, NATS, Kafka | Redis Streams (simple, fast enough) |
+| Scheduler | Kubernetes, Nomad, custom | Kubernetes for GPUs, custom for everything else |
+| Database | Postgres, CockroachDB | Postgres + S3 for blobs |
+
+```python
+async def submit_job(function_payload, args, kwargs, config):
+    job_id = uuid4()
+
+    # Store function and args in S3 (cheap, durable)
+    await s3.put(f"jobs/{job_id}/function.pkl", function_payload)
+    await s3.put(f"jobs/{job_id}/args.pkl", pickle.dumps((args, kwargs)))
+
+    # Queue for execution
+    await redis.xadd("jobs", {
+        "job_id": str(job_id),
+        "config": json.dumps(config),
+        "image_hash": config["image"].hash()
+    })
+
+    return JobHandle(job_id)
+```
+
+The worker side is simpler:
+
+```python
+async def worker_main():
+    while True:
+        _, job = await redis.xread("jobs", block=0)
+
+        fn = cloudpickle.loads(await s3.get(f"jobs/{job.id}/function.pkl"))
+        args, kwargs = pickle.loads(await s3.get(f"jobs/{job.id}/args.pkl"))
+
+        try:
+            result = fn(*args, **kwargs)
+            await s3.put(f"jobs/{job.id}/result.pkl", pickle.dumps(result))
+            await redis.set(f"job:{job.id}:status", "completed")
+        except Exception as e:
+            await redis.set(f"job:{job.id}:status", f"failed:{e}")
+```
+
+## GPU Scheduling
+
+GPUs are the hard part. Unlike CPUs, you can't easily time-slice a GPU between processes.[^2] Each job needs exclusive access to a GPU for the duration of its execution.
+
+[^2]: MPS and MIG exist but have significant limitations. MPS shares a single CUDA context (crash one process, crash them all). MIG partitions the GPU at boot time, not dynamically.
+
+Kubernetes has reasonable GPU support via the NVIDIA device plugin:
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: worker
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+  nodeSelector:
+    gpu-type: a100
+```
+
+But Kubernetes scheduling is slow (~5s to schedule a pod) and doesn't understand GPU topology. If you need to co-locate two pods that communicate via NVLink, you're on your own.
+
+For serious GPU workloads, you probably want a custom scheduler that understands:
+
+- GPU memory requirements (not all A100s are equal—40GB vs 80GB)
+- Multi-GPU jobs (need GPUs on same node for NVLink)
+- Preemption (can we evict a low-priority job to run a high-priority one?)
+- Bin packing (fit small jobs onto partially-used GPUs)
+
+This is genuinely hard. I suspect Modal has a custom scheduler, but they haven't written about it publicly.
+
+## What Would It Cost?
+
+Let's estimate the cost to build a minimal Modal clone:
+
+| Component | Effort | Notes |
+|-----------|--------|-------|
+| SDK + serialization | 2-4 weeks | Cloudpickle does the heavy lifting |
+| Image builder | 4-8 weeks | Layer caching is tricky |
+| Control plane | 4-8 weeks | API, queue, scheduler |
+| Worker runtime | 2-4 weeks | Container management |
+| Warm pools | 4-8 weeks | Predictive scaling is hard |
+| CRIU integration | 4-8 weeks | GPU state is painful |
+| Web UI | 4-8 weeks | Logs, monitoring, billing |
+| GPU scheduling | 8-16 weeks | The hardest part |
+
+Total: 8-16 months for a small team. And that gets you to feature parity with Modal circa 2022. They've had three more years to optimize.
+
+## The 80/20 Version
+
+If I wanted 80% of Modal's value with 20% of the effort:
+
+1. **Skip warm pools initially**. Accept 10-30s cold starts.
+2. **Use Kubernetes**. Don't build a custom scheduler.
+3. **Use Kaniko** for in-cluster image builds.
+4. **Use Redis** for job queue and state.
+5. **Use S3** for function/result storage.
+6. **Skip CRIU**. It's powerful but complex.
+
+This gets you a working system in 2-3 months. You can add warm pools and snapshotting later when cold starts become the bottleneck.
+
+```python
+# Minimal SDK - ~200 lines of code
+@app.function(image=Image().pip_install("torch"), gpu="T4")
+def train(config):
+    import torch
+    # ... training code ...
+    return metrics
+
+# Usage
+handle = train.remote({"lr": 0.001})
+result = handle.result()  # Blocks until complete
+```
+
+## Closing Thoughts
+
+Modal is impressive not because any single component is revolutionary, but because they've executed well on dozens of hard problems simultaneously. Function serialization, image building, cold start optimization, GPU scheduling, secrets management, volume mounts, web endpoints, cron jobs—each one is a project unto itself.
+
+The fundamental insight is that developer experience matters. Modal could have built yet another Kubernetes wrapper with YAML files and kubectl commands. Instead, they asked: what if deploying to the cloud felt like running code locally? That question led them to solve problems that existing infrastructure ignored.
+
+If you're building ML infrastructure, the lesson isn't "copy Modal." It's "understand your users' pain points at a deep level and solve them end-to-end." Modal's users don't care about containers or orchestration. They care about training models and running inference. Modal made the infrastructure invisible, and that's why it works.
+
+---
+
+*Thanks to Claude for helping me think through this architecture. The conversation that led to this post is preserved in my chat history if you want to see the iterative refinement process.*

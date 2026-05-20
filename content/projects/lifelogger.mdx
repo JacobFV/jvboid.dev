@@ -1,0 +1,30 @@
+---
+title: lifelogger
+date: 2025-12-21
+lane: building
+status: active
+tags: [agents, personal, infra]
+summary: "Personal activity tracking daemon with LLM summarization."
+links:
+  github: https://github.com/JacobFV/lifelogger
+influences: []
+realizes: []
+critiques: []
+---
+
+## Problem
+I generate a lot of small signals during the day — git commits, browser history, calendar events, terminal sessions, music. None of those individually mean much. Together they're a useful proxy for "what did I actually spend the day on?" but no single tool aggregates them in a way that's interpretable a week later.
+
+## Solution
+A daemon that quietly ingests activity from multiple sources, batches it, and runs LLM summarization on a configurable cadence (hourly digest, daily wrap, weekly arc).
+
+## How
+- **Stack:** Python.
+- **Sources:** git, browser, calendar, terminal, foreground app — extensible.
+- **Storage:** local-first; LLM calls are batched to keep token cost bounded.
+
+## Results
+Active personal infra. The daily summaries feed back into [/now](/now) and [/updates](/updates) on this site.
+
+## Lessons
+Batching is the difference between "neat idea" and "I can actually afford to leave it on." Without batching, the LLM cost dominates the value.

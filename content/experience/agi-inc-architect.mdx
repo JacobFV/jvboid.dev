@@ -1,0 +1,23 @@
+---
+title: API / Integration Architect
+org: AGI, Inc.
+date: 2024-01-01
+endDate: 2024-12-01
+lane: building
+tags: [agents, mobile]
+summary: Architected the integration surface between the agent runtime and the mobile clients; led the schema work that survived two product pivots.
+links:
+  org: https://agi.app
+influences: []
+realizes: []
+critiques: []
+---
+
+What I owned: the contract between the agent runtime and everything that
+called into it — mobile, web, and the internal evaluation harness.
+
+What I learned: the right place to put a versioned schema is the place
+nobody wants to put it (the boundary that ships fastest), and the wrong
+place to put it is the place that feels safest (the platform layer
+everyone agrees is "stable"). We did the safer thing first; the riskier
+thing later, and the riskier thing was the one that aged well.

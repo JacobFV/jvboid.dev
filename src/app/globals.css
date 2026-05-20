@@ -1,0 +1,213 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — see docs/DESIGN.md.
+ * Defaults are dark; light values are applied via :root[data-theme="light"].
+ * The pre-paint script in app/layout.tsx sets data-theme based on
+ * localStorage or system pref, so there is always exactly one active theme.
+ * Lane colors are the only chromatic variation between nodes.
+ */
+@theme {
+  --color-bg-0: #08090b;
+  --color-bg-1: #0e1014;
+  --color-bg-2: #15181e;
+  --color-ink: #f2f4f8;
+  --color-ink-dim: #9097a3;
+  --color-ink-mute: #5a6070;
+  --color-accent: #ff6b35;
+  /* iOS-style call-accept green; used on the empty-state submit button
+     and the CallSheet CTA. Tuned slightly darker for light mode below. */
+  --color-phone: #22c55e;
+
+  --color-lane-research: #6fa8dc;
+  --color-lane-building: #93c47d;
+  --color-lane-writing: #c27ba0;
+  --color-lane-personal: #f1c232;
+
+  /* Fonts are wired via next/font in app/layout.tsx; the variables below
+     are populated at runtime so utilities like `font-display` resolve. */
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+
+  /* Theme-aware elevation tokens. `--shadow-soft` is a tiny drop shadow,
+     `--ring-soft` a hairline inset border. Both flip with the active theme
+     so dark uses near-white insets and light uses near-ink insets. */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --ring-soft: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg-0: #fafaf8;
+  --color-bg-1: #f1f1ee;
+  --color-bg-2: #e3e3df;
+  --color-ink: #18181b;
+  --color-ink-dim: #54585f;
+  --color-ink-mute: #8a8f99;
+  --color-accent: #d8541c;
+  --color-phone: #16a34a;
+  --color-lane-research: #2f6cb0;
+  --color-lane-building: #4a8b34;
+  --color-lane-writing: #9a447b;
+  --color-lane-personal: #a87a1e;
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --ring-soft: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+html,
+body {
+  background: var(--color-bg-0);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg-0);
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-ink-mute);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+}
+
+/* Hide the loop right rail on narrow screens — the chapter measure is
+   the priority there. */
+@media (max-width: 1100px) {
+  .loop-rail {
+    display: none;
+  }
+}
+
+/* Phase 1 baseline MDX prose. Replaced by a typographic component map in
+   Phase 4 (`reader/`). */
+.prose-mdx {
+  max-width: 70ch;
+}
+.prose-mdx > * + * {
+  margin-top: 1em;
+}
+.prose-mdx h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+  margin-top: 2em;
+}
+.prose-mdx h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin-top: 1.5em;
+}
+.prose-mdx blockquote {
+  border-left: 2px solid var(--color-bg-2);
+  padding-left: 1em;
+  color: var(--color-ink-dim);
+  font-style: italic;
+}
+.prose-mdx code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-bg-1);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+.prose-mdx pre {
+  font-family: var(--font-mono);
+  background: var(--color-bg-1);
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.prose-mdx ul,
+.prose-mdx ol {
+  padding-left: 1.5em;
+}
+.prose-mdx ul {
+  list-style: disc;
+}
+.prose-mdx ol {
+  list-style: decimal;
+}
+.prose-mdx hr {
+  border: 0;
+  border-top: 1px solid var(--color-bg-2);
+}
+
+/* ---- PfpReveal animations ---- */
+@keyframes pfp-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pfp-flip-in {
+  /* Card grows up from a smaller scale and rotates a half-turn so the
+     back face ends facing the camera. preserve-3d on the inner card
+     keeps both faces participating in the rotation. */
+  from {
+    transform: scale(0.55) rotateY(0deg);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1) rotateY(180deg);
+    opacity: 1;
+  }
+}
+
+@keyframes pfp-label-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Card → document shared-element morph. The browser View Transitions
+   API picks up matching `view-transition-name` on the constellation card
+   and the detail hero. Tuned to the design's spring feel (~360ms) with a
+   gentle overshoot. Reduced-motion users get the browser default fade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-group(*[name^="node-"]) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.32, 1.4, 0.42, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

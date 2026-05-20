@@ -1,0 +1,41 @@
+---
+title: general-unified-world-modeling
+date: 2026-02-01
+lane: building
+status: active
+tags: []
+summary: "A typed causal ontology of civilization that projects economics, politics, firms, people, and events onto one structured latent world model."
+hero: 
+  src: https://raw.githubusercontent.com/JacobFV/general-unified-world-modeling/develop/docs/assets/canvas_full_world.png
+  alt: general-unified-world-modeling
+links: 
+  github: https://github.com/JacobFV/general-unified-world-modeling
+---
+- Expands canvas-engineering from a generic latent substrate into an explicit ontology of 857 typed world fields
+- Uses projection and coarse-graining so different users can model different slices of the same world without discarding partial data
+- Treats cross-domain forecasting as structured latent inference over macro, financial, political, narrative, and firm-level state
+
+
+## Overview
+
+`general-unified-world-modeling` takes the abstraction from `canvas-engineering` and pushes it outward from "how should a model think?" to "what should a model think about?"
+
+The repository describes a typed causal ontology of civilization: markets, macroeconomics, politics, narratives, resources, firms, individuals, interventions, and forecasts all become fields in a single structured schema. In the current version that schema spans 857 fields across 19 layers and multiple temporal frequency classes.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JacobFV/general-unified-world-modeling/develop/docs/assets/canvas_full_world.png" alt="Full world model canvas" width="100%"/>
+</p>
+
+## Projection and partial supervision
+
+The most important design idea here is not just scale. It is projection. Rather than requiring every dataset to populate every field, the model can be projected down to the slice of the ontology a user actually cares about, then trained with masked supervision over heterogeneous data. That makes the system feel less like a monolithic all-knowing model and more like a reusable world schema that different applications can compile into their own view.
+
+I also like how explicitly causal the repo tries to be. The use cases are framed as interaction graphs rather than dashboards: regime conditions macro, macro conditions markets, firms interact with sectors and executives, interventions propagate through financial and political structure. Even if the implementation keeps evolving, the ambition is legible.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JacobFV/general-unified-world-modeling/develop/docs/assets/usecase_ceo.png" alt="CEO use case graph" width="88%"/>
+</p>
+
+This is one of the projects on the site that best shows the continuity between my systems work and my theory work. It is not just a library for forecasting. It is an attempt to define a reusable ontology and training interface for world models that can reason across levels of abstraction.
+
+Repo: [JacobFV/general-unified-world-modeling](https://github.com/JacobFV/general-unified-world-modeling)

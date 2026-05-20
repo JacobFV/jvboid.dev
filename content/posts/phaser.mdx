@@ -1,0 +1,86 @@
+---
+title: "Phaser: a hyperparallel quantum photon computing system"
+date: 2024-11-26
+lane: writing
+tags: []
+summary: "Near the end of my senior year I was searching for ways to change the world so I revisited a lot of our current technological limitations from first principles to identify opportunities for order-of-magnitude improvements. Some YouTube video (i forgot which) led me to Bernstei…"
+---
+## The Promise and Limitations of Optical Computing
+
+Near the end of my senior year I was searching for ways to change the world so I revisited a lot of our current technological limitations from first principles to identify opportunities for order-of-magnitude improvements. Some YouTube video (i forgot which) led me to [Bernstein et al. at MIT](https://ar5iv.labs.arxiv.org/html/2205.09103) and reading it impressed me with the significant but largely unexplored potential of photonic computation.[^1]
+
+[^1]: alongside the other two frontiers I'd already been exploring: [humanoid robotics](https://jacobfv.github.io/blog/2023/the-master-plan-part-0/) and [computer agents](https://jacobfv.github.io/projects/full_stack_artificial_intelligence/).
+
+Optical computing is compelling: Photons travel at the speed of light. They don't generate heat through resistance. They can pass through each other without interference which unlocks massive parallelism. They can offer inherently analog computation through wave interference. Free space optical neural networks (fsONNs) in particular have demonstrated these advantages in free-space optics (air) which hints at the potential for massive scalability.
+
+However, OP's fsONN and ones since suffer from critical limitations:
+
+- **Scale constraints**: Early implementations handled only small input vectors (~10's of elements). Obv, we can scale, but this may require re-thinking some design choices from a cost/logistics perspective to make systems with order-of-magnitude performance/$ impact.
+- **Inflexibility**: Fixed weighting masks and bulky modulators prevented dynamic reconfiguration. Some approaches since OP have used photosensitive substrates with auxiliary modulating beams, but these still require complex calibration and need to be integrated into a full-stack system to be useful.
+- **Architecture limitations**: Most critically, they were restricted to feedforward architectures without the temporal dynamics that make neural networks truly powerful. So rather than compounding $O(N^2)$ possible operations they can only perform $O(N)$ operations.
+
+## The Recurrent Photon Chamber Concept
+
+Now imagine breaking free from these constraints. What if instead of passing light through the system just once, we recirculate it in a carefully controlled loop? Picture a recurrent optical neural network where photons circulate through programmable filters billions of times per second, accumulating computational transformations with each pass. This is the main idea with PHASER: my plan for using a recurrent photon chamber to achieve the temporal dynamics missing from current fsONNs.
+
+<div align="center">
+
+<img className="img-fluid rounded z-depth-1" src="https://github.com/user-attachments/assets/e2554406-fc3d-491b-95fa-2229563ef6be" alt="PHASER recurrent photon chamber diagram" title="PHASER recurrent photon chamber concept"/>
+
+</div>
+
+## How It Works
+
+The main idea is: arrange mirrors to create a closed optical cavity where photons can circulate indefinitely. Place programmable spatial light modulators (like LCD filters) in the beam path. As light passes through these filters repeatedly, each traversal implements a matrix multiplication through controlled diffraction and interference. By carefully designing the filter patterns, we can perform complex computations that evolve over thousands of iterations.
+
+           |               |
+           |  &lt;--------->  |
+           |  &lt;--------->  |                &lt; |
+           |  &lt;--------->  |              &lt; &lt; |
+ laser ===>|==&lt;-photons->  |=====(lense)&lt; &lt; &lt; | CCD readout
+           |  &lt;--------->  |              &lt; &lt; |
+           |  &lt;--------->  |                &lt; |
+           |  &lt;--------->  |
+           |               |
+
+Think of it as a vanilla RNN $h_t = M_&#123;in&#125; x_t + M_&#123;step&#125; h_&#123;t-1&#125;$, $y_t = M_&#123;out&#125; h_t$. A laser beam $x = \mathbb&#123;1&#125;^n$ enters through a one-way mirror, it circulates through the programmable filters $M_&#123;in&#125;$, $M_&#123;step&#125;$ accumulating computational results $h$, and eventually exits to a detector array where we read out the final state $y$. Unlike traditional optical systems which process information in a single pass, PHASER leverages temporal recursion and the speed of light to achieve high computational depth without physical depth.
+
+You have to see this from first principles to appreciate just how early we are. So we have $N_&#123;lcd&#125; = 10$ LCD layers with $N_&#123;pix,lcd&#125; = 1000 \times 1000$ pixels per LCD each arranged between parallel mirrors spaced $d_&#123;sep&#125; = 0.01$ m apart (so $d_&#123;total&#125; = 0.1$ m total sep)... and the speed of light $c = 3.00 \times 10^8$ m/s... that's a round-trip frequency of:
+
+$$\text&#123;Steps/sec&#125; = \frac&#123;c&#125;&#123;L&#125; = \frac&#123;(3 \times 10^8 \text&#123; m/s&#125;)&#125;&#123;0.1 \text&#123; m&#125;&#125; = 3 \times 10^8 \text&#123; Hz&#125;$$
+
+And each round-trip involves $\text&#123;Ops/step&#125; = N_&#123;lcd&#125; \times N_&#123;pix,lcd&#125;^2 = 10 \times (10^6)^2 = 10^&#123;13&#125;$ possible pixel interactions, giving us a computational throughput of:
+
+$$\text&#123;Operations/sec&#125; = \text&#123;Ops/step&#125; \times \text&#123;Steps/sec&#125; = 10^&#123;13&#125; \times (3 \times 10^8 \text&#123; m/s&#125;) = 3 \times 10^&#123;21&#125; \text&#123; ops/s&#125;$$
+
+Did you read that?? 3 billion trillion operations per second! tbh, I wonder if spacetime starts behaving in new ways at that computation density...
+
+But more seriously, this number will be hard to achieve because it assumes full connectivity, ie, that the light from every pixel can diffract to every other pixel. A more reasonable assumption of local connectivity, let's say the maximum diffraction angle for sufficiently bright light leaving a pixel is $\theta = \frac&#123;1.22\lambda&#125;&#123;D&#125; = \frac&#123;1.22 \times 650 \times 10^&#123;-9&#125; \text&#123; m&#125;&#125;&#123;63.5 \times 10^&#123;-6&#125; \text&#123; m&#125;&#125; \approx 0.0125 \text&#123; rad&#125;$ (using the longest transmitted wavelength $\lambda = 650$ nm and pixel diameter $D \approx 63.5$ μm) gives each pixel a receptive area of $A = \pi (d_&#123;sep&#125; \tan \theta)^2 \approx \pi (0.01 \times 0.0125)^2 = 4.9 \times 10^&#123;-8&#125; \text&#123; m&#125;^2$ which at reasonable retina LCD pixel density $(\rho = 400 \text&#123; PPI&#125; \approx 1.57 \times 10^4 \text&#123; pixels/m&#125;)$ gives each pixel the ability to signal to $N_&#123;efferents&#125; = A \rho^2 \approx 12$ downstream (efferent) pixels. If each pixel performs[^2] a single sigmoid-like effective operation, then we have a more realistic $\text&#123;Ops/step&#125; = (N_&#123;lcd&#125; \times N_&#123;pix,lcd&#125;) \times N_&#123;efferents&#125; = 10^7 \times 12 = 1.2 \times 10^8$ operations per round-trip, yielding a computational throughput of $\text&#123;Operations/sec&#125; = 1.2 \times 10^8 \times 3 \times 10^8 = 3.6 \times 10^&#123;16&#125; \text&#123; ops/s&#125;$. Still an impressive 36 petaoperations per second, and 5 orders of magnitude more achievable than our naive full-connectivity estimate! 
+
+[^2]: For simplicity, let's consider this sigmoid-like 'operation' to be measured at the readout, the interference isn't actually measured during mixing at the downstream pixel.
+
+Ofc, this is just what a single wavefront does as is flows through the system. Take advantage of relativistic effects while spacing successive wavefronts to the Nyquist limit and multiplex frequencies to the minimum bandwidth to really squeeze the juice from this first-principles analysis. And that's only the classical analysis. Consider the implications of single-photon slit diffraction and entaglement experiements to mixed state recurrent optical systems on PHASER: nondeterministic primitives! Everettian branches! quantum tunneling! Bell inequality violations! and oh my goodness-the possibility of fault-tolerant quantum error correction built directly into the optical recursion itself! 
+
+Seriously, why has no one built this yet??? Well in case you didn't notice, the bandwidth is a little higher than electronic systems today are capable of servicing.[^3] Similar to the GPU thorughput Von Neumann bottleneck problems computer engineers face integrating GPUs with recent claims of 4% math, 96% overhead (suspicious, but still). "Renting a plane with 175 seats to fly a team of 7 executives".[^4]
+
+[^3]: Imagine all 827,526 people in san francisco (2024), each with a smartphone doing 10 gigaflops nonstop. that's $8.27 × 10^&#123;15&#125;$ ops/sec — the entire city's worth of silicon lit up at full throttle, and it would stil take 3 more San Fransiscos to read a single second of readout from the PHASER running at our *conservative* $3.6 \times 10^&#123;16&#125; \text&#123; ops/s&#125;$ estimate. And it gets worse: at the naive 3 × 10^21 ops/sec estimate, you'd need every human on earth — all 8 billion — *each* running an **nvidia rtx 4090** (\~82.6 teraflops fp32) at 100% to just barely match the read/write needs of 100 phasers running at upper limits. So acessible technology today doesn't come close to 
+
+[^4]: https://www.chipstrat.com/p/gpu-bloat-is-holding-back-ai
+
+Another critical challenge is preventing beam decay over thousands to billions of circulation cycles. Even state-of-the-art dielectric mirrors achieve only 99.9% reflectivity at best—meaning after just 1,000 round trips, the beam intensity drops to $0.999^&#123;1000&#125; \approx 37\%$ of its original value. For the billions of cycles needed for complex computations, this represents catastrophic signal loss.
+
+Similarly, atmospheric absorption presents fundamental limits. Normal air has a transmission coefficient of approximately 99.8% per meter at 650nm wavelength, so our 0.1m round-trip path experiences $0.998^&#123;0.1&#125; \approx 99.98\%$ transmission per cycle. While this seems negligible, over millions of cycles it compounds to significant attenuation.
+
+Beyond material losses, maintaining coherent alignment presents unprecedented engineering challenges. Thermal drift, mechanical vibrations, and microscopic changes in mirror positioning can destroy the delicate interference patterns required for computation. Current stabilization systems struggle to maintain the sub-wavelength precision needed across extended operation periods.
+
+And there are many other challenges: photon spin accounting, cooling, chromatic dispersion, interference, manufacturing, etc. etc. There's got to be more. But before you get discouraged, I want to show you how we might address the first two and while not addressing every challange mentioned be better positioned to handle the endless ones ahead.
+
+To start with throughput bottlenecks, keep in mind that from the CPU's perspective, most GPU I/O operations involve program control and setup rather than bulk data transfer - the latter being handled by dedicated direct memory access (DMA) that bypasses the CPU entirely. A DMA engine is a specialized controller that's dedicated to transferring blocks of data between memory locations while the CPU handles other tasks. We can implement similar DMA *en optico* by preloading optical signals into memory-analogous resonance chambers over longer periods of time and only dumping them once everything has been loaded.
+
+Another technique we might explore is temporal pulse compression, where we deliberately introduce phase shifts across different frequency components to compress wave packets tighter in time, allowing us to pack more information into each computation cycle while maintaining the same peak power constraints. The complement for readout, temporal pulse expansion, stretches the compressed output pulses back out in time so that individual data components can be resolved and read by conventional photodetectors at manageable speeds.
+
+What about signal decay? The solution is to actively "pump" the system by inserting a thin film gain medium in the beam path which when stimulated by an external energy source can amplify the passing light to ensure the signal persists for millions or billions of cycles. By matching the gain against the rest of the system losses, the system can maintain a dynamic equalibria—enough to prevent decay, but not so much that the system turns into an uncontrolled laser. This is actually the only componenet that i don't know where to obtain but maybe someone reading this poast can knows how to CVD synthesize a semiconductor optical amplifier film and pump it on a ≤120V budget.
+
+But all the other components are actually pretty low hanging fruit. It won't take a million dollars to build. Instead of custom-fabricated spatial light modulators, we can start with high-resolution LCD panels stripped from off-the-shelf 4K monitors whose liquid crystals can modulate the phase and polarization of light. The vacuum chamber to eliminate atmospheric absorption doesn't require ultra-high vacuum; a simple acrylic box and a sub-$100, two-stage pump can pull a vacuum deep enough to make air a non-issue. While state-of-the-art dielectric mirrors are the endgame, our active gain medium lets us work with dirt-cheap silver mirrors. The entire optical bench can be framed with 80/20 aluminum extrusions, 3D-printed mounts, spring suspension, and a thermal enclosure box.
+
+PHASER might just end up a $1000 weekend project built with 2024-era technology, but it could also surpass the computing capacity of entire billion-dollar GPU clusters. Sorry, i didn't get the chance to address the other challenges and discuss programming strategies, a new internet, artificial evolution, energy efficiency, broader environmental impact, security implications, and some guesses on manufacturing and early hyperscalers in this space. And I need to explain how to linearize bounded turing machines so they can run on machines with effectively static masks. I will get to that in a later poast.

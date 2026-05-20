@@ -1,0 +1,142 @@
+---
+title: "P versus NP"
+date: 2023-08-14
+lane: research
+tags: [math, theory]
+summary: "An incomplete endevour to solve the Problem"
+---
+Bridging both the practical and the theoretical, permeating nearly every domain, a longstanding question of computer science stands the Problem. Succintly,
+
+$$
+\begin&#123;equation&#125;
+\text&#123;Does P&#125; = \text&#123;NP?&#125;
+\end&#123;equation&#125;
+$$
+
+where:
+- $
+\text&#123;P&#125; = \&#123; p \in \mathcal&#123;D&#125; \mid \exists a \in \mathcal&#123;A&#125; : \text&#123;a solves p in polynomial time&#125;\&#125;
+$
+- $
+\text&#123;NP&#125; = \&#123; p \in \mathcal&#123;D&#125; \mid \exists a \in \mathcal&#123;A&#125; : \text&#123;a verifies a solution to p in polynomial time&#125;\&#125;
+$
+- $\mathcal&#123;D&#125;$ is the set of all decision problems
+- $\mathcal&#123;A&#125;$ is the set of all algorithms
+
+To solve it is not a mere exercise in curiosity, but -- as we will see -- transcendence beyond the very nature of provable nature of computation itself. Yet such is our aim.
+
+Consider *this* proof $p_&#123;this&#125;$ and its implications: Either
+$$
+\begin&#123;equation&#125;
+p_&#123;this&#125; \rightarrow \text&#123;P&#125;=\text&#123;NP&#125; \tag&#123;2&#125;
+\end&#123;equation&#125;
+$$
+
+$$
+\begin&#123;equation&#125;
+p_&#123;this&#125; \rightarrow \text&#123;P&#125;\neq\text&#123;NP&#125; \tag&#123;3&#125;
+\end&#123;equation&#125;
+$$
+
+or
+
+$$
+\begin&#123;equation&#125;
+p_&#123;this&#125; \rightarrow \text&#123;P&#125;=\text&#123;NP&#125; \land \text&#123;P&#125;\neq\text&#123;NP&#125; \tag&#123;4&#125;
+\end&#123;equation&#125;
+$$
+
+For convenience, let us define constants for $p_&#123;this&#125;$'s self-referential implication $p_&#123;\text&#123;P&#125;=\text&#123;NP&#125;&#125;$ \eqref&#123;eq:2&#125;, disproof $p_&#123;\text&#123;P&#125;\neq \text&#123;NP&#125;&#125;$ \eqref&#123;eq:3&#125;, and impossibility $p_&#123;\text&#123;P&#125;=\text&#123;NP&#125; \wedge \text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$ \eqref&#123;eq:4&#125;. The latter is necesary to distinguish between provable and unprovable impossibilities, as we will see.
+
+Now how shall we proceed? Abstractly, proof is the goal-directed application of implication rules $\mathcal&#123;R&#125;$ to a set of axioms $\mathcal&#123;S&#125;_0$.
+
+1. Start by establishing our known axioms $\mathcal&#123;S&#125;_0 = \&#123; s_1, s_2, s_3, \dots, s_n \&#125;$,
+2. Select an implication to apply $r_i \in \mathcal&#123;R&#125;$ to apply to $\mathcal&#123;S&#125;_0$,
+3. Repeat, building a sequence of larger and larger axiom sets $\mathcal&#123;S&#125;_i = \mathcal&#123;S&#125;_&#123;i-1&#125; \cup \mathcal&#123;r&#125;(\mathcal&#123;S_&#123;i-1&#125;&#125;)$,
+4. Stop when $\mathcal&#123;S&#125;_i$ contains a statement $s_n$ that we are trying to prove.
+
+Note the distinction between the proof *process* and the final proof itself. The latter lends itself a direct step-by-step verification, whereas the former demands a graph search. Proof verification surely takes less time... Or does it?
+
+The Cook-Levin theorom shows that if $\text&#123;P&#125;=\text&#123;NP&#125;$, then there must exist a polynomial running time complexity algorithm that solves graph search, an NP-Complete problem. As we have just seen, proof solving is a form of graph search. Thus, if $\text&#123;P&#125;=\text&#123;NP&#125;$, then the proof search algorithm most definitely runs in a countable number of steps with respect to the proof length, but depending on the value of $p_&#123;this&#125;$ the proof search algorithm may not.
+
+If $\text&#123;P&#125;=\text&#123;NP&#125;$, then the proof search algorithm most definitely runs in a countable number of steps with respect to the proof length, but depending on the value of $p_&#123;this&#125;$ the proof search algorithm may not.
+
+
+How how neigher of these solutions offer a solution.
+
+If I show both are true, then I've just shown that P&lt;>NP is orthogonal to the current axiomatic system
+
+Discuss how it possible to continue building larger and larger axiomatic system by adding orthogonal dimensions to the axiom space
+
+And discuss how there are level requirements for understanding a more complex / powerful paradigm: first by understanding the cumulative sum of simpler predessor paradigms to it.
+
+Maybe paradigms are like clusters in a graph that typically must be arrived at via highway
+
+Simulate all possible aiomatic spaces and show what they look like in the limit of all random choices
+
+
+
+
+
+
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+
+
+most definitely runs in a countable number of steps with respect to the proof length, but depending on the value of $p_&#123;this&#125;$ the proof search algorithm may not.
+
+Let $M_p$ be a proof solving Turing machine and $M_v$ be its verifier. $M_p$ works by nondeterministically applying all possible implication rules to an initial set of axioms $\mathcal&#123;S&#125;$ ($p_n = \delta(p_&#123;n-1&#125;)$, $p_0=\mathcal&#123;S&#125;_0$) until it reaches a set of statements containing a subgraph matching the statement it is trying to prove. On the other hand, $M_v$ receives a given sequence of implication rules all possible implication rules to a proof $p$ and checking that each step is valid.
+
+As the proof is merely an implication chain, $M_v$ clearly halts within a polynomial order of steps compared to the proof length. On the other hand, if $\text&#123;P&#125;\ne\text&#123;NP&#125;$, then it may simply be impossible to linearize the nondeterministic branches of $M_p$'s execution into a sequence of polynomial length with respect to the proof length. Thus, if $\text&#123;P&#125;\ne\text&#123;NP&#125;$, $M_p$ is not guaranteed to halt within a countable number of steps. Furthur, if both $\text&#123;P&#125;=\text&#123;NP&#125;$ and $\text&#123;P&#125;\ne\text&#123;NP&#125;$, then $M_p$ *is* guaranteed to never halt, and vice versa. We will return to this later.
+
+But first, let us consider our first two options: either $\text&#123;P&#125;=\text&#123;NP&#125;$ or $\text&#123;P&#125;\ne\text&#123;NP&#125;$. In the former case, $M_p$ must halt in polynomial time, and thus both $p_&#123;this&#125;$ can be proved and its proof can be checked. In the latter case, $M_p$ may or may not prove a statement within a countable number of implication steps, and thus there may exist checkable-proofs that cannot be found.
+
+By "may or may not", we refer to the graph traversal and backtracking that $M_p$ must make. TODO: explain the branching part. Show how this is a graph search problem. Explain how the proof itself is a path through this graph. Explain how the proof checking is a step-by-step walk through the proof itself, verifying each step's validity. Show how P=NP means the graph can be solved easily, and P!=NP means the graph cannot be solved easily. WAIT NO: because P=NP may be an average case problem, so even if the worst case for graph search is exponential P v NP may not be
+
+Now what can be said about unprovable proofs? Godel put it best: "This sentence is unprovable." If it is provable, then it is unprovable. If it is unprovable, then it is provable. Thus, it is both provable and unprovable. This is a contradiction, and thus it is impossible. Thus, there are no statements with unprovable proofs. And yet, if $\text&#123;P&#125;\ne\text&#123;NP&#125;$, we end up in a situation where there exist statements whose proof the verifier $M_v \in \text&#123;P&#125;$ may verify within a countable steps but that the solver $M_p \in \text&#123;NP&#125;$ may not halt discover within a countable number of steps. If $p_&#123;\text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$'s proof search was exponential wrt input (worse case), then $\text&#123;P&#125;\ne\text&#123;NP&#125;$ implicates the existance of unprovable statements, which is impossible. Thus, $p_&#123;this&#125;$ disproves $p_&#123;\text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$.
+
+No; rather than p_this disproving anything, consider the two cases
+- P!=NP and p_this requires exponential dtime
+- P!=NP and p_this only requires Ptime &lt;- this option is still open
+
+However Godel had more to say about unprovable proofs. His second incompleteness theorom states that no complete axiomatic system can prove its own consistency. $p_&#123;this&#125;$'s self-referential proof (right here) is most certainly a statement about its completeness. Therefore $p_&#123;this&#125;$ cannot be consistent. So we must also rule out both $p_&#123;\text&#123;P&#125;=\text&#123;NP&#125;&#125;$ and $p_&#123;\text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$ as impossible.
+
+Finally, consider $p_&#123;\text&#123;P&#125;=\text&#123;NP&#125; \wedge \text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$: As discussed earlier, $p_&#123;this&#125;$'s existance necesitates that $M_p$ to halt. A halting $M_p$ requires $P=NP$. $p_&#123;\text&#123;P&#125;=\text&#123;NP&#125; \wedge \text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$ implies $M_p$ does not exist. And yet here you are reading its proof right now. Thus, your existance demands $M_p$ to halt, or else $p_&#123;this&#125;$ is unprovable. Note, ruling out $p_&#123;\text&#123;P&#125;=\text&#123;NP&#125; \wedge \text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$ as impossible does not remove the possiblility that $p_&#123;this&#125;$ is itself inconsistent, which by Godel's 1st incompleteness theorom is the default for a self-referrential statement as $p_&#123;this&#125;$. However, if we end up here, we might try proving equivalence between $p_&#123;this&#125;$ and Godel's statement, which would implicate an impossibility proof of $p_&#123;this&#125;$.
+
+Having exhaust all three cases, we conclude that $p_&#123;this&#125;$ is impossible. Thus, not only do we not have a proof for the Problem, we will never have a proof for the Problem. Thus, the Problem does not exist.
+
+This is good news for computer scientists because it means they will have a job for the rest of their lives. This is bad news for computer scientists because it means they will have a job for the rest of their lives. That problem is not halting either.
+
+
+
+
+
+<br/>
+<br/>
+
+
+
+1. make a countable sequence of related implications $\mathcal&#123;P&#125; = \&#123; \bigwedge_&#123;s_i \in \mathcal&#123;S&#125;&#125; s_i \rightarrow p_1$, $(\bigwedge_&#123;s_i \in \mathcal&#123;S&#125;&#125; s_i) \land p_1 \rightarrow p_2$, $(\bigwedge_&#123;s_i \in \mathcal&#123;S&#125;&#125; s_i) \land p_1 \land p_2 \rightarrow p_3, \dots, (\bigwedge_&#123;s_i \in \mathcal&#123;S&#125;&#125; s_i) \land (\bigwedge_&#123;p_i \in \&#123;p_1 \dots p_&#123;n-1&#125;\&#125;&#125; p_i) \rightarrow p_n \&#125;$ progressively implying their successors, and
+2. conclude when this implication chain reaches $p_n \rightarrow p_&#123;\text&#123;P&#125;=\text&#123;NP&#125;&#125;$, $p_n \rightarrow p_&#123;\text&#123;P&#125;\neq \text&#123;NP&#125;&#125;$, or $p_n \rightarrow p_&#123;\text&#123;P&#125;=\text&#123;NP&#125; \wedge \text&#123;P&#125;\ne\text&#123;NP&#125;&#125;$.

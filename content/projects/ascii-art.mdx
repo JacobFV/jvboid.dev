@@ -1,0 +1,30 @@
+---
+title: ascii-art
+date: 2026-02-09
+lane: building
+status: shipped
+tags: [graphics, ui]
+summary: "Multi-layer ASCII art generator with dithering, edge detection, and compositing — browser-native."
+links:
+  github: https://github.com/JacobFV/ascii-art
+  demo: https://ascii-art-sable.vercel.app
+influences: []
+realizes: []
+critiques: []
+---
+
+## Problem
+ASCII art generators tend to be one-shot: throw an image in, get a single grayscale render out. There's no way to layer effects (dithering vs. edge detection vs. luminance ramp) or to compose pieces.
+
+## Solution
+A browser-based ASCII compositor where each effect is a layer with its own palette, threshold, and blend mode. Stack edge-detected outlines over a dithered fill the same way you'd stack channels in a paint program.
+
+## How
+- **Stack:** TypeScript on the client, no backend.
+- **Algorithms:** Floyd-Steinberg dithering, Sobel edge detection, configurable luminance ramps.
+
+## Results
+Live at [ascii-art-sable.vercel.app](https://ascii-art-sable.vercel.app).
+
+## Lessons
+A "layer" mental model carries over surprisingly well from raster graphics to fixed-width text — the compositing math is the same.

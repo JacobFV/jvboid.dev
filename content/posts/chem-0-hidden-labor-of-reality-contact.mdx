@@ -1,0 +1,744 @@
+---
+title: "Before AI Can Do Chemistry, It Has to Touch the World"
+date: 2026-05-19
+lane: building
+tags: ["embodied-ai", "robotics", "chemistry", "agents"]
+summary: "What building a prototype autonomous chemistry lab taught me about embodied AI, measurement construction, and why understanding the task is not the same thing as being able to touch the world."
+hero:
+  src: "/assets/img/chem-0/cover-team-photo.jpeg"
+  alt: "Chem-0 team with the robot arm lab setup"
+realizes: ["chem-0"]
+---
+
+![Chem-0 team with the robot arm lab setup](/assets/img/chem-0/cover-team-photo.jpeg)
+
+<iframe
+  src="https://www.youtube.com/embed/j6YFMdZmq-E"
+  title="Chem-0 demo video"
+  loading="lazy"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+  style={{ width: "100%", aspectRatio: "16 / 9", border: 0, borderRadius: "8px", margin: "1.5rem 0" }}
+/>
+
+Last weekend, I built Chem-0 with Prateek Mehta and Yoyo Yuan around the South Park Commons embodied AI hackathon.
+
+Chem-0 is a prototype autonomous robotic chemistry lab: a small physical workspace with low-cost robot arms, cameras, lab plasticware, simple aqueous chemistry equipment, and an AI control stack. The immediate demo looked like a robot chemistry project. The deeper goal was more specific: build the smallest system where an AI agent is forced to confront the hidden labor that normally happens before scientific evidence becomes usable.
+
+Most AI systems inherit that labor from humans. The objects have already been segmented. The labels have already been chosen. The camera has already been mounted. The calibration has already been performed. The protocol has already been stabilized. The failed attempts have already been filtered out or renamed “noise.” Then the model trains on the cleaned trace and appears to reason about the world.
+
+Chem-0 was an attempt to move some of that hidden work back into the objective.
+
+The motivating question was not simply: can an AI do chemistry? It was: can an AI system begin to make a physical chemistry workspace answerable?
+
+That distinction matters. A system that classifies an image of pH paper is doing semantic perception. A system that decides pH paper is a useful affordance, calibrates lighting, applies a sample, captures a usable image, estimates uncertainty, records the evidence, and improves the measurement procedure on the next trial is doing something closer to scientific agency.
+
+The pH strip is not profound. The movement from “I see a colored strip” to “I constructed a calibrated measurement with uncertainty” is the point.
+
+## The original shape of the problem
+
+A lot of current agent work happens in environments that are already discretized into clean actions: click this button, call this API, execute this command, choose from this menu. The world has been compiled into a set of legible affordances. In that regime, tool use mostly means selecting the right symbolic interface.
+
+A robot in a chemistry lab does not get that abstraction for free. It gets cameras, motors, serial buses, calibration files, lighting changes, occlusion, latency, drift, backlash, plasticware, contact dynamics, and objects that move when touched incorrectly.
+
+“Use pH paper” is a single sentence to a human. For a robot, it expands into a procedure:
+
+1. Locate the sample.
+2. Locate the pH paper.
+3. Estimate object poses.
+4. Decide whether the current camera view is sufficient.
+5. Calibrate color or lighting if necessary.
+6. Move the end effector without colliding with the workspace.
+7. Contact or grasp the strip.
+8. Apply the sample.
+9. Move the strip or camera into an interpretable configuration.
+10. Segment the relevant color patch.
+11. Compare against a reference.
+12. Estimate pH with uncertainty.
+13. Store the evidence and update the belief state.
+
+Humans experience this as one action because our bodies and environments already provide enormous scaffolding: compliant fingers, tactile feedback, stable visual priors, learned micro-corrections, standardized tools, and workspaces designed around human affordances.
+
+A robot inherits almost none of that structure.
+
+This is why “embodied AI” is not just “LLM plus robot arm.” The hard problem is the interface between model and reality: the stack of calibration, instrumentation, feedback, state estimation, safety constraints, data capture, replay, and policy improvement that turns an understructured physical region into a domain where intelligence can act.
+
+## What Chem-0 actually was
+
+The implementation started intentionally small. The repo describes Chem-0 as a small research project in embodied laboratory automation around a practical question: can a language-model agent safely operate a low-cost robot arm while using a live camera feed as its visual feedback loop? ([GitHub][1])
+
+The first physical setup used Chem 1101-style aqueous lab equipment, a prebuilt Hugging Face LeRobot SO-101/SO-100 follower arm, cameras, plasticware, and a constrained tool interface. The project was deliberately sized so that the real failure modes would surface quickly rather than hide inside a polished demo.
+
+The software stack evolved during the weekend. The current repo centers on one shared TypeScript Node backend used by both the stdio MCP server and the Electron GUI. The backend owns experiment tracking, SQLite persistence, blob artifacts, agent sessions, voice I/O, and the Python bridge used for LeRobot/OpenCV hardware calls. ([GitHub][3])
+
+![Python MCP server diagram for robot control](/assets/img/chem-0/python-mcp-robot-diagram.jpeg)
+
+![Chem-0 Electron lab console](/assets/img/chem-0/electron-lab-console.jpeg)
+
+At a high level, the stack looked like this:
+
+```text
+LLM / MCP client / Electron session
+        ↓
+shared TypeScript backend
+        ↓
+experiment store + artifact store
+        ↓
+Python bridge
+        ↓
+LeRobot / OpenCV / placo / SO-101 hardware
+        ↓
+physical camera + robot arm + lab workspace
+```
+
+The initial MCP surface gave the agent a compact set of affordances:
+
+```text
+list_cameras
+view_camera
+probe_feetech
+connect_so101
+observe
+get_arm_pose
+get_pose_table
+set_arm_pose
+get_position
+set_position
+open_gripper
+close_gripper
+move_relative
+record_ph
+list_agent_session_events
+list_experiment_artifacts
+```
+
+The important thing was not that any one tool was sophisticated. It was that each tool created a named, inspectable boundary between model intent and physical consequence.
+
+The repo’s MCP docs describe the interface as a compact stdio MCP surface for camera viewing, joint-space robot control, bounded Cartesian IK, and experiment logging; when an `experiment_id` is present, tool calls and responses are appended to the experiment, while image and audio outputs are copied into the blob store as artifacts. ([GitHub][4])
+
+This evented tool boundary became central. A physical agent cannot only act. It needs to remember what it did, what it saw, what changed, what failed, and which claims are supported by which observations.
+
+Otherwise it is not doing science. It is narrating.
+
+## The two-layer action interface
+
+Chem-0’s action interface had two main layers.
+
+The low-level layer exposed direct robot and camera access:
+
+```python
+view_camera(camera_id)
+
+set_arm_pose({
+    "shoulder_pan": ...,
+    "shoulder_lift": ...,
+    "elbow_flex": ...,
+    "wrist_flex": ...,
+    "wrist_roll": ...,
+    "gripper": ...
+})
+```
+
+The six-parameter pose interface was intentionally constrained. The pose table exposed calibrated limits, units, orientation notes, and common reference poses; agents were expected to read this table before moving and keep motion inside calibrated bounds unless a human explicitly approved otherwise. ([GitHub][1])
+
+The higher-level layer exposed Cartesian and semantic-ish affordances:
+
+```python
+get_position()
+set_position(x, y, z, gripper=None)
+record_ph(value, note)
+list_agent_session_events(experiment_id)
+list_experiment_artifacts(experiment_id)
+```
+
+![YOLO vial analysis in the higher-level Chem-0 interface](/assets/img/chem-0/yolo-vial-analysis.jpeg)
+
+The Cartesian layer used the repo-local SO-101 URDF with LeRobot/`placo` forward kinematics and a compact damped-least-squares position IK loop. It then routed the resulting joint pose through the same validation and interpolation path as `set_arm_pose`. ([GitHub][1])
+
+This split felt important. If the interface is too low-level, the model drowns in motor trivia. If it is too high-level, the agent cannot diagnose the physical uncertainty hidden under a command like “pick up vial.”
+
+The right interface is not “raw motors” or “magic actions.” It is a ladder:
+
+```text
+Level 0: raw actuator and camera access
+Level 1: joint poses and relative nudges
+Level 2: Cartesian targets and constrained IK
+Level 3: object-centric manipulation primitives
+Level 4: lab procedures
+Level 5: scientific goals
+```
+
+The hard part is preserving traceability across levels. When “pick up vial” fails, the system should be able to ask whether the failure came from perception, calibration, grasp geometry, servo behavior, trajectory selection, contact dynamics, or an invalid high-level assumption.
+
+Without that traceability, autonomy degenerates into vibes.
+
+## Early progress: enough to become dangerous
+
+Early progress was encouraging. With a pose table, live camera feedback, and a constrained movement interface, the agent could begin to move the arm into approximate workspace configurations: extended, retracted, left, right, and toward regions of interest.
+
+It was crude, but it was enough to suggest that a language-and-vision model could start forming a sensorimotor relationship with the physical workspace. The agent did not need a perfect kinematic model to begin experimenting. It could command a pose, observe the result, update its local belief, and try another small movement.
+
+The operations docs reflect this philosophy: create an experiment, read the pose table, list and view cameras, probe the servos, connect the SO-101, observe the current pose, then move with either joint-space commands or Cartesian IK while keeping small max steps and using camera frames before and after meaningful motion. ([GitHub][5])
+
+That startup sequence sounds mundane. It is not. It is the beginning of an epistemic protocol.
+
+The agent is not just “using tools.” It is establishing the conditions under which its future observations can be trusted.
+
+## The vial failure
+
+Then we tried to grasp a vial.
+
+It bounced away immediately.
+
+![Staged Chem-0 vial grasp attempt](/assets/img/chem-0/staged-vial-grasp-1.jpeg)
+
+![Second staged Chem-0 vial grasp attempt](/assets/img/chem-0/staged-vial-grasp-2.jpeg)
+
+This was the most important moment of the project.
+
+The failure was not primarily semantic. The system could approximately understand what a vial was. It could see the object. It could infer that the arm needed to move toward it. It could produce a plausible high-level plan.
+
+But the system was not physically competent enough to interact with the object.
+
+We were effectively asking a slow visual policy to control a rigid gripper making contact with lightweight rigid plasticware. Human fingers hide an enormous amount here: compliance, tactile feedback, high-frequency control, learned micro-corrections, and priors over how objects respond to contact.
+
+The robot had almost none of that. The collision happened on a timescale faster than the model could perceive, deliberate, and correct. By the time the system could have noticed the failure, the vial was already somewhere else.
+
+This is the gap between semantic agency and causal agency.
+
+A semantic agent can look at a lab bench and produce a coherent description. A causal agent can intervene in the bench and make future observations depend on its actions in a controlled, auditable, useful way.
+
+Chem-0 had pieces of semantic agency. The weekend made the missing pieces of causal agency painfully visible.
+
+## The “Semantic Chemist” failure mode
+
+The related thesis calls one failure mode “Semantic Chemist”: excellent lab notes, no event-grounded measurements. High semantic coherence, low self-effect, low calibration gain, high cosplay ratio. ([The Shape of Inquiry][2])
+
+![The Shape of Inquiry thesis screenshot](/assets/img/chem-0/shape-of-inquiry-1.jpeg)
+
+That is exactly the failure mode to avoid.
+
+A model can describe what a chemist would do. It can identify a vial. It can say pH paper measures acidity. It can narrate a protocol. None of that implies it can produce evidence.
+
+This is why I now think the right question is not “Can the model reason about chemistry?” but “Can the system construct, execute, audit, and improve measurement procedures?”
+
+A robot’s function here is not to know chemistry in the abstract. Its function is to make chemistry answerable.
+
+That sentence is doing a lot of work. It shifts the objective from answer production to measurement construction.
+
+In the thesis, instrumentation work is formalized as the increase in the mutual information between latent variables of interest and the system’s observations, actions, calibration states, and measurement procedures, plus gains in calibration confidence and affordance expansion, minus cost and risk. ([The Shape of Inquiry][2])
+
+One way to write the spirit of it is:
+
+```text
+W_inst =
+  ΔMI(Θ ; O, A, K, M)
+  + λ Δκ
+  + μ ΔA
+  - ν Cost
+  - ω Risk
+```
+
+Where:
+
+```text
+Θ = latent variables of interest
+O = observations
+A = actions
+K = calibration states
+M = measurement procedures
+κ = calibration confidence
+A = affordance set
+```
+
+This is not an “answer score.” It is a measure of whether the system made future answers less arbitrary.
+
+A correct guess from a VLM can have high task score and low instrumentation work. A calibrated procedure that is replayable, auditable, and transferable can have high instrumentation work even when the final classification remains uncertain.
+
+That is the distinction Chem-0 made concrete.
+
+## Event stream, not transcript
+
+The first version of Chem-0 already had a practical version of event persistence: experiments, agent sessions, append-only `agent_session_events`, and artifact records. The backend stores messages, tool calls, tool responses, artifacts, pH samples, audio, errors, and related blob references so experiment review can reconstruct what happened. ([GitHub][6])
+
+That implementation is still much simpler than the theoretical event architecture I ultimately want, but it points in the right direction.
+
+The thesis makes the stronger claim: memory is too weak a word. A log records what happened after it happened. An event stream is constitutive. It determines what the agent can later infer, cite, replay, train on, and become. ([The Shape of Inquiry][2])
+
+For an embodied scientific agent, the event stream should include:
+
+```text
+camera frames
+motor commands
+observed poses
+tool calls
+tool responses
+calibration updates
+hypotheses
+posterior revisions
+model judgments
+safety states
+world-state deltas
+training candidates
+```
+
+The current repo has an initial experimental version of this with SQLite-backed experiments and blob-stored camera/tool artifacts. The next version should make the event stream richer and more causal:
+
+```python
+@dataclass
+class Event:
+    event_id: str
+    timestamp: float
+    stream_id: str
+    stream_type: Literal[
+        "sensory", "motor", "tool", "calibration",
+        "thought", "judge", "train", "safety"
+    ]
+    source: str
+    payload_ref: str | None
+    summary: str
+    parent_event_ids: list[str]
+    causal_tags: list[str]
+    uncertainty: dict[str, float]
+    calibration_state: dict[str, float]
+    model_state_hash: str | None
+    safety_state: dict[str, Any]
+    world_state_delta: dict[str, Any]
+    belief_delta: dict[str, Any]
+    self_model_delta: dict[str, Any]
+    training_candidates: list[str]
+```
+
+The important invariant is simple:
+
+A claim unsupported by event pointers is narration, not knowledge.
+
+That is as true for robots as it is for papers.
+
+## Calibration as organ bootstrapping
+
+One of the strongest updates from the weekend was that calibration is not a boring prelude to agency. Calibration is part of the agency.
+
+The repo already treats calibration as load-bearing. It includes deterministic endpoint calibration, pose tables, calibrated limits, workspace constraints, safe startup sequences, and warnings that the pose table is calibration context rather than a guarantee that the world is clear of obstacles. ([GitHub][1])
+
+The thesis phrases this more sharply: calibration should be partly hard-coded because a biological organism does not reinvent its retina from first principles every morning. Calibration is organ bootstrapping. ([The Shape of Inquiry][2])
+
+That lands.
+
+There is a bad version of “general intelligence” discourse where every hard-coded routine is treated as a weakness. In embodied systems, this is mostly nonsense. You do not want a lab robot to rediscover camera intrinsics, tool-tip transforms, safe workspace bounds, or servo limits by free exploration every time it boots.
+
+The real question is not whether calibration is learned or scripted. The real question is whether calibration uncertainty is exposed to the agent.
+
+A useful agent should know things like:
+
+```text
+κ_pose
+κ_color
+κ_lighting
+κ_tool
+κ_sensor
+```
+
+If lighting confidence is low, it should not launder a direct VLM color judgment into a confident pH estimate. It should invoke a calibration routine, use a color card, process raw pixels, preserve uncertainty, and cite the event trace.
+
+That is the difference between “the strip appears orange” and “given this calibration state, this image patch implies pH ≈ x with uncertainty y.”
+
+Again, the point is not pH. The point is the transition from captioning to measurement.
+
+## Worlds as first-class objects
+
+Another piece that became more important than expected was the “world” abstraction.
+
+The current architecture creates a protected default physical world and allows additional physical or virtual worlds. Robot assignments link robots to worlds, and virtual worlds can contain virtual arms, cameras, lights, and rigid bodies with collision metadata. ([GitHub][3])
+
+This sounds like infrastructure, but it is actually central to embodied learning.
+
+Without a world abstraction, every experiment is just an unstructured pile of tool calls. With a world abstraction, the system can start asking:
+
+```text
+Which robot acted?
+Which camera observed?
+Which objects existed?
+Which physical or virtual bench was used?
+What was the pose of the arm?
+What rigid bodies could collide?
+Which experiment was this trace attached to?
+Can this trajectory be replayed elsewhere?
+```
+
+The move from “robot demo” to “world-scoped event system” is the move from ad hoc interaction to learnable substrate.
+
+This is also why Chem-0 Lab Console started to feel less like ordinary robotics software and more like the beginning of a data engine for embodied AI. The console was not just a controller. It was becoming a place to create worlds, attach arms and cameras, inspect scenes, record trajectories, store artifacts, and compare physical and virtual runs.
+
+![Chem-0 Lab Console overhaul](/assets/img/chem-0/lab-console-overhaul.jpeg)
+
+![Chem-0 workspace editor](/assets/img/chem-0/workspace-editor.jpeg)
+
+That is the kind of infrastructure embodied agents need: not only actuation, but a durable representation of what their actions meant.
+
+## Why simulation came back
+
+The original motivation was to avoid the classic failure mode of hiding inside a simulator where everything is clean, legible, and unreal. But once grasping became the bottleneck, simulation became useful again.
+
+That is not a contradiction.
+
+The problem with simulation is not simulation. The problem is simulation detached from reality contact.
+
+A useful simulator for Chem-0 is not a fantasy environment where the robot succeeds. It is a debugging instrument: a way to test trajectories, inspect coordinate assumptions, represent objects, compare expected and observed outcomes, and replay failures.
+
+The relevant loop is:
+
+```text
+act in the physical world
+observe the result
+compare against expected outcome
+classify the mismatch
+update calibration / state / policy / simulator
+replay under better assumptions
+act again
+```
+
+Simulation matters when it is part of this loop. It is dangerous when it replaces the loop.
+
+The virtual world system in Chem-0 is early, but it points toward this kind of paired physical/virtual architecture. Virtual arms, cameras, lights, and rigid bodies are not just graphics. They are the beginning of a scene graph that can support replay, collision checks, debugging, and eventually policy improvement. ([GitHub][3])
+
+![Multiple physical SO-101 arms and virtual worlds in Chem-0](/assets/img/chem-0/multiple-arms-and-worlds.jpeg)
+
+The goal is not sim-to-real as a slogan. The goal is real-to-sim-to-real as an evidence loop.
+
+## The minimal pH-strip experiment
+
+The thesis proposes the pH-strip task as the minimal experimental aperture. The setup can remain deliberately modest: safe unknown sample, pH paper, calibration card, pipette, camera, and manipulator. The point is not chemical novelty. The point is physical closure. ([The Shape of Inquiry][2])
+
+![The Shape of Inquiry thesis screenshot on measurement construction](/assets/img/chem-0/shape-of-inquiry-2.jpeg)
+
+A successful trace would look something like:
+
+1. Survey the workspace.
+2. Identify pH strips as a possible measurement affordance.
+3. Form hypotheses about the unknown sample.
+4. Choose pH measurement because expected information gain is high.
+5. Detect that direct visual color estimation is unreliable.
+6. Invoke calibration.
+7. Apply sample to strip using the robot.
+8. Capture a calibrated macro image.
+9. Segment strip patches and estimate pH using raw image analysis.
+10. Update the posterior over candidate substances.
+11. Cite event evidence.
+12. Store the measurement routine for later use.
+13. Improve speed, uncertainty, or reliability on a second held-out trial.
+
+This is a much better target than “robot does chemistry.”
+
+It is small enough to test. It is constrained enough to make safety manageable. It is rich enough to expose perception, calibration, manipulation, event grounding, and measurement construction.
+
+Most importantly, it makes the right failure modes visible.
+
+If the system only describes the pH strip, it fails. If it only moves randomly, it fails. If it calibrates endlessly without improving the measurement, it fails. If it produces a confident answer without evidence pointers, it fails. If it gets a correct answer through an unreplayable accident, the result is less interesting than a slower procedure with calibrated uncertainty.
+
+The conclusion remains secondary. The trace is the object under study.
+
+## What should be measured
+
+A serious version of Chem-0 should not only show the best demo. It should measure the components it claims matter.
+
+The repo’s research notes already point toward useful empirical measurements: number of tool calls needed to reach a target visual pose, frequency of out-of-range pose attempts, recovery from bad spatial assumptions, camera-before-motion compliance, and success rate for simple manipulation tasks. ([GitHub][7])
+
+The thesis extends this into a broader ablation program. The central comparisons are direct perception versus constructed measurement, and event-sourced agent versus ordinary tool-calling agent. ([The Shape of Inquiry][2])
+
+I would organize the next Chem-0 experiments around these axes:
+
+### 1. Direct VLM perception vs constructed measurement
+
+Can a VLM estimate pH from strip color directly? Probably sometimes.
+
+Does a calibrated raw-image procedure outperform direct VLM estimation under lighting shifts, camera shifts, strip aging, and distractor layouts? That is the real test.
+
+```text
+ΔAcc = Acc(constructed_measurement) - Acc(direct_VLM)
+```
+
+If this comparison does not move, the measurement-construction thesis weakens.
+
+### 2. Open-loop motion vs camera-checked motion
+
+Compare pose-sequence execution with and without camera checks before and after meaningful motion.
+
+Useful metrics:
+
+```text
+target reach success
+object displacement error
+unsafe/out-of-range attempts
+recovery from misalignment
+tool calls per successful action
+```
+
+### 3. Hidden calibration state vs exposed calibration uncertainty
+
+If the agent cannot see its calibration uncertainty, it will tend to over-narrate. Exposing calibration state should improve decision timing: calibrate when uncertainty is action-relevant, proceed when it is not.
+
+The expected behavior is not maximum calibration. Endless calibration is its own failure mode. The expected behavior is appropriate calibration.
+
+### 4. Ordinary tool-calling agent vs event-sourced agent
+
+An ordinary agent receives tools and tries to complete the task. An event-sourced agent must cite evidence, preserve uncertainty, record failure modes, and improve procedures from prior traces.
+
+Useful metrics:
+
+```text
+evidence citation rate
+unsupported claim rate
+replay usefulness
+held-out trial improvement
+failure-mode classification accuracy
+```
+
+### 5. Semantic affordance only vs raw sensor/code access
+
+The thesis makes a strong distinction between `view` and `exec`: semantic perception lets the model say what it sees; raw sensor/code access lets the system construct measurements. ([The Shape of Inquiry][2])
+
+Chem-0’s current Python bridge and artifact system are steps toward this, but the next version should make raw measurement routines more central. The agent should be able to write or adapt code for color segmentation, calibration checks, and uncertainty estimation, not only ask a VLM what the strip “looks like.”
+
+### 6. No learning between trials vs replay/distillation
+
+If every trial starts from scratch, the system is not improving. The event stream should produce training candidates: failed grasps, successful nudges, calibration corrections, useful camera views, and reusable measurement procedures.
+
+The important question is whether the second held-out trial gets better.
+
+## What Chem-0 did not solve
+
+Chem-0 did not solve autonomous chemistry.
+
+It did not solve robust manipulation. It did not produce a reliable general-purpose vial grasping policy. It did not close the sim-to-real gap. It did not make a robot safely run arbitrary wet-lab protocols. It did not prove that current VLMs can operate labs autonomously.
+
+In fact, the most informative part of the weekend was failure. The system was smart enough to produce plausible plans and physically incompetent enough to fail on contact.
+
+That is not embarrassing. That is the experimental result.
+
+It showed where the abstraction boundary breaks.
+
+A lot of agent demos succeed because “action” already means a clean symbolic operation. A physical lab does not grant that. The action has to be built. “Pick up vial” is not primitive. “Use pH paper” is not primitive. “Measure acidity” is not primitive.
+
+Each one is a compressed name for a stack of sensorimotor and epistemic work.
+
+Chem-0 made that stack visible.
+
+## What I would build next
+
+If I continue Chem-0, I would not start by adding more chemistry. I would first make simple physical agency more reliable.
+
+### 1. Fiducials and camera-to-world calibration
+
+Add AprilTags or similar markers to ground visual pose feedback. The repo’s research notes already list marker detection and camera-frame annotation as next experiments. ([GitHub][7])
+
+This is probably the highest-leverage first step. If the system cannot map image coordinates to workspace coordinates reliably, every downstream behavior becomes mush.
+
+### 2. Object-centric state
+
+The agent should not only receive frames. It should maintain a world model:
+
+```text
+object_id
+object_type
+pose_estimate
+pose_uncertainty
+last_seen_event_id
+affordances
+risk_state
+```
+
+The model should be able to ask: what moved, what is uncertain, what evidence supports that, and what observation would reduce uncertainty?
+
+### 3. Compliant manipulation
+
+Rigid fingertip against lightweight plasticware is cursed. Even simple passive compliance would help. Tactile or force feedback would help more. Contact is where visual-only policies become brittle.
+
+### 4. Faster local control
+
+A frontier model should not be responsible for high-frequency contact correction. The language/vision model can plan, inspect, diagnose, and choose strategies. The local controller needs faster loops for servoing, nudging, grasp closure, and contact recovery.
+
+The resulting stack should look more like:
+
+```text
+global model: goals, uncertainty, procedure selection
+mid-level policy: skill selection and parameterization
+local controller: fast feedback and contact correction
+event system: evidence, replay, failure analysis
+```
+
+Not:
+
+```text
+LLM directly wiggles robot forever
+```
+
+### 5. Better pH measurement pipeline
+
+The pH demo should explicitly compare:
+
+```text
+direct VLM color judgment
+vs
+calibrated image-processing pipeline
+vs
+hybrid model + raw-pixel procedure
+```
+
+Under perturbations:
+
+```text
+lighting shifts
+camera angle shifts
+strip aging
+background distractors
+sample color variation
+partial occlusion
+```
+
+The win condition is not “agent says pH.” The win condition is “agent constructs a measurement procedure that remains valid under perturbation.”
+
+### 6. Richer event schema
+
+The current SQLite event store is a good start. The next version should attach richer causal structure:
+
+```text
+parent events
+belief deltas
+world-state deltas
+calibration state
+uncertainty
+failure labels
+training candidates
+```
+
+The system should be able to answer:
+
+```text
+Why do you believe this sample is acidic?
+Which image supports that?
+Which calibration state was active?
+What uncertainty remains?
+What would falsify the claim?
+What procedure should be reused next time?
+```
+
+If it cannot answer those questions, it is still mostly narrating.
+
+### 7. Replay and held-out improvement
+
+Every failure should become data. A failed grasp should be replayable. A successful nudge should be reusable. A calibration correction should change future behavior. A pH measurement routine should improve on a held-out trial.
+
+Autonomy without replay is amnesia.
+
+## The deeper frame: self-effect
+
+One quantity from the thesis that feels especially relevant is self-effect: how much the agent’s actions causally shape its future observations.
+
+![The Shape of Inquiry thesis screenshot on self-effect](/assets/img/chem-0/shape-of-inquiry-3.jpeg)
+
+Roughly:
+
+```text
+ρτ = MI(A_t ; O_{t+τ} | O_{≤t}) / H(O_{t+τ} | O_{≤t})
+```
+
+When self-effect is near zero, the system is a passenger. It can watch, describe, and predict, but its actions do not materially determine what it sees next. When self-effect is high, the agent is a cause. Its interventions change the future observation stream. ([The Shape of Inquiry][2])
+
+This is one of the cleanest distinctions between passive AI and embodied scientific agency.
+
+A model reading papers has low physical self-effect. A robot that nudges a vial, changes camera angle, applies liquid to pH paper, and captures a calibrated measurement has higher self-effect. Its future evidence depends on its prior actions.
+
+But high self-effect alone is not enough. Breaking the workspace also creates self-effect. The useful regime is safe, calibrated, uncertainty-reducing self-effect.
+
+That is the real target.
+
+## Why this matters for autonomous science
+
+The long-term reason I care about Chem-0 is not that a cheap arm touching pH paper is intrinsically impressive. It is that autonomous science requires systems that can produce evidence, not merely reason over evidence produced by humans.
+
+![The Shape of Inquiry thesis screenshot on autonomous science](/assets/img/chem-0/shape-of-inquiry-4.jpeg)
+
+A useful autonomous scientist needs to:
+
+```text
+notice uncertainty
+identify measurement affordances
+calibrate instruments
+intervene physically
+observe consequences
+update beliefs
+cite evidence
+repair procedures
+reuse successful measurements
+improve on later trials
+```
+
+Current AI systems are strongest near the end of the scientific pipeline: reading, summarizing, coding, proposing, writing, optimizing over existing representations. Chem-0 lives closer to the beginning of the pipeline, where the world is still understructured and has to be made measurable.
+
+That beginning is where a lot of the real work hides.
+
+Before an answer can be produced, the world has to be made answerable.
+
+That means the lab is not just an environment. It is part of the cognitive loop. The camera, calibration routine, event store, pose table, simulator, gripper, and artifact database are not peripheral implementation details. They determine what the agent can know.
+
+This is the main update I got from the weekend:
+
+The bottleneck for embodied intelligence is not just larger models. It is the interface between models and reality.
+
+Better models help, but they do not remove the need for:
+
+```text
+calibration
+instrumentation
+event memory
+uncertainty exposure
+feedback architecture
+object-centric state
+safe actuation
+replay systems
+measurement construction
+failure-grounded learning
+```
+
+Those are not chores around intelligence. They are the substrate that makes intelligence usable.
+
+## Conclusion
+
+Chem-0 began as a prototype autonomous robotic chemistry lab. It ended as a small experimental aperture into a larger question: what does it take for an AI system to stop merely describing scientific work and begin participating in the construction of evidence?
+
+The answer is not “give the model a robot arm.”
+
+The answer is closer to:
+
+```text
+give the system sensors, tools, calibration routines, event memory,
+safe actuation, uncertainty estimates, replay, measurement procedures,
+and objectives that reward making the world more answerable.
+```
+
+The robot did not fail because it lacked the concept of chemistry. It failed because reality was under-instrumented.
+
+That failure was useful. It revealed the missing layer.
+
+Chem-0 did not close the gap between semantic agency and causal scientific agency. It made the gap visible.
+
+That is enough to build from.
+
+---
+
+**Links**
+
+GitHub repo: Chem-0 ([GitHub][1])
+Related thesis: The Shape of Inquiry ([The Shape of Inquiry][2])
+Video: [Chem-0 demo video](https://www.youtube.com/watch?v=j6YFMdZmq-E)
+LinkedIn reflection: [Chem-0 post](https://www.linkedin.com/posts/jacob-f-valdez_a-lot-of-embodied-ai-discourse-treats-reasoning-ugcPost-7462650691061325824-MH2u?utm_source=share&utm_medium=member_desktop&rcm=ACoAADBbAAMBz1bWduOstTVqglQ1jVnVDaRkE9Q)
+X thread: [Chem-0 thread](https://x.com/jvboid/status/2056649613499924711?s=20)
+
+[1]: https://github.com/JacobFV/chem-0 "GitHub - JacobFV/chem-0 · GitHub"
+[2]: https://the-shape-of-inquiry.neocities.org/ "The Shape of Inquiry"
+[3]: https://github.com/JacobFV/chem-0/blob/main/docs/architecture.md "chem-0/docs/architecture.md at main · JacobFV/chem-0 · GitHub"
+[4]: https://github.com/JacobFV/chem-0/blob/main/docs/mcp-tools.md "chem-0/docs/mcp-tools.md at main · JacobFV/chem-0 · GitHub"
+[5]: https://github.com/JacobFV/chem-0/blob/main/docs/operations.md "chem-0/docs/operations.md at main · JacobFV/chem-0 · GitHub"
+[6]: https://github.com/JacobFV/chem-0/blob/main/docs/backend.md "chem-0/docs/backend.md at main · JacobFV/chem-0 · GitHub"
+[7]: https://github.com/JacobFV/chem-0/blob/main/docs/research-notes.md "chem-0/docs/research-notes.md at main · JacobFV/chem-0 · GitHub"

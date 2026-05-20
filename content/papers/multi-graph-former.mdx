@@ -1,0 +1,29 @@
+---
+title: Multi-graph former — a transformer over heterogeneous graph structure
+date: 2023-05-10
+lane: research
+tags: [transformers, graph-neural-networks]
+summary: Architecture sketch for a transformer variant that operates over multiple, related graphs simultaneously and learns the morphism between them.
+authors: [Jacob Valdez]
+venue: workshop submission
+bibKey: valdez2023multigraph
+influences: [the-node-neural-network]
+realizes: []
+critiques: []
+---
+
+## Idea
+
+Most graph transformers operate over a single graph at a time. The
+generalization is unsurprising — operate over a stack of graphs that share
+nodes — but the interesting structure is in *learning the alignment* across
+graphs as a first-class operation, rather than treating graphs as
+independent inputs.
+
+Concretely, attention is computed over a tensor indexed by (graph, node,
+graph, node), and a low-rank factorization keeps the cost reasonable.
+
+## Status
+
+Draft figure done; experiments started but not finished. Filed here as a
+node so it doesn't fall out of the graph.

@@ -2,60 +2,22 @@ name: deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.2.2'
-        bundler-cache: true
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Restore TTS cache
-      uses: actions/cache@v4
-      with:
-        path: |
-          assets/media/tts
-          .tts-cache
-        key: tts-${{ hashFiles('_posts/**/*.md', '_scripts/generate_tts.py') }}
-        restore-keys: |
-          tts-
-    - name: Generate Resume PDF
-      run: |
-        pip install pyyaml weasyprint
-        python3 _scripts/generate_resume.py
-    - name: Install ffmpeg
-      run: sudo apt-get update && sudo apt-get install -y ffmpeg
-    - name: Generate post audio
-      env:
-        ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-        ELEVENLABS_VOICE_ID: ${{ vars.ELEVENLABS_VOICE_ID }}
-      run: |
-        python3 _scripts/generate_tts.py
-    - name: Install and Build
-      run: |
-        pip3 install --upgrade jupyter
-        npm install -g mermaid.cli
-        export JEKYLL_ENV=production
-        bundle exec jekyll build
-    - name: Deploy
-      if: github.event_name != 'pull_request'
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        folder: _site
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build
+      # Deployment step is intentionally absent until Phase 9 cutover.
+      # Configure Cloudflare Pages or Vercel by adding the appropriate action here.

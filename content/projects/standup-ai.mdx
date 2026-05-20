@@ -1,0 +1,30 @@
+---
+title: standup-ai
+date: 2026-02-08
+lane: building
+status: active
+tags: [agents, productivity]
+summary: "AI scrum-lead assistant — automates standup task management across Notion and Linear."
+links:
+  github: https://github.com/JacobFV/standup-ai
+  demo: https://standup-ai-khaki.vercel.app
+influences: []
+realizes: []
+critiques: []
+---
+
+## Problem
+Standups eat time. The information they produce — what's done, what's blocked, what's next — is already in Notion / Linear / Slack, just unsynthesized. A human scrum lead spends half a meeting reconstructing state that the tools already know.
+
+## Solution
+An agent that reads from Notion and Linear, drafts a standup summary per person, identifies blockers, and writes follow-up tasks back into the source of truth.
+
+## How
+- **Stack:** TypeScript on Vercel.
+- **Integrations:** Notion API, Linear API.
+
+## Results
+Live at [standup-ai-khaki.vercel.app](https://standup-ai-khaki.vercel.app). Replaces a recurring 30-min meeting with an async summary + a 5-min review.
+
+## Lessons
+The hard part isn't the LLM call — it's knowing which fields in Notion/Linear are "load-bearing" and which are noise. The schema layer matters more than the model.

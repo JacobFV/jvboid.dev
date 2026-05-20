@@ -1,0 +1,112 @@
+---
+title: "Chem-0"
+date: 2026-05-19
+lane: building
+status: active
+tags: ["embodied-ai", "robotics", "chemistry", "agents"]
+summary: "A prototype autonomous chemistry lab exploring how AI agents can operate a low-cost robot arm, camera loop, lab workspace, and evented measurement stack."
+hero:
+  src: "/assets/img/chem-0/cover-team-photo.jpeg"
+  alt: "Chem-0 team with the robot arm lab setup"
+video: "https://www.youtube.com/watch?v=j6YFMdZmq-E"
+links:
+  github: "https://github.com/JacobFV/chem-0"
+  paper: "https://the-shape-of-inquiry.neocities.org/"
+realizes: []
+influences: []
+critiques: []
+---
+
+![Chem-0 team with the robot arm lab setup](/assets/img/chem-0/cover-team-photo.jpeg)
+
+## Problem
+
+Most AI agents operate in environments where the action space has already been made symbolic: click a button, call an API, run a command, or choose from a menu. A physical chemistry bench does not provide that abstraction. The system has to deal with cameras, calibration, low-cost servos, plasticware, occlusion, lighting, latency, coordinate drift, contact dynamics, and the gap between a semantic instruction like “grasp the vial” and a reliable physical intervention.
+
+Chem-0 was built to study that gap directly.
+
+## Project
+
+Chem-0 is a prototype autonomous robotic chemistry lab built around a practical question: can an AI agent safely operate a low-cost robot arm while using live camera feedback and persistent experiment traces?
+
+The first setup used Chem 1101-style aqueous solution lab equipment, cameras, plasticware, and a pre-assembled Hugging Face LeRobot SO-101/SO-100 follower arm. The scope was intentionally small so the real bottlenecks would show up quickly: calibration, feedback speed, screen-space to world-space estimation, servo overshoot, rigid contact, and evidence capture.
+
+## System
+
+![Chem-0 Electron lab console](/assets/img/chem-0/electron-lab-console.jpeg)
+
+The system combines:
+
+- SO-101/LeRobot hardware for low-cost arm control.
+- Camera and observation tools for visual feedback.
+- A Python hardware bridge for LeRobot, OpenCV, `placo`, and robot calls.
+- An MCP interface for tool-based agent control.
+- A shared TypeScript backend for experiment state, artifacts, sessions, and persistence.
+- An Electron lab console for worlds, robots, cameras, experiments, and review.
+
+![Python MCP server diagram for robot control](/assets/img/chem-0/python-mcp-robot-diagram.jpeg)
+
+The action interface had two layers. Low-level tools exposed direct sensor and motor access, such as camera viewing and joint-space pose control. Higher-level tools exposed Cartesian movement, position queries, experiment logging, and semantic affordances such as vial analysis.
+
+![YOLO vial analysis in the higher-level Chem-0 interface](/assets/img/chem-0/yolo-vial-analysis.jpeg)
+
+## Lab Console
+
+Chem-0 Lab Console became the project’s control and data surface: a place to connect hardware, create experiments, manage worlds, inspect scenes, record artifacts, and compare physical and virtual runs.
+
+![Chem-0 Lab Console overhaul](/assets/img/chem-0/lab-console-overhaul.jpeg)
+
+The world abstraction lets the system represent physical and virtual benches, attach robots and cameras, and keep experiment traces scoped to the environment where they occurred.
+
+![Chem-0 workspace editor](/assets/img/chem-0/workspace-editor.jpeg)
+
+The project also supports multiple physical arms and multiple virtual worlds as a debugging path toward replay, scene inspection, and paired physical/virtual experimentation.
+
+![Multiple physical SO-101 arms and virtual worlds in Chem-0](/assets/img/chem-0/multiple-arms-and-worlds.jpeg)
+
+## Results
+
+The early result was not autonomous chemistry. It was a clearer picture of what blocks it.
+
+With a pose table, live camera feedback, and constrained movement tools, the agent could move the arm into rough workspace configurations. But when the system tried to grasp a vial, the vial bounced away immediately. The model could understand the scene semantically and still fail physically because a slow visual policy was controlling a rigid gripper against lightweight rigid plasticware.
+
+![Staged Chem-0 vial grasp attempt](/assets/img/chem-0/staged-vial-grasp-1.jpeg)
+
+![Second staged Chem-0 vial grasp attempt](/assets/img/chem-0/staged-vial-grasp-2.jpeg)
+
+That failure shifted the project’s center of gravity. The important problems became calibration procedure, local feedback loops, compliant manipulation, coordinate estimation, event memory, and measurement construction.
+
+## Research Frame
+
+Chem-0 connects to the broader thesis in [The Shape of Inquiry](https://the-shape-of-inquiry.neocities.org/): autonomous scientific agents need to construct measurements, not merely describe what a scientist would do.
+
+![The Shape of Inquiry thesis screenshot](/assets/img/chem-0/shape-of-inquiry-1.jpeg)
+
+The pH-strip task is the minimal experimental aperture: a safe sample, pH paper, calibration card, camera, and manipulator. The goal is not chemical novelty. The goal is a replayable, auditable measurement procedure with explicit uncertainty.
+
+![The Shape of Inquiry thesis screenshot on measurement construction](/assets/img/chem-0/shape-of-inquiry-2.jpeg)
+
+The core quantity is self-effect: whether the agent’s actions causally shape its future observations in a safe, calibrated, uncertainty-reducing way.
+
+![The Shape of Inquiry thesis screenshot on self-effect](/assets/img/chem-0/shape-of-inquiry-3.jpeg)
+
+## Next
+
+The next version should focus on making simple physical agency reliable before adding more chemistry:
+
+- Add fiducials or AprilTags for camera-to-world calibration.
+- Maintain object-centric state with pose estimates and uncertainty.
+- Add compliant manipulation or force/tactile feedback.
+- Move contact correction into faster local control loops.
+- Build a calibrated pH measurement pipeline.
+- Enrich the event schema with causal links, belief deltas, calibration state, and failure labels.
+- Use replay and held-out trials to measure whether the system improves.
+
+![The Shape of Inquiry thesis screenshot on autonomous science](/assets/img/chem-0/shape-of-inquiry-4.jpeg)
+
+The current direction is less “robot does chemistry demo” and more “infrastructure for event-grounded physical measurement.” The goal is to make embodied agents produce auditable evidence rather than fluent descriptions of what a scientist would have done.
+
+## Social Posts
+
+- [LinkedIn reflection](https://www.linkedin.com/posts/jacob-f-valdez_a-lot-of-embodied-ai-discourse-treats-reasoning-ugcPost-7462650691061325824-MH2u?utm_source=share&utm_medium=member_desktop&rcm=ACoAADBbAAMBz1bWduOstTVqglQ1jVnVDaRkE9Q)
+- [X thread](https://x.com/jvboid/status/2056649613499924711?s=20)

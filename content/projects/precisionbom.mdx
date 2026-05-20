@@ -1,0 +1,26 @@
+---
+title: PrecisionBOM
+date: 2026-01-10
+lane: building
+status: active
+tags: [work]
+summary: "An AI-powered BOM sourcing platform that combines specialist agents, real supplier data, and blockchain-backed audit trails for hardware procurement."
+links: 
+  github: https://github.com/precision-bom/precisionBOM
+---
+- Compresses BOM sourcing from a multi-day manual workflow into a multi-agent decision process
+- Splits procurement reasoning across engineering, sourcing, finance, and market-intelligence roles
+- Targets regulated hardware contexts where traceability matters as much as optimization
+
+
+`PrecisionBOM` is the most clearly commercial project in this group, but it still carries the same systems instinct as the others: break a messy problem into typed roles, structured flows, and auditable state.
+
+The problem is electronic component sourcing. A hardware team needs to reconcile technical fit, supplier availability, lead times, compliance constraints, price, and budget, usually across multiple vendor systems and under changing market conditions. The thesis of the project is that this is exactly the kind of workflow that should be decomposed into specialist agents rather than handled as an undifferentiated chat interaction.
+
+The current architecture pairs a Next.js application with a Python multi-agent service and an Ethereum audit layer. Supplier data comes from systems like DigiKey, Mouser, and Octopart; specialist agents handle engineering review, sourcing risk, and finance; a final synthesis step produces ranked sourcing strategies.
+
+What makes the project distinctive is the audit trail emphasis. The blockchain layer is not there as ornament. It is there because regulated industries need decision provenance. If a BOM choice later needs to be justified, the reasoning and state history should be recoverable rather than buried in email and spreadsheets.
+
+The deck materials make the product thesis especially clear: this is not just "AI for procurement." It is a claim that hardware sourcing can become an agentic workflow where specialists collaborate in parallel and leave behind machine-verifiable receipts.
+
+Repo: [precision-bom/precisionBOM](https://github.com/precision-bom/precisionBOM)

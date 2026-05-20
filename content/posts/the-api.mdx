@@ -1,0 +1,36 @@
+---
+title: "The API"
+date: 2021-10-18
+lane: research
+tags: [ideas, agi]
+summary: "The anthrocentric policy interface"
+---
+Though diverse, most humans share a common set of input and output modalities: sight, hearing, touch, and skeletal motor control. This common interface aligns our perception of the world to a rasonable degree and facilitates social interaction and collaboration. As progress continues towards developing humanly-impactful foundation models and policies, I propose establishing a common set of modalities for artificial intelligence systems as well: the **anthrocentric policy interface** or **API**. The API is not a formal application program interface specification but rather a description of the modalities that can be used to interact with an AI system. Following is my proposal for momdalities included by version 0.0 of the API:
+- motor: sparse variable-dimensional graph of continuous motor values ($$x_&#123;motor&#125;, y_&#123;motor&#125; = (V,E), V = \&#123; v_i : v_i \in \mathbb&#123;R&#125;^&#123;d_&#123;v_i&#125;&#125; \&#125;, E = \&#123; (v_&#123;src&#125;, v_&#123;dst&#125;) : v_&#123;src&#125;, v_&#123;dst&#125; \in V \&#125;$$). API-compatible models are expected to produce appropriate outputs as modulated by their reward signals.
+- touch: sparse variable-dimensional graph of continuous touch values ($$x_&#123;touch&#125;, y_&#123;touch&#125; = (V,E), V = \&#123; v_i : v_i \in \mathbb&#123;R&#125;^&#123;d_&#123;v_i&#125;&#125; \&#125;, E = \&#123; (v_&#123;src&#125;, v_&#123;dst&#125;) : v_&#123;src&#125;, v_&#123;dst&#125; \in V \&#125;$$). API-compatible models are expected to output predicted touch values for the next interaction step.
+- reward: single or multidimensional reward signal (vector, $$x_&#123;reward&#125;, y_&#123;reward&#125; \in \mathbb&#123;R&#125;^n, n \in \mathbb&#123;N&#125;$$). Sparse or dense. API-compatible models are expected to output predicted reward value for the next interaction step.
+- text: variable length string of tokens ($$x_&#123;text&#125;, y_&#123;text&#125; \in \mathbb&#123;Z&#125;^t, t \in \mathbb&#123;Z&#125;_&#123;+&#125;$$). API-compatible models are expected to output predicted text values for the next interaction step.
+- audio: variable length, single or multi-channel waveform ($$x_&#123;audio&#125;, y_&#123;audio&#125; \in [0,1]^&#123;t,c&#125;, t,c \in \mathbb&#123;Z&#125;_&#123;+&#125;$$). API-compatible models are expected to output predicted audio values for the next interaction step.
+- video: variable length, variable size, variable channel image sequence  ($$x_&#123;video&#125;, y_&#123;video&#125; \in [0,1]^&#123;t,h,w,c&#125;, t \in \mathbb&#123;Z&#125;_&#123;+&#125;, h,w,c \in \mathbb&#123;N&#125;$$). API-compatible models are expected to output predicted video values for the next interaction step.
+- hidden state: arbitrary data structure. Developers can use this to store and retrieve state information between interactions.
+
+All modalities exchange input and output information over multiple interaction steps. For example, a vision transformer may recieve top down feedback and attend for multiple steps over a single image, an in-context learning model might recieve several batches of dataset examples over the interaction, or a conversation bot could be force fit on real conversations over time. This demands clarify time:
+- training step = number of dataset minibatches or environment episodes trained on
+- interaction step = number of modality inputs and outputs performed; the classical time measure within a single episode
+- modality time step = which frame number in the video sequence; which token index in the text sequence
+
+From the client's perspective, modality inputs and outputs are optional. These will be represented by `None` in Python, `null` in JSON, or similar in other languages. For example, you might only occasionally send images to a multimodal conversation bot but utilize the text modality on every step. Some 'multimodal' datasets and environments will only provide information for two or three modalities. Additionally, a transcribed audiovideo dataset might have zero-length text sequences, waveforms, and videos. Not all outputs will be used in every application so they can be explicitly marked  as `do_not_compute`.
+
+Handling time steps within each modality introduces many technical challanges. Developer must consider questions as: how should a multimodal video model combine 8KHz audio with 12 FPS video? will the robot controller be presented with 100ms, 6-frame snippets of 60FPS video on each interaction step? or should it just recieve a single frame every 50ms? Should an audio transcriber recieve the full audio track or just 10 second staggered segments on each interaction step? Or should it use its motor modality to deliberately move its perception window around?
+
+API-compatible models are expected to accommadate arbitrary numbers of each modality at initialization time. For example, you might initialize a policy with `vision:left` and `vision:right` or `text:magent` (social communication) and `text:control` (user directions). However, API-compatible models are not required to accomodate new modalities after initialization (you don't have to tie the weights; the `text:magent` preprocessor network can be very different from `text:control`)
+
+I imagine a few ways this interface may be used:
+- For N-way classification problems, you might have a motor graph with N 1-dimensional nodes. 
+- For N-dimensional regression, you might have a motor graph with just 1 N-dimensional node.
+- For computer vision, the model iteratively attends to the image.
+- For 3D robotic agents, ... You get the idea.
+- Managers might ask, 'Is it compatible with the API?'
+- Researchers might write, 'this dataset/environment conforms to the API'. 
+
+I hope the API provides a common interface to facilitate community collaboration towards developing increasingly strong and general artificial intelligence systems. My focus for the next few months will be building the Artificial Experience -- a dataset of datasets and environments (including procedurally generated ones) that can provide training signals for increasingly general API-compatible agents.

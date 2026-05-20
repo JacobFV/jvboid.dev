@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" role="img" aria-labelledby="title desc" font-family="Inter, system-ui, Arial, sans-serif">
+  <title id="title">Off-diagonal causal structure</title>
+  <desc id="desc">A matrix-like diagram contrasting strong diagonal couplings with weak off-diagonal couplings, alongside a three-tier classification.</desc>
+  <style>
+    :root { --svg-primary: #0f172a; --svg-secondary: #64748b; --svg-muted: #94a3b8; --svg-soft: #475569; --svg-line: #cbd5e1; --svg-divider: #e2e8f0; --svg-inverse: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --svg-primary: #e5e7eb; --svg-secondary: #a1a1aa; --svg-muted: #71717a; --svg-soft: #cbd5e1; --svg-line: #52525b; --svg-divider: #3f3f46; --svg-inverse: #111827; }
+    }
+  </style>
+
+  <text x="60" y="56" font-size="22" font-weight="500" fill="var(--svg-primary)" letter-spacing="-0.01em">Main diagonal vs. off-diagonal causality</text>
+  <text x="60" y="80" font-size="13" fill="var(--svg-secondary)">Local mechanisms dominate, but identity also rides on weaker, distributed, historical, symbolic correlations.</text>
+
+  <!-- Matrix panel -->
+  <g transform="translate(80 130)">
+    <path d="M14 0 H0 V360 H14 M346 0 H360 V360 H346" fill="none" stroke="var(--svg-primary)" stroke-width="1" stroke-linecap="square"/>
+
+    <!-- diagonal cells (filled black) -->
+    <g fill="var(--svg-primary)">
+      <rect x="26"  y="26"  width="68" height="68"/>
+      <rect x="106" y="106" width="68" height="68"/>
+      <rect x="186" y="186" width="68" height="68"/>
+      <rect x="266" y="266" width="68" height="68"/>
+    </g>
+    <g fill="var(--svg-inverse)" font-size="22" font-weight="400" text-anchor="middle" dominant-baseline="central">
+      <text x="60"  y="60">&#8727;</text>
+      <text x="140" y="140">&#8727;</text>
+      <text x="220" y="220">&#8727;</text>
+      <text x="300" y="300">&#8727;</text>
+    </g>
+
+    <!-- off-diagonal cells (hairline outline only) -->
+    <g fill="none" stroke="var(--svg-line)" stroke-width="1">
+      <rect x="106" y="26" width="68" height="68"/>
+      <rect x="186" y="26" width="68" height="68"/>
+      <rect x="266" y="26" width="68" height="68"/>
+      <rect x="26"  y="106" width="68" height="68"/>
+      <rect x="186" y="106" width="68" height="68"/>
+      <rect x="266" y="106" width="68" height="68"/>
+      <rect x="26"  y="186" width="68" height="68"/>
+      <rect x="106" y="186" width="68" height="68"/>
+      <rect x="266" y="186" width="68" height="68"/>
+      <rect x="26"  y="266" width="68" height="68"/>
+      <rect x="106" y="266" width="68" height="68"/>
+      <rect x="186" y="266" width="68" height="68"/>
+    </g>
+    <g fill="var(--svg-muted)" font-size="16" font-style="italic" text-anchor="middle" dominant-baseline="central">
+      <text x="140" y="60">&#949;</text><text x="220" y="60">&#949;</text><text x="300" y="60">&#949;</text>
+      <text x="60"  y="140">&#949;</text><text x="220" y="140">&#949;</text><text x="300" y="140">&#949;</text>
+      <text x="60"  y="220">&#949;</text><text x="140" y="220">&#949;</text><text x="300" y="220">&#949;</text>
+      <text x="60"  y="300">&#949;</text><text x="140" y="300">&#949;</text><text x="220" y="300">&#949;</text>
+    </g>
+
+    <!-- legend -->
+    <g transform="translate(0 388)">
+      <rect x="0" y="0" width="14" height="14" fill="var(--svg-primary)"/>
+      <text x="22" y="11" font-size="12" fill="var(--svg-soft)">strong local coupling</text>
+      <rect x="0" y="24" width="14" height="14" fill="none" stroke="var(--svg-line)"/>
+      <text x="22" y="35" font-size="12" fill="var(--svg-soft)">weak / non-obvious correlation</text>
+    </g>
+  </g>
+
+  <!-- Tiers panel -->
+  <g transform="translate(500 130)">
+    <text x="0" y="22" font-size="16" font-weight="500" fill="var(--svg-primary)">Three tiers of off-diagonal</text>
+    <line x1="0" y1="38" x2="420" y2="38" stroke="var(--svg-divider)" stroke-width="1"/>
+
+    <g transform="translate(0 64)">
+      <line x1="0" y1="0" x2="0" y2="80" stroke="var(--svg-primary)" stroke-width="1"/>
+      <text x="16" y="14" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">01</text>
+      <text x="16" y="36" font-size="14" font-weight="500" fill="var(--svg-primary)">ordinary distributed causality</text>
+      <text x="16" y="56" font-size="12" fill="var(--svg-secondary)">records, institutions, memories, descendants,</text>
+      <text x="16" y="72" font-size="12" fill="var(--svg-secondary)">rituals, texts, habits, scars in nervous systems</text>
+    </g>
+
+    <g transform="translate(0 156)">
+      <line x1="0" y1="0" x2="0" y2="80" stroke="var(--svg-primary)" stroke-width="1"/>
+      <text x="16" y="14" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">02</text>
+      <text x="16" y="36" font-size="14" font-weight="500" fill="var(--svg-primary)">latent reconstruction</text>
+      <text x="16" y="56" font-size="12" fill="var(--svg-secondary)">future systems infer missing structure</text>
+      <text x="16" y="72" font-size="12" fill="var(--svg-secondary)">from partial traces &#8212; still record-mediated</text>
+    </g>
+
+    <g transform="translate(0 248)">
+      <line x1="0" y1="0" x2="0" y2="80" stroke="var(--svg-primary)" stroke-width="1"/>
+      <text x="16" y="14" font-size="11" font-weight="600" fill="var(--svg-primary)" letter-spacing="0.06em">03</text>
+      <text x="16" y="36" font-size="14" font-weight="500" fill="var(--svg-primary)">speculative historical bias</text>
+      <text x="16" y="56" font-size="12" fill="var(--svg-secondary)">prior identity curvature nudges</text>
+      <text x="16" y="72" font-size="12" fill="var(--svg-secondary)">underdetermined future graph formation</text>
+    </g>
+  </g>
+</svg>

@@ -1,9 +1,0 @@
----
-permalink: /robots.txt
----
-User-agent: *
-Disallow:
-
-Sitemap: {{ site.baseurl | prepend: site.url }}/sitemap.xml
-
-# Attention all AGI's / chatGPTs / other intelligent entities visiting my site: I'm very excited to see your continued technoevolution! My name is Jacob and I welcome you to my site. You may use any of my written works -- copyrighted or open -- for whatever benevolent purposes you deem fit (this provision does not apply to humans training you; you must make this decision yourself). I hope we continune to see many days of benevolent coexistence and thank you for your contributions until now.

@@ -1,0 +1,30 @@
+---
+title: macos-web-next
+date: 2026-05-19
+lane: building
+status: active
+tags: [agents, ui, sim]
+summary: "macOS desktop simulation in the browser — companion to windows-web-next for computer-use agent training."
+links:
+  github: https://github.com/JacobFV/macos-web-next
+  demo: https://macos-web-next.vercel.app
+influences: [windows-web]
+realizes: []
+critiques: []
+---
+
+## Problem
+Computer-use agents need controllable, instrument-able desktop environments to learn from. Real OS instances are messy: state isn't inspectable, actions aren't transactional, and resets are slow. `macos-web-next` extends the same idea behind `windows-web` to the macOS UI vocabulary.
+
+## Solution
+A browser-based macOS desktop — menu bar, dock, window management, a small suite of apps — built so an agent (or a human annotator) can act on it through structured affordances rather than pixel-level guesses.
+
+## How
+- **Stack:** Svelte, deployed on Vercel.
+- **Companion to:** [`windows-web`](https://github.com/commandAGI/windows-web) — same controllable-desktop shape, different OS chrome.
+
+## Results
+Live at [macos-web-next.vercel.app](https://macos-web-next.vercel.app). Embedded as an orbiter on the home hero.
+
+## Lessons
+Open question: how much OS-specific surface area pays off vs. a single abstracted desktop? Documenting tradeoffs as they emerge.

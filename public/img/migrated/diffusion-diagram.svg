@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <!-- Gradient for light beam -->
+    <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ffd93d;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ff6b6b;stop-opacity:0.3" />
+    </linearGradient>
+    
+    <!-- Gradient for diffused beam -->
+    <radialGradient id="diffuseGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ffd93d;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#ffd93d;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- LCD mask pattern -->
+    <pattern id="lcdGrid" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#1a1a2e"/>
+      <rect x="1" y="1" width="6" height="6" fill="#16213e" rx="1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="#0a0a12"/>
+  
+  <!-- Title -->
+  <text x="400" y="35" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" fill="#e0e0e0" font-weight="600">Optical Diffusion in PHASER Chamber</text>
+  
+  <!-- Section labels -->
+  <text x="120" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#888">COHERENT INPUT</text>
+  <text x="400" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#888">LCD MASK</text>
+  <text x="680" y="70" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#888">DIFFUSED OUTPUT</text>
+  
+  <!-- Left: Coherent beam source -->
+  <rect x="30" y="160" width="60" height="80" fill="#2d3436" stroke="#636e72" stroke-width="2" rx="4"/>
+  <text x="60" y="205" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#ddd">LASER</text>
+  
+  <!-- Coherent beam rays (parallel, tight) -->
+  <g stroke="#ff6b6b" stroke-width="2" opacity="0.9">
+    <line x1="90" y1="185" x2="250" y2="185"/>
+    <line x1="90" y1="195" x2="250" y2="195"/>
+    <line x1="90" y1="200" x2="250" y2="200"/>
+    <line x1="90" y1="205" x2="250" y2="205"/>
+    <line x1="90" y1="215" x2="250" y2="215"/>
+  </g>
+  
+  <!-- Arrow showing tight beam -->
+  <path d="M 120 145 L 120 160" stroke="#6c5ce7" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="120" y="140" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#a29bfe">parallel rays</text>
+  
+  <!-- LCD Mask -->
+  <rect x="250" y="120" width="30" height="160" fill="url(#lcdGrid)" stroke="#4a69bd" stroke-width="2"/>
+  <text x="265" y="300" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#74b9ff">LCD Mask</text>
+  
+  <!-- Diffusing region with scattered rays -->
+  <g stroke="#ffd93d" stroke-width="1.5" opacity="0.7">
+    <!-- Rays spreading out after mask -->
+    <line x1="280" y1="185" x2="500" y2="140"/>
+    <line x1="280" y1="190" x2="500" y2="175"/>
+    <line x1="280" y1="195" x2="500" y2="195"/>
+    <line x1="280" y1="200" x2="500" y2="200"/>
+    <line x1="280" y1="205" x2="500" y2="210"/>
+    <line x1="280" y1="210" x2="500" y2="230"/>
+    <line x1="280" y1="215" x2="500" y2="260"/>
+  </g>
+  
+  <!-- Diffuse glow regions -->
+  <ellipse cx="400" cy="200" rx="80" ry="60" fill="url(#diffuseGlow)"/>
+  
+  <!-- More spreading rays to detector -->
+  <g stroke="#ffa502" stroke-width="1" opacity="0.5">
+    <line x1="500" y1="140" x2="700" y2="100"/>
+    <line x1="500" y1="175" x2="700" y2="155"/>
+    <line x1="500" y1="195" x2="700" y2="190"/>
+    <line x1="500" y1="200" x2="700" y2="200"/>
+    <line x1="500" y1="210" x2="700" y2="220"/>
+    <line x1="500" y1="230" x2="700" y2="260"/>
+    <line x1="500" y1="260" x2="700" y2="300"/>
+  </g>
+  
+  <!-- Detector array -->
+  <rect x="700" y="90" width="30" height="220" fill="#2d3436" stroke="#636e72" stroke-width="2" rx="4"/>
+  <g fill="#27ae60">
+    <rect x="705" y="95" width="20" height="15" rx="2" opacity="0.3"/>
+    <rect x="705" y="115" width="20" height="15" rx="2" opacity="0.4"/>
+    <rect x="705" y="135" width="20" height="15" rx="2" opacity="0.6"/>
+    <rect x="705" y="155" width="20" height="15" rx="2" opacity="0.8"/>
+    <rect x="705" y="175" width="20" height="15" rx="2" opacity="1"/>
+    <rect x="705" y="195" width="20" height="15" rx="2" opacity="1"/>
+    <rect x="705" y="215" width="20" height="15" rx="2" opacity="0.8"/>
+    <rect x="705" y="235" width="20" height="15" rx="2" opacity="0.6"/>
+    <rect x="705" y="255" width="20" height="15" rx="2" opacity="0.4"/>
+    <rect x="705" y="275" width="20" height="15" rx="2" opacity="0.3"/>
+  </g>
+  <text x="715" y="320" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#ddd">Detector</text>
+  
+  <!-- Annotation: diffusion angle -->
+  <path d="M 280 200 L 380 200" stroke="#e17055" stroke-width="1" stroke-dasharray="4,2" fill="none"/>
+  <path d="M 280 200 L 380 150" stroke="#e17055" stroke-width="1" stroke-dasharray="4,2" fill="none"/>
+  <path d="M 320 200 A 40 40 0 0 0 338 175" stroke="#e17055" stroke-width="1.5" fill="none"/>
+  <text x="350" y="185" font-family="system-ui, sans-serif" font-size="10" fill="#fab1a0">θ</text>
+  
+  <!-- Bottom explanatory text -->
+  <text x="400" y="350" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#b2bec3">
+    Diffusion spreads photon wavefronts, blurring the encoded signal after each optical pass.
+  </text>
+  <text x="400" y="370" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#636e72">
+    After N bounces, beam width grows as σ ~ √N · θ, limiting useful recurrence depth.
+  </text>
+  
+  <!-- Intensity profile comparison -->
+  <g transform="translate(50, 250)">
+    <text x="70" y="0" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#888">Input Profile</text>
+    <!-- Sharp Gaussian -->
+    <path d="M 20 80 Q 40 80 50 60 Q 60 30 70 20 Q 80 30 90 60 Q 100 80 120 80" 
+          stroke="#ff6b6b" stroke-width="2" fill="none"/>
+    <line x1="20" y1="80" x2="120" y2="80" stroke="#444" stroke-width="1"/>
+  </g>
+  
+  <g transform="translate(600, 250)">
+    <text x="70" y="0" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#888">Output Profile</text>
+    <!-- Broad Gaussian -->
+    <path d="M 0 80 Q 30 75 50 55 Q 70 40 70 35 Q 70 40 90 55 Q 110 75 140 80" 
+          stroke="#ffa502" stroke-width="2" fill="none"/>
+    <line x1="0" y1="80" x2="140" y2="80" stroke="#444" stroke-width="1"/>
+  </g>
+  
+  <!-- Arrowhead marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6c5ce7"/>
+    </marker>
+  </defs>
+</svg>

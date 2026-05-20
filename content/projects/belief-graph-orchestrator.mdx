@@ -1,0 +1,30 @@
+---
+title: belief-graph-orchestrator
+date: 2026-03-24
+lane: research
+status: active
+tags: [agents, cognition, infra]
+summary: "Event-sourced multi-scale cognitive control system for autonomous GUI agents."
+links:
+  github: https://github.com/JacobFV/belief-graph-orchestrator
+influences: [computatrum, windows-web]
+realizes: []
+critiques: []
+---
+
+## Problem
+A GUI agent that runs longer than a few minutes drifts. Its beliefs about the screen, its intent, and the state of long-running operations all get out of sync. Most agent architectures collapse all of that into a single context window — at which point the cognitive load is on the LLM, not the system.
+
+## Solution
+An event-sourced belief graph: facts the agent perceives, intentions it forms, and outcomes of actions are all events on a shared log. Belief is the projection. Multi-scale control loops (fast reflex, mid-tactical, slow strategic) consume the same event stream at different granularities.
+
+## How
+- **Stack:** Python.
+- **Persistence:** event log + materialized belief views.
+- **Targets:** autonomous GUI agents working in the windows-web / macos-web environments.
+
+## Results
+Active research. Pairs with [`windows-web`](/projects/windows-web) and [`macos-web-next`](/projects/macos-web-next) as the cognitive layer above the controllable-desktop environment.
+
+## Lessons
+Multi-scale control on a shared log lets you swap the strategic-loop model without retraining the reflex loop. Decoupling tactics from strategy was load-bearing.
