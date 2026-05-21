@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ReactFlow,
@@ -11,9 +11,11 @@ import {
 import "@xyflow/react/dist/base.css";
 import { NodeCard, type NodeCardData } from "./NodeCard";
 import { CustomEdge, type EdgeStyleData } from "./CustomEdge";
+import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Edge, type Lane, type Node, type ProjectStatus } from "@/lib/graph-types";
 
 const LANES: Lane[] = ["research", "building", "writing", "personal"];
+const TIMELINE_FILTERS_STORAGE_KEY = "jacobfv:timeline:filters";
 const LANE_HEIGHT = 160;
 const NODE_W = 64;
 const NODE_H = 40;
@@ -34,6 +36,44 @@ type Filters = {
   lanes: Set<Lane>;
   status: Set<ProjectStatus | "any">;
 };
+
+type StoredFilters = {
+  lanes: Lane[];
+};
+
+const defaultFilters = (): Filters => ({
+  lanes: new Set<Lane>(LANES),
+  status: new Set<ProjectStatus | "any">([
+    "any",
+    "idea",
+    "active",
+    "shipped",
+    "shelved",
+  ]),
+});
+
+function isLane(value: unknown): value is Lane {
+  return typeof value === "string" && (LANES as string[]).includes(value);
+}
+
+function isStoredFilters(value: unknown): value is StoredFilters {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as { lanes?: unknown };
+  return Array.isArray(maybe.lanes) && maybe.lanes.every(isLane);
+}
+
+function filtersFromStored(stored: StoredFilters): Filters {
+  return {
+    ...defaultFilters(),
+    lanes: new Set(stored.lanes),
+  };
+}
+
+function storedFromFilters(filters: Filters): StoredFilters {
+  return {
+    lanes: LANES.filter((lane) => filters.lanes.has(lane)),
+  };
+}
 
 function dateToX(iso: string, minDate: Date) {
   const d = new Date(iso).getTime();
@@ -65,16 +105,16 @@ export function Timeline({
 }) {
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<Filters>(() => ({
-    lanes: new Set<Lane>(LANES),
-    status: new Set<ProjectStatus | "any">([
-      "any",
-      "idea",
-      "active",
-      "shipped",
-      "shelved",
-    ]),
-  }));
+  const [filters, setFilters] = useState<Filters>(() => defaultFilters());
+
+  useEffect(() => {
+    const stored = readStoredValue<StoredFilters>(
+      TIMELINE_FILTERS_STORAGE_KEY,
+      storedFromFilters(defaultFilters()),
+      isStoredFilters,
+    );
+    setFilters(filtersFromStored(stored));
+  }, []);
 
   const focusId = pinnedId ?? hoverId;
   const neighbors = useMemo(() => {
@@ -330,7 +370,9 @@ function FilterBar({
     setFilters((cur) => {
       const next = new Set(cur.lanes);
       next.has(lane) ? next.delete(lane) : next.add(lane);
-      return { ...cur, lanes: next };
+      const filters = { ...cur, lanes: next };
+      writeStoredValue(TIMELINE_FILTERS_STORAGE_KEY, storedFromFilters(filters));
+      return filters;
     });
 
   return (

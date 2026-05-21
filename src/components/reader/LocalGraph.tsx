@@ -5,7 +5,15 @@
 // Layout: d3-force on the subgraph, scaled to a ~720×360 panel.
 
 import { computeForceLayout } from "@/lib/layout";
-import { getGraph, nodeHref, type Edge, type EdgeKind, type Lane, type Node } from "@/lib/graph";
+import {
+  getGraph,
+  isListedNode,
+  nodeHref,
+  type Edge,
+  type EdgeKind,
+  type Lane,
+  type Node,
+} from "@/lib/graph";
 
 const W = 720;
 const H = 360;
@@ -40,12 +48,22 @@ function neighborhood(focusId: string): {
   const { byId, edges } = getGraph();
   const focus = byId.get(focusId);
   if (!focus) return { nodes: [], edges: [], rings: new Map() };
+  const visibleEdges = edges.filter((e) => {
+    const source = byId.get(e.source);
+    const target = byId.get(e.target);
+    return (
+      source &&
+      target &&
+      (e.source === focusId || isListedNode(source)) &&
+      (e.target === focusId || isListedNode(target))
+    );
+  });
 
   const rings = new Map<string, 0 | 1 | 2>();
   rings.set(focusId, 0);
 
   // 1° neighbors
-  for (const e of edges) {
+  for (const e of visibleEdges) {
     if (e.source === focusId) rings.set(e.target, 1);
     else if (e.target === focusId) rings.set(e.source, 1);
   }
@@ -54,7 +72,7 @@ function neighborhood(focusId: string): {
   const oneRing = Array.from(rings.entries())
     .filter(([, r]) => r === 1)
     .map(([id]) => id);
-  for (const e of edges) {
+  for (const e of visibleEdges) {
     if (oneRing.includes(e.source) && !rings.has(e.target)) rings.set(e.target, 2);
     if (oneRing.includes(e.target) && !rings.has(e.source)) rings.set(e.source, 2);
   }
@@ -63,7 +81,7 @@ function neighborhood(focusId: string): {
   const nodes = Array.from(ids)
     .map((id) => byId.get(id))
     .filter((n): n is Node => Boolean(n));
-  const subEdges = edges.filter((e) => ids.has(e.source) && ids.has(e.target));
+  const subEdges = visibleEdges.filter((e) => ids.has(e.source) && ids.has(e.target));
 
   return { nodes, edges: subEdges, rings };
 }
@@ -204,7 +222,7 @@ export function LocalGraph({ focusId }: { focusId: string }) {
                         textAnchor="middle"
                         fontSize={10}
                         fontFamily="var(--font-mono)"
-                        fill="#F2F4F8"
+                        fill="var(--color-ink)"
                       >
                         {shortTitle(n.title, 32)}
                       </text>
