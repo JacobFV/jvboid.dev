@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getGraph, nodeHref, type Node } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref, type Node } from "@/lib/graph";
 
 export const metadata = {
   title: "Resume · Jacob Valdez",
@@ -16,11 +16,12 @@ function rangeLabel(n: Node) {
 
 export default function ResumePage() {
   const { nodes } = getGraph();
+  const listedNodes = nodes.filter(isListedNode);
   const experience = nodes
-    .filter((n) => n.kind === "experience")
+    .filter((n) => n.kind === "experience" && isListedNode(n))
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
-  const projects = nodes
+  const projects = listedNodes
     .filter((n) => n.kind === "project" && n.status !== "shelved")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 8);

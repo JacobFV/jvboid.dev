@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getGraph, nodeHref, type Lane, type NodeKind } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref, type Lane, type NodeKind } from "@/lib/graph";
 
 const laneClass: Record<Lane, string> = {
   research: "text-[var(--color-lane-research)]",
@@ -27,7 +27,7 @@ function formatDate(iso: string) {
 
 export default function ListPage() {
   const { nodes } = getGraph();
-  const sorted = [...nodes].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const sorted = nodes.filter(isListedNode).sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">

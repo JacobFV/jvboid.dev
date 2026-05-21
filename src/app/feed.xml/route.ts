@@ -1,4 +1,4 @@
-import { getGraph, nodeHref } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 
 const BASE = "https://jacobfv.com";
 
@@ -20,6 +20,7 @@ export function GET() {
     .filter(
       (n) => n.kind === "post" || n.kind === "paper" || n.kind === "reading" || n.kind === "update",
     )
+    .filter(isListedNode)
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 50);
 

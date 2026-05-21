@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/chrome/SiteHeader";
-import { getGraph } from "@/lib/graph";
+import { getGraph, isListedNode } from "@/lib/graph";
 import "./globals.css";
 
 // Pre-paint script: reads the stored theme (or system pref) and sets
@@ -48,7 +48,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const searchable = getGraph().nodes.map((n) => ({
+  const searchable = getGraph().nodes.filter(isListedNode).map((n) => ({
     id: n.id,
     title: n.title,
     summary: n.summary,

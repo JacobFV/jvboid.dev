@@ -14,6 +14,7 @@ const baseFields = {
   lane,
   tags: s.array(s.string()).default([]),
   summary: s.string().max(400),
+  unlisted: s.boolean().default(false),
   hero: s.object({ src: s.string(), alt: s.string() }).optional(),
   influences: s.array(s.string()).default([]),
   realizes: s.array(s.string()).default([]),
@@ -50,6 +51,12 @@ const projects = defineCollection({
       // Hero renders it as a 16:9 embed. See docs/PORTFOLIO_PRINCIPLES.md
       // — "visuals are a must".
       video: s.string().optional(),
+      // Optional curated image set for active project thread previews.
+      // When omitted, the homepage falls back to the first images found
+      // on the project and its graph neighbors.
+      threadImages: s
+        .array(s.object({ src: s.string(), alt: s.string().optional() }))
+        .optional(),
       links: s
         .object({
           github: s.string().optional(),
@@ -85,7 +92,7 @@ const readings = defineCollection({
       slug: s.path(),
       authors: s.array(s.string()).default([]),
       workType: s.enum(["book", "paper", "article", "course", "other"]).default("book"),
-      tier: s.enum(["F", "B", "A", "S"]).optional(),
+      tier: s.enum(["S", "A", "B", "C", "D", "F"]).optional(),
       status: s.enum(["queued", "reading", "finished", "paused", "reference"]).default("reading"),
       source: s.string().optional(),
       url: s.string().optional(),

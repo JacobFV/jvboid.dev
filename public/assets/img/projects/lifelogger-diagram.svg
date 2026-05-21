@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">lifelogger system diagram</title>
+  <desc id="desc">Signals flow from local activity sources through collectors, storage, summarization, and review surfaces.</desc>
+  <defs>
+    <style>
+      .box{fill:#f8f5ec;stroke:#23251f;stroke-width:2}
+      .label{font:600 20px ui-sans-serif,system-ui,sans-serif;fill:#20231f}
+      .small{font:14px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#5c5f58}
+      .arrow{fill:none;stroke:#2e7d78;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M2 2l8 4-8 4z" fill="#2e7d78"/>
+    </marker>
+  </defs>
+  <rect width="960" height="420" rx="28" fill="#ece7dc"/>
+  <g transform="translate(42 54)">
+    <rect class="box" x="0" y="0" width="180" height="280" rx="18"/>
+    <text class="label" x="24" y="42">Local signals</text>
+    <text class="small" x="24" y="88">git commits</text>
+    <text class="small" x="24" y="122">browser history</text>
+    <text class="small" x="24" y="156">calendar</text>
+    <text class="small" x="24" y="190">terminal sessions</text>
+    <text class="small" x="24" y="224">foreground app</text>
+  </g>
+  <path class="arrow" marker-end="url(#arrow)" d="M242 194h82"/>
+  <g transform="translate(344 80)">
+    <rect class="box" x="0" y="0" width="180" height="228" rx="18"/>
+    <text class="label" x="24" y="42">Collectors</text>
+    <text class="small" x="24" y="88">normalize events</text>
+    <text class="small" x="24" y="122">dedupe noise</text>
+    <text class="small" x="24" y="156">batch windows</text>
+    <text class="small" x="24" y="190">privacy filters</text>
+  </g>
+  <path class="arrow" marker-end="url(#arrow)" d="M544 194h82"/>
+  <g transform="translate(646 54)">
+    <rect class="box" x="0" y="0" width="270" height="280" rx="18"/>
+    <text class="label" x="24" y="42">Memory + summaries</text>
+    <text class="small" x="24" y="88">local event store</text>
+    <text class="small" x="24" y="122">hourly digests</text>
+    <text class="small" x="24" y="156">daily narrative</text>
+    <text class="small" x="24" y="190">weekly arc</text>
+    <text class="small" x="24" y="224">site/update surfaces</text>
+  </g>
+  <path class="arrow" marker-end="url(#arrow)" d="M780 334c-62 54-236 52-292 2"/>
+  <text class="small" x="400" y="382">review corrections feed the next summary window</text>
+</svg>
