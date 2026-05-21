@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/chrome/SiteHeader";
+import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
 import "./globals.css";
 
@@ -9,7 +10,8 @@ import "./globals.css";
 const themeBootScript = `
 (function(){
   try {
-    var t = localStorage.getItem('theme');
+    var t = localStorage.getItem('jacobfv:theme') || localStorage.getItem('theme');
+    if (t && t.charAt(0) === '"') t = JSON.parse(t);
     if (t !== 'light' && t !== 'dark') t = 'light';
     document.documentElement.setAttribute('data-theme', t);
   } catch (e) {
@@ -68,12 +70,17 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        {/* Fixed ambient backdrop — soft blurred clouds + faint color
-            streaks. Sits behind all content (see `.atmosphere` in
-            globals.css). */}
-        <div className="atmosphere" aria-hidden />
+        {/* Fixed ambient backdrop — a starfield (dark) or blurred
+            earth/sea horizon (light) under soft blurred clouds + faint
+            color streaks. See `.atmosphere` in globals.css. */}
+        <div className="atmosphere" aria-hidden>
+          <div className="atmosphere-sky" />
+        </div>
         <SiteHeader nodes={searchable} />
         {children}
+        {/* Page-wide fullscreen image viewer; renders null until a
+            reader image is clicked. */}
+        <Lightbox />
       </body>
     </html>
   );

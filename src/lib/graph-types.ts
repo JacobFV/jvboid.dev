@@ -69,12 +69,12 @@ export type Node = {
   // Optional demo video URL (project kind). YouTube/Vimeo/embeddable
   // page. Rendered in Hero as a 16:9 iframe when present.
   video?: string;
+  pdf?: string;
   threadImages?: { src: string; alt?: string }[];
   links?: Record<string, string | undefined>;
   authors?: string[];
   venue?: string;
   bibKey?: string;
-  pdf?: string;
   workType?: ReadingWorkType;
   tier?: ReadingTier;
   readingStatus?: ReadingStatus;

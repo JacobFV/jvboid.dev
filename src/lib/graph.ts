@@ -89,6 +89,7 @@ const toNode =
       critiques: raw.critiques ?? [],
       status: kind === "project" ? (extra.status as ProjectStatus | undefined) : undefined,
       video: kind === "project" ? (extra.video as string | undefined) : undefined,
+      pdf: extra.pdf as string | undefined,
       threadImages:
         kind === "project"
           ? (extra.threadImages as { src: string; alt?: string }[] | undefined)
@@ -97,7 +98,6 @@ const toNode =
       authors: extra.authors as string[] | undefined,
       venue: extra.venue as string | undefined,
       bibKey: extra.bibKey as string | undefined,
-      pdf: extra.pdf as string | undefined,
       workType: extra.workType as ReadingWorkType | undefined,
       tier: extra.tier as ReadingTier | undefined,
       readingStatus: kind === "reading" ? (extra.status as ReadingStatus | undefined) : undefined,

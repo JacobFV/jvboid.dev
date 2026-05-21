@@ -4,15 +4,16 @@
   "private": true,
   "description": "Jacob Valdez's site — a navigable graph of projects, writing, and visions.",
   "scripts": {
-    "predev": "velite build",
+    "predev": "tsx scripts/generate-image-placeholders.ts && velite build",
     "dev": "next dev",
-    "prebuild": "velite build",
+    "prebuild": "tsx scripts/generate-image-placeholders.ts && velite build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "velite build && tsc --noEmit",
+    "typecheck": "tsx scripts/generate-image-placeholders.ts && velite build && tsc --noEmit",
+    "images": "tsx scripts/generate-image-placeholders.ts",
     "sync:assets": "tsx scripts/sync-assets.ts",
-    "validate": "velite build && tsx scripts/validate-edges.ts",
+    "validate": "tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/validate-edges.ts",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "rehype-katex": "^7.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
+    "sharp": "0.34.5",
     "shiki": "^1.20.0",
     "tailwind-merge": "^2.5.0",
     "three": "^0.170.0"
