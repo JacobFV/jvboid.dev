@@ -19,6 +19,12 @@ editing this repo.
 
 - **Spotlight cap.** `pickFeatured()` in `src/app/page.tsx` returns at
   most 6. Don't grow this past 6 — it dilutes "Active Threads."
+- **Projects index quick-view.** The home "Projects" section is the
+  client component `ProjectsBrowser.tsx` (list/grid toggle). Projects
+  with visual material — a `hero`, `video`, or `orbitEmbed` — open a
+  zoom-in modal preview (`quickView: true`, computed in `page.tsx`);
+  the rest link straight to their page. Keep that derivation in sync if
+  you change what counts as "previewable."
 - **No bare letters as orbiter graphics.** If a node lacks an asset, the
   fallback is a lane-tinted radial gradient + a kind-specific SVG icon
   (see `OrbitDecor.tsx#OrbiterContent`). Adding a letter monogram fallback

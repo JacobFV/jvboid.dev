@@ -26,6 +26,7 @@ export type Edge = ManualEdge;
 export type ProjectStatus = "idea" | "active" | "shipped" | "shelved";
 export type ReadingStatus = "queued" | "reading" | "finished" | "paused" | "reference";
 export type ReadingWorkType = "book" | "paper" | "article" | "course" | "other";
+export type ReadingTier = "F" | "B" | "A" | "S";
 export type UpdateType = "note" | "x-post" | "link" | "embed";
 export type SkillLevel = "working" | "strong" | "expert";
 export type EventType =
@@ -73,6 +74,7 @@ export type Node = {
   bibKey?: string;
   pdf?: string;
   workType?: ReadingWorkType;
+  tier?: ReadingTier;
   readingStatus?: ReadingStatus;
   source?: string;
   url?: string;
