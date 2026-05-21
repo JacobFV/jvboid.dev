@@ -1,0 +1,58 @@
+---
+title: yt2ctx
+date: 2026-05-21
+lane: building
+status: active
+tags: [agents, video, tooling, mcp]
+summary: "A YouTube-to-context compiler that turns reference videos into transcripts, representative frames, style bibles, shot specs, agent prompts, and ZIP artifacts."
+hero:
+  src: "/assets/img/projects/yt2ctx-landing.png"
+  alt: "yt2ctx web app showing the Reference Monograph analyzer interface"
+threadImages:
+  - src: "/assets/img/projects/yt2ctx-landing.png"
+    alt: "yt2ctx web app showing the Reference Monograph analyzer interface"
+links:
+  github: https://github.com/JacobFV/yt2ctx
+  demo: https://yt2ctx.vercel.app/
+influences: [full-stack-artificial-intelligence, teaching-computers-to-use-computers]
+realizes: []
+critiques: []
+---
+
+![yt2ctx web app showing the Reference Monograph analyzer interface](/assets/img/projects/yt2ctx-landing.png)
+
+## Problem
+
+Video is a dense reference medium, but most AI workflows flatten it into a transcript or a few screenshots. That loses the part that often matters most: timing, visual composition, shot rhythm, salience, and the reusable production grammar underneath the clip.
+
+`yt2ctx` started from a practical need: give coding agents and multimodal generation systems a context pack they can actually build from, not just a link they cannot watch carefully or a transcript that forgets what the camera did.
+
+## Solution
+
+`yt2ctx` is a YouTube-to-context compiler. Paste a video URL, and it produces a timed transcript, selected representative frames, a style bible, Blender/Remotion-oriented shot specs, a Codex/Claude implementation prompt, anti-slop validators, JSON metadata, frame JPGs, and a downloadable ZIP bundle.
+
+The project is deliberately not "just transcription." It treats video as a visual system to be analyzed: which frames carry the reference, what the camera is doing, what the aesthetic constraints are, and what a downstream agent should preserve when recreating or extending the work.
+
+## How
+
+- **Stack:** Next.js 16, React 19, TypeScript, OpenAI transcription/vision/embeddings, `yt-dlp`, bundled `ffmpeg`/`ffprobe`, Sharp, Vercel Blob, Neon/Postgres, Stripe, and MCP.
+- **Interfaces:** one shared analyzer behind a web app, CLI, HTTP API, and stdio MCP server.
+- **Pipeline:** download video, demux audio, transcribe with timestamps, sample candidate frames, describe and score frames with vision, embed descriptions for novelty, select frames by density or top-k salience, then render Markdown/JSON/images/ZIP output.
+- **Agent surface:** the MCP server exposes `watch_youtube`, so an MCP client can ask for a reusable video context pack directly.
+- **Deployed at:** [yt2ctx.vercel.app](https://yt2ctx.vercel.app/).
+
+## Tests
+
+The repo has a typed production build path: `npm run typecheck`, `npm run lint`, and `npm run build`. The build compiles the Next app and the CLI/MCP binaries, including the standalone `yt2ctx` and `yt2ctx-mcp` entrypoints.
+
+The important behavioral test is artifact integrity: a run should leave behind a self-contained job folder and ZIP containing the rendered Markdown, machine-readable JSON, selected frame images, and enough metadata for a human or agent to inspect the result without rerunning the video.
+
+## Results
+
+The current app ships as "The Reference Monograph": an editorial web interface with URL detection, thumbnail preview, tuning controls, live NDJSON pipeline progress, tabbed result views, rendered/raw Markdown toggles, copy/download controls, frame gallery, keyboard lightbox, and one-click ZIP export.
+
+The same core pipeline also runs from the terminal and through MCP. That makes the project useful in three different modes: interactive review in the browser, repeatable local or batch processing from the CLI, and agent-native video ingestion through `watch_youtube`.
+
+## Lessons
+
+Good agent context is not just more tokens. For visual work, the context has to preserve the structure of the reference: timing, frames, aesthetic constraints, camera movement, and failure checks. `yt2ctx` is a small but concrete step toward treating media references as compiled artifacts that agents can inspect, pass around, and execute against.
