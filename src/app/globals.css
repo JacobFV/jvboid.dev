@@ -61,9 +61,18 @@
   --ring-soft: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
-html,
-body {
+html {
+  /* Base canvas color — also covers the overscroll/rubber-band area and
+     prevents a flash before the atmosphere layer paints. */
   background: var(--color-bg-0);
+}
+
+body {
+  /* No background on purpose. The fixed `.atmosphere` layer is the
+     page's visible backdrop; an opaque body would paint over it (a
+     negative-z-index layer renders before in-flow block backgrounds).
+     Keeping body transparent lets the atmosphere show through
+     everywhere content isn't. */
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: 17px;
@@ -151,62 +160,134 @@ a:hover {
 }
 
 /* ---- Ambient background ---- */
-/* A fixed layer behind all content: low-opacity blurred "clouds" plus a
-   few faint diagonal streaks of lane color over the plain bg-0 canvas.
-   z-index:-1 keeps it above the body background but behind page content. */
+/* The page's actual backdrop: a fixed, full-viewport layer mounted once
+   in app/layout.tsx and pinned behind every page (z-index:-1). It is the
+   plain bg-0 canvas plus soft blurred "clouds" and a few faint diagonal
+   streaks of lane color. `body` is intentionally transparent (see above)
+   so this layer shows through everywhere content isn't — section gaps,
+   page margins, and the negative space around cards. */
 .atmosphere {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  background: var(--color-bg-0);
 }
 
 .atmosphere::before,
 .atmosphere::after {
   content: "";
   position: absolute;
-  inset: -25%;
+  inset: -30%;
 }
 
-/* Clouds — soft ink blobs. Reads as muted grey on light, soft glow on
-   dark, since --color-ink flips with the theme. */
+/* Clouds — soft blobs spread across the whole viewport. Reads as a faint
+   glow on dark and muted grey on light, since --color-ink flips. */
 .atmosphere::before {
   background:
-    radial-gradient(38% 32% at 18% 22%, color-mix(in srgb, var(--color-ink) 7%, transparent), transparent 72%),
-    radial-gradient(32% 26% at 82% 14%, color-mix(in srgb, var(--color-ink) 6%, transparent), transparent 70%),
-    radial-gradient(46% 38% at 70% 78%, color-mix(in srgb, var(--color-ink) 6%, transparent), transparent 74%),
-    radial-gradient(30% 30% at 38% 90%, color-mix(in srgb, var(--color-ink) 5%, transparent), transparent 72%);
-  filter: blur(70px);
+    radial-gradient(34% 30% at 16% 18%, color-mix(in srgb, var(--color-ink) 13%, transparent), transparent 70%),
+    radial-gradient(30% 26% at 86% 12%, color-mix(in srgb, var(--color-ink) 11%, transparent), transparent 70%),
+    radial-gradient(40% 34% at 74% 56%, color-mix(in srgb, var(--color-ink) 12%, transparent), transparent 72%),
+    radial-gradient(34% 30% at 22% 64%, color-mix(in srgb, var(--color-ink) 11%, transparent), transparent 72%),
+    radial-gradient(38% 32% at 52% 94%, color-mix(in srgb, var(--color-ink) 10%, transparent), transparent 72%);
+  filter: blur(80px);
   animation: atmosphere-drift 72s ease-in-out infinite alternate;
 }
 
 /* Streaks — occasional thin diagonal bands of lane color. */
 .atmosphere::after {
   background:
-    linear-gradient(116deg, transparent 43%, color-mix(in srgb, var(--color-lane-research) 22%, transparent) 50%, transparent 57%),
-    linear-gradient(116deg, transparent 63%, color-mix(in srgb, var(--color-lane-writing) 18%, transparent) 68%, transparent 73%),
-    linear-gradient(116deg, transparent 22%, color-mix(in srgb, var(--color-lane-personal) 15%, transparent) 27%, transparent 32%);
-  filter: blur(48px);
-  opacity: 0.6;
+    linear-gradient(116deg, transparent 40%, color-mix(in srgb, var(--color-lane-research) 32%, transparent) 49%, transparent 58%),
+    linear-gradient(116deg, transparent 60%, color-mix(in srgb, var(--color-lane-writing) 26%, transparent) 68%, transparent 76%),
+    linear-gradient(116deg, transparent 15%, color-mix(in srgb, var(--color-lane-personal) 22%, transparent) 24%, transparent 33%);
+  filter: blur(56px);
+  opacity: 0.72;
   animation: atmosphere-streak 58s ease-in-out infinite alternate;
 }
 
+/* Slow, wide drift — large enough to perceive over the 72s cycle, slow
+   enough to never distract. The clouds also rotate a touch so the blob
+   cluster reshapes rather than just sliding. */
 @keyframes atmosphere-drift {
   from {
-    transform: translate3d(-2%, -1%, 0) scale(1);
+    transform: translate3d(-6%, -4%, 0) scale(1) rotate(-3deg);
   }
   to {
-    transform: translate3d(3%, 2%, 0) scale(1.08);
+    transform: translate3d(7%, 5%, 0) scale(1.14) rotate(4deg);
   }
 }
 
 @keyframes atmosphere-streak {
   from {
-    transform: translate3d(-4%, 0, 0);
+    transform: translate3d(-9%, -3%, 0) rotate(-2deg);
   }
   to {
-    transform: translate3d(4%, 2%, 0);
+    transform: translate3d(9%, 5%, 0) rotate(3deg);
+  }
+}
+
+/* ---- Sky layer — starfield (dark) / horizon (light) ---- */
+/* The deepest atmosphere layer (z-index:-1 inside the fixed
+   .atmosphere): it sits behind the cloud + streak pseudo-layers so dark
+   mode reads as a starfield under mist, and light mode as a soft,
+   blurred earth/sea horizon under haze. */
+.atmosphere-sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+/* Dark — two tiled layers of pin-prick stars, gently breathing at
+   offset rhythms so the field shimmers without distracting. */
+:root[data-theme="dark"] .atmosphere-sky {
+  background-repeat: repeat;
+  background-image:
+    radial-gradient(1.5px 1.5px at 32px 44px, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 124px 168px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.7px 1.7px at 196px 88px, rgba(255, 255, 255, 0.72), transparent),
+    radial-gradient(1px 1px at 76px 232px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.3px 1.3px at 258px 36px, rgba(255, 255, 255, 0.62), transparent),
+    radial-gradient(1px 1px at 308px 286px, rgba(255, 255, 255, 0.45), transparent);
+  background-size: 340px 340px;
+  animation: atmosphere-twinkle 8s ease-in-out infinite alternate;
+}
+:root[data-theme="dark"] .atmosphere-sky::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  background-image:
+    radial-gradient(1px 1px at 70px 100px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.2px 1.2px at 210px 210px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(0.9px 0.9px at 150px 50px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1.1px 1.1px at 280px 150px, rgba(188, 205, 255, 0.42), transparent);
+  background-size: 480px 480px;
+  animation: atmosphere-twinkle 6s ease-in-out infinite alternate-reverse;
+}
+
+/* Light — a blurred earth/sea horizon glow low in the viewport: a hazy
+   sky band, a sea-teal horizon, an earthy fringe below it. */
+:root[data-theme="light"] .atmosphere-sky {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 46%,
+    color-mix(in srgb, #8bb6da 42%, transparent) 58%,
+    color-mix(in srgb, #aac8cb 46%, transparent) 67%,
+    color-mix(in srgb, #93b08f 40%, transparent) 78%,
+    color-mix(in srgb, #b3a07c 30%, transparent) 90%,
+    transparent 100%
+  );
+  filter: blur(46px);
+}
+
+@keyframes atmosphere-twinkle {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -294,5 +375,223 @@ a:hover {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/* ---- Reader image grid ---- */
+/* remark-image-grid wraps runs of consecutive content images in
+   <ImageGrid>; they tile 2/3-up instead of stacking vertically. */
+.reader-image-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--reader-grid-cols, 3), minmax(0, 1fr));
+  gap: 12px;
+  margin: 1.75rem 0;
+}
+.reader-image-grid .reader-image {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+@media (max-width: 560px) {
+  /* Never narrower than 2-up — single-column would just be the stack
+     we set out to replace. */
+  .reader-image-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- Fullscreen image viewer ---- */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 10, 0.92);
+  backdrop-filter: blur(8px);
+  animation: lightbox-in 0.18s ease;
+}
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+}
+.lightbox-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.lightbox-stage[data-zoomed] {
+  cursor: grab;
+}
+.lightbox-img {
+  max-width: 94vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  transform-origin: center center;
+  will-change: transform;
+  -webkit-user-drag: none;
+}
+.lightbox-btn {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+.lightbox-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.lightbox-close {
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+}
+.lightbox-prev,
+.lightbox-next {
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  transform: translateY(-50%);
+}
+.lightbox-prev {
+  left: 16px;
+}
+.lightbox-next {
+  right: 16px;
+}
+.lightbox-counter {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.lightbox-caption {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  z-index: 2;
+  max-width: min(640px, 86vw);
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .lightbox-prev,
+  .lightbox-next {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ---- Mobile menu ---- */
+/* Always in the DOM so it can transition open AND closed; absolutely
+   positioned below the header bar so it overlays content rather than
+   shoving it down. */
+.mobile-menu {
+  transform-origin: top;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.22s;
+}
+.mobile-menu[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ---- Embed "try it out" invite cursor ---- */
+/* A small cursor that pokes out of the CTA's corner and taps on a loop,
+   with a ripple, to signal the embed is interactive. Decorative only;
+   fades out once the button itself is hovered. */
+.invite-cursor {
+  position: absolute;
+  right: -5px;
+  bottom: -9px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+  transition: opacity 0.2s ease;
+}
+.embed-cta:hover .invite-cursor {
+  opacity: 0;
+}
+.invite-cursor svg {
+  animation: invite-tap 2.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.invite-cursor__ripple {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: invite-ripple 2.1s ease-out infinite;
+}
+@keyframes invite-tap {
+  0%,
+  46%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  56% {
+    transform: translate(-2px, -2px) scale(0.8);
+  }
+  70% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+@keyframes invite-ripple {
+  0%,
+  46% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  56% {
+    opacity: 0.6;
+    transform: scale(0.55);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
   }
 }

@@ -2,6 +2,7 @@ import { defineConfig, defineCollection, s } from "velite";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import { remarkImageGrid } from "./src/lib/remark-image-grid";
 
 // Shared shape for graph nodes. Frontmatter validation. See docs/CONTENT_MODEL.md.
 const lane = s.enum(["research", "building", "writing", "personal"]);
@@ -26,7 +27,7 @@ const baseFields = {
   // parsing so LaTeX inside posts doesn't crash the build.
   body: s.mdx({
     copyLinkedFiles: false,
-    remarkPlugins: [remarkGfm, remarkMath],
+    remarkPlugins: [remarkGfm, remarkMath, remarkImageGrid],
     rehypePlugins: [rehypeKatex],
   }),
 };
@@ -51,6 +52,9 @@ const projects = defineCollection({
       // Hero renders it as a 16:9 embed. See docs/PORTFOLIO_PRINCIPLES.md
       // — "visuals are a must".
       video: s.string().optional(),
+      // Optional project deck, poster, or paper. Rendered in the
+      // project hero as the primary visual when present.
+      pdf: s.string().optional(),
       // Optional curated image set for active project thread previews.
       // When omitted, the homepage falls back to the first images found
       // on the project and its graph neighbors.
@@ -224,7 +228,7 @@ const loop = defineCollection({
       slug: s.path(),
       body: s.mdx({
         copyLinkedFiles: false,
-        remarkPlugins: [remarkGfm, remarkMath],
+        remarkPlugins: [remarkGfm, remarkMath, remarkImageGrid],
         rehypePlugins: [rehypeKatex],
       }),
     })

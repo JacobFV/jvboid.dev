@@ -65,6 +65,9 @@ importers:
       remark-math:
         specifier: ^6.0.0
         version: 6.0.0
+      sharp:
+        specifier: 0.34.5
+        version: 0.34.5
       shiki:
         specifier: ^1.20.0
         version: 1.29.2

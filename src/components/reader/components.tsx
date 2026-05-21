@@ -1,6 +1,8 @@
 import Link from "next/link";
-import type { ImgHTMLAttributes } from "react";
 import type { MDXComponents } from "@/lib/mdx";
+import { ReaderImage } from "./ReaderImage";
+import { ImageGrid } from "./ImageGrid";
+import { PresentationSlides } from "./PresentationSlides";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
 // inherit Fraunces / Inter / JetBrains Mono and the dark-first palette
@@ -140,20 +142,6 @@ const HR = (p: React.HTMLAttributes<HTMLHRElement>) => (
   <hr {...p} className="my-12 border-t border-[var(--color-bg-2)]" />
 );
 
-const Img = (p: ImgHTMLAttributes<HTMLImageElement>) => {
-  // next/image needs known dimensions for migrated content we don't have;
-  // a plain <img> with sensible defaults is the right Phase 4 trade.
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      {...p}
-      alt={p.alt ?? ""}
-      loading="lazy"
-      className={cls("my-6 max-w-full rounded", p.className)}
-    />
-  );
-};
-
 const Table = (p: React.HTMLAttributes<HTMLTableElement>) => (
   <div className="my-6 overflow-x-auto">
     <table
@@ -197,8 +185,11 @@ export const readerComponents: MDXComponents = {
   code: InlineCode,
   pre: Pre,
   hr: HR,
-  img: Img,
+  img: ReaderImage,
   table: Table,
   th: TH,
   td: TD,
+  // Injected by remark-image-grid around runs of consecutive images.
+  ImageGrid,
+  PresentationSlides,
 };

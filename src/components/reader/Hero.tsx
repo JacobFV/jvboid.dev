@@ -1,33 +1,23 @@
 import Link from "next/link";
 import { nodeHref, type Node } from "@/lib/graph";
+import { InviteCursor } from "./InviteCursor";
+import { ProgressiveImage } from "./ProgressiveImage";
 
 const fmt = (iso?: string) => (iso ? new Date(iso).toISOString().slice(0, 10) : null);
-
-// Where the "back" breadcrumb on an artifact page points. Projects and
-// posts have home-page sections; everything else falls back to the flat
-// index. The SiteHeader is the site-wide nav — this is the local one.
-function backCrumb(kind: Node["kind"]): { label: string; href: string } {
-  switch (kind) {
-    case "project":
-      return { label: "Projects", href: "/#projects" };
-    case "post":
-      return { label: "Posts", href: "/#posts" };
-    case "update":
-      return { label: "Updates", href: "/updates" };
-    case "event":
-      return { label: "Events", href: "/events" };
-    default:
-      return { label: "Index", href: "/list" };
-  }
-}
+const projectVisualFrame =
+  "relative w-full overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-ink)_24%,transparent)] bg-[var(--color-bg-1)] shadow-none transition-shadow duration-200 hover:shadow-[0_14px_34px_color-mix(in_srgb,var(--color-ink)_14%,transparent)]";
 
 // Polymorphic hero. The shared `view-transition-name` lets the browser
 // FLIP-morph the constellation card into this block on navigation.
+//
+// The back-link to the parent section now lives in the SiteHeader
+// breadcrumb (Jacob Valdez › Section › Title), so the hero no longer
+// renders its own. The <h1> is marked `data-page-title` — SiteHeader
+// observes it to know when to reveal the Title breadcrumb segment.
 export function Hero({ node }: { node: Node }) {
   const start = fmt(node.date);
   const end = fmt(node.endDate);
   const range = end ? `${start} – ${end}` : start;
-  const crumb = backCrumb(node.kind);
 
   return (
     <header
@@ -36,13 +26,6 @@ export function Hero({ node }: { node: Node }) {
       }}
       className="mb-10 border-b border-[var(--color-bg-2)]/60 pb-8"
     >
-      <Link
-        href={crumb.href}
-        className="mb-5 inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
-      >
-        <span aria-hidden>←</span> {crumb.label}
-      </Link>
-
       <div className="mb-3 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
         <time>{range}</time>
         <span>·</span>
@@ -58,6 +41,7 @@ export function Hero({ node }: { node: Node }) {
       </div>
 
       <h1
+        data-page-title
         className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)] sm:text-5xl"
         style={{ fontVariationSettings: '"opsz" 144' }}
       >
@@ -99,19 +83,24 @@ function KindMeta({ node }: { node: Node }) {
 function ProjectMeta({ node }: { node: Node }) {
   const hasLinks = node.links && Object.keys(node.links).length > 0;
   const liveUrl = node.orbitEmbed ?? node.links?.demo;
-  if (!hasLinks && !node.video && !liveUrl && !node.hero) return null;
+  if (!hasLinks && !node.pdf && !node.video && !liveUrl && !node.hero) return null;
   return (
     <div className="mt-5 flex flex-col gap-5">
-      {/* Prefer live embeds when there is a deployed demo URL. Some
-          third-party sites block iframing; the overlay link is the
-          deliberate fallback and stays available on every visual. */}
-      {liveUrl ? (
+      {/* Prefer project PDFs when there is a deck/poster/paper attached:
+          they are the artifact itself, not just a supporting image.
+          Then fall back through live demos, videos, and hero images. */}
+      {node.pdf ? (
+        <ProjectPdfEmbed node={node} />
+      ) : liveUrl ? (
         <ProjectLiveEmbed url={liveUrl} title={node.title} />
       ) : node.video ? (
         <ProjectVideo url={node.video} title={node.title} />
       ) : node.hero ? (
         <ProjectHeroImage node={node} />
       ) : null}
+      {/* Live embeds use the overlay link as a deliberate fallback. Some
+          third-party sites block iframing; the overlay link is the
+          deliberate fallback and stays available on every visual. */}
       {hasLinks && (
         <div className="flex flex-wrap gap-3 font-[family-name:var(--font-mono)] text-xs">
           {Object.entries(node.links!).map(([k, v]) =>
@@ -133,10 +122,26 @@ function ProjectMeta({ node }: { node: Node }) {
   );
 }
 
+function ProjectPdfEmbed({ node }: { node: Node }) {
+  if (!node.pdf) return null;
+  return (
+    <div className={projectVisualFrame}>
+      <iframe
+        src={`${node.pdf}#view=FitH`}
+        title={`${node.title} — PDF`}
+        loading="lazy"
+        className="h-[72vh] min-h-[520px] w-full"
+        style={{ border: 0 }}
+      />
+      <LiveOpenButton url={node.pdf} label="open PDF ↗" />
+    </div>
+  );
+}
+
 function ProjectLiveEmbed({ url, title }: { url: string; title: string }) {
   return (
     <div
-      className="relative w-full overflow-hidden rounded-2xl bg-[var(--color-bg-1)]"
+      className={projectVisualFrame}
       style={{ aspectRatio: "16 / 10" }}
     >
       <iframe
@@ -147,7 +152,7 @@ function ProjectLiveEmbed({ url, title }: { url: string; title: string }) {
         className="absolute inset-0 h-full w-full"
         style={{ border: 0 }}
       />
-      <LiveOpenButton url={url} />
+      <LiveOpenButton url={url} label="try it out ↗" />
     </div>
   );
 }
@@ -156,24 +161,37 @@ function ProjectHeroImage({ node }: { node: Node }) {
   const demo = node.links?.demo;
   if (!node.hero) return null;
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl bg-[var(--color-bg-1)]">
-      <img src={node.hero.src} alt={node.hero.alt} className="max-h-[420px] w-full object-cover" />
-      {demo && <LiveOpenButton url={demo} center />}
+    <div className={projectVisualFrame}>
+      <ProgressiveImage
+        src={node.hero.src}
+        alt={node.hero.alt}
+        className="max-h-[420px] w-full object-cover"
+      />
+      {demo && <LiveOpenButton url={demo} center label="try it out ↗" />}
     </div>
   );
 }
 
-function LiveOpenButton({ url, center = false }: { url: string; center?: boolean }) {
+function LiveOpenButton({
+  url,
+  center = false,
+  label,
+}: {
+  url: string;
+  center?: boolean;
+  label: string;
+}) {
   return (
     <a
       href={url}
       target="_blank"
       rel="noreferrer"
-      className={`absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
+      className={`embed-cta absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
         center ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" : "right-3 top-3"
       }`}
     >
-      try it out ↗
+      {label}
+      <InviteCursor />
     </a>
   );
 }
@@ -195,7 +213,7 @@ function ProjectVideo({ url, title }: { url: string; title: string }) {
     );
   }
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl bg-[var(--color-bg-1)]" style={{ aspectRatio: "16 / 9" }}>
+    <div className={projectVisualFrame} style={{ aspectRatio: "16 / 9" }}>
       <iframe
         src={embed}
         title={`${title} — demo video`}
