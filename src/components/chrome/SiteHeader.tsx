@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { CmdK } from "./CmdK";
-import type { Lane, NodeKind } from "@/lib/graph-types";
+import { KIND_FROM_PREFIX, type Lane, type NodeKind } from "@/lib/graph-types";
 
 type SearchableNode = {
   id: string;
@@ -20,8 +21,13 @@ type Theme = "light" | "dark";
 // Site-wide chrome. Sits sticky at the top of every page so artifact
 // pages (projects, posts, …) always have a way back. At scroll 0 it's
 // transparent and weightless; once the page scrolls it "docks" — picks
-// up a blurred background, hairline border, and soft ring. Search and
-// theme controls live here too, replacing the old floating buttons.
+// up a blurred background, hairline border, and soft ring.
+//
+// On an artifact page the left side becomes a breadcrumb —
+// Jacob Valdez › Section › Title — replacing the per-page back-link.
+// The Title segment only fades in once the page's own <h1> has scrolled
+// out of view, so it never duplicates a heading the reader can already
+// see. Search and theme controls live on the right.
 //
 // Renders CmdK once, globally. The search trigger dispatches a
 // `cmdk:open` window event that CmdK listens for.
@@ -32,10 +38,37 @@ const NAV = [
   { label: "Profile", href: "/" },
 ];
 
+// kind → the home-page section (or index) the breadcrumb points back at.
+const SECTION: Partial<Record<NodeKind, { label: string; href: string }>> = {
+  project: { label: "Projects", href: "/#projects" },
+  post: { label: "Posts", href: "/#posts" },
+  update: { label: "Updates", href: "/updates" },
+  event: { label: "Events", href: "/events" },
+};
+
+function sectionFor(kind: NodeKind): { label: string; href: string } {
+  return SECTION[kind] ?? { label: "Index", href: "/list" };
+}
+
 export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
+  const pathname = usePathname();
   const [docked, setDocked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState<Theme | null>(null);
+  // Whether the current page's own <h1> is still on screen. While it is,
+  // the breadcrumb's Title segment stays hidden.
+  const [titleInPage, setTitleInPage] = useState(true);
+
+  // Derive the breadcrumb from the URL: artifact pages are /{prefix}/{slug}.
+  const crumb = useMemo(() => {
+    const seg = (pathname ?? "").split("/").filter(Boolean);
+    if (seg.length !== 2) return null;
+    const kind = KIND_FROM_PREFIX[seg[0]];
+    if (!kind) return null;
+    const node = nodes.find((n) => n.id === seg[1]);
+    if (!node) return null;
+    return { title: node.title, section: sectionFor(kind) };
+  }, [pathname, nodes]);
 
   useEffect(() => {
     const current = document.documentElement.getAttribute(
@@ -48,6 +81,25 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close the mobile menu on navigation.
+  useEffect(() => setMenuOpen(false), [pathname]);
+
+  // Track the page <h1> (marked data-page-title in Hero). The Title
+  // breadcrumb segment fades in once that heading leaves the viewport,
+  // accounting for the ~56px sticky header.
+  useEffect(() => {
+    setTitleInPage(true);
+    if (!crumb) return;
+    const el = document.querySelector("[data-page-title]");
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setTitleInPage(entry.isIntersecting),
+      { rootMargin: "-60px 0px 0px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [crumb, pathname]);
 
   const toggleTheme = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
@@ -83,23 +135,49 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
           boxShadow: docked ? "var(--ring-soft)" : "none",
         }}
       >
-        <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <Link
-            href="/"
-            onClick={() => setMenuOpen(false)}
-            className="font-[family-name:var(--font-display)] text-lg tracking-tight text-[var(--color-ink)] no-underline"
-            style={{ fontVariationSettings: '"opsz" 72' }}
-          >
-            Jacob Valdez
-          </Link>
+        <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-6">
+          {/* Left: brand + (on artifact pages) the breadcrumb trail.
+              items-baseline so the small mono crumbs sit on the same
+              baseline as the larger display-font brand. */}
+          <div className="flex min-w-0 items-baseline gap-2">
+            <Link
+              href="/"
+              onClick={() => setMenuOpen(false)}
+              className="shrink-0 font-[family-name:var(--font-display)] text-lg tracking-tight text-[var(--color-ink)] no-underline"
+              style={{ fontVariationSettings: '"opsz" 72' }}
+            >
+              Jacob Valdez
+            </Link>
+            {crumb && (
+              <span className="flex min-w-0 items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs">
+                <Chevron />
+                <Link
+                  href={crumb.section.href}
+                  className="shrink-0 text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
+                >
+                  {crumb.section.label}
+                </Link>
+                <span
+                  className="flex min-w-0 items-baseline gap-2 transition-opacity duration-300"
+                  style={{ opacity: titleInPage ? 0 : 1 }}
+                  aria-hidden={titleInPage}
+                >
+                  <Chevron />
+                  <span className="truncate text-[var(--color-ink)]">
+                    {crumb.title}
+                  </span>
+                </span>
+              </span>
+            )}
+          </div>
 
           {/* Desktop nav */}
-          <div className="hidden items-center gap-1 sm:flex">
+          <div className="hidden shrink-0 items-center gap-1 sm:flex">
             {NAV.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="rounded-full px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline hover:bg-[var(--color-bg-1)] hover:text-[var(--color-accent)]"
+                className="px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline"
               >
                 {item.label}
               </Link>
@@ -121,56 +199,67 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
             onClick={() => setMenuOpen((o) => !o)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-ink-dim)] hover:bg-[var(--color-bg-1)] sm:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-ink-dim)] hover:bg-[var(--color-bg-1)] sm:hidden"
           >
             <BarsIcon open={menuOpen} />
           </button>
         </nav>
 
-        {/* Mobile dropdown */}
-        {menuOpen && (
-          <div
-            className="sm:hidden"
-            style={{
-              background: "var(--color-bg-1)",
-              borderBottom: "1px solid var(--color-bg-2)",
-            }}
-          >
-            <div className="mx-auto flex max-w-5xl flex-col px-4 py-2">
-              {NAV.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="rounded-md px-3 py-2.5 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-2)]"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <button
-                type="button"
-                onClick={openSearch}
-                className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)]"
+        {/* Mobile dropdown — always mounted so it can slide/fade both
+            ways; `.mobile-menu` in globals.css drives the transition. */}
+        <div
+          className="mobile-menu absolute inset-x-0 top-full sm:hidden"
+          data-open={menuOpen}
+          style={{
+            background: "var(--color-bg-1)",
+            borderBottom: "1px solid var(--color-bg-2)",
+          }}
+        >
+          <div className="mx-auto flex max-w-5xl flex-col px-4 py-2">
+            {NAV.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                tabIndex={menuOpen ? undefined : -1}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-md px-3 py-2.5 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-2)]"
               >
-                <SearchIcon /> Search
-              </button>
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)]"
-              >
-                <span style={{ width: 16, textAlign: "center" }}>
-                  {themeGlyph}
-                </span>{" "}
-                {theme === "dark" ? "Light mode" : "Dark mode"}
-              </button>
-            </div>
+                {item.label}
+              </Link>
+            ))}
+            <button
+              type="button"
+              onClick={openSearch}
+              tabIndex={menuOpen ? undefined : -1}
+              className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)]"
+            >
+              <SearchIcon /> Search
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              tabIndex={menuOpen ? undefined : -1}
+              className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)]"
+            >
+              <span style={{ width: 16, textAlign: "center" }}>
+                {themeGlyph}
+              </span>{" "}
+              {theme === "dark" ? "Light mode" : "Dark mode"}
+            </button>
           </div>
-        )}
+        </div>
       </header>
 
       <CmdK nodes={nodes} />
     </>
+  );
+}
+
+function Chevron() {
+  return (
+    <span className="shrink-0 select-none text-[var(--color-ink-mute)]" aria-hidden>
+      ›
+    </span>
   );
 }
 

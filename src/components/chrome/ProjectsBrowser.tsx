@@ -16,9 +16,63 @@
 // orbit embed. Bare stub projects just link straight to their page.
 
 import Link from "next/link";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 import { MDXContent } from "@/lib/mdx";
+import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane, type ProjectStatus } from "@/lib/graph-types";
+import { InviteCursor } from "@/components/reader/InviteCursor";
+
+// Live embeds and visuals inside the modal carry a hairline border so
+// they read as their own surface, distinct from the modal background.
+// Mirrors `projectVisualFrame` in reader/Hero.tsx.
+const embedFrame =
+  "relative w-full overflow-hidden rounded-xl border border-[color-mix(in_srgb,var(--color-ink)_24%,transparent)] bg-[var(--color-bg-1)]";
+
+const PROJECT_ORDER_STORAGE_KEY = "jacobfv:projects:order";
+// Hold this long before a press becomes a drag — short taps still open
+// the project, and a scroll (moving > MOVE_CANCEL_PX first) aborts it.
+const LONGPRESS_MS = 320;
+const MOVE_CANCEL_PX = 10;
+const TILE_SPRING = { type: "spring" as const, stiffness: 620, damping: 46 };
+
+// useLayoutEffect on the client (applies the stored order before paint,
+// so there is no shuffle), useEffect on the server (no SSR warning).
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === "string");
+}
+
+function arrayMove<T>(arr: T[], from: number, to: number): T[] {
+  const next = arr.slice();
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
+// Reconcile a stored id order with the live project set: keep stored
+// ids that still exist (in stored order), then append any new projects.
+function mergeOrder(stored: string[], projects: ProjectItem[]): string[] {
+  const valid = new Set(projects.map((p) => p.id));
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  for (const id of stored) {
+    if (valid.has(id) && !seen.has(id)) {
+      merged.push(id);
+      seen.add(id);
+    }
+  }
+  for (const p of projects) {
+    if (!seen.has(p.id)) {
+      merged.push(p.id);
+      seen.add(p.id);
+    }
+  }
+  return merged;
+}
 
 export type ProjectItem = {
   id: string;
@@ -41,6 +95,7 @@ export type ProjectItem = {
 };
 
 type View = "list" | "grid";
+const PROJECT_VIEW_STORAGE_KEY = "jacobfv:projects:view";
 
 const laneBg: Record<Lane, string> = {
   research: "bg-[var(--color-lane-research)]",
@@ -50,6 +105,10 @@ const laneBg: Record<Lane, string> = {
 };
 
 const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
+
+function isView(value: unknown): value is View {
+  return value === "list" || value === "grid";
+}
 
 function statusColor(status: ProjectStatus): string {
   return status === "active"
@@ -148,12 +207,83 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
     null,
   );
 
+  // Custom drag-to-rearrange order (project ids). Starts as the
+  // server-provided order; `hydrated` gates the layout animation so
+  // applying the stored order on load doesn't visibly shuffle.
+  const [order, setOrder] = useState<string[]>(() => projects.map((p) => p.id));
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setView(readStoredValue(PROJECT_VIEW_STORAGE_KEY, "grid", isView));
+  }, []);
+
+  useIsoLayoutEffect(() => {
+    const stored = readStoredValue(PROJECT_ORDER_STORAGE_KEY, [] as string[], isStringArray);
+    setOrder(mergeOrder(stored, projects));
+    const raf = requestAnimationFrame(() => setHydrated(true));
+    return () => cancelAnimationFrame(raf);
+  }, [projects]);
+
   const pickView = useCallback((next: View) => {
+    writeStoredValue(PROJECT_VIEW_STORAGE_KEY, next);
     setView(next);
   }, []);
 
-  const open = useCallback<OpenFn>((p, origin = null) => setActive({ project: p, origin }), []);
-  const close = useCallback(() => setActive(null), []);
+  const orderedProjects = useMemo(() => {
+    const byId = new Map(projects.map((p) => [p.id, p]));
+    return order
+      .map((id) => byId.get(id))
+      .filter((p): p is ProjectItem => Boolean(p));
+  }, [order, projects]);
+
+  const handleReorder = useCallback((ids: string[]) => {
+    setOrder(ids);
+    writeStoredValue(PROJECT_ORDER_STORAGE_KEY, ids);
+  }, []);
+
+  const quickViewById = useMemo(
+    () => new Map(projects.filter((p) => p.quickView).map((p) => [p.id, p])),
+    [projects],
+  );
+
+  // Opening the modal pushes `?project=<id>` so the open state is a
+  // shareable URL; closing unwinds it. The query param — not React
+  // state — is the source of truth, so Back/Forward and a freshly
+  // loaded shared link all land in the right state.
+  const open = useCallback<OpenFn>((p, origin = null) => {
+    setActive({ project: p, origin });
+    const url = new URL(window.location.href);
+    url.searchParams.set("project", p.id);
+    window.history.pushState({ projectModal: p.id }, "", url);
+  }, []);
+
+  const close = useCallback(() => {
+    if (window.history.state?.projectModal) {
+      // Our open() added a history entry — step back over it so the URL
+      // and the Back button stay consistent (popstate then clears state).
+      window.history.back();
+    } else {
+      // Opened from a shared link: no entry to pop, just drop the param.
+      setActive(null);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("project");
+      window.history.replaceState(null, "", url);
+    }
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      const id = new URLSearchParams(window.location.search).get("project");
+      const p = id ? quickViewById.get(id) : undefined;
+      setActive((prev) => {
+        if (p) return prev?.project.id === p.id ? prev : { project: p, origin: null };
+        return prev ? null : prev;
+      });
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, [quickViewById]);
 
   return (
     <section id={id} className="mt-24 scroll-mt-20">
@@ -167,11 +297,7 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
             Projects
           </h2>
         </div>
-        <div
-          role="group"
-          aria-label="Projects view"
-          className="flex gap-0.5 rounded-full bg-[var(--color-bg-1)] p-1 shadow-[var(--ring-soft)]"
-        >
+        <div role="group" aria-label="Projects view" className="flex gap-1.5">
           <ViewButton label="List view" active={view === "list"} onClick={() => pickView("list")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
               <path d="M8 6h12M8 12h12M8 18h12" />
@@ -193,18 +319,19 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
 
       {view === "list" ? (
         <ul className="flex flex-col">
-          {projects.map((p) => (
+          {orderedProjects.map((p) => (
             <li key={p.id}>
               <ProjectRow project={p} onOpen={open} />
             </li>
           ))}
         </ul>
       ) : (
-        <div className="grid grid-cols-3 gap-x-5 gap-y-7 sm:grid-cols-4 md:grid-cols-5">
-          {projects.map((p) => (
-            <ProjectTile key={p.id} project={p} onOpen={open} />
-          ))}
-        </div>
+        <ProjectGrid
+          projects={orderedProjects}
+          hydrated={hydrated}
+          onReorder={handleReorder}
+          onOpen={open}
+        />
       )}
 
       {active && <QuickView project={active.project} origin={active.origin} onClose={close} />}
@@ -229,9 +356,9 @@ function ViewButton({
       aria-label={label}
       aria-pressed={active}
       onClick={onClick}
-      className={`grid place-items-center rounded-full p-1.5 transition-colors ${
+      className={`grid place-items-center p-1.5 transition-colors ${
         active
-          ? "bg-[var(--color-bg-2)] text-[var(--color-ink)]"
+          ? "text-[var(--color-ink)]"
           : "text-[var(--color-ink-mute)] hover:text-[var(--color-ink-dim)]"
       }`}
     >
@@ -241,8 +368,7 @@ function ViewButton({
 }
 
 function ProjectRow({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn }) {
-  const className =
-    "group block rounded-xl px-3 py-4 no-underline transition-colors hover:bg-[var(--color-bg-1)]/60";
+  const className = "group block px-3 py-4 no-underline transition-colors";
   const inner = (
     <span className="flex gap-4">
       <span className="relative mt-1 block h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[var(--color-bg-1)] shadow-[var(--ring-soft)] sm:h-24 sm:w-24">
@@ -262,7 +388,7 @@ function ProjectRow({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn 
               className={`h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full ${laneBg[project.lane]}`}
               aria-hidden
             />
-            <span className="text-lg text-[var(--color-ink)] group-hover:text-[var(--color-accent)]">
+            <span className="text-lg text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
               {project.title}
             </span>
             {project.quickView && (
@@ -309,31 +435,50 @@ function ProjectRow({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn 
   );
 }
 
-function ProjectTile({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn }) {
+// The icon + label visual of a grid tile. Shared by the interactive
+// tile and the floating drag overlay so the lifted copy is pixel-exact.
+// `lifted` drops the hover transforms (the overlay isn't hovered).
+function TileVisual({
+  project,
+  iconRef,
+  lifted = false,
+}: {
+  project: ProjectItem;
+  iconRef?: React.Ref<HTMLSpanElement>;
+  lifted?: boolean;
+}) {
+  return (
+    <>
+      <span
+        ref={iconRef}
+        className={`relative block aspect-square w-full overflow-hidden rounded-[26%] shadow-[var(--ring-soft),var(--shadow-soft)] ${
+          lifted
+            ? ""
+            : "transition-transform duration-200 ease-out group-hover:scale-[1.03] group-active:scale-95"
+        }`}
+      >
+        <IconFace project={project} preferThread />
+        {project.status === "active" && (
+          <span
+            className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full ring-2 ring-[var(--color-bg-0)]"
+            style={{ background: "var(--color-accent)" }}
+            aria-hidden
+          />
+        )}
+      </span>
+      <span className="line-clamp-2 text-center text-xs leading-snug text-[var(--color-ink-dim)] group-hover:text-[var(--color-accent)]">
+        {project.title}
+      </span>
+    </>
+  );
+}
+
+function TileButton({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn }) {
   const iconRef = useRef<HTMLSpanElement>(null);
   const dim = project.status === "idea" || project.status === "shelved";
-  const className = `group flex flex-col items-center gap-2 no-underline ${dim ? "opacity-60" : ""}`;
-
-  const icon = (
-    <span
-      ref={iconRef}
-      className="relative block aspect-square w-full overflow-hidden rounded-[26%] shadow-[var(--ring-soft),var(--shadow-soft)] transition-transform duration-200 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04] group-active:scale-95"
-    >
-      <IconFace project={project} preferThread />
-      {project.status === "active" && (
-        <span
-          className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full ring-2 ring-[var(--color-bg-0)]"
-          style={{ background: "var(--color-accent)" }}
-          aria-hidden
-        />
-      )}
-    </span>
-  );
-  const label = (
-    <span className="line-clamp-2 text-center text-xs leading-snug text-[var(--color-ink-dim)] group-hover:text-[var(--color-accent)]">
-      {project.title}
-    </span>
-  );
+  const className = `group flex w-full flex-col items-center gap-2 no-underline ${
+    dim ? "opacity-60" : ""
+  }`;
 
   if (project.quickView) {
     return (
@@ -342,16 +487,188 @@ function ProjectTile({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn
         onClick={() => onOpen(project, iconRef.current?.getBoundingClientRect() ?? null)}
         className={className}
       >
-        {icon}
-        {label}
+        <TileVisual project={project} iconRef={iconRef} />
       </button>
     );
   }
   return (
     <Link href={nodeHref(project)} className={className}>
-      {icon}
-      {label}
+      <TileVisual project={project} iconRef={iconRef} />
     </Link>
+  );
+}
+
+// The home-screen grid. Tiles rearrange on long-press + drag: the lifted
+// tile follows the pointer in a fixed overlay while the rest reflow with
+// a spring `layout` animation (wrapping across rows included). A short
+// tap still opens the project; the new order persists to localStorage.
+function ProjectGrid({
+  projects,
+  hydrated,
+  onReorder,
+  onOpen,
+}: {
+  projects: ProjectItem[];
+  hydrated: boolean;
+  onReorder: (ids: string[]) => void;
+  onOpen: OpenFn;
+}) {
+  const tiles = useRef(new Map<string, HTMLElement>());
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overlay, setOverlay] = useState<{ x: number; y: number; w: number } | null>(null);
+  // True between a drag's pointerup and the click it would spawn — used
+  // to swallow that click so a drop doesn't also open the project.
+  const justDragged = useRef(false);
+
+  const gesture = useRef<{
+    id: string;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    lastY: number;
+    grabX: number;
+    grabY: number;
+    w: number;
+    timer: number | null;
+    active: boolean;
+  } | null>(null);
+
+  // Block native touch-scroll only while a drag is actually live.
+  useEffect(() => {
+    if (!dragId) return;
+    const prevent = (e: TouchEvent) => e.preventDefault();
+    document.addEventListener("touchmove", prevent, { passive: false });
+    return () => document.removeEventListener("touchmove", prevent);
+  }, [dragId]);
+
+  const tileAt = (x: number, y: number): string | null => {
+    for (const [id, el] of tiles.current) {
+      const r = el.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return id;
+    }
+    return null;
+  };
+
+  const activate = () => {
+    const g = gesture.current;
+    if (!g) return;
+    g.active = true;
+    setDragId(g.id);
+    setOverlay({ x: g.lastX - g.grabX, y: g.lastY - g.grabY, w: g.w });
+    navigator.vibrate?.(12);
+  };
+
+  const endGesture = () => {
+    const g = gesture.current;
+    if (g?.timer) clearTimeout(g.timer);
+    if (g?.active) {
+      justDragged.current = true;
+      // The click fires synchronously after pointerup; clear on the next
+      // task so the very next real tap still works.
+      setTimeout(() => {
+        justDragged.current = false;
+      }, 0);
+    }
+    gesture.current = null;
+    setDragId(null);
+    setOverlay(null);
+  };
+
+  const onPointerDown = (e: React.PointerEvent, project: ProjectItem) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const el = e.currentTarget as HTMLElement;
+    const rect = el.getBoundingClientRect();
+    el.setPointerCapture(e.pointerId);
+    gesture.current = {
+      id: project.id,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      grabX: e.clientX - rect.left,
+      grabY: e.clientY - rect.top,
+      w: rect.width,
+      timer: window.setTimeout(activate, LONGPRESS_MS),
+      active: false,
+    };
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    const g = gesture.current;
+    if (!g || e.pointerId !== g.pointerId) return;
+    g.lastX = e.clientX;
+    g.lastY = e.clientY;
+    if (!g.active) {
+      // Moved before the long-press fired → treat as a scroll, abort.
+      if (Math.hypot(e.clientX - g.startX, e.clientY - g.startY) > MOVE_CANCEL_PX) {
+        if (g.timer) clearTimeout(g.timer);
+        gesture.current = null;
+      }
+      return;
+    }
+    setOverlay({ x: e.clientX - g.grabX, y: e.clientY - g.grabY, w: g.w });
+    const overId = tileAt(e.clientX, e.clientY);
+    if (overId && overId !== g.id) {
+      const ids = projects.map((p) => p.id);
+      const from = ids.indexOf(g.id);
+      const to = ids.indexOf(overId);
+      if (from !== -1 && to !== -1 && from !== to) {
+        onReorder(arrayMove(ids, from, to));
+      }
+    }
+  };
+
+  const dragged = dragId ? projects.find((p) => p.id === dragId) : null;
+
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-x-5 gap-y-7 sm:grid-cols-4 md:grid-cols-5">
+        {projects.map((project) => (
+          <motion.div
+            key={project.id}
+            layout={hydrated}
+            transition={TILE_SPRING}
+            ref={(el) => {
+              if (el) tiles.current.set(project.id, el);
+              else tiles.current.delete(project.id);
+            }}
+            onPointerDown={(e) => onPointerDown(e, project)}
+            onPointerMove={onPointerMove}
+            onPointerUp={endGesture}
+            onPointerCancel={endGesture}
+            onClickCapture={(e) => {
+              if (justDragged.current) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+            style={{
+              opacity: dragId === project.id ? 0 : 1,
+              touchAction: "manipulation",
+            }}
+          >
+            <TileButton project={project} onOpen={onOpen} />
+          </motion.div>
+        ))}
+      </div>
+
+      {overlay &&
+        dragged &&
+        createPortal(
+          <div
+            aria-hidden
+            className="pointer-events-none fixed z-[60]"
+            style={{ left: overlay.x, top: overlay.y, width: overlay.w }}
+          >
+            <div className="flex flex-col items-center gap-2 [filter:drop-shadow(0_16px_26px_rgba(0,0,0,0.4))] [transform:scale(1.09)]">
+              <TileVisual project={dragged} lifted />
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 
@@ -484,10 +801,7 @@ function QuickView({
         {/* ---- Scrolling body — visual, meta, and the full project ---- */}
         <div className="flex-1 overflow-y-auto px-3.5 py-5">
           {liveUrl ? (
-            <div
-              className="relative w-full overflow-hidden rounded-xl bg-[var(--color-bg-1)]"
-              style={{ aspectRatio: "16 / 10" }}
-            >
+            <div className={embedFrame} style={{ aspectRatio: "16 / 10" }}>
               <iframe
                 src={liveUrl}
                 title={`${project.title} — live demo`}
@@ -499,10 +813,7 @@ function QuickView({
               <TryItOutButton url={liveUrl} />
             </div>
           ) : videoEmbed ? (
-            <div
-              className="relative w-full overflow-hidden rounded-xl bg-[var(--color-bg-1)]"
-              style={{ aspectRatio: "16 / 9" }}
-            >
+            <div className={embedFrame} style={{ aspectRatio: "16 / 9" }}>
               <iframe
                 src={videoEmbed}
                 title={`${project.title} — demo video`}
@@ -514,7 +825,7 @@ function QuickView({
               />
             </div>
           ) : project.hero ? (
-            <div className="relative overflow-hidden rounded-xl bg-[var(--color-bg-1)]">
+            <div className={embedFrame}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={project.hero.src}
@@ -601,11 +912,12 @@ function TryItOutButton({ url, center = false }: { url: string; center?: boolean
       href={url}
       target="_blank"
       rel="noreferrer"
-      className={`absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
+      className={`embed-cta absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
         center ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" : "right-3 top-3"
       }`}
     >
       try it out ↗
+      <InviteCursor />
     </a>
   );
 }

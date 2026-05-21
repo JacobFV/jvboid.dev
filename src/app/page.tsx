@@ -44,6 +44,27 @@ const socialLinks = [
   { label: "anonymous feedback", href: "https://www.admonymous.co/jvboid" },
 ];
 
+const initialProjectAdjacency = [
+  ["phys-0", "chem-0"],
+  ["windows-web", "macos-web-next"],
+] as const;
+
+function withAdjacentProjects(projects: Node[]): Node[] {
+  const ordered = [...projects];
+
+  for (const [leftId, rightId] of initialProjectAdjacency) {
+    const leftIndex = ordered.findIndex((p) => p.id === leftId);
+    const rightIndex = ordered.findIndex((p) => p.id === rightId);
+    if (leftIndex === -1 || rightIndex === -1 || rightIndex === leftIndex + 1) continue;
+
+    const [right] = ordered.splice(rightIndex, 1);
+    const nextLeftIndex = ordered.findIndex((p) => p.id === leftId);
+    ordered.splice(nextLeftIndex + 1, 0, right);
+  }
+
+  return ordered;
+}
+
 // Featured projects: shipped or active first, then by recency. Cap at 6.
 function pickFeatured(nodes: Node[]): Node[] {
   const candidates = nodes.filter(
@@ -80,7 +101,10 @@ function imageRefsForNode(n: Node): { src: string; alt: string }[] {
   return refs;
 }
 
-function projectThreadImages(n: Node, graph: ReturnType<typeof getGraph>): { src: string; alt: string }[] {
+function projectThreadImages(
+  n: Node,
+  graph: ReturnType<typeof getGraph>,
+): { src: string; alt: string }[] {
   const curated = n.threadImages?.map((img) => ({ src: img.src, alt: img.alt ?? n.title })) ?? [];
   const refs = curated.length > 0 ? curated : imageRefsForNode(n);
 
@@ -116,14 +140,16 @@ export default function HomePage() {
     idea: 2,
     shelved: 3,
   };
-  const allProjects = listedNodes
-    .filter((n) => n.kind === "project")
-    .sort((a, b) => {
-      const ra = statusRank[a.status ?? "active"] ?? 9;
-      const rb = statusRank[b.status ?? "active"] ?? 9;
-      if (ra !== rb) return ra - rb;
-      return a.date < b.date ? 1 : -1;
-    });
+  const allProjects = withAdjacentProjects(
+    listedNodes
+      .filter((n) => n.kind === "project")
+      .sort((a, b) => {
+        const ra = statusRank[a.status ?? "active"] ?? 9;
+        const rb = statusRank[b.status ?? "active"] ?? 9;
+        if (ra !== rb) return ra - rb;
+        return a.date < b.date ? 1 : -1;
+      }),
+  );
   // Lite shape for the client-side ProjectsBrowser. `quickView` marks
   // projects with enough visual material (hero / video / live embed) to
   // be worth a zoom-in modal; the rest just link to their page.
@@ -182,7 +208,8 @@ export default function HomePage() {
 
   // Lite shape consumed by OrbitDecor — never includes summary/body, so
   // the hero payload stays small.
-  const toOrbiter = <K extends "friend" | "skill" | "project" | "post" | "event">(kind: K) =>
+  const toOrbiter =
+    <K extends "friend" | "skill" | "project" | "post" | "event">(kind: K) =>
     (n: Node) => ({
       id: n.id,
       title: n.title,
@@ -207,40 +234,267 @@ export default function HomePage() {
   type PlanetSource = { kind: "project" | "post" | "friend" | "event" | "skill"; rank: number };
   const planetSlots: Array<{
     source: PlanetSource;
-    cx: number; cy: number; ax: number; ay: number;
-    wx: number; wy: number; px: number; py: number; size: number;
+    cx: number;
+    cy: number;
+    ax: number;
+    ay: number;
+    wx: number;
+    wy: number;
+    px: number;
+    py: number;
+    size: number;
   }> = [
     // Inner ring — closer to the pfp, the four pinned projects from
     // featured.slice(2): limboid, computatrum, jacobfv-site,
     // canvas-engineering. Note that rank here indexes sourcePool.project,
     // which already drops featured[0..1] (those live in OrbitDecor).
-    { source: { kind: "project", rank: 0 }, cx: -290, cy: -120, ax: 20, ay: 16, wx: 0.16, wy: 0.11, px: 0.0, py: 1.4, size: 38 },
-    { source: { kind: "project", rank: 1 }, cx:  300, cy: -110, ax: 18, ay: 20, wx: 0.13, wy: 0.18, px: 0.8, py: 0.3, size: 36 },
-    { source: { kind: "project", rank: 2 }, cx:  360, cy:   30, ax: 22, ay: 18, wx: 0.10, wy: 0.14, px: 2.1, py: 2.7, size: 34 },
-    { source: { kind: "project", rank: 3 }, cx: -360, cy:   10, ax: 18, ay: 22, wx: 0.18, wy: 0.12, px: 3.4, py: 0.9, size: 32 },
+    {
+      source: { kind: "project", rank: 0 },
+      cx: -290,
+      cy: -120,
+      ax: 20,
+      ay: 16,
+      wx: 0.16,
+      wy: 0.11,
+      px: 0.0,
+      py: 1.4,
+      size: 38,
+    },
+    {
+      source: { kind: "project", rank: 1 },
+      cx: 300,
+      cy: -110,
+      ax: 18,
+      ay: 20,
+      wx: 0.13,
+      wy: 0.18,
+      px: 0.8,
+      py: 0.3,
+      size: 36,
+    },
+    {
+      source: { kind: "project", rank: 2 },
+      cx: 360,
+      cy: 30,
+      ax: 22,
+      ay: 18,
+      wx: 0.1,
+      wy: 0.14,
+      px: 2.1,
+      py: 2.7,
+      size: 34,
+    },
+    {
+      source: { kind: "project", rank: 3 },
+      cx: -360,
+      cy: 10,
+      ax: 18,
+      ay: 22,
+      wx: 0.18,
+      wy: 0.12,
+      px: 3.4,
+      py: 0.9,
+      size: 32,
+    },
     // Upper hemisphere — posts arcing across the top, where the mask is
     // fully opaque so motion reads clearly.
-    { source: { kind: "post",    rank: 0 }, cx:    0, cy: -320, ax: 22, ay: 14, wx: 0.10, wy: 0.16, px: 2.4, py: 1.0, size: 30 },
-    { source: { kind: "post",    rank: 1 }, cx: -240, cy: -260, ax: 16, ay: 18, wx: 0.18, wy: 0.10, px: 3.6, py: 2.2, size: 28 },
-    { source: { kind: "post",    rank: 2 }, cx:  150, cy: -220, ax: 14, ay: 18, wx: 0.14, wy: 0.17, px: 1.1, py: 2.4, size: 26 },
-    { source: { kind: "post",    rank: 3 }, cx: -150, cy: -190, ax: 16, ay: 12, wx: 0.19, wy: 0.13, px: 4.2, py: 1.1, size: 26 },
-    { source: { kind: "post",    rank: 4 }, cx:  320, cy: -210, ax: 16, ay: 14, wx: 0.12, wy: 0.16, px: 0.6, py: 3.8, size: 26 },
-    { source: { kind: "post",    rank: 5 }, cx: -330, cy: -200, ax: 18, ay: 16, wx: 0.15, wy: 0.10, px: 2.8, py: 0.5, size: 28 },
+    {
+      source: { kind: "post", rank: 0 },
+      cx: 0,
+      cy: -320,
+      ax: 22,
+      ay: 14,
+      wx: 0.1,
+      wy: 0.16,
+      px: 2.4,
+      py: 1.0,
+      size: 30,
+    },
+    {
+      source: { kind: "post", rank: 1 },
+      cx: -240,
+      cy: -260,
+      ax: 16,
+      ay: 18,
+      wx: 0.18,
+      wy: 0.1,
+      px: 3.6,
+      py: 2.2,
+      size: 28,
+    },
+    {
+      source: { kind: "post", rank: 2 },
+      cx: 150,
+      cy: -220,
+      ax: 14,
+      ay: 18,
+      wx: 0.14,
+      wy: 0.17,
+      px: 1.1,
+      py: 2.4,
+      size: 26,
+    },
+    {
+      source: { kind: "post", rank: 3 },
+      cx: -150,
+      cy: -190,
+      ax: 16,
+      ay: 12,
+      wx: 0.19,
+      wy: 0.13,
+      px: 4.2,
+      py: 1.1,
+      size: 26,
+    },
+    {
+      source: { kind: "post", rank: 4 },
+      cx: 320,
+      cy: -210,
+      ax: 16,
+      ay: 14,
+      wx: 0.12,
+      wy: 0.16,
+      px: 0.6,
+      py: 3.8,
+      size: 26,
+    },
+    {
+      source: { kind: "post", rank: 5 },
+      cx: -330,
+      cy: -200,
+      ax: 18,
+      ay: 16,
+      wx: 0.15,
+      wy: 0.1,
+      px: 2.8,
+      py: 0.5,
+      size: 28,
+    },
     // Crown — events + skills along the top fringe.
-    { source: { kind: "event",   rank: 0 }, cx:  260, cy: -280, ax: 18, ay: 14, wx: 0.12, wy: 0.20, px: 1.6, py: 0.4, size: 28 },
-    { source: { kind: "skill",   rank: 1 }, cx:  180, cy: -340, ax: 18, ay: 12, wx: 0.11, wy: 0.18, px: 3.3, py: 1.7, size: 22 },
-    { source: { kind: "skill",   rank: 2 }, cx: -180, cy: -340, ax: 16, ay: 14, wx: 0.17, wy: 0.14, px: 5.1, py: 3.2, size: 22 },
+    {
+      source: { kind: "event", rank: 0 },
+      cx: 260,
+      cy: -280,
+      ax: 18,
+      ay: 14,
+      wx: 0.12,
+      wy: 0.2,
+      px: 1.6,
+      py: 0.4,
+      size: 28,
+    },
+    {
+      source: { kind: "skill", rank: 1 },
+      cx: 180,
+      cy: -340,
+      ax: 18,
+      ay: 12,
+      wx: 0.11,
+      wy: 0.18,
+      px: 3.3,
+      py: 1.7,
+      size: 22,
+    },
+    {
+      source: { kind: "skill", rank: 2 },
+      cx: -180,
+      cy: -340,
+      ax: 16,
+      ay: 14,
+      wx: 0.17,
+      wy: 0.14,
+      px: 5.1,
+      py: 3.2,
+      size: 22,
+    },
     // Halo — friends close to the pfp.
-    { source: { kind: "friend",  rank: 1 }, cx:  -50, cy: -160, ax: 12, ay: 16, wx: 0.20, wy: 0.13, px: 1.9, py: 4.1, size: 22 },
-    { source: { kind: "friend",  rank: 2 }, cx:   60, cy: -160, ax: 14, ay: 14, wx: 0.16, wy: 0.18, px: 4.7, py: 2.0, size: 22 },
+    {
+      source: { kind: "friend", rank: 1 },
+      cx: -50,
+      cy: -160,
+      ax: 12,
+      ay: 16,
+      wx: 0.2,
+      wy: 0.13,
+      px: 1.9,
+      py: 4.1,
+      size: 22,
+    },
+    {
+      source: { kind: "friend", rank: 2 },
+      cx: 60,
+      cy: -160,
+      ax: 14,
+      ay: 14,
+      wx: 0.16,
+      wy: 0.18,
+      px: 4.7,
+      py: 2.0,
+      size: 22,
+    },
     // Lower fringe — bodies in the soft-fade region. They fade in/out as
     // the mask's vertical gradient permits, which gives the field depth
     // without crowding the text below.
-    { source: { kind: "skill",   rank: 0 }, cx:  -80, cy:   50, ax: 14, ay: 10, wx: 0.18, wy: 0.20, px: 2.3, py: 4.4, size: 22 },
-    { source: { kind: "event",   rank: 2 }, cx:  140, cy:   60, ax: 12, ay: 14, wx: 0.22, wy: 0.11, px: 5.6, py: 0.8, size: 22 },
-    { source: { kind: "event",   rank: 1 }, cx:  220, cy:  220, ax: 14, ay: 16, wx: 0.15, wy: 0.13, px: 0.3, py: 3.0, size: 26 },
-    { source: { kind: "friend",  rank: 0 }, cx: -220, cy:  220, ax: 14, ay: 16, wx: 0.17, wy: 0.09, px: 2.7, py: 1.8, size: 26 },
-    { source: { kind: "event",   rank: 3 }, cx:   80, cy:  280, ax: 14, ay: 12, wx: 0.20, wy: 0.16, px: 4.5, py: 2.5, size: 24 },
+    {
+      source: { kind: "skill", rank: 0 },
+      cx: -80,
+      cy: 50,
+      ax: 14,
+      ay: 10,
+      wx: 0.18,
+      wy: 0.2,
+      px: 2.3,
+      py: 4.4,
+      size: 22,
+    },
+    {
+      source: { kind: "event", rank: 2 },
+      cx: 140,
+      cy: 60,
+      ax: 12,
+      ay: 14,
+      wx: 0.22,
+      wy: 0.11,
+      px: 5.6,
+      py: 0.8,
+      size: 22,
+    },
+    {
+      source: { kind: "event", rank: 1 },
+      cx: 220,
+      cy: 220,
+      ax: 14,
+      ay: 16,
+      wx: 0.15,
+      wy: 0.13,
+      px: 0.3,
+      py: 3.0,
+      size: 26,
+    },
+    {
+      source: { kind: "friend", rank: 0 },
+      cx: -220,
+      cy: 220,
+      ax: 14,
+      ay: 16,
+      wx: 0.17,
+      wy: 0.09,
+      px: 2.7,
+      py: 1.8,
+      size: 26,
+    },
+    {
+      source: { kind: "event", rank: 3 },
+      cx: 80,
+      cy: 280,
+      ax: 14,
+      ay: 12,
+      wx: 0.2,
+      wy: 0.16,
+      px: 4.5,
+      py: 2.5,
+      size: 24,
+    },
   ];
 
   const sourcePool: Record<PlanetSource["kind"], Node[]> = {
@@ -307,93 +561,93 @@ export default function HomePage() {
             visual fade; this z-stack is the structural backstop.
           */}
           <div className="relative flex w-full flex-col items-center">
-          <h1
-            className="mt-6 font-[family-name:var(--font-display)] text-5xl tracking-tight text-[var(--color-ink)] sm:text-6xl"
-            style={{ fontVariationSettings: '"opsz" 144' }}
-          >
-            Jacob Valdez
-          </h1>
+            <h1
+              className="mt-6 font-[family-name:var(--font-display)] text-5xl tracking-tight text-[var(--color-ink)] sm:text-6xl"
+              style={{ fontVariationSettings: '"opsz" 144' }}
+            >
+              Jacob Valdez
+            </h1>
 
-          <AskInput />
+            <AskInput />
 
-          <div className="mt-4 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 font-[family-name:var(--font-mono)] text-xs">
-            {socialLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                target={link.href.startsWith("http") ? "_blank" : undefined}
-                rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-                className="text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline"
+            <div className="mt-4 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 font-[family-name:var(--font-mono)] text-xs">
+              {socialLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target={link.href.startsWith("http") ? "_blank" : undefined}
+                  rel={link.href.startsWith("http") ? "noreferrer" : undefined}
+                  className="text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-center gap-2 font-[family-name:var(--font-mono)] text-xs">
+              <Link
+                href="/graph"
+                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
-                {link.label}
+                explore as a graph →
+              </Link>
+              <Link
+                href="/t"
+                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+              >
+                timeline
+              </Link>
+              <Link
+                href="/loop"
+                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+              >
+                /loop — book notes
+              </Link>
+              <Link
+                href="/resume"
+                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+              >
+                resume
+              </Link>
+              <Link
+                href="/list"
+                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+              >
+                all writing & projects
+              </Link>
+            </div>
+
+            <p className="mt-10 max-w-2xl text-left text-lg leading-[1.65] text-[var(--color-ink-dim)]">
+              Currently building{" "}
+              <a
+                href="https://vibestartup.pro"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+              >
+                VibeStartup
+              </a>{" "}
+              — a platform for building startups end to end. Most recently API/Integration Architect
+              at{" "}
+              <a
+                href="https://agi.app"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+              >
+                AGI, Inc.
               </a>
-            ))}
-          </div>
-
-          <div className="mt-5 flex flex-wrap justify-center gap-2 font-[family-name:var(--font-mono)] text-xs">
-            <Link
-              href="/graph"
-              className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-            >
-              explore as a graph →
-            </Link>
-            <Link
-              href="/t"
-              className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-            >
-              timeline
-            </Link>
-            <Link
-              href="/loop"
-              className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-            >
-              /loop — book notes
-            </Link>
-            <Link
-              href="/resume"
-              className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-            >
-              resume
-            </Link>
-            <Link
-              href="/list"
-              className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-            >
-              all writing & projects
-            </Link>
-          </div>
-
-          <p className="mt-10 max-w-2xl text-left text-lg leading-[1.65] text-[var(--color-ink-dim)]">
-            Currently building{" "}
-            <a
-              href="https://vibestartup.pro"
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-            >
-              VibeStartup
-            </a>{" "}
-            — a platform for building startups end to end. Most recently API/Integration Architect
-            at{" "}
-            <a
-              href="https://agi.app"
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-            >
-              AGI, Inc.
-            </a>
-            , shipping APIs, integrations, and agent infrastructure for on-device mobile AI agents.
-            Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science from UT
-            Arlington. I love science and engineering and people — this site maps the arguments
-            behind the work.
-            <Link
-              href="/introduction"
-              className="ml-1 text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-            >
-              More about me.
-            </Link>
-          </p>
+              , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
+              agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science
+              from UT Arlington. I love science and engineering and people — this site maps the
+              arguments behind the work.
+              <Link
+                href="/introduction"
+                className="ml-1 text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+              >
+                More about me.
+              </Link>
+            </p>
           </div>
         </section>
 
@@ -578,7 +832,7 @@ function ProjectRow({ node }: { node: Node }) {
   return (
     <Link
       href={nodeHref(node)}
-      className="group block rounded-xl px-3 py-4 no-underline transition-colors hover:bg-[var(--color-bg-1)]/60"
+      className="group block px-3 py-4 no-underline transition-colors"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex items-baseline gap-3">
@@ -586,7 +840,7 @@ function ProjectRow({ node }: { node: Node }) {
             className={`h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full ${laneBg[node.lane]}`}
             aria-hidden
           />
-          <span className="text-lg text-[var(--color-ink)] group-hover:text-[var(--color-accent)]">
+          <span className="text-lg text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
             {node.title}
           </span>
         </div>
@@ -631,7 +885,7 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
       aria-label={node.title}
       className="group block w-28 no-underline sm:w-32"
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-[var(--color-accent)]">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-sm transition-[transform,box-shadow] duration-200 group-hover:scale-[1.02] group-hover:shadow-[0_10px_26px_color-mix(in_srgb,var(--color-ink)_16%,transparent)]">
         {node.hero ? (
           <img
             src={node.hero.src}
@@ -649,12 +903,12 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
           </div>
         )}
         {node.tier && (
-          <div className="absolute right-2 top-2 rounded-full bg-[var(--color-bg-0)]/90 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]">
+          <div className="absolute top-2 right-2 rounded-full bg-[var(--color-bg-0)]/90 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]">
             {node.tier}
           </div>
         )}
       </div>
-      <div className="mt-2 line-clamp-2 min-h-[2.5rem] text-center text-xs leading-tight text-[var(--color-ink-dim)] group-hover:text-[var(--color-ink)]">
+      <div className="mt-2 line-clamp-2 min-h-[2.5rem] text-center text-xs leading-tight text-[var(--color-ink-dim)] underline-offset-4 group-hover:text-[var(--color-ink)] group-hover:underline">
         {node.title}
       </div>
     </Link>
@@ -674,18 +928,18 @@ function UpdateTimeline({ nodes }: { nodes: Node[] }) {
           <li key={n.id} className="relative">
             <Link
               href={nodeHref(n)}
-              className="group flex items-baseline gap-4 rounded-xl py-3 pr-3 pl-9 no-underline transition-colors hover:bg-[var(--color-bg-1)]/60"
+              className="group flex items-baseline gap-4 py-3 pr-3 pl-9 no-underline transition-colors"
             >
               <time className="w-20 shrink-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
                 {fmtDate(n.date)}
               </time>
-              <span className="text-[var(--color-ink)] group-hover:text-[var(--color-accent)]">
+              <span className="text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
                 {n.title}
               </span>
             </Link>
-            {/* Rail + dot, painted after the Link so they sit above its
-                hover background. The rail is clipped to start/end at the
-                dot on the first/last row. */}
+            {/* Rail + dot, painted after the Link in DOM order. The rail
+                is clipped to start/end at the dot on the first/last
+                row. */}
             <span
               aria-hidden
               className="absolute left-3 w-px -translate-x-1/2 bg-[var(--color-bg-2)]"
@@ -693,7 +947,7 @@ function UpdateTimeline({ nodes }: { nodes: Node[] }) {
             />
             <span
               aria-hidden
-              className="absolute left-3 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-ink-mute)] ring-4 ring-[var(--color-bg-0)]"
+              className="absolute top-1/2 left-3 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-ink-mute)] ring-4 ring-[var(--color-bg-0)]"
             />
           </li>
         );
@@ -706,13 +960,13 @@ function RowLink({ node }: { node: Node }) {
   return (
     <Link
       href={nodeHref(node)}
-      className="group flex items-baseline gap-4 rounded-xl px-3 py-3 no-underline transition-colors hover:bg-[var(--color-bg-1)]/60"
+      className="group flex items-baseline gap-4 px-3 py-3 no-underline transition-colors"
     >
       <time className="w-20 shrink-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
         {fmtDate(node.date)}
       </time>
       <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${laneBg[node.lane]}`} aria-hidden />
-      <span className="text-[var(--color-ink)] group-hover:text-[var(--color-accent)]">
+      <span className="text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
         {node.title}
       </span>
     </Link>
