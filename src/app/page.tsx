@@ -5,7 +5,15 @@ import { PfpReveal } from "@/components/chrome/PfpReveal";
 import { Planetoids } from "@/components/chrome/Planetoids";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
 import { UpdateDock } from "@/components/chrome/UpdateDock";
-import { getGraph, getLatestUpdate, nodeHref, type Lane, type Node, type NodeKind } from "@/lib/graph";
+import {
+  getGraph,
+  getLatestUpdate,
+  isListedNode,
+  nodeHref,
+  type Lane,
+  type Node,
+  type NodeKind,
+} from "@/lib/graph";
 
 const laneClass: Record<Lane, string> = {
   research: "text-[var(--color-lane-research)]",
@@ -24,6 +32,7 @@ const laneBg: Record<Lane, string> = {
 const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const eventRank = (n: Node) => (n.eventStatus === "upcoming" ? 0 : 1);
+const imageSrcPattern = /src:\s*["']([^"']+\.(?:avif|gif|heic|jpe?g|png|svg|webp))["']/gi;
 
 const socialLinks = [
   { label: "email", href: "mailto:jacob@humanrobots.ai" },
@@ -60,11 +69,45 @@ function pickFeatured(nodes: Node[]): Node[] {
   return [...pinnedNodes, ...rest].slice(0, 6);
 }
 
+function imageRefsForNode(n: Node): { src: string; alt: string }[] {
+  const refs: { src: string; alt: string }[] = [];
+  if (n.hero?.src) refs.push({ src: n.hero.src, alt: n.hero.alt });
+
+  for (const match of n.body.matchAll(imageSrcPattern)) {
+    refs.push({ src: match[1], alt: n.title });
+  }
+
+  return refs;
+}
+
+function projectThreadImages(n: Node, graph: ReturnType<typeof getGraph>): { src: string; alt: string }[] {
+  const curated = n.threadImages?.map((img) => ({ src: img.src, alt: img.alt ?? n.title })) ?? [];
+  const refs = curated.length > 0 ? curated : imageRefsForNode(n);
+
+  if (curated.length === 0) {
+    for (const edge of graph.neighbors(n.id)) {
+      const neighborId = edge.source === n.id ? edge.target : edge.source;
+      const neighbor = graph.byId.get(neighborId);
+      if (neighbor) refs.push(...imageRefsForNode(neighbor));
+    }
+  }
+
+  const seen = new Set<string>();
+  return refs
+    .filter((img) => {
+      if (seen.has(img.src)) return false;
+      seen.add(img.src);
+      return true;
+    })
+    .slice(0, 4);
+}
+
 export default function HomePage() {
   const graph = getGraph();
   const { nodes } = graph;
+  const listedNodes = nodes.filter(isListedNode);
 
-  const featured = pickFeatured(nodes);
+  const featured = pickFeatured(listedNodes);
   // Full project list, sorted by status (active first, then shipped, then
   // shelved/idea), then by date desc within each bucket.
   const statusRank: Record<string, number> = {
@@ -73,7 +116,7 @@ export default function HomePage() {
     idea: 2,
     shelved: 3,
   };
-  const allProjects = nodes
+  const allProjects = listedNodes
     .filter((n) => n.kind === "project")
     .sort((a, b) => {
       const ra = statusRank[a.status ?? "active"] ?? 9;
@@ -96,26 +139,27 @@ export default function HomePage() {
     tags: n.tags,
     hero: n.hero,
     video: n.video,
+    threadImages: projectThreadImages(n, graph),
     orbitEmbed: n.orbitEmbed,
     links: n.links,
-    quickView: Boolean(n.hero || n.video || n.orbitEmbed),
+    quickView: Boolean(n.hero || n.video || n.orbitEmbed || n.links?.demo),
   }));
-  const recentPosts = nodes
+  const recentPosts = listedNodes
     .filter((n) => n.kind === "post")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 6);
-  const recentPapers = nodes
+  const recentPapers = listedNodes
     .filter((n) => n.kind === "paper")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 3);
-  const recentReadings = nodes
+  const recentReadings = listedNodes
     .filter((n) => n.kind === "reading")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 8);
-  const recentUpdates = nodes
+  const recentUpdates = listedNodes
     .filter((n) => n.kind === "update")
     .sort((a, b) => (a.date < b.date ? 1 : -1));
-  const recentEvents = nodes
+  const recentEvents = listedNodes
     .filter((n) => n.kind === "event")
     .sort((a, b) => {
       const rank = eventRank(a) - eventRank(b);
@@ -126,15 +170,15 @@ export default function HomePage() {
       return a.date < b.date ? 1 : -1;
     })
     .slice(0, 4);
-  const featuredSkills = nodes
+  const featuredSkills = listedNodes
     .filter((n) => n.kind === "skill")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 6);
-  const featuredFriends = nodes
+  const featuredFriends = listedNodes
     .filter((n) => n.kind === "friend")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 3);
-  const latestUpdate = getLatestUpdate(nodes);
+  const latestUpdate = getLatestUpdate(listedNodes);
 
   // Lite shape consumed by OrbitDecor — never includes summary/body, so
   // the hero payload stays small.
@@ -405,23 +449,6 @@ export default function HomePage() {
         {/* ---- All projects ---- */}
         <ProjectsBrowser id="projects" projects={projectItems} />
 
-        {/* ---- Skills ---- */}
-        {featuredSkills.length > 0 && (
-          <Section
-            eyebrow="Capabilities"
-            title="Skills"
-            link={{ href: "/list", label: "all skills →" }}
-          >
-            <ul className="flex flex-col">
-              {featuredSkills.map((n) => (
-                <li key={n.id}>
-                  <RowLink node={n} />
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
         {/* ---- Recent posts ---- */}
         <Section
           id="posts"
@@ -452,13 +479,7 @@ export default function HomePage() {
         {/* ---- Papers ---- */}
         {recentPapers.length > 0 && (
           <Section eyebrow="Research" title="Papers & notes">
-            <ul className="flex flex-col">
-              {recentPapers.map((n) => (
-                <li key={n.id}>
-                  <RowLink node={n} />
-                </li>
-              ))}
-            </ul>
+            <CoverRail nodes={recentPapers} variant="paper" />
           </Section>
         )}
 
@@ -593,22 +614,26 @@ function ProjectRow({ node }: { node: Node }) {
 }
 
 function ReadingCoverRail({ nodes }: { nodes: Node[] }) {
+  return <CoverRail nodes={nodes} variant="reading" />;
+}
+
+function CoverRail({ nodes, variant }: { nodes: Node[]; variant: "reading" | "paper" }) {
   return (
     <ul className="-mx-2 flex gap-4 overflow-x-auto px-2 pb-3 [scrollbar-width:thin]">
       {nodes.map((node) => (
         <li key={node.id} className="shrink-0">
-          <ReadingCover node={node} />
+          <CoverCard node={node} variant={variant} />
         </li>
       ))}
     </ul>
   );
 }
 
-function ReadingCover({ node }: { node: Node }) {
-  // Paper covers are first-page PNG exports from PDFs. To add another:
-  // `curl -L https://arxiv.org/pdf/XXXX.XXXXX -o /tmp/<slug>.pdf`
-  // then `pdftoppm -png -f 1 -singlefile -r 160 /tmp/<slug>.pdf public/assets/img/readings/<slug>`,
-  // and set `hero.src` in the reading frontmatter to `/assets/img/readings/<slug>.png`.
+function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper" }) {
+  // Paper covers are first-page PNG exports from PDFs. To add another,
+  // download the PDF to /tmp and run:
+  // `pdftoppm -png -f 1 -singlefile -r 160 /tmp/<slug>.pdf public/assets/img/{readings|papers}/<slug>`.
+  // Then set `hero.src` in frontmatter to `/assets/img/{readings|papers}/<slug>.png`.
   return (
     <Link
       href={nodeHref(node)}
@@ -627,10 +652,15 @@ function ReadingCover({ node }: { node: Node }) {
         ) : (
           <div className="flex h-full flex-col justify-between bg-[linear-gradient(145deg,var(--color-bg-1),var(--color-bg-0)_46%,var(--color-bg-2))] p-3">
             <div className="font-[family-name:var(--font-mono)] text-[9px] tracking-wider text-[var(--color-ink-mute)] uppercase">
-              {node.workType ?? "reading"}
+              {variant === "paper" ? "note" : (node.workType ?? "reading")}
             </div>
             <div className="text-sm leading-tight text-[var(--color-ink)]">{node.title}</div>
             <div className={`h-1 w-8 rounded-full ${laneBg[node.lane]}`} aria-hidden />
+          </div>
+        )}
+        {node.tier && (
+          <div className="absolute right-2 top-2 rounded-full bg-[var(--color-bg-0)]/90 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]">
+            {node.tier}
           </div>
         )}
       </div>

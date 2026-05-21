@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getGraph, nodeHref, type Node } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref, type Node } from "@/lib/graph";
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
@@ -17,7 +17,7 @@ function byDateAsc(a: Node, b: Node) {
 }
 
 export default function EventsPage() {
-  const events = getGraph().nodes.filter((n) => n.kind === "event");
+  const events = getGraph().nodes.filter((n) => n.kind === "event" && isListedNode(n));
   const upcoming = events.filter((n) => n.eventStatus === "upcoming").sort(byDateAsc);
   const past = events.filter((n) => n.eventStatus !== "upcoming").sort(byDateDesc);
 

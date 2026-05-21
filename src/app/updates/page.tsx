@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getGraph, nodeHref } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
@@ -10,7 +10,7 @@ export const metadata = {
 
 export default function UpdatesPage() {
   const updates = getGraph()
-    .nodes.filter((n) => n.kind === "update")
+    .nodes.filter((n) => n.kind === "update" && isListedNode(n))
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return (

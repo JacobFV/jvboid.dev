@@ -18,13 +18,35 @@ I generate a lot of small signals during the day — git commits, browser histor
 ## Solution
 A daemon that quietly ingests activity from multiple sources, batches it, and runs LLM summarization on a configurable cadence (hourly digest, daily wrap, weekly arc).
 
+![lifelogger system diagram](/assets/img/projects/lifelogger-diagram.svg)
+
 ## How
 - **Stack:** Python.
 - **Sources:** git, browser, calendar, terminal, foreground app — extensible.
 - **Storage:** local-first; LLM calls are batched to keep token cost bounded.
 
+The design treats every signal as an event with a timestamp, source, confidence,
+and privacy level. Raw events are cheap to collect but too noisy to read
+directly, so the important layer is the reducer: it groups nearby events into
+work sessions, removes obvious duplicate evidence, and produces a compact
+packet that an LLM can summarize without seeing the entire day.
+
+The summarizer is intentionally staged. Hourly summaries answer "what just
+happened?" Daily summaries answer "what did this day become?" Weekly summaries
+look for continuity, stalled threads, recurring distractions, and projects that
+quietly consumed more time than expected. That separation keeps each prompt
+small and lets later summaries cite earlier ones instead of replaying raw logs.
+
+The privacy boundary is local-first. Sensitive sources can stay as counts or
+labels, and the daemon can redact URLs, contact names, or terminal content
+before any model call. The goal is not surveillance for its own sake; it is a
+memory prosthetic that leaves a useful audit trail while keeping raw behavior
+under local control.
+
 ## Results
-Active personal infra. The daily summaries feed back into [/now](/now) and [/updates](/updates) on this site.
+Active personal infra. The useful output is not a dashboard of every event; it
+is a small set of review surfaces: a daily narrative, a weekly arc, and selected
+updates that can feed back into this site.
 
 ## Lessons
 Batching is the difference between "neat idea" and "I can actually afford to leave it on." Without batching, the LLM cost dominates the value.

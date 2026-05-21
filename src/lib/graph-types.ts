@@ -26,7 +26,7 @@ export type Edge = ManualEdge;
 export type ProjectStatus = "idea" | "active" | "shipped" | "shelved";
 export type ReadingStatus = "queued" | "reading" | "finished" | "paused" | "reference";
 export type ReadingWorkType = "book" | "paper" | "article" | "course" | "other";
-export type ReadingTier = "F" | "B" | "A" | "S";
+export type ReadingTier = "S" | "A" | "B" | "C" | "D" | "F";
 export type UpdateType = "note" | "x-post" | "link" | "embed";
 export type SkillLevel = "working" | "strong" | "expert";
 export type EventType =
@@ -57,6 +57,7 @@ export type Node = {
   lane: Lane;
   tags: string[];
   summary: string;
+  unlisted: boolean;
   body: string;
   hero?: { src: string; alt: string };
   influences: string[];
@@ -68,6 +69,7 @@ export type Node = {
   // Optional demo video URL (project kind). YouTube/Vimeo/embeddable
   // page. Rendered in Hero as a 16:9 iframe when present.
   video?: string;
+  threadImages?: { src: string; alt?: string }[];
   links?: Record<string, string | undefined>;
   authors?: string[];
   venue?: string;
@@ -128,4 +130,8 @@ export const KIND_FROM_PREFIX: Record<string, NodeKind> = Object.fromEntries(
 
 export function nodeHref(node: { kind: NodeKind; id: string }): string {
   return `/${KIND_PREFIX[node.kind]}/${node.id}`;
+}
+
+export function isListedNode(node: { unlisted?: boolean }): boolean {
+  return !node.unlisted;
 }

@@ -98,14 +98,20 @@ function KindMeta({ node }: { node: Node }) {
 
 function ProjectMeta({ node }: { node: Node }) {
   const hasLinks = node.links && Object.keys(node.links).length > 0;
-  if (!hasLinks && !node.video && !node.orbitEmbed) return null;
+  const liveUrl = node.orbitEmbed ?? node.links?.demo;
+  if (!hasLinks && !node.video && !liveUrl && !node.hero) return null;
   return (
     <div className="mt-5 flex flex-col gap-5">
-      {/* Live deploy embed — only set in orbit-overrides for URLs we
-          know iframe cleanly. Renders above the demo video when both
-          exist, since live > recorded. */}
-      {node.orbitEmbed && <ProjectLiveEmbed url={node.orbitEmbed} title={node.title} />}
-      {node.video && <ProjectVideo url={node.video} title={node.title} />}
+      {/* Prefer live embeds when there is a deployed demo URL. Some
+          third-party sites block iframing; the overlay link is the
+          deliberate fallback and stays available on every visual. */}
+      {liveUrl ? (
+        <ProjectLiveEmbed url={liveUrl} title={node.title} />
+      ) : node.video ? (
+        <ProjectVideo url={node.video} title={node.title} />
+      ) : node.hero ? (
+        <ProjectHeroImage node={node} />
+      ) : null}
       {hasLinks && (
         <div className="flex flex-wrap gap-3 font-[family-name:var(--font-mono)] text-xs">
           {Object.entries(node.links!).map(([k, v]) =>
@@ -141,7 +147,34 @@ function ProjectLiveEmbed({ url, title }: { url: string; title: string }) {
         className="absolute inset-0 h-full w-full"
         style={{ border: 0 }}
       />
+      <LiveOpenButton url={url} />
     </div>
+  );
+}
+
+function ProjectHeroImage({ node }: { node: Node }) {
+  const demo = node.links?.demo;
+  if (!node.hero) return null;
+  return (
+    <div className="relative w-full overflow-hidden rounded-2xl bg-[var(--color-bg-1)]">
+      <img src={node.hero.src} alt={node.hero.alt} className="max-h-[420px] w-full object-cover" />
+      {demo && <LiveOpenButton url={demo} center />}
+    </div>
+  );
+}
+
+function LiveOpenButton({ url, center = false }: { url: string; center?: boolean }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className={`absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
+        center ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" : "right-3 top-3"
+      }`}
+    >
+      try it out ↗
+    </a>
   );
 }
 

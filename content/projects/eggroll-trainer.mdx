@@ -5,6 +5,9 @@ lane: building
 status: active
 tags: [personal]
 summary: "Python implementation of EGGROLL (Evolution Guided General Optimization via Low-rank Learning) for scalable evolution strategies training"
+hero:
+  src: /assets/img/projects/eggroll-trainer.svg
+  alt: "eggroll-trainer icon"
 links: 
   github: https://github.com/JacobFV/eggroll-trainer
 ---
@@ -13,19 +16,19 @@ links:
 - Lets you train billion-parameter models efficiently with low-rank tricks
 
 
-I've been interested in evolution strategies for a while now—there's something really appealing about black-box optimization that doesn't need gradients. But the problem is that traditional ES gets prohibitively expensive when you're dealing with large models. You end up needing $O(mn)$ memory and computation per layer just to generate perturbations $E \in \mathbb&#123;R&#125;^&#123;m \times n&#125;$, and that batched matrix multiplication kills you.
+I've been interested in evolution strategies for a while now—there's something really appealing about black-box optimization that doesn't need gradients. But the problem is that traditional ES gets prohibitively expensive when you're dealing with large models. You end up needing $O(mn)$ memory and computation per layer just to generate perturbations $E \in \mathbb{R}^{m \times n}$, and that batched matrix multiplication kills you.
 
-So when I saw the [EGGROLL poast](https://x.com/bidiptas13/status/1991908905144967245?s=20) come out, I got pretty excited. The idea is simple but clever: instead of generating full-rank perturbations, you generate two smaller matrices $A \in \mathbb&#123;R&#125;^&#123;m \times r&#125;$ and $B \in \mathbb&#123;R&#125;^&#123;n \times r&#125;$ where $r \ll \min(m, n)$, and then form your perturbation as $AB^\top$. This drops your memory from $O(mn)$ down to $O(r(m+n))$ and your computation from $O(mn)$ to $O(r(m+n))$. 
+So when I saw the [EGGROLL poast](https://x.com/bidiptas13/status/1991908905144967245?s=20) come out, I got pretty excited. The idea is simple but clever: instead of generating full-rank perturbations, you generate two smaller matrices $A \in \mathbb{R}^{m \times r}$ and $B \in \mathbb{R}^{n \times r}$ where $r \ll \min(m, n)$, and then form your perturbation as $AB^\top$. This drops your memory from $O(mn)$ down to $O(r(m+n))$ and your computation from $O(mn)$ to $O(r(m+n))$. 
 
-The cool part is that even though each perturbation is low-rank, when you average across a population of $N$ workers, you still get high-rank updates. The math says it converges to the full-rank update at $O\left(\frac&#123;1&#125;&#123;r&#125;\right)$ rate, which is pretty fast.
+The cool part is that even though each perturbation is low-rank, when you average across a population of $N$ workers, you still get high-rank updates. The math says it converges to the full-rank update at $O\left(\frac{1}{r}\right)$ rate, which is pretty fast.
 
 Here's how standard ES works (OpenAI's formulation):
 
 $$
-\nabla_&#123;\theta&#125;\mathbb&#123;E&#125;_&#123;\epsilon\sim N(0,I)&#125; F(\theta+\sigma\epsilon) = \frac&#123;1&#125;&#123;\sigma&#125;\mathbb&#123;E&#125;_&#123;\epsilon\sim N(0,I)&#125;\&#123;F(\theta+\sigma\epsilon)\epsilon\&#125;
+\nabla_{\theta}\mathbb{E}_{\epsilon\sim N(0,I)} F(\theta+\sigma\epsilon) = \frac{1}{\sigma}\mathbb{E}_{\epsilon\sim N(0,I)}\{F(\theta+\sigma\epsilon)\epsilon\}
 $$
 
-where $F$ is your fitness function, $\theta$ are the parameters you're optimizing, $\sigma$ is the noise scale, and $\epsilon$ gets sampled independently for each parameter. The problem is that for a matrix layer with parameters $W \in \mathbb&#123;R&#125;^&#123;m \times n&#125;$, you're sampling a full $m \times n$ matrix of noise.
+where $F$ is your fitness function, $\theta$ are the parameters you're optimizing, $\sigma$ is the noise scale, and $\epsilon$ gets sampled independently for each parameter. The problem is that for a matrix layer with parameters $W \in \mathbb{R}^{m \times n}$, you're sampling a full $m \times n$ matrix of noise.
 
 With EGGROLL, you sample those two smaller matrices $A$ and $B$, and your forward pass becomes:
 
@@ -187,15 +190,15 @@ The code is pretty modular—there's a base class, the core EGGROLL implementati
 
 
 
-- For each population member $i \in \&#123;1, \ldots, N\&#125;$:
+- For each population member $i \in \{1, \ldots, N\}$:
 
 
 
-- For each matrix layer $W \in \mathbb&#123;R&#125;^&#123;m \times n&#125;$:
+- For each matrix layer $W \in \mathbb{R}^{m \times n}$:
 
 
 
-- Sample $A_i \in \mathbb&#123;R&#125;^&#123;m \times r&#125;$, $B_i \in \mathbb&#123;R&#125;^&#123;n \times r&#125;$ from $\mathcal&#123;N&#125;(0, I)$
+- Sample $A_i \in \mathbb{R}^{m \times r}$, $B_i \in \mathbb{R}^{n \times r}$ from $\mathcal{N}(0, I)$
 
 - Form low-rank perturbation: $\Delta W_i = A_i B_i^\top$
 
@@ -207,7 +210,7 @@ The code is pretty modular—there's a base class, the core EGGROLL implementati
 
 
 
-- <strong>Update:</strong> $\theta_&#123;t+1&#125; = \theta_t + \alpha \cdot \frac&#123;1&#125;&#123;N\sigma&#125; \sum_&#123;i=1&#125;^N f_i \cdot \Delta_i$
+- <strong>Update:</strong> $\theta_{t+1} = \theta_t + \alpha \cdot \frac{1}{N\sigma} \sum_{i=1}^N f_i \cdot \Delta_i$
 
 
 

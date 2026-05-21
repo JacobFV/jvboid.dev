@@ -54,6 +54,7 @@ type RawCollectionItem = {
   date: string;
   lane: Lane;
   summary: string;
+  unlisted?: boolean;
   body: string;
   tags?: string[];
   endDate?: string;
@@ -80,6 +81,7 @@ const toNode =
       lane: raw.lane,
       tags: raw.tags ?? [],
       summary: raw.summary,
+      unlisted: raw.unlisted ?? false,
       body: raw.body,
       hero: raw.hero,
       influences: raw.influences ?? [],
@@ -87,6 +89,10 @@ const toNode =
       critiques: raw.critiques ?? [],
       status: kind === "project" ? (extra.status as ProjectStatus | undefined) : undefined,
       video: kind === "project" ? (extra.video as string | undefined) : undefined,
+      threadImages:
+        kind === "project"
+          ? (extra.threadImages as { src: string; alt?: string }[] | undefined)
+          : undefined,
       links: extra.links as Node["links"],
       authors: extra.authors as string[] | undefined,
       venue: extra.venue as string | undefined,
