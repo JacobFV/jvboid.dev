@@ -6,3 +6,652 @@ tags: [tutorial, "jupyter notebook"]
 summary: "Tutorial using TensorFlow to build machine learning Titanic-survivor prediction model"
 unlisted: false
 ---
+
+
+# Titanic Survival Prediction with Tensorflow
+
+*The following notebook was written completely from scratch by Jacob Valdez (no stackoverflow, no tutorials, no Google, no Internet!) to complete the "Term Project Tutorial" for Data Mining.*
+
+Building and training a binary classifier is easy! I'll walk you through the steps below. It should only take 2 minutes to follow along. (Or if you want to clone from my Github repo, 30 seconds)
+
+
+
+## Getting Started
+
+
+
+Make sure you have numpy, pandas, tensorflow, matplotlib, and seaborn installed.
+
+
+
+``` python
+!pip install numpy pandas tensorflow matplotlib seaborn
+```
+
+
+
+If you're running jupyter lab locally, you may want to enable the `Completer` to get intelisense popups.
+
+
+
+``` python
+%config Completer.use_jedi=False
+```
+
+
+
+Now import the above libraries
+
+
+
+``` python
+import numpy as np
+import tensorflow as tf
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+```
+
+
+
+## Exploratory Data Analysis
+
+
+
+Let's start by loading our data (You'll have to change the paths below):
+
+
+
+``` python
+train_data = pd.read_csv('~/Downloads/train.csv')
+test_data = pd.read_csv('~/Downloads/test.csv')
+train_data #, test_data (don't look at your test data! ;) ) 
+```
+
+
+
+
+
+Now we want to get several 'tastes' of the data. We'll take a few different perspectives below
+
+
+
+``` python
+sns.displot(x='PassengerId', data=train_data)
+```
+
+
+
+
+
+
+
+Ok, good. `PassengerId` is uniformly distributed across the 1 to 891.
+
+Let's look at some other attributes:
+
+
+
+``` python
+sns.displot(x='Age', y='Pclass',
+           color='Survived', data=train_data)
+```
+
+
+
+
+
+
+
+Whoops! I'm not hiding my errors in this notebook because I want to guide you through similar problems that you may encounter. The above error says, `ValueError: Invalid RGBA argument: 'Survived'` I'm guessing that means `seaborn.displot` was expecting a 3-tuple or 4-tuple for the `color` parameter. To resolve this issue, I remembered using the `hue` arguement with a scalar column with the lineplot. Let's see if `hue` works in the above case:
+
+
+
+``` python
+sns.displot(x='Age', y='Pclass',
+           hue='Survived', data=train_data)
+```
+
+
+
+
+
+
+
+It works! Now you can see that there are only three classes. More importantly, note that the age variation of survival rate increases with `Pclass`.
+
+Let's not stop exploring our data. Guided by intuition and curiosity, I select the following attributes:
+
+
+
+``` python
+fig, [ax1, ax2] = plt.subplots(2)
+
+sns.histplot(x='Fare', y='Pclass',
+           hue='Survived', data=train_data,
+           ax=ax1)
+
+sns.histplot(train_data['Age'],
+            ax=ax2)
+
+sns.displot(x='Age', y='Pclass',
+           hue='Sex', data=train_data)
+```
+
+
+
+
+
+
+
+
+
+I'm sure there's alot to pull out of these figures. Survival classification is not an intuitive problem. Take a minute or two to make your own analyses, and think about how you will make a your own program that predicts if a passenger survived.
+
+
+
+------------------------------------------------------------------------
+
+
+
+Now that you have an idea about how you might start developing a survival classifier, let me share the good news: We can use machine learning to classify if a patient will survive without actually learning the deep data trends ourselves.
+
+
+
+## Converting the data
+
+
+
+We want to convert as much data as possible into machine readable form. For the purpose of this simple tutorial, let's drop textual data (see the Appendix if you're curious on how it might be parsed) and only utilize numerical or categorical data to classify passenger survival.
+
+If you forgot what the data looks like:
+
+
+
+``` python
+train_data.head()
+```
+
+
+
+
+
+It looks like we need to convert `Sex` and `Embarked` into integer class ID's. You can do this by:
+
+
+
+``` python
+embarked_map = {
+    'S': 0,
+    'C': 1,
+    'Q': 2,
+}
+
+def mapE(v):
+    if v in embarked_map:
+        return embarked_map[v]
+    else:
+        print(v)
+        return 3
+
+train_data_modified = train_data.copy()
+train_data_modified['Sex'] = train_data_modified.apply(
+    lambda x : 0 if x.Sex == 'male' else 1, axis=1)
+train_data_modified['Embarked'] = train_data_modified.apply(
+    lambda x : mapE(x.Embarked), axis=1)
+train_data_modified
+```
+
+
+
+
+
+
+
+I first copied the origonal dataset into `train_data_modified` so that I could test the above code cell multiple times while resolving syntax issues but not modify the ground truth `train_data`. I'm sure there are better ways to do this, but I'm just looking for a one-off answer right now. MLops is big on fast, imperfect-but-improving iterations, so you may find it convenient at times to follow this convention in your work.
+
+You'll probabbly also note that the above code treats the `Embarked` variable differently than `Sex`. I had to use that approach because a few variables were actually missing (they were `NaN` like you see in the `Age` column of row 888 above) There's actually several other not-a-numbers in the dataset. For our purposes, we'll override them with 0, but keep in mind that this can cause confusion in many scenerios.
+
+
+
+``` python
+for k in ['Survived', 'Pclass', 'Sex', 'Age', 'Fare', 'Embarked']:
+    train_data_modified[k] = train_data_modified[k].apply(
+        lambda x : 0 if np.isnan(x) else x)
+train_data_modified
+```
+
+
+
+
+
+Notice the `0` now present on row `888` above. We're ready to feed this to a neural network classifier.
+
+
+
+## Building the network
+
+
+
+You may have heard about 'deep learning' and 'neural networks' before. Don't let those fancy terms scare you. There's little true 'neural' inspiration to the networks were going to build, but its probabbly simpler for our purposes to think of the classifier as a statistical blackbox model that we can op-tim-ize to correctly identify the class of incoming data. This statistical model won't be your standard linear Bayesian classifier though. Instead, we'll use stacks of fully connected neural network layers (which are each like a multidimensional nonlinear version of Bayesian classifiers.) You might think of each weight in the network as a fuzzy-valued if-gate that partially decides whether some input value is relevant or not to the downstream or output value.
+
+
+
+To be precise, a fully connected layer looks like this: $$y=f(xW+b)$$ where
+
+- $x \in \mathbb{R}^{n_x}$ are the input values
+- $y \in \mathbb{R}^{n_y}$ are the output values
+- $W \in \mathbb{R}^{n_x \times n_y}$ is the weight matrix
+- $b \in \mathbb{R}^{n_y}$ are the bias values
+- $f \colon \mathbb{R}^{n_y} \mapsto \mathbb{R}^{n_y}$ is some elementwise, non-linear function like `relu` or `sigmoid`
+- $xW$ is the matrix multipulcation operation between $x$ and $W$
+
+There are several powerful deep learning libraries that simplify this mathematics, so we can practically ignore it for now. Take a look at `tensorflow.keras.layers.Dense`:
+
+
+
+``` python
+n_x = 20
+n_y = 30
+
+dense_layer = tf.keras.layers.Dense(units=n_y, activation=tf.nn.relu)
+dense_layer
+```
+
+
+
+
+
+Let's run this layer on some random data and see what it outputs
+
+
+
+``` python
+input_val = tf.random.uniform(shape=(1, n_x), minval=0, maxval=1)
+
+output_val = dense_layer(input_val)
+
+input_val, output_val
+```
+
+
+
+
+
+I forgot to mention: deep learning accelerators often have special support for parallel execution, so most high-level tensorflow and keras layers and operations expect data to be supplied in multiple batches simultaneously. We just made a single batch dimension by appendingn `(1,...)` to our input data shape.
+
+You'll notice that about half of the output data values are zero. That's good because it means our dense layer weights are effectively normalizing the positive input data for us. A lot of times when you're stacking neural networks, you get layers that take in positive values and output unit normal values. Of course, the `relu` function truncates negative values, so they just show up on the output as `0.`.
+
+As activations climb the layer hierarchy of a neural network, they successively acquire more certainty about their underlying significance and target representation. The previous layer was just an example. Let's now stack some more layers togethor. `keras` makes this easy with their `Sequential` API.
+
+
+
+``` python
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(6),
+    tf.keras.layers.Dense(20, activation='relu'),
+    tf.keras.layers.Dense(20, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+```
+
+
+
+This model takes in 6-dimensional data and passes it through 3 linear and nonlinear transforms to realize an output binary decision of survived `1` or did not survive `0`. Keras gives us a high level summary of this model via the `.summary` method:
+
+
+
+``` python
+model.summary()
+```
+
+
+
+
+
+Machine learning systems are data-hungry. Notice that our model has 581 trainable parameters. From an optimal machine learning perspective, that means we'll need at least 581 data values to train on. Our data set is $890 \times 5 \div 581\approx 7.66x$ bigger so we might have enough data to reasonably tune each parameter. If this first model doesn't work, then we can come back and build a smaller model or add some regularization.
+
+
+
+Before we forget, let's specify the optimizer and loss function that we'd like to use. You hear optimization introduced as 'rolling the ball down the hill' alot, but in 581-dimensional space (rather than 3D), dynamics aren't as intuitive. As an effect, machine learning research has developed many methods to minimize objectives in high dimensional space. Let's start with the simplest `sgd`. Since our problem is binary classification, we'll use `binary_crossentropy` which gives a purer information-theoretic measure to optimality than say mean squared error.
+
+
+
+``` python
+model.compile(optimizer='sgd', loss='binary_crossentropy')
+```
+
+
+
+## The training pipeline
+
+
+
+Now that you can see the input shape of our model, I hope you see why our `pandas.DataFrame` isn't ready for direct neural network consumption. It needs to be converted to a numpy array:
+
+
+
+``` python
+# inputs:  'Pclass', 'Sex', 'Age', 'Fare', 'Embarked'
+# outputs: 'Survived'
+
+train_data_modified.head(0)
+```
+
+
+
+
+
+``` python
+train_data_modified = train_data_modified.drop(
+    columns=['PassengerId', 'Name', 'SibSp', 'Ticket', 'Cabin'])
+train_data_modified.head(0)
+```
+
+
+
+
+
+``` python
+train_data_modified_arr = train_data_modified.to_numpy()
+train_data_modified_arr.shape, train_data_modified_arr 
+```
+
+
+
+
+
+We removed columns from `train_data_modified` that we won't need and then converted it to a `numpy.array`. Notice that for each column in this final dataframe, there is an equivalent column in the numpy array. The columns have the same ordering in both objects, so column 0 of the above matrix refers to `Survived`, column 1 to `Pclass`, column 2 to `Sex`, ... you get the idea. `numpy` and other multi-dimensional indexed Python objects support a special convention to slice a subset out of an array. We can use:
+
+
+
+``` python
+y_train = train_data_modified_arr[:, 0]
+y_train.shape
+```
+
+
+
+
+
+to retrieve just the first value from every row of `train_data_modified_arr`. We'll do something similar to extracted the rest of the input data:
+
+
+
+``` python
+X_train = train_data_modified_arr[:, 1:]
+X_train.shape
+```
+
+
+
+
+
+There's a lot going on behind the scenes of those operations: First, you're starting with a two dimensional `np.array` `train_data_modified_arr` which has a shape (891, 7). Now when we're defining `y_train`, we only want to take the first item from the second axis of this tensor, but we want to do this for every unit along the first axis. We express this by writting the index slicing operation `[: , 0]` where the colon means 'do this for all units on my axis' and the `0` means 'take the first element'. Those statements are applied to the axes that they are ordered in, so we get the first element of the second axis for all units along the first axis as a result.
+
+It gets a little trickier with `X_train`, but the underlying rules are the same. The colon indexing statement `:` on its own filters nothing along its axis. However, when it is qualified by positive integers, they identify an inclusive-first exclusive-last index filter for selection. For example, `[0:5]` selects the first, second, third, forth, and fifth elements of a sequence (the last index is exclusive so we don't get the sixth element). If you leave one of the indeces blank, the array boundary is assumed, so `[:9]` selects all elements up to but not including the tenth element. Now putting this all togethor with multidimensional indexing, `[:, 1:]` selects all elements including and after the second element on the second axis for every example along the first axis.
+
+It may seem confusing to think about all these shapes and indeces, but trust me, with data and mindset in tensor-form, the pipeline just takes off. The `tensorflow.keras` API makes it super easy to train our model from here. All we have to do is call the `.fit` method!
+
+
+
+``` python
+model.fit(x=X_train, y=y_train)
+```
+
+
+
+
+
+
+
+It works! 🎉 Or does it? There were no programming syntax issues, but we still have to ask ourselves: 'Is the model doing what its supposed to do?' Let's repeat the above process multiple time (in ML lingo, for multiple epochs) and then visualize how the model training runs. To make training runs consistent, I'll make two code cells below: one to reinitialize the neural network and another to train and visualize improvement. In anything bigger than this tutorial, you'd probabbly want to actually write functions instead of code so that it's easier to see the history of all executions. Also many Github is the home to myriads of libraries that assist visualizing results. Currently, weights and biases is a popular free for personal use ML checkpointing and visualization tool.
+
+
+
+``` python
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(6),
+    tf.keras.layers.Dense(20, activation='relu'),
+    tf.keras.layers.Dense(20, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+model.compile(optimizer='sgd', loss='binary_crossentropy')
+```
+
+
+
+``` python
+history = model.fit(x=X_train, y=y_train, epochs=10)
+plt.plot(history.history['loss'])
+```
+
+
+
+
+
+
+
+
+
+Watch that training loss go! Our model is really learning! Notice that the optimization algorithm we selected stochastic gradient descent `model.compile(optimizer='sgd', ...)` is *stochastic*. It only estimates the optimal gradient values from statistical samples against the dataset at each epoch. Don't be surprised then to see the loss jump up and down a bit. Still, it generally makes progress towards convergence. Let's see if more iterations improve the model further:
+
+
+
+``` python
+history = model.fit(x=X_train, y=y_train, epochs=100, verbose=0)
+plt.plot(history.history['loss'])
+```
+
+
+
+
+
+
+
+Notice that now training doesn't improve so quickly. In fact, as loss decreases, we start to approach the Bayesian error bound which is a theoretical minimum for any classification system, and as our classifier approaches that phase boundary, it begins to oscillate even more violently. We could use a few tricks to minimize stachasticity like turning down the learning rate, cahanging the optimizer, or regularizing the weights, activations, gradients, or error, but in the end there's no getting around the impossible.
+
+
+
+## Congradulations
+
+
+
+We still haven't gone over validation sets, regularization, or pipeline construction, but take a moment to relax and congradulate yourself for building and training your very own neural network. Maybe celebrate by
+
+- sharing this post with your friends
+- visiting [arxiv.org](https://arxiv.org) and reading a interesting paper on AI.
+- testing your model on unseen data
+
+
+
+## Test Data
+
+
+
+If you chose the latter option, go ahead and load your test data into neural-network-readable format using the before proceedure:
+
+
+
+``` python
+test_data_modified = test_data.copy()
+test_data_modified['Sex'] = test_data_modified.apply(
+    lambda x : 0 if x.Sex == 'male' else 1, axis=1)
+test_data_modified['Embarked'] = test_data_modified.apply(
+    lambda x : mapE(x.Embarked), axis=1)
+
+for k in ['Pclass', 'Sex', 'Age', 'Fare', 'Embarked']:
+    test_data_modified[k] = test_data_modified[k].apply(
+        lambda x : 0 if np.isnan(x) else x)
+test_data_modified
+```
+
+
+
+
+
+I had to remove the `'Survived'` column since it wasn't there. (It's test data after all!) Also, while scrolling through the list of methods under `train_data`, I encountered the `dropna` method. It is a much cleaner solution to the previous 3-line for loop I used when cleaning `train_data`. I have kept the above code as origonally so you can see this overall development process.
+
+
+
+``` python
+test_data_modified = test_data_modified.drop(
+    columns=['PassengerId', 'Name', 'SibSp', 'Ticket', 'Cabin'])
+test_data_modified
+```
+
+
+
+
+
+``` python
+X_test = test_data_modified.to_numpy()
+X_test[:10]
+```
+
+
+
+
+
+Now let's make our predictions:
+
+
+
+``` python
+y_test = model.predict(X_test)
+y_test = y_test[:,0]
+y_test = y_test > 0.5
+y_test = y_test.astype(int)
+y_test
+```
+
+
+
+
+
+It looks like most of these passengers survived! We need to convert this back into the submission CSV format. This means we need to associate each output value with the passenger ID. Since everything is still in order, we can use Python's zip enumerate feature to pairwise associate and enumerate over the two:
+
+
+
+``` python
+submission_vals = list()
+for passengerId, survived in zip(test_data['PassengerId'], y_test):
+    submission_vals.append((passengerId, survived))
+submission_vals[:10]
+```
+
+
+
+
+
+Now let's write it to a CSV and submit!
+
+
+
+``` python
+submission_df = pd.DataFrame(submission_vals, 
+                             columns=['PassengerId', 'Survived'])
+submission_df.to_csv('~/Downloads/titanic_submission.csv', index=0)  # I had to look up on stack overflow how to remove the index column
+submission_df
+```
+
+
+
+
+
+(I got 49000th place)
+
+
+
+## Appendix: Parsing textual data
+
+
+
+You may be curious how to parse text data meaningfully. There are quick tricks and deep answers to that question. First, a simple approach is to map each character or word to a unique dimension index. Keras supports this with the `preprocessing` api:
+
+
+
+``` python
+tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=1000)
+tokenizer.fit_on_texts(['Your', 'text'])
+seq = tokenizer.texts_to_sequences(["This is some sample text"])
+seq = np.array(seq)
+seq
+```
+
+
+
+
+
+Then you can feed this input to an `Embedding` layer, which will make a high-dimensional semantically 'meaningful' vector embedding of the word tokens.
+
+
+
+``` python
+emb_layer = tf.keras.layers.Embedding(input_dim=1000, output_dim=50)
+emb_layer(seq)
+```
+
+
+
+
+
+Great! Now your dense layers and other layers can start learning the tokenizer's language to parse words (or characters) in order to understand natural language columns.
+
+
+
+A faster (actually computationally slower, but faster to develop) and more complete solution is just to use off-the-shelf transformers like GPT.
+
+
+
+``` python
+import transformers
+```
+
+
+
+``` python
+gpt_tokenizer = transformers.OpenAIGPTTokenizer.from_pretrained('openai-gpt')
+gpt_model = transformers.OpenAIGPTModel.from_pretrained('openai-gpt')
+```
+
+
+
+
+
+``` python
+tokens = gpt_tokenizer.encode("some text input", return_tensors='tf')
+text_encoding = gpt_model(tokens)
+```
+
+
+
+
+
+I didn't realize you need pytorch by default.
+
+
+
+``` python
+import torch
+```
+
+
+
+``` python
+tokens = gpt_tokenizer.encode("some text input", return_tensors='pt')
+text_encoding = gpt_model(tokens)
+```
+
+
+
+``` python
+text_encoding
+```
+
+
+
+
+
+You now have a highly informative vector representation. With pretrained transformers, you are generally good to go for advanced text data extraction.
+

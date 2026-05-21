@@ -6,3 +6,154 @@ tags: []
 summary: "A brief exploration into the idea of conditioning transformers to generate text conditioned on a given context"
 unlisted: false
 ---
+
+
+# Conditioning Transformers
+
+Providing more conditioning gives more control. This principle might be observed in neuron firing, desicion theory, and process control.
+
+Go to Runtime → Run all (`Ctrl.+F9`) to experiment yourself. Have fun! 😊
+
+
+
+## Setup
+
+Essentials but not the point of research
+
+
+
+``` python
+%tensorflow_version 2.x
+
+!pip install git+https://github.com/huggingface/transformers
+
+import tensorflow as tf
+import transformers
+```
+
+
+
+
+
+``` python
+import logging
+logging.getLogger('transformers.tokenization_utils').setLevel(logging.ERROR)
+logging.getLogger('transformers.tokenization_utils').disabled = True
+```
+
+
+
+``` python
+tokenizer = transformers.GPT2Tokenizer.from_pretrained('gpt2')
+transformer = transformers.TFGPT2LMHeadModel.from_pretrained('gpt2')
+```
+
+
+
+``` python
+def speak(text):
+    inp_tokens = tokenizer.encode(text, return_tensors='tf')
+    out_tokens = transformer.generate(
+        inp_tokens,
+        max_length=50,
+        top_k=50,
+        top_p=0.7,
+        do_sample=True,
+        temperature=0.75,
+        repetition_penalty=10)
+    return tokenizer.decode(out_tokens[0])
+```
+
+
+
+## Experiment
+
+I predict that sentences will appear more similar as conditioning length increases.
+
+
+
+``` python
+def experiment(text):
+    """condition gpt-2 generation on progressively longer starting sequences
+    args:
+        text: string language input
+    returns:
+        gpt-2 outputs
+    """
+
+    words = text.split(' ')
+    for conditioning_len, _ in enumerate(words, start=1):
+        conditioning_seq = ' '.join(words[0:conditioning_len])
+        print('='*32+'\r',f'{conditioning_len}:', speak(conditioning_seq))
+```
+
+
+
+``` python
+experiment('AI engineering demands a rigorous examination of every variable involved.')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+``` python
+experiment('Old McDonald had a farm')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Conclusions
+
+Being a random machine, I cannot precisely predict the transformer's output. However, the next generated token has high mutual information with previous tokens. If I exercise more control over the previous tokens, then I exercise control ove the following tokens. This is control by narrowing options, as reasonable conclusions decrease in set size with increase priors. Finally, this is comparable to the behavior exhibited in intelligent beings. Although internal dynamics are usually unknown, their predicted behavior is further refined with time. Like gpt-2, longtime friends can even model each other's sentences!
+

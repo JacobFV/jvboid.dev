@@ -6,3 +6,312 @@ tags: [tutorial, "jupyter notebook"]
 summary: "A simple tutorial on how to build a Naive Bayes classifier."
 unlisted: false
 ---
+
+
+*This tutorial was written to fulfill the Assignment 3 requirement for CSE 5334-001 Data Mining and is entirely my own (Jacob Valdez 1001628688) work.*
+
+
+
+# Naive Bayes Classifier
+
+The naive bayes classifier represents a 'principled' (i.e.: minimal assumptions) approach to classification. In this tutorial, we will build one that classifies movie reviews as either positive or negative based on the text of the review.
+
+## Getting Started
+
+Let's get started by importing and inspecting our data. (I have downloaded the dataset from Kaggle [here](https://www.kaggle.com/marklvl/sentiment-labelled-sentences-data-set).)
+
+
+
+``` python
+def load(fname):
+  with open(fname) as f:
+    for line in f:
+      line = line.strip()
+      yield line[:-1].strip(), int(line[-1])
+
+all_data = list(load('data/yelp_labelled.txt'))
+for text, id in all_data[:10]:
+  print(text, id)
+```
+
+
+
+
+
+Notice that the data is labeled in two classes: positive (`1`) and negative (`0`). Let's organize this data into train, dev, and test sets:
+
+
+
+``` python
+train_data = all_data[:int(len(all_data) * 0.7)]
+dev_data = all_data[int(len(all_data) * 0.7):int(len(all_data) * 0.85)]
+test_data = all_data[int(len(all_data) * 0.85):]
+
+len(train_data), len(dev_data), len(test_data)
+```
+
+
+
+
+
+Now we're going to build a vocabulary list of all the words in the train set. We will omit words that occur less than 5 times in the train set.
+
+
+
+``` python
+vocab = dict()
+
+# tabulate the frequency of each word in the training set
+for text, id in train_data:
+  for word in text.split():
+    if word not in vocab:
+      vocab[word] = 1
+    else:
+      vocab[word] += 1
+
+# drop words that appear less than 5 times
+vocab = [word for word in vocab.keys() if vocab[word] >= 5]
+
+# build sorted list of words
+vocab = sorted(vocab)
+
+# reverse lookup table
+reverse_vocab = {v:k for k, v in enumerate(vocab)}
+
+print(vocab[:10])
+```
+
+
+
+
+
+Now let's make some naive classifiers for each word individually. This assumes that each word is independent of the other words (a naive assumption) and that we have labels for each word.
+
+
+
+``` python
+P_word = {
+  word: len([None for text, label in train_data if word in text]) / len(train_data)
+  for word in vocab
+}
+P_word_given_pos = {
+  word: len([None for text, label in train_data if word in text and label == 1]) /
+        len([None for text, label in train_data if label == 1])
+  for word in vocab
+}
+P_word_given_neg = {
+  word: len([None for text, label in train_data if word in text and label == 0]) /
+        len([None for text, label in train_data if label == 0])
+  for word in vocab
+}
+P_pos = len([None for text, label in train_data if label == 1]) / len(train_data)
+P_neg = len([None for text, label in train_data if label == 0]) / len(train_data)
+```
+
+
+
+Now we can apply Bayesian reasoning to our classification problem: Let's say that the probability of a word being positive is $P(w_i \mid c) = \frac{P(w_i \mid c)}{P(c)}$, where $P(c)$ is the probability of the class label (positive or negative). Then, theoretically, we should be able to calculate the probability of a review being positive or negative $P(c \mid w_i) = \frac{P(c,w_i)}{P(w_i)} = \frac{P(w_i \mid c)P(c)}{P(w_i)}$. Taking the independent assumption, $P(w_1,w_2,\dots,w_n)$ is given by the product of the probabilities of each word in the review $P(w_1)P(w_2)\dots P(w_n)$ for a given class, so we will compute the products of each classes probabilities of each word in the review and then decide on the class label with the highest probability.
+
+
+
+``` python
+P_pos_given_word = {
+  word: P_word_given_pos[word] * P_pos / P_word[word]
+  for word in vocab
+}
+
+P_neg_given_word ={
+  word: P_word_given_neg[word] * P_neg / P_word[word]
+  for word in vocab
+}
+
+def classify(text):
+  pos_score = 1.0
+  neg_score = 1.0
+  for word in text.split():
+    if word in vocab:
+      pos_score *= P_pos_given_word[word]
+      neg_score *= P_neg_given_word[word]
+    else:
+      # if word not in vocab, let the dataset's mean represent it
+      pos_score *= P_pos
+      neg_score *= P_neg
+  return 1 if pos_score > neg_score else 0
+
+classify('this is a good review'), classify('this is a bad review')
+```
+
+
+
+
+
+As you can see, our classifier correctly distinguishes between the two positive and negative reviews above. However they only represent a small fraction of the total number of reviews. Let's test our classifier on the dev set:
+
+
+
+``` python
+dev_pred = [classify(text) for text, label in dev_data]
+correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(dev_pred, dev_data))
+print(f'{100 * correct / len(dev_data):3.1f}% accuracy on dev')
+```
+
+
+
+
+
+Not bad! But definitely room for improvement. We can see that our classifier correctly classifies 60% of the 150 reviews in the dev set. Let's try it on a 5-fold cross-validation of the dev set:
+
+
+
+``` python
+N_splits = 5
+dev_splits = [
+  dev_data[
+    int(len(dev_data) * (1/N_splits) * i):
+    int(len(dev_data) * (1/N_splits) * (i+1))
+  ] for i in range(N_splits)
+]
+
+for i, split in enumerate(dev_splits):
+  split_pred = [classify(text) for text, label in split]
+  split_correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(split_pred, split))
+  print(f'{100 * split_correct / (len(dev_data)/N_splits):3.1f}% accuracy on dev split {i}')
+```
+
+
+
+
+
+Relatively mild performance variation across each split indicates that our classifier may be overfitting. We can combat this be introducing additional priors to our classifier. Consider smoothing: Recognizing that there are a lot of words outside our vocabulary (after all, we filtered those with frequencies \< 5), we can estimate $P(w \mid c)$ as $\frac{N(w,c) + \alpha}{N(c) + |V| + \alpha}$, where $N(w,c)$ is the number of times word $w$ occurs in class $c$, $N(c)$ is the number of reviews in class $c$, and $V$ is the total number of words in the vocabulary. This formula sort of compromises between total frequentist assumption for observed events (words in the corpus) $P(w \mid c) = \frac{N(w,c)}{N(c)}$ and the Bayesian assumption on unobserved ones (words not in the training set) $P(w \mid c) = \frac{\alpha}{|V| + \alpha}$. It should make our classifier more robust to unseen words while retaining the ability to distinguish between positive and negative reviews. I'm going to start with $\alpha=1$, but we can tune this value later. Let's see it in code:
+
+
+
+``` python
+alpha = 1
+
+def P_word_given_pos_smoothed_fn(word, alpha):
+  Nwc = len([None for text, label in train_data if word in text and label == 1])
+  Nc = len([None for text, label in train_data if label == 1])
+  return (Nwc + alpha) / (Nc + len(vocab) + alpha)
+
+def P_word_given_neg_smoothed_fn(word, alpha):
+  Nwc = len([None for text, label in train_data if word in text and label == 0])
+  Nc = len([None for text, label in train_data if label == 0])
+  return (Nwc + alpha) / (Nc + len(vocab) + alpha)
+
+def classify_smoothed(text, alpha):
+  pos_score = 1.0
+  neg_score = 1.0
+  for word in text.split():
+    pos_score *= P_word_given_pos_smoothed_fn(word, alpha)
+    neg_score *= P_word_given_neg_smoothed_fn(word, alpha)
+  return 1 if pos_score > neg_score else 0
+
+classify_smoothed('this is a good review', alpha), classify_smoothed('this is a bad review', alpha)
+```
+
+
+
+
+
+Cool! Now let's validate it on the dev set and folds as before:
+
+
+
+``` python
+dev_pred = [classify_smoothed(text, alpha) for text, label in dev_data]
+correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(dev_pred, dev_data))
+print(f'{100 * correct / len(dev_data):3.1f}% accuracy on dev')
+
+for i, split in enumerate(dev_splits):
+  split_pred = [classify_smoothed(text, alpha) for text, label in split]
+  split_correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(split_pred, split))
+  print(f'{100 * split_correct / (len(dev_data)/N_splits):3.1f}% accuracy on dev split {i}')
+```
+
+
+
+
+
+11.3% improvement. That's a lot of improvement! Let's try out different values of $\alpha$ and see which one works best.
+
+
+
+``` python
+for i in range(-3, 3):
+  alpha = 2 ** i
+  print(f'alpha = {alpha:4.2f}')
+
+  dev_pred = [classify_smoothed(text, alpha) for text, label in dev_data]
+  correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(dev_pred, dev_data))
+  print(f'{100 * correct / len(dev_data):3.1f}% accuracy on dev')
+
+  for i, split in enumerate(dev_splits):
+    split_pred = [classify_smoothed(text, alpha) for text, label in split]
+    split_correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(split_pred, split))
+    print(f'{100 * split_correct / (len(dev_data)/N_splits):3.1f}% accuracy on dev split {i}')
+
+  print()
+```
+
+
+
+
+
+You might not be able to see it, but alpha=2 (72% accuracy) is the best value. Let's try it on the test set:
+
+
+
+``` python
+  dev_pred = [classify_smoothed(text, alpha=2) for text, label in dev_data]
+  correct = sum(1 if pred==label else 0 for pred, (_, label) in zip(dev_pred, dev_data))
+  print(f'{100 * correct / len(dev_data):3.1f}% accuracy on dev')
+```
+
+
+
+
+
+Awesome! We can tell that the dev set is pretty representative of the test set because their accuracy is too close to distinguish.
+
+This assignment had one final requirement which I couldn't fit into the flow of thought above: `Derive Top 10 words that predicts positive and negative class P[Positive| word]` We can easily meet this objective by taking the words for the top 10 values in our previously computed `P_pos_given_word` and `P_neg_given_word` dictionaries:
+
+
+
+``` python
+top_positive_words = sorted(
+  vocab,
+  key=lambda word: P_pos_given_word[word],
+  reverse=True
+)[:10]
+
+top_negative_words = sorted(
+  vocab,
+  key=lambda word: P_neg_given_word[word],
+  reverse=True
+)[:10]
+
+print(f'Top positive words: {", ".join(top_positive_words)}')
+print(f'Top negative words: {", ".join(top_negative_words)}')
+```
+
+
+
+
+
+I hope you enjoyed this tutorial! You can run it yourself by downloading [this notebook on github](https://github.com/JacobFV/jacobfv.github.io/blob/source/notebooks/naive_bayes.ipynb). If you have any questions, please feel free to email me at jacob \[dot\] valdez \[at\] limboid \[dot\] ai. You might also enjoy reading some of the articles below for a more in-depth study. Thanks for your time!
+
+## Further Reading
+
+[Bayes and Naive Bayes Classifier](https://arxiv.org/pdf/1404.0933.pdf)
+
+> The Bayesian Classification represents a supervised learning method as well as a statistical method for classification. Assumes an underlying probabilistic model and it allows us to capture uncertainty about the model in a principled way by determining probabilities of the outcomes. This Classification is named after Thomas Bayes (1702-1761), who proposed the Bayes Theorem. Bayesian classification provides practical learning algorithms and prior knowledge and observed data can be combined. Bayesian Classification provides a useful perspective for understanding and evaluating many learning algorithms. It calculates explicit probabilities for hypothesis and it is robust to noise in input data. In statistical classification the Bayes classifier minimises the probability of misclassification. That was a visual intuition for a simple case of the Bayes classifier, also called: 1)Idiot Bayes 2)Naive Bayes 3)Simple Bayes
+
+[Modeling Spammer Behavior: Naïve Bayes vs. Artificial Neural Networks](https://arxiv.org/abs/1008.3282)
+
+> Addressing the problem of spam emails in the Internet, this paper presents a comparative study on Naïve Bayes and Artificial Neural Networks (ANN) based modeling of spammer behavior. Keyword-based spam email filtering techniques fall short to model spammer behavior as the spammer constantly changes tactics to circumvent these filters. The evasive tactics that the spammer uses are themselves patterns that can be modeled to combat spam. It has been observed that both Naïve Bayes and ANN are best suitable for modeling spammer common patterns. Experimental results demonstrate that both of them achieve a promising detection rate of around 92%, which is considerably an improvement of performance compared to the keyword-based contemporary filtering approaches.
+
+[On Resource-Efficient Bayesian Network Classifiers and Deep Neural Networks](https://arxiv.org/abs/2010.11773)
+
+> We present two methods to reduce the complexity of Bayesian network (BN) classifiers. First, we introduce quantization-aware training using the straight-through gradient estimator to quantize the parameters of BNs to few bits. Second, we extend a recently proposed differentiable tree-augmented naive Bayes (TAN) structure learning approach by also considering the model size. Both methods are motivated by recent developments in the deep learning community, and they provide effective means to trade off between model size and prediction accuracy, which is demonstrated in extensive experiments. Furthermore, we contrast quantized BN classifiers with quantized deep neural networks (DNNs) for small-scale scenarios which have hardly been investigated in the literature. We show Pareto optimal models with respect to model size, number of operations, and test error and find that both model classes are viable options.
+
