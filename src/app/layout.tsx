@@ -68,6 +68,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
+        {/* Fixed ambient backdrop — soft blurred clouds + faint color
+            streaks. Sits behind all content (see `.atmosphere` in
+            globals.css). */}
+        <div className="atmosphere" aria-hidden />
         <SiteHeader nodes={searchable} />
         {children}
       </body>

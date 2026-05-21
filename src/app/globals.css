@@ -150,6 +150,66 @@ a:hover {
   border-top: 1px solid var(--color-bg-2);
 }
 
+/* ---- Ambient background ---- */
+/* A fixed layer behind all content: low-opacity blurred "clouds" plus a
+   few faint diagonal streaks of lane color over the plain bg-0 canvas.
+   z-index:-1 keeps it above the body background but behind page content. */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.atmosphere::before,
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+}
+
+/* Clouds — soft ink blobs. Reads as muted grey on light, soft glow on
+   dark, since --color-ink flips with the theme. */
+.atmosphere::before {
+  background:
+    radial-gradient(38% 32% at 18% 22%, color-mix(in srgb, var(--color-ink) 7%, transparent), transparent 72%),
+    radial-gradient(32% 26% at 82% 14%, color-mix(in srgb, var(--color-ink) 6%, transparent), transparent 70%),
+    radial-gradient(46% 38% at 70% 78%, color-mix(in srgb, var(--color-ink) 6%, transparent), transparent 74%),
+    radial-gradient(30% 30% at 38% 90%, color-mix(in srgb, var(--color-ink) 5%, transparent), transparent 72%);
+  filter: blur(70px);
+  animation: atmosphere-drift 72s ease-in-out infinite alternate;
+}
+
+/* Streaks — occasional thin diagonal bands of lane color. */
+.atmosphere::after {
+  background:
+    linear-gradient(116deg, transparent 43%, color-mix(in srgb, var(--color-lane-research) 22%, transparent) 50%, transparent 57%),
+    linear-gradient(116deg, transparent 63%, color-mix(in srgb, var(--color-lane-writing) 18%, transparent) 68%, transparent 73%),
+    linear-gradient(116deg, transparent 22%, color-mix(in srgb, var(--color-lane-personal) 15%, transparent) 27%, transparent 32%);
+  filter: blur(48px);
+  opacity: 0.6;
+  animation: atmosphere-streak 58s ease-in-out infinite alternate;
+}
+
+@keyframes atmosphere-drift {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.08);
+  }
+}
+
+@keyframes atmosphere-streak {
+  from {
+    transform: translate3d(-4%, 0, 0);
+  }
+  to {
+    transform: translate3d(4%, 2%, 0);
+  }
+}
+
 /* ---- PfpReveal animations ---- */
 @keyframes pfp-backdrop-in {
   from {
