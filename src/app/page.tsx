@@ -397,20 +397,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ---- Latest updates ---- */}
+        {/* ---- Updates ---- */}
         {recentUpdates.length > 0 && (
-          <Section
-            eyebrow="Latest"
-            title="Updates"
-            link={{ href: "/updates", label: "all updates →" }}
-          >
-            <ul className="flex flex-col">
-              {recentUpdates.map((n) => (
-                <li key={n.id}>
-                  <RowLink node={n} />
-                </li>
-              ))}
-            </ul>
+          <Section title="Updates" link={{ href: "/updates", label: "all updates →" }}>
+            <UpdateTimeline nodes={recentUpdates} />
           </Section>
         )}
 
@@ -551,7 +541,7 @@ function Section({
   children,
   id,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   link?: { href: string; label: string };
   children: React.ReactNode;
@@ -561,9 +551,9 @@ function Section({
     <section id={id} className="mt-24 scroll-mt-20">
       <div className="mb-8 flex items-baseline justify-between gap-6">
         <div>
-          <p className="text-xs text-[var(--color-ink-mute)]">{eyebrow}</p>
+          {eyebrow && <p className="text-xs text-[var(--color-ink-mute)]">{eyebrow}</p>}
           <h2
-            className="mt-2 font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]"
+            className={`${eyebrow ? "mt-2 " : ""}font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]`}
             style={{ fontVariationSettings: '"opsz" 96' }}
           >
             {title}
@@ -668,6 +658,47 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
         {node.title}
       </div>
     </Link>
+  );
+}
+
+// Updates rendered as a vertical timeline: a continuous grey rail
+// threads through a neutral-grey dot on each row (no lane color here —
+// updates are chronological, not categorical).
+function UpdateTimeline({ nodes }: { nodes: Node[] }) {
+  return (
+    <ul className="flex flex-col">
+      {nodes.map((n, i) => {
+        const first = i === 0;
+        const last = i === nodes.length - 1;
+        return (
+          <li key={n.id} className="relative">
+            <Link
+              href={nodeHref(n)}
+              className="group flex items-baseline gap-4 rounded-xl py-3 pr-3 pl-9 no-underline transition-colors hover:bg-[var(--color-bg-1)]/60"
+            >
+              <time className="w-20 shrink-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                {fmtDate(n.date)}
+              </time>
+              <span className="text-[var(--color-ink)] group-hover:text-[var(--color-accent)]">
+                {n.title}
+              </span>
+            </Link>
+            {/* Rail + dot, painted after the Link so they sit above its
+                hover background. The rail is clipped to start/end at the
+                dot on the first/last row. */}
+            <span
+              aria-hidden
+              className="absolute left-3 w-px -translate-x-1/2 bg-[var(--color-bg-2)]"
+              style={{ top: first ? "50%" : 0, bottom: last ? "50%" : 0 }}
+            />
+            <span
+              aria-hidden
+              className="absolute left-3 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-ink-mute)] ring-4 ring-[var(--color-bg-0)]"
+            />
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
