@@ -437,7 +437,7 @@ function QuickView({
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="relative flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-[var(--color-bg-0)] shadow-[var(--shadow-soft),var(--ring-soft)] outline-none"
+        className="relative flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-[var(--color-bg-0)] shadow-[var(--shadow-soft),var(--ring-soft)] outline-none"
         style={{
           // List opens (no origin) use the plain center zoom; grid opens
           // are driven by the FLIP transform in the layout effect.
@@ -446,7 +446,7 @@ function QuickView({
       >
         {/* ---- Docked header — project name + link out ---- */}
         <header
-          className="z-20 flex shrink-0 items-center justify-between gap-4 border-b border-[var(--color-bg-2)]/60 px-5 py-3.5 backdrop-blur-xl"
+          className="z-20 flex shrink-0 items-center justify-between gap-4 border-b border-[var(--color-bg-2)]/60 px-3.5 py-3.5 backdrop-blur-xl"
           style={{ background: "color-mix(in srgb, var(--color-bg-0) 74%, transparent)" }}
         >
           <div className="flex min-w-0 items-baseline gap-2.5">
@@ -464,7 +464,7 @@ function QuickView({
           <div className="flex shrink-0 items-center gap-1.5">
             <Link
               href={href}
-              className="rounded-full bg-[var(--color-bg-1)] px-3 py-1 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline transition-colors hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+              className="rounded-full bg-[var(--color-bg-1)] px-2.5 py-1 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline transition-colors hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
             >
               open ↗
             </Link>
@@ -482,7 +482,7 @@ function QuickView({
         </header>
 
         {/* ---- Scrolling body — visual, meta, and the full project ---- */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">
+        <div className="flex-1 overflow-y-auto px-3.5 py-5">
           {liveUrl ? (
             <div
               className="relative w-full overflow-hidden rounded-xl bg-[var(--color-bg-1)]"
@@ -556,7 +556,7 @@ function QuickView({
 
         {/* ---- Docked footer — outbound links + read-more ---- */}
         <footer
-          className="z-20 flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--color-bg-2)]/60 px-5 py-3.5 backdrop-blur-xl"
+          className="z-20 flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--color-bg-2)]/60 px-3.5 py-3.5 backdrop-blur-xl"
           style={{ background: "color-mix(in srgb, var(--color-bg-0) 74%, transparent)" }}
         >
           <div className="flex flex-wrap gap-2 font-[family-name:var(--font-mono)] text-xs">
@@ -566,7 +566,7 @@ function QuickView({
                 href={v}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-[var(--color-bg-1)] px-3 py-1 text-[var(--color-ink-dim)] no-underline transition-colors hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+                className="rounded-full bg-[var(--color-bg-1)] px-2.5 py-1 text-[var(--color-ink-dim)] no-underline transition-colors hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
                 {k} ↗
               </a>
@@ -574,7 +574,7 @@ function QuickView({
           </div>
           <Link
             href={href}
-            className="shrink-0 rounded-full bg-[var(--color-accent)] px-4 py-1.5 font-[family-name:var(--font-mono)] text-xs text-white no-underline transition-opacity hover:opacity-90"
+            className="shrink-0 rounded-full bg-[var(--color-accent)] px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-white no-underline transition-opacity hover:opacity-90"
           >
             read the full project →
           </Link>
@@ -584,7 +584,7 @@ function QuickView({
         {origin && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-2xl"
+            className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-3xl"
             style={{ opacity: ghostFaded ? 0 : 1, transition: "opacity 300ms ease-out" }}
           >
             <IconFace project={project} preferThread />
