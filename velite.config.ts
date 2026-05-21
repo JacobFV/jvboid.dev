@@ -1,4 +1,5 @@
 import { defineConfig, defineCollection, s } from "velite";
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 
@@ -25,6 +26,7 @@ const baseFields = {
   body: s.mdx({
     copyLinkedFiles: false,
     remarkPlugins: [remarkGfm, remarkMath],
+    rehypePlugins: [rehypeKatex],
   }),
 };
 
@@ -83,6 +85,7 @@ const readings = defineCollection({
       slug: s.path(),
       authors: s.array(s.string()).default([]),
       workType: s.enum(["book", "paper", "article", "course", "other"]).default("book"),
+      tier: s.enum(["F", "B", "A", "S"]).optional(),
       status: s.enum(["queued", "reading", "finished", "paused", "reference"]).default("reading"),
       source: s.string().optional(),
       url: s.string().optional(),
@@ -215,6 +218,7 @@ const loop = defineCollection({
       body: s.mdx({
         copyLinkedFiles: false,
         remarkPlugins: [remarkGfm, remarkMath],
+        rehypePlugins: [rehypeKatex],
       }),
     })
     .transform((d) => ({ ...d, kind: "loop" as const })),

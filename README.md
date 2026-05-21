@@ -1,110 +1,158 @@
 # jacobfv-site
 
-Personal site for Jacob Valdez — a navigable map of projects, writing, and visions, not a list of pages.
+Jacob Valdez's personal site: a Next.js app that turns projects, writing, papers, updates, experience, skills, events, and visions into one connected graph.
 
-Replaces the current Jekyll/al-folio site at `../jacobfv.github.io` with a Next.js app where every artifact is a node in a graph and the navigation _is_ the relationship between them.
-
-## Status
-
-**Skeleton only.** Directory layout, configs, and docs are in place. No application code yet. The implementation prompt for a fresh Claude session is in [`docs/IMPLEMENTATION_PROMPT.md`](docs/IMPLEMENTATION_PROMPT.md).
-
-## North star
-
-> _The mind of Jacob, navigable._
-
-Three viewing modes over one URL space, no full page reloads:
-
-1. **Constellation** (`/`) — force-directed graph in WebGL. Nodes = projects, posts, papers, readings, updates, skills, friends, events, visions, experience. Edges = influence, realization, critique.
-2. **Timeline** (`/t`) — same graph projected onto a horizontal time axis, lanes for research / building / writing / personal, curved influence arrows between lanes.
-3. **Document** (`/[slug]`) — polymorphic detail view. The opened node fills the screen; the graph slides to a sidebar minimap.
-
-Plus:
-
-- **`/loop`** — _A Beautiful Loop_ book draft as a scrollytelling experience.
-- **3D vision room** — `_bio/focus-statement` and 5-year-vision essays rendered as a Three.js scene the visitor walks through.
-- **Cmd-K palette** — replaces nav. Jump to any node, switch modes, search.
-- **latest update dock** — persistent corner widget pointing at the newest durable update node.
+The site is no longer a skeleton. It has a working App Router implementation, typed MDX content through Velite, graph-derived navigation, canonical kind-prefixed routes, legacy redirects, a resume view, event/update indexes, a loop reader, and a 3D vision-room treatment for selected vision essays.
 
 ## Stack
 
-- Next.js 15 (App Router) + TypeScript + React 19
-- MDX content via Velite (typed at build time)
-- Tailwind CSS v4 + shadcn/ui chrome
-- Framer Motion (shared-layout transitions, view-transitions API)
-- React Flow (constellation 2D + timeline lanes)
-- react-three-fiber + drei (3D vision room, select project showcases)
-- Lenis (smooth scroll for `/loop`)
-- Pagefind or Fuse.js (client-side search powering Cmd-K)
-- citation-js (renders the existing `.bib` inline)
-- Hosted on Cloudflare Pages or Vercel; static-first
+- Next.js 15 App Router, React 19, TypeScript
+- Velite for typed MDX collections in `content/`
+- Tailwind CSS v4
+- React Flow / XYFlow, D3 force, Framer Motion
+- Three.js, React Three Fiber, Drei
+- Fuse.js and `cmdk` for local search/navigation UI
+- `next-mdx-remote`, Shiki, KaTeX/remark math, remark GFM
 
-## Repo layout
+## Local Development
 
-```
-jacobfv-site/
-├── content/                  # MDX, one folder per node type
-│   ├── posts/                # blog posts
-│   ├── projects/             # projects
-│   ├── papers/               # papers + .bib references
-│   ├── readings/             # books, papers, courses, articles being read
-│   ├── updates/              # durable status notes, links, X posts, embeds
-│   ├── skills/               # evidence-backed professional capabilities
-│   ├── friends/              # public friend/collaborator pages
-│   ├── events/               # conferences, talks, trips, launches, upcoming plans
-│   ├── visions/              # bio essays, focus statement, 5-year vision
-│   └── experience/           # roles, education
-├── src/
-│   ├── app/                  # Next App Router
-│   │   ├── (graph)/          # / and /t share the graph layout
-│   │   ├── [slug]/           # polymorphic node detail
-│   │   ├── loop/             # scrollytelling book
-│   │   └── api/              # search index, etc.
-│   ├── components/
-│   │   ├── graph/            # React Flow nodes, edges, force layout
-│   │   ├── three/            # r3f scenes
-│   │   ├── reader/           # MDX renderer, lineage widget
-│   │   ├── chrome/           # dock, Cmd-K, transitions
-│   │   └── ui/               # shadcn primitives
-│   ├── lib/
-│   │   ├── graph.ts          # node/edge types, layout helpers
-│   │   ├── mdx.ts            # MDX components map
-│   │   └── search.ts         # client search
-│   └── data/
-│       └── edges.ts          # hand-curated relationships (see ARCHITECTURE.md)
-├── public/
-├── docs/
-│   ├── ARCHITECTURE.md       # how the graph + modes fit together
-│   ├── CONTENT_MODEL.md      # node types, frontmatter, edges schema
-│   ├── DESIGN.md             # motion, typography, color, sound
-│   ├── PORTFOLIO_PRINCIPLES.md  # what makes a portfolio worth visiting
-│   ├── ROADMAP.md            # phased plan: skeleton → cutover
-│   └── IMPLEMENTATION_PROMPT.md  # paste into a fresh Claude session
-├── CLAUDE.md                 # agent-facing notes; read before edits
-├── velite.config.ts
-├── next.config.mjs
-├── tailwind.config.ts
-├── tsconfig.json
-├── package.json
-└── README.md
-```
-
-## Migration approach
-
-Two phases — no big-bang rewrite:
-
-1. **Greenfield.** Build here, ship to `v2.jacobfv.com`. Old Jekyll keeps serving the live site.
-2. **Cutover.** When parity is reached for the top-traffic pages (home, ~10 projects, ~10 posts, bio, papers), 301 old URLs to new slugs. Long-tail posts ship in waves.
-
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased breakdown.
-
-## Honest tradeoff
-
-The graph is only as good as the edges. Hand-curated `data/edges.ts` plus per-frontmatter `influences:` arrays is the operating cost of this design. Authoring the graph as a side-effect of writing keeps it cheap; treating it as a separate maintenance chore will let it go stale.
-
-## Local dev (after implementation)
+Requires Node 20+ and pnpm 9.12.0.
 
 ```bash
 pnpm install
-pnpm dev          # next dev with velite watcher
-pnpm build        # static export to .next/
+pnpm dev
 ```
+
+Useful commands:
+
+```bash
+pnpm build        # Velite build + Next build
+pnpm typecheck    # Velite build + TypeScript check
+pnpm validate     # Validate graph edges against generated Velite data
+pnpm format       # Prettier over the repo
+pnpm sync:assets  # Copy assets from ../jacobfv.github.io into public/
+```
+
+`next.config.mjs` runs Velite before dev/build through a webpack plugin. Running `velite build` directly is usually only needed when debugging generated `.velite/*.json`.
+
+## Routes
+
+Primary pages:
+
+- `/` - home page with featured graph-derived sections and orbit/planetoid chrome
+- `/list` - browse all graph nodes
+- `/graph` - graph view
+- `/t` - timeline view
+- `/loop` - A Beautiful Loop reader
+- `/resume` - experience and skills
+- `/events` - events index
+- `/updates` - updates index
+- `/feed.xml` - RSS-style feed route
+
+Every content node has one canonical URL:
+
+```text
+/posts/:slug
+/projects/:slug
+/papers/:slug
+/readings/:slug
+/updates/:slug
+/skills/:slug
+/friends/:slug
+/events/:slug
+/visions/:slug
+/experiences/:slug
+```
+
+The single-segment dynamic route keeps old flat URLs working by redirecting known legacy slugs, for example `/computatrum` to `/projects/computatrum`. `next.config.mjs` also contains 301 redirects from old Jekyll paths such as `/blog/:year/:slug/`, `/projects/:slug/`, and `/bio/:slug/`.
+
+## Content Model
+
+Content lives in `content/` and is compiled by `velite.config.ts` into `.velite/`.
+
+Collections:
+
+- `posts`
+- `projects`
+- `papers`
+- `readings`
+- `updates`
+- `skills`
+- `friends`
+- `events`
+- `visions`
+- `experience`
+- `loop`
+
+Most graph-backed collections share these frontmatter fields:
+
+- `title`
+- `date`
+- `lane`: `research`, `building`, `writing`, or `personal`
+- `summary`
+- `tags`
+- optional `hero`
+- optional graph links: `influences`, `realizes`, `critiques`
+
+Kind-specific fields are defined in `velite.config.ts`. Examples include project `status`, project `links`, paper `authors`, update embeds, skill evidence, event metadata, vision `sceneId`, and experience `org`.
+
+Loop chapters are separate from the graph-backed node collections and use `title`, `order`, `summary`, and body content.
+
+## Graph Data
+
+The runtime graph is built in `src/lib/graph.ts`.
+
+It merges:
+
+- all Velite-generated collection JSON files
+- frontmatter relationships from `influences`, `realizes`, and `critiques`
+- manual edges from `src/data/edges.ts`
+- optional home-page orbiter assets from `public/img/orbiters/`
+- explicit orbiter overrides from `src/data/orbit-overrides.ts`
+
+Node IDs are the basename of each content slug and must be unique across all graph-backed content folders. Canonical URLs are generated by `nodeHref()` in `src/lib/graph-types.ts`.
+
+Run this after editing relationships:
+
+```bash
+pnpm validate
+```
+
+The validator checks missing node references, duplicate edges, self-edges, weight issues, high out-degree nodes, and orphaned nodes.
+
+## Project Layout
+
+```text
+content/                 MDX content collections
+docs/                    Architecture, content, design, and roadmap notes
+public/                  Static assets served by Next
+scripts/sync-assets.ts   Copies legacy assets into public/
+scripts/validate-edges.ts
+src/app/                 App Router routes
+src/components/chrome/   Site chrome, search, orbiters, update dock
+src/components/graph/    Graph and timeline components
+src/components/loop/     Loop reader components
+src/components/reader/   MDX article rendering and local graph
+src/components/three/    Vision-room scene components
+src/data/                Manual graph edges, scenes, visual overrides
+src/lib/                 Graph builder, MDX helpers, layout/types
+velite.config.ts         Content schemas and generated data config
+```
+
+## Assets
+
+The app serves static files from `public/`.
+
+Legacy Jekyll assets have been copied into paths such as:
+
+- `public/assets/`
+- `public/img/migrated/`
+- `public/notebooks/`
+
+To refresh them from a sibling legacy checkout at `../jacobfv.github.io`, run:
+
+```bash
+pnpm sync:assets
+```
+
+That script only copies changed files and preserves the public URL shapes used by migrated content.

@@ -3,6 +3,7 @@ import { AskInput } from "@/components/chrome/AskInput";
 import { OrbitDecor } from "@/components/chrome/OrbitDecor";
 import { PfpReveal } from "@/components/chrome/PfpReveal";
 import { Planetoids } from "@/components/chrome/Planetoids";
+import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
 import { UpdateDock } from "@/components/chrome/UpdateDock";
 import { getGraph, getLatestUpdate, nodeHref, type Lane, type Node, type NodeKind } from "@/lib/graph";
 
@@ -80,6 +81,25 @@ export default function HomePage() {
       if (ra !== rb) return ra - rb;
       return a.date < b.date ? 1 : -1;
     });
+  // Lite shape for the client-side ProjectsBrowser. `quickView` marks
+  // projects with enough visual material (hero / video / live embed) to
+  // be worth a zoom-in modal; the rest just link to their page.
+  const projectItems: ProjectItem[] = allProjects.map((n) => ({
+    id: n.id,
+    kind: "project",
+    title: n.title,
+    summary: n.summary,
+    body: n.body,
+    status: n.status ?? "active",
+    date: n.date,
+    lane: n.lane,
+    tags: n.tags,
+    hero: n.hero,
+    video: n.video,
+    orbitEmbed: n.orbitEmbed,
+    links: n.links,
+    quickView: Boolean(n.hero || n.video || n.orbitEmbed),
+  }));
   const recentPosts = nodes
     .filter((n) => n.kind === "post")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
@@ -91,7 +111,7 @@ export default function HomePage() {
   const recentReadings = nodes
     .filter((n) => n.kind === "reading")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, 4);
+    .slice(0, 8);
   const recentUpdates = nodes
     .filter((n) => n.kind === "update")
     .sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -383,15 +403,7 @@ export default function HomePage() {
         </Section>
 
         {/* ---- All projects ---- */}
-        <Section id="projects" eyebrow="Index" title="Projects">
-          <ul className="flex flex-col">
-            {allProjects.map((n) => (
-              <li key={n.id}>
-                <ProjectRow node={n} />
-              </li>
-            ))}
-          </ul>
-        </Section>
+        <ProjectsBrowser id="projects" projects={projectItems} />
 
         {/* ---- Skills ---- */}
         {featuredSkills.length > 0 && (
@@ -430,16 +442,10 @@ export default function HomePage() {
         {recentReadings.length > 0 && (
           <Section
             eyebrow="Reading"
-            title="What I'm reading"
+            title="Favorites"
             link={{ href: "/list", label: "all readings →" }}
           >
-            <ul className="flex flex-col">
-              {recentReadings.map((n) => (
-                <li key={n.id}>
-                  <RowLink node={n} />
-                </li>
-              ))}
-            </ul>
+            <ReadingCoverRail nodes={recentReadings} />
           </Section>
         )}
 
@@ -582,6 +588,55 @@ function ProjectRow({ node }: { node: Node }) {
       <p className="mt-1.5 ml-5 text-sm leading-relaxed text-[var(--color-ink-dim)]">
         {node.summary}
       </p>
+    </Link>
+  );
+}
+
+function ReadingCoverRail({ nodes }: { nodes: Node[] }) {
+  return (
+    <ul className="-mx-2 flex gap-4 overflow-x-auto px-2 pb-3 [scrollbar-width:thin]">
+      {nodes.map((node) => (
+        <li key={node.id} className="shrink-0">
+          <ReadingCover node={node} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ReadingCover({ node }: { node: Node }) {
+  // Paper covers are first-page PNG exports from PDFs. To add another:
+  // `curl -L https://arxiv.org/pdf/XXXX.XXXXX -o /tmp/<slug>.pdf`
+  // then `pdftoppm -png -f 1 -singlefile -r 160 /tmp/<slug>.pdf public/assets/img/readings/<slug>`,
+  // and set `hero.src` in the reading frontmatter to `/assets/img/readings/<slug>.png`.
+  return (
+    <Link
+      href={nodeHref(node)}
+      title={node.title}
+      aria-label={node.title}
+      className="group block w-28 no-underline sm:w-32"
+    >
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-[var(--color-accent)]">
+        {node.hero ? (
+          <img
+            src={node.hero.src}
+            alt={node.hero.alt}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full flex-col justify-between bg-[linear-gradient(145deg,var(--color-bg-1),var(--color-bg-0)_46%,var(--color-bg-2))] p-3">
+            <div className="font-[family-name:var(--font-mono)] text-[9px] tracking-wider text-[var(--color-ink-mute)] uppercase">
+              {node.workType ?? "reading"}
+            </div>
+            <div className="text-sm leading-tight text-[var(--color-ink)]">{node.title}</div>
+            <div className={`h-1 w-8 rounded-full ${laneBg[node.lane]}`} aria-hidden />
+          </div>
+        )}
+      </div>
+      <div className="mt-2 line-clamp-2 min-h-[2.5rem] text-center text-xs leading-tight text-[var(--color-ink-dim)] group-hover:text-[var(--color-ink)]">
+        {node.title}
+      </div>
     </Link>
   );
 }

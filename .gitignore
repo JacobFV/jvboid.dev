@@ -34,8 +34,7 @@ pnpm-debug.log*
 # ts
 *.tsbuildinfo
 
-# lockfiles other than pnpm
-package-lock.json
+# lockfiles other than npm/pnpm
 yarn.lock
 
 # test artifacts
