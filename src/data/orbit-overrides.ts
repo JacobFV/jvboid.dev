@@ -30,12 +30,12 @@ export const ORBIT_OVERRIDES: Record<string, OrbitOverride> = {
   "limboid": { asset: "/img/migrated/limboid-takes-over-room.jpeg" },
   "jacobfv-site": { asset: "/img/migrated/jacobfv.github.io.png" },
   "jacobfv-github-io": { asset: "/img/migrated/jacobfv.github.io.png" },
-  "20q": { asset: "/img/migrated/20q_app.png" },
+  "20q": { asset: "/assets/img/projects/20q-pdf.png" },
   "ai-proverbs": { asset: "/img/migrated/ai-writing-book.png" },
-  "brain-model": { asset: "/img/migrated/brain-model-resonance.svg" },
+  "brain-model": { asset: "/assets/img/projects/brain-model-pdf.png" },
   "bsbr": { asset: "/img/migrated/bsbr.jpeg" },
   "broadening-and-building-beyond-classical-reinforcement-learning": {
-    asset: "/img/migrated/broaden_and_build_presentation.jpeg",
+    asset: "/assets/img/projects/broadening-and-building-beyond-classical-reinforcement-learning-pdf.png",
   },
   "cookie-baker-3d-printer": { asset: "/img/migrated/cookie_baker.jpg" },
   "cookie-cutter-cnc": { asset: "/img/migrated/cnc.jpeg" },
@@ -47,7 +47,7 @@ export const ORBIT_OVERRIDES: Record<string, OrbitOverride> = {
   "labatron": { asset: "/img/migrated/labatron.png" },
   "mln-dashboard": { asset: "/img/migrated/mln-dashboard.png" },
   "predictive-general-intelligence": {
-    asset: "/img/migrated/predictive-general-intelligence.png",
+    asset: "/assets/img/projects/predictive-general-intelligence-pdf.png",
   },
 
   // ---- Posts ----

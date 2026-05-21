@@ -1,44 +1,141 @@
 ---
-title: brain-model
+title: "brain-model / Resonance"
 date: 2026-03-26
 lane: building
 status: active
 tags: []
-summary: "A set of experiments using Meta TRIBE v2 to model emotion, UX, virtual EEG, consciousness dynamics, and affective intervention from predicted brain activity."
+summary: "A cortical dynamics and affect-geometry project that became Resonance: algorithmic music targeted at a six-dimensional model of joy, flow, and self-model quieting."
 hero: 
-  src: https://raw.githubusercontent.com/JacobFV/brain-model/HEAD/output/consciousness/predictability.png
-  alt: brain-model
+  src: /assets/img/projects/brain-model-pdf.png
+  alt: "Resonance Presentation first page"
+pdf: /assets/pdf/Resonance_Presentation.pdf
 links: 
   github: https://github.com/JacobFV/brain-model
 ---
-- Uses TRIBE v2 as a virtual instrument for probing cortical responses to text, audio, and interface scenarios
-- Introduces HIX proxy signals for UI design, linking cognition, trust, confusion, and flow to predicted brain activity
-- Connects neuro-modeling to practical questions in design, intervention, and autonomous systems
+- Resonance: algorithmic music that targets an explicit affect trajectory instead of a genre label
+- Uses a cortical dynamics model with structured sparse attention as the predictive substrate
+- Represents happiness as a six-dimensional coordinate over valence, arousal, integration, effective rank, compression-friction, and self-model salience
+- Maps target affect into MIDI and audio, with a proposed BCI loop for closed-loop adaptation
 
 Presentation: [Resonance Presentation (PDF)](/assets/pdf/Resonance_Presentation.pdf)
 
+<PresentationSlides
+  slides={[
+    {
+      src: "/assets/img/projects/brain-model-resonance-slide-3.png",
+      alt: "Resonance system slide showing affect geometry, cortical prediction, and music mapping",
+    },
+    {
+      src: "/assets/img/projects/brain-model-resonance-slide-4.png",
+      alt: "Structured sparse attention slide with cortical regions, connectivity matrix, and BCI metrics",
+    },
+    {
+      src: "/assets/img/projects/brain-model-resonance-slide-6.png",
+      alt: "Happiness target slide with six affect dimensions and the flourishing objective",
+    },
+    {
+      src: "/assets/img/projects/brain-model-resonance-slide-7.png",
+      alt: "Pipeline slide showing target affect, cortical model, affect-to-music mapping, MIDI generation, audio, and BCI loop",
+    },
+    {
+      src: "/assets/img/projects/brain-model-resonance-slide-5.png",
+      alt: "Beauty operates through resonance slide from the Resonance deck",
+    },
+  ]}
+/>
+
 ## Overview
 
-`brain-model` is less a single application than a research notebook organized around one new capability: using Meta's TRIBE v2 as a way to simulate brain activity from described stimuli, then asking what that enables.
+`brain-model` started as a set of experiments around predicted brain activity, affect, UX, and virtual EEG. The Resonance deck sharpens that into a more specific product thesis: music should not only be recommended by collaborative filtering or genre tags. It should be generated toward a desired emotional trajectory, grounded in a model of how sound changes cortical and affective state.
 
-The repo breaks that question into a set of concrete experiments. There is work on emotional stimuli, virtual EEG, consciousness dynamics, affective intervention, and especially brain-informed UX. The strongest throughline is that a brain model becomes a new measurement instrument: not a substitute for neuroscience, but a way to cheaply prototype hypotheses that would otherwise require much heavier lab infrastructure.
+The core object is an affect vector:
 
-## Brain-informed UX
+$$
+a = (V, A, \Phi, r_{\mathrm{eff}}, CF, SM) \in \mathbb{R}^6
+$$
 
-The brain UX material is the part that feels most immediately product-facing. It defines a set of HIX signals, including cognitive load, frustration, engagement, reward, confusion, flow, trust, and spatial clarity, then asks what different interface patterns do to those signals. The result is a design framing I find compelling: good and bad UX are not just aesthetic categories, they are different ways of spending or respecting cognition.
+where $V$ is valence, $A$ is arousal, $\Phi$ is integration, $r_{\mathrm{eff}}$ is effective rank or distributed richness, $CF$ is compression-friction, and $SM$ is self-model salience. In the deck, happiness is not treated as a single score. It is a region: $V > 0$, moderate $A$, high $\Phi$, high $r_{\mathrm{eff}}$, low $CF$, and low $SM$.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/JacobFV/brain-model/HEAD/output/consciousness/predictability.png" alt="Brain state predictability plot" width="82%"/>
-</p>
+This framing is drawn from the larger [Geometry of Affect](https://theshapeofexperience.com/part-2/the-geometry-of-affect) idea in *The Shape of Experience*: affect coordinates are tools for reading a relational structure, not a claim that emotion is literally exhausted by six scalars. That matters for Resonance because the generator is trying to move through an affect space, not optimize a single "happy" slider.
 
-The accompanying deck and video outline sharpen that thesis. The point is not merely "brain optimization for interfaces." It is that some interfaces are metabolically violent to cognition, and that brain-derived signals could become reward functions for autonomous design systems, provided they are constrained by trust and not just optimized for reward or engagement.
+## The cortical substrate
 
-## Beyond UX: dynamics of cognition
+The brain-model part of the project is the predictive engine underneath Resonance. The deck proposes a structured sparse attention model whose connectivity mirrors cortical wiring rather than using dense, unconstrained attention. The model is built around 23 cortical regions from the Destrieux atlas, 42 anatomical pathways, and a sparse attention mask with 19.6% connectivity.
 
-I also like that the repo does not stop at UX. The virtual EEG and consciousness experiments push toward a broader question: if high-dimensional brain activity evolves on low-dimensional trajectories, then perhaps some of the right abstractions for intelligence and experience are dynamical before they are symbolic.
+The state is a typed cortical vector:
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/JacobFV/brain-model/HEAD/output/affective_intervention/entrainment_effectiveness.png" alt="Affective intervention effectiveness" width="82%"/>
-</p>
+$$
+z_t = (z_t^{vis}, z_t^{aud}, z_t^{mot}, z_t^{lang}, \ldots) \in \mathbb{R}^{135}
+$$
+
+and prediction is constrained by a cortical mask:
+
+$$
+\hat{z}_{t+1} = f_\theta(z_t; M_{\mathrm{cortical}})
+$$
+
+The claimed result in the deck is small but important: the sparse model slightly outperforms a dense baseline on EEG prediction, with $R^2_{\mathrm{cortical}} = 0.837$ versus $R^2_{\mathrm{dense}} = 0.832$, and reports 68.8% BCI accuracy versus 59.4% for an SVM baseline. The point is not that the numbers settle neuroscience. The point is that topology can be part of the model interface: typed regions, anatomical paths, attention masks, loss weights, and scheduling become a compiler target for neural architectures.
+
+This is also where the older `brain-model` plots still matter. They show the project before it became a music-generator pitch: predicted state dynamics, consciousness-style trajectory questions, and affective intervention experiments.
+
+![Brain state predictability plot from the brain-model repository](https://raw.githubusercontent.com/JacobFV/brain-model/HEAD/output/consciousness/predictability.png)
+
+![Affective intervention effectiveness plot from the brain-model repository](https://raw.githubusercontent.com/JacobFV/brain-model/HEAD/output/affective_intervention/entrainment_effectiveness.png)
+
+## Affect geometry
+
+The deck's most interesting move is to treat affect as geometry. Valence $V$ is framed through viability; arousal $A$ through belief-state change; integration $\Phi$ through how much the whole predicts beyond decomposed parts; effective rank $r_{\mathrm{eff}}$ through how distributed the active state is; counterfactual or compression-friction weight $CF$ through the compute spent on unrealized trajectories; and self-model salience $SM$ through mutual information between self-state and action or affect, normalized by entropy.
+
+The Shape of Experience page gives the same six-coordinate toolkit in a more general form: $V$ is gradient alignment on a viability manifold, $A$ is update rate, $\Phi$ is irreducibility, $r_{\mathrm{eff}}$ is concentration versus distribution, $CF$ is temporal orientation toward possible futures, and $SM$ measures how prominent the self-model is in current processing.
+
+The happiness target is therefore not "make the listener feel good" in a shallow sense. It is closer to:
+
+$$
+F(a) = \alpha_1 V + \alpha_2 \Phi + \alpha_3 r_{\mathrm{eff}}
+- \alpha_4(SM - SM_{\mathrm{opt}})^2
+- \alpha_5 |A - A_{\mathrm{opt}}|
++ \alpha_6 \mathrm{flex}(\iota)
+$$
+
+That equation is doing a lot of philosophical work. It says flourishing rewards positive valence, integration, distributed representational richness, and flexibility, while penalizing the wrong amount of self-model salience and arousal. The project is implicitly suspicious of addictive engagement metrics: high arousal and high self-model salience can be powerful without being good.
+
+## Music as intervention
+
+Resonance maps the desired affect vector into musical parameters:
+
+- arousal to tempo, roughly 60-140 BPM
+- valence to mode and contour
+- integration to harmonic complexity and coherent voice leading
+- effective rank to voice count, register, and textural richness
+- compression-friction to phrase predictability
+- self-model salience to groove, absorption, and disruption
+
+The full pipeline is:
+
+1. choose a target affect vector $a^* \in \mathbb{R}^6$
+2. predict cortical dynamics with $\hat{z}_{t+1} = f_\theta(z_t; M)$
+3. map affect into music parameters $\theta_{\mathrm{music}} = g(a^*)$
+4. generate MIDI with `pretty_midi`
+5. render audio with FluidSynth
+6. update the loop from EEG or BCI-derived affect estimates
+
+The optimization target minimizes $\lVert a^* - \hat{a}(m_\theta(z_t)) \rVert^2$, while regularizing temporal smoothness and music-theory validity. The closed loop then updates the current affect estimate toward $a^*$ and adjusts $\theta$ from the loss $L(a_t, a^*)$.
+
+## Why the beauty slide matters
+
+The aesthetic claim in the deck is that beauty operates through resonance: aesthetic pleasure is mutual information between stimulus structure and internal model structure. In that framing, art is powerful because it changes the observer's internal basis. It does not merely decorate a pre-existing state; it installs new couplings.
+
+That is why Resonance belongs on the `brain-model` page rather than a separate toy music page. The project is really about intervention: if a model can estimate how a stimulus changes cortical-affective geometry, then music, UI, ritual, and media become controllable inputs into cognition. That makes the project both technically interesting and ethically loaded.
+
+## Current state
+
+The repo still reads like a research notebook rather than a finished application. There are experiments around emotional stimuli, virtual EEG, consciousness dynamics, affective intervention, and brain-informed UX. The Resonance deck gives those experiments a clear integration target: a closed-loop affective music system where the cortical model predicts state, the generator proposes an intervention, and the loop adapts from measured or inferred response.
+
+What still needs to become real:
+
+- a concrete affect estimator that turns audio and brain-state predictions into the six-dimensional coordinate consistently
+- a stronger validation story for whether generated music moves listeners toward the intended affect region
+- constraints that distinguish flourishing from mere engagement, especially around high arousal and self-model salience
+- a usable composition interface that exposes the affect target without forcing users to think in equations
 
 Repo: [JacobFV/brain-model](https://github.com/JacobFV/brain-model)
