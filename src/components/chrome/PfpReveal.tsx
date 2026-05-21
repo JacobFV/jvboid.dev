@@ -45,11 +45,11 @@ export function PfpReveal() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Reveal the other side"
-        className="relative cursor-pointer overflow-hidden rounded-full border border-[var(--color-bg-2)] transition-transform duration-200 hover:scale-105"
+      {/* Click-to-flip is disabled — the pfp is a static portrait. To
+          re-enable, restore the <button> with `onClick={() => setOpen(true)}`,
+          `cursor-pointer`, and `hover:scale-105`. */}
+      <div
+        className="relative overflow-hidden rounded-full border border-[var(--color-bg-2)]"
         style={{ width: 200, height: 200, zIndex: 10 }}
       >
         <Image
@@ -61,7 +61,7 @@ export function PfpReveal() {
           className="grayscale-[15%]"
           style={{ width: 200, height: 200, objectFit: "cover" }}
         />
-      </button>
+      </div>
 
       {open && (
         <div
