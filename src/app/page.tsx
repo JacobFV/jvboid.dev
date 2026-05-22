@@ -101,20 +101,9 @@ function imageRefsForNode(n: Node): { src: string; alt: string }[] {
   return refs;
 }
 
-function projectThreadImages(
-  n: Node,
-  graph: ReturnType<typeof getGraph>,
-): { src: string; alt: string }[] {
+function projectThreadImages(n: Node): { src: string; alt: string }[] {
   const curated = n.threadImages?.map((img) => ({ src: img.src, alt: img.alt ?? n.title })) ?? [];
   const refs = curated.length > 0 ? curated : imageRefsForNode(n);
-
-  if (curated.length === 0) {
-    for (const edge of graph.neighbors(n.id)) {
-      const neighborId = edge.source === n.id ? edge.target : edge.source;
-      const neighbor = graph.byId.get(neighborId);
-      if (neighbor) refs.push(...imageRefsForNode(neighbor));
-    }
-  }
 
   const seen = new Set<string>();
   return refs
@@ -166,7 +155,7 @@ export default function HomePage() {
     hero: n.hero,
     icon: n.icon,
     video: n.video,
-    threadImages: projectThreadImages(n, graph),
+    threadImages: projectThreadImages(n),
     orbitEmbed: n.orbitEmbed,
     links: n.links,
     quickView: Boolean(n.hero || n.video || n.orbitEmbed || n.links?.demo),
