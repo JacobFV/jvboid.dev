@@ -1,0 +1,52 @@
+---
+title: "Software Engineering After Agents"
+date: 2025-08-19
+lane: writing
+tags: [agents, software-engineering, ai, product]
+summary: "A synthesis of the shift from hand-authoring every line of software toward specifying, steering, auditing, and repeatedly rebuilding systems with agentic tools."
+influences: [teaching-computers-to-use-computers, design-patterns-for-ai, the-api, full-stack-artificial-intelligence-post]
+realizes: []
+critiques: []
+---
+
+The first mistake is treating coding agents as autocomplete with better vibes. The second mistake is treating them as autonomous engineers. The productive frame is stranger: software engineering becomes the design of loops that make partially reliable code generation useful.
+
+<XPost
+  caption="Agent-tooling signals"
+  urls={[
+    "https://x.com/jvboid/status/1867257716734902472",
+    "https://x.com/jvboid/status/1873075971072373175",
+    "https://x.com/jvboid/status/1926104376914964738",
+  ]}
+/>
+
+When a model can draft a server, migrate a schema, write a component, or explain a codebase in one pass, the scarce skill changes. It is less about personally typing every implementation detail and more about maintaining the structure that lets generated work be evaluated.
+
+The new loop looks like this:
+
+1. Start from a known-good template or existing system.
+2. Give the agent a concrete objective and the relevant local context.
+3. Ask for a small number of high-level changes.
+4. Run the code.
+5. Read the diff.
+6. Tighten the interface, tests, and prompt.
+7. Repeat before the system drifts beyond your ability to inspect it.
+
+This does not remove software engineering. It moves more of it into taste, decomposition, review, and operational judgment.
+
+The strongest teams will not be the ones that "use AI" generically. They will be the ones that make every boundary explicit enough for agents to operate against:
+
+- typed data contracts
+- narrow modules
+- reproducible local commands
+- fast tests
+- visible logs
+- seeded example data
+- task descriptions that mention failure modes
+- code review standards that assume plausible-looking wrong answers
+
+This is why old work like [Teaching Computers to Use Computers](/teaching-computers-to-use-computers) still matters. General computer-use agents were always going to make software environments part of the training and work surface. What changed is that the interface became good enough for ordinary engineers to feel the pressure directly.
+
+The practical advice is not "rewrite your codebase every thirty minutes." It is: keep your codebase in a state where a bounded rewrite is cheap enough to consider. If rewriting a subsystem is terrifying, the problem is not the agent. The problem is that the system has no clean surface for change.
+
+Post-agent software engineering is still engineering. It just has a new failure mode: confusing throughput with control.
