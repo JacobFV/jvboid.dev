@@ -80,15 +80,20 @@ That failure shifted the project’s center of gravity. The important problems b
 
 Chem-0 connects to the broader thesis in [The Shape of Inquiry](https://the-shape-of-inquiry.neocities.org/): autonomous scientific agents need to construct measurements, not merely describe what a scientist would do.
 
-![The Shape of Inquiry thesis screenshot](/assets/img/chem-0/shape-of-inquiry-1.jpeg)
-
 The pH-strip task is the minimal experimental aperture: a safe sample, pH paper, calibration card, camera, and manipulator. The goal is not chemical novelty. The goal is a replayable, auditable measurement procedure with explicit uncertainty.
-
-![The Shape of Inquiry thesis screenshot on measurement construction](/assets/img/chem-0/shape-of-inquiry-2.jpeg)
 
 The core quantity is self-effect: whether the agent’s actions causally shape its future observations in a safe, calibrated, uncertainty-reducing way.
 
-![The Shape of Inquiry thesis screenshot on self-effect](/assets/img/chem-0/shape-of-inquiry-3.jpeg)
+<ScreenshotRow
+  caption="Frames from The Shape of Inquiry"
+  href="https://the-shape-of-inquiry.neocities.org/"
+  shots={[
+    { src: "/assets/img/chem-0/shape-of-inquiry-1.jpeg", alt: "The Shape of Inquiry thesis screenshot" },
+    { src: "/assets/img/chem-0/shape-of-inquiry-2.jpeg", alt: "The Shape of Inquiry thesis screenshot on measurement construction" },
+    { src: "/assets/img/chem-0/shape-of-inquiry-3.jpeg", alt: "The Shape of Inquiry thesis screenshot on self-effect" },
+    { src: "/assets/img/chem-0/shape-of-inquiry-4.jpeg", alt: "The Shape of Inquiry thesis screenshot on autonomous science" },
+  ]}
+/>
 
 ## Next
 
@@ -101,8 +106,6 @@ The next version should focus on making simple physical agency reliable before a
 - Build a calibrated pH measurement pipeline.
 - Enrich the event schema with causal links, belief deltas, calibration state, and failure labels.
 - Use replay and held-out trials to measure whether the system improves.
-
-![The Shape of Inquiry thesis screenshot on autonomous science](/assets/img/chem-0/shape-of-inquiry-4.jpeg)
 
 The current direction is less “robot does chemistry demo” and more “infrastructure for event-grounded physical measurement.” The goal is to make embodied agents produce auditable evidence rather than fluent descriptions of what a scientist would have done.
 

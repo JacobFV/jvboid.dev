@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { MDXComponents } from "@/lib/mdx";
 import { ReaderImage } from "./ReaderImage";
 import { ImageGrid } from "./ImageGrid";
+import { ScreenshotRow } from "./ScreenshotRow";
+import { ScreenshotTimeline } from "./ScreenshotTimeline";
 import { PresentationSlides } from "./PresentationSlides";
 import { XPost } from "./XPost";
 
@@ -192,6 +194,8 @@ export const readerComponents: MDXComponents = {
   td: TD,
   // Injected by remark-image-grid around runs of consecutive images.
   ImageGrid,
+  ScreenshotRow,
+  ScreenshotTimeline,
   PresentationSlides,
   XPost,
 };

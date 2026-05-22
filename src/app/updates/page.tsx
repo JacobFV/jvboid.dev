@@ -33,29 +33,56 @@ export default function UpdatesPage() {
         </p>
       </header>
 
-      <ul className="flex flex-col gap-3">
-        {updates.map((n) => (
-          <li key={n.id}>
-            <Link
-              href={nodeHref(n)}
-              className="block rounded-xl bg-[var(--color-bg-1)]/50 p-5 no-underline shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset] transition-colors hover:bg-[var(--color-bg-1)]"
-            >
-              <div className="mb-2 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-                <time>{fmtDate(n.date)}</time>
-                {n.updateType && (
-                  <>
-                    <span>·</span>
-                    <span>{n.updateType}</span>
-                  </>
-                )}
-              </div>
-              <div className="text-lg text-[var(--color-ink)]">{n.title}</div>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-dim)]">
-                {n.summary}
-              </p>
-            </Link>
-          </li>
-        ))}
+      {/* Vertical timeline: a continuous grey rail threads through a
+          neutral-grey dot on each row — same treatment as the home page
+          "Updates" section, just with summary text per row. */}
+      <ul className="flex flex-col">
+        {updates.map((n, i) => {
+          const first = i === 0;
+          const last = i === updates.length - 1;
+          return (
+            <li key={n.id} className="relative">
+              <Link
+                href={nodeHref(n)}
+                className="group flex gap-4 py-4 pr-3 pl-9 no-underline transition-colors"
+              >
+                <time className="w-20 shrink-0 pt-0.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                  {fmtDate(n.date)}
+                </time>
+                <div className="min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
+                      {n.title}
+                    </span>
+                    {n.updateType && (
+                      <span className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                        · {n.updateType}
+                      </span>
+                    )}
+                  </div>
+                  {n.summary && (
+                    <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-ink-dim)]">
+                      {n.summary}
+                    </p>
+                  )}
+                </div>
+              </Link>
+              {/* Rail + dot, painted after the Link in DOM order. The
+                  rail is clipped to start/end at the dot on the
+                  first/last row. */}
+              <span
+                aria-hidden
+                className="absolute left-3 w-px -translate-x-1/2 bg-[var(--color-bg-2)]"
+                style={{ top: first ? "1.6rem" : 0, bottom: last ? "calc(100% - 1.6rem)" : 0 }}
+              />
+              <span
+                aria-hidden
+                className="absolute left-3 h-2 w-2 -translate-x-1/2 rounded-full bg-[var(--color-ink-mute)] ring-4 ring-[var(--color-bg-0)]"
+                style={{ top: "1.6rem", marginTop: "-0.25rem" }}
+              />
+            </li>
+          );
+        })}
       </ul>
     </main>
   );
