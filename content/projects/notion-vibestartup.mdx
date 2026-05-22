@@ -1,0 +1,312 @@
+---
+title: notion-vibestartup
+date: 2026-05-21
+lane: building
+status: shipped
+tags: [notion, agents, startups, oauth, stripe, cloudflare, vercel, hackathon]
+summary: "A Notion Developer Platform Hackathon project: OAuth into a founder workspace, generate the company operating system, publish product routes, and write real runtime events back into Notion."
+hero:
+  src: "/assets/media/notion-vibestartup/still-hero-workspace.png"
+  alt: "The acme launchroom Notion workspace"
+threadImages:
+  - src: "/assets/media/notion-vibestartup/still-hero-workspace.png"
+    alt: "The acme launchroom Notion workspace"
+  - src: "/assets/media/notion-vibestartup/still-product-page.png"
+    alt: "The generated acme waitlist product page"
+  - src: "/assets/media/notion-vibestartup/loop-writeback.png"
+    alt: "Runtime writeback landing in Notion"
+  - src: "/assets/media/notion-vibestartup/jacob-tiffany-notion-hackathon.jpeg"
+    alt: "Jacob Valdez and Tiffany Lan at the Notion Developer Platform Hackathon"
+links:
+  github: "https://github.com/JacobFV/notion-vibestartup-pro"
+  demo: "https://notion-vibestartup.vercel.app"
+influences: [full-stack-artificial-intelligence, teaching-computers-to-use-computers, chem-0]
+realizes: []
+critiques: []
+---
+
+![The acme launchroom Notion workspace](/assets/media/notion-vibestartup/still-hero-workspace.png)
+
+## What It Is
+
+`notion-vibestartup` turns a startup prompt into a working Notion-backed company system. A founder signs in, connects a Notion workspace through OAuth, chooses a parent page, describes the startup, and gets a generated company backend: root page, operating databases, product artifact, public product route, runtime writeback, and command-center actions.
+
+The interesting part is that Notion is not a decorative export target. It is the canonical store. The Next.js app renders and mutates the workspace; Cloudflare D1 stores installation metadata, encrypted Notion tokens, startup mappings, audit events, and billing state; public product routes write visitor behavior back into the founder's Notion databases.
+
+The live archive is at [notion-vibestartup.vercel.app](https://notion-vibestartup.vercel.app), and the code lives in [JacobFV/notion-vibestartup-pro](https://github.com/JacobFV/notion-vibestartup-pro). The database-backed parts were kept online temporarily for the event, so the archive now opens with a notice explaining that signup, Notion sync, billing, and generated writebacks are no longer available.
+
+## Hackathon Context
+
+This project was built for Notion's [Developer Platform Hackathon](https://techjobsforgood.com/events/notion-developer-platform-hackathon), an in-person San Francisco event on May 16-17, 2026. The prompt from Notion was to build with the new Developer Platform: sync data sources into Notion, give agents tools, and trigger workflows without standing up a pile of infrastructure.
+
+The core bet matched that platform direction: make Notion the operating substrate for a tiny startup, not just a place where a demo exports its notes afterward. A founder prompt creates the workspace, the app surface renders from that workspace, and runtime activity writes back into the same Notion backend.
+
+![Jacob Valdez and Tiffany Lan at the Notion Developer Platform Hackathon](/assets/media/notion-vibestartup/jacob-tiffany-notion-hackathon.jpeg)
+
+I built the product during the weekend. [Tiffany Lan](https://www.linkedin.com/in/prtiffany/) was my teammate and helped present the project when I could not stay for the final presentation because I was also at the [Embodied AI Hackathon](https://embodied-ai-hackathon-spc.replit.app/) building [Chem-0](/projects/chem-0). That overlap is part of the shape of the weekend: one project explored Notion as the backend for company/product memory, while Chem-0 explored event-grounded memory for physical lab work.
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.9rem", margin: "1.5rem 0" }}>
+  {[
+    {
+      n: "01",
+      title: "connect",
+      body: "OAuth into Notion and select the parent page where company backends should be created.",
+      detail: "The app creates a signed OAuth state, sends the founder through Notion authorization, exchanges the code server-side, stores the installation, then asks which accessible page should receive generated company backends.",
+      visual: ["founder session", "Notion OAuth", "parent page"]
+    },
+    {
+      n: "02",
+      title: "generate",
+      body: "GPT-structured company data becomes Notion databases, rows, routes, artifacts, and demo script.",
+      detail: "The generator requests strict structured output, normalizes startup/product/tasks/decisions/risks/metrics/demo beats, creates the Notion root page, then seeds every data source with concrete rows.",
+      visual: ["structured JSON", "12 data sources", "/p/acme/waitlist"]
+    },
+    {
+      n: "03",
+      title: "operate",
+      body: "Product views, form submissions, scope cuts, and new artifacts write back into Notion.",
+      detail: "The product runtime logs views and form submissions; the command center creates more artifacts and scope decisions. Each action becomes rows in Customers, Events, Artifacts, Scope, Metrics, or Decisions.",
+      visual: ["runtime event", "customers + events", "scope + artifacts"]
+    }
+  ].map((step) => (
+    <details
+      key={step.n}
+      style={{
+        border: "1px solid var(--color-bg-2)",
+        borderRadius: "0.5rem",
+        padding: "1rem",
+        background: "color-mix(in srgb, var(--color-bg-1) 88%, transparent)",
+        boxShadow: "var(--shadow-soft)"
+      }}
+    >
+      <summary style={{ cursor: "pointer", listStyle: "none" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem", color: "var(--color-accent)" }}>{step.n}</div>
+            <h3 style={{ margin: "0.35rem 0", fontSize: "1.08rem" }}>{step.title}</h3>
+          </div>
+          <span style={{ border: "1px solid var(--color-bg-2)", borderRadius: "999px", padding: "0.15rem 0.45rem", fontFamily: "var(--font-mono)", fontSize: "0.72rem", color: "var(--color-ink-mute)" }}>open</span>
+        </div>
+        <p style={{ margin: "0.4rem 0 0", fontSize: "0.95rem", lineHeight: 1.55 }}>{step.body}</p>
+      </summary>
+      <div style={{ marginTop: "1rem", borderTop: "1px solid var(--color-bg-2)", paddingTop: "1rem" }}>
+        <div style={{ border: "1px solid var(--color-bg-2)", borderRadius: "0.45rem", overflow: "hidden", background: "var(--color-bg-0)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.55rem 0.7rem", borderBottom: "1px solid var(--color-bg-2)", background: "var(--color-bg-1)" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-lane-writing)" }} />
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-lane-personal)" }} />
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-lane-building)" }} />
+            <span style={{ marginLeft: "auto", fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "var(--color-ink-mute)" }}>{step.title}.tsx</span>
+          </div>
+          <div style={{ padding: "0.85rem", display: "grid", gap: "0.55rem" }}>
+            {step.visual.map((item, i) => (
+              <div key={item} style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+                <span style={{ width: 18, height: 18, borderRadius: "50%", border: "1px solid var(--color-accent)", color: "var(--color-accent)", display: "inline-grid", placeItems: "center", fontFamily: "var(--font-mono)", fontSize: "0.68rem" }}>{i + 1}</span>
+                <span style={{ flex: 1, border: "1px solid var(--color-bg-2)", borderRadius: "0.35rem", padding: "0.42rem 0.5rem", fontSize: "0.86rem", background: "var(--color-bg-1)" }}>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p style={{ margin: "0.8rem 0 0", fontSize: "0.9rem", lineHeight: 1.55 }}>{step.detail}</p>
+      </div>
+    </details>
+  ))}
+</div>
+
+## Backend Of Record
+
+The generated workspace includes a global startup index and a root page per startup. Under that root page, the system creates typed Notion data sources for company state, products, artifacts, backend objects, customers/leads, events, roadmap, scope, tasks, decisions, risks, and metrics.
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", margin: "1.5rem 0" }}>
+  <div>
+    <p align="center">
+      <img
+        src="/assets/media/notion-vibestartup/still-workspace-tree.png"
+        alt="The data sources every generated company is seeded with"
+        width="100%"
+      />
+    </p>
+    <p><em>The working set a generated company arrives with.</em></p>
+  </div>
+  <div>
+    <video
+      src="/assets/media/notion-vibestartup/loop-tree-scan.mp4"
+      poster="/assets/media/notion-vibestartup/loop-tree-scan.png"
+      autoPlay
+      loop
+      muted
+      playsInline
+      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
+    />
+    <p><em>A pulse moves through the live data sources.</em></p>
+  </div>
+</div>
+
+<div style={{ border: "1px solid var(--color-bg-2)", borderRadius: "0.5rem", padding: "1rem", margin: "1.5rem 0", background: "color-mix(in srgb, var(--color-bg-1) 88%, transparent)", boxShadow: "var(--shadow-soft)" }}>
+  <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem", color: "var(--color-ink-mute)", marginBottom: "0.75rem" }}>created Notion schema</div>
+  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "0.65rem" }}>
+    {[
+      ["Company", "target user · current bet · deadline", "canonical startup record"],
+      ["Products", "kind · status · route", "public artifact registry"],
+      ["Artifacts", "manifest JSON · notes · external URL", "renderable product specs"],
+      ["Backend Objects", "schema JSON · storage · data source id", "map of generated backend pieces"],
+      ["Customers / Leads", "email · status · message", "runtime form submissions"],
+      ["Events", "type · source · payload JSON", "views, forms, scope cuts, product actions"],
+      ["Roadmap", "phase · UXR signal · evidence needed", "research-aware build plan"],
+      ["Scope", "keep/cut · priority · reason", "deadline tradeoff surface"],
+      ["Tasks", "status · priority · why", "execution queue"],
+      ["Decisions", "context · alternatives killed · reversible", "decision memory"],
+      ["Risks", "severity · mitigation · status", "open risk register"],
+      ["Metrics", "value · unit · source · period", "operating signal from product behavior"]
+    ].map(([name, fields, role]) => (
+      <details key={name} style={{ border: "1px solid var(--color-bg-2)", borderRadius: "0.45rem", background: "var(--color-bg-0)", overflow: "hidden" }}>
+        <summary style={{ cursor: "pointer", listStyle: "none", padding: "0.65rem 0.7rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-accent)", boxShadow: "0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent)" }} />
+            <strong style={{ fontSize: "0.93rem" }}>{name}</strong>
+          </div>
+          <div style={{ marginTop: "0.25rem", fontFamily: "var(--font-mono)", fontSize: "0.72rem", color: "var(--color-ink-mute)" }}>{fields}</div>
+        </summary>
+        <div style={{ padding: "0 0.7rem 0.7rem" }}>
+          <div style={{ borderTop: "1px solid var(--color-bg-2)", paddingTop: "0.6rem" }}>
+            <div style={{ display: "grid", gap: "0.35rem" }}>
+              {fields.split(" · ").map((field) => (
+                <div key={field} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", border: "1px solid var(--color-bg-2)", borderRadius: "0.35rem", padding: "0.35rem 0.45rem", background: "var(--color-bg-1)" }}>
+                  <span style={{ fontSize: "0.8rem" }}>{field}</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", color: "var(--color-ink-mute)" }}>prop</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ margin: "0.6rem 0 0", fontSize: "0.84rem", lineHeight: 1.45, color: "var(--color-ink-dim)" }}>{role}</p>
+          </div>
+        </div>
+      </details>
+    ))}
+  </div>
+</div>
+
+## Product Routes
+
+The first generated artifact can be a waitlist, landing page, mock app, API mock, Notion tool, external reference, or spec-only route. Renderable artifacts become public pages under `/p/:startupSlug/:productSlug`, backed by the generated manifest stored in Notion.
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", margin: "1.5rem 0" }}>
+  <div>
+    <p align="center">
+      <img
+        src="/assets/media/notion-vibestartup/still-product-page.png"
+        alt="The generated /p/acme/waitlist route rendered from the Notion manifest"
+        width="100%"
+      />
+    </p>
+    <p><em>The generated `/p/acme/waitlist` route.</em></p>
+  </div>
+  <div>
+    <video
+      src="/assets/media/notion-vibestartup/loop-product-page-live.mp4"
+      poster="/assets/media/notion-vibestartup/loop-product-page-live.png"
+      autoPlay
+      loop
+      muted
+      playsInline
+      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
+    />
+    <p><em>The product page alive with focus, caret, and input states.</em></p>
+  </div>
+</div>
+
+That route also logs product views through `POST /api/runtime/:startupSlug/:productSlug`. If the artifact has a form CTA, submissions go through `/api/runtime/:startupSlug/:productSlug/form` and create both customer rows and event rows in Notion.
+
+## Runtime Writeback
+
+The writeback loop is the project’s main proof. A visitor is not just tracked in app storage; the visitor becomes operating evidence in the founder’s workspace.
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", margin: "1.5rem 0" }}>
+  <div>
+    <video
+      src="/assets/media/notion-vibestartup/loop-lead-counter.mp4"
+      poster="/assets/media/notion-vibestartup/loop-lead-counter.png"
+      autoPlay
+      loop
+      muted
+      playsInline
+      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
+    />
+    <p><em>A new waitlist signup lands and the lead count flips from 128 to 129.</em></p>
+  </div>
+  <div>
+    <video
+      src="/assets/media/notion-vibestartup/loop-writeback.mp4"
+      poster="/assets/media/notion-vibestartup/loop-writeback.png"
+      autoPlay
+      loop
+      muted
+      playsInline
+      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
+    />
+    <p><em>A runtime event streams down the wire and lands as a Notion row.</em></p>
+  </div>
+</div>
+
+## Platform Pieces
+
+This is a real product stack, not only a demo renderer.
+
+- **Auth:** the web app relies on a platform user session and can proxy `/api/me` / `/api/auth/*` through the Cloudflare API.
+- **Notion OAuth:** users authorize a Notion workspace, then select an accessible parent page. OAuth state carries the post-connect destination.
+- **Encrypted installation storage:** D1 stores Notion installation records with AES-GCM encrypted access tokens, workspace IDs, bot IDs, selected parent pages, and last-used timestamps.
+- **Startup registry:** D1 maps startup slugs to users, installations, root pages, manifest JSON, and every generated Notion data-source ID so public product routes can find the correct workspace.
+- **Billing:** Stripe checkout, customer portal, signed webhooks, subscription mirroring, and plan definitions for hacker, founder, and studio tiers.
+- **Audit trail:** installation changes, startup registration, and billing upserts write audit events.
+- **Optional Notion worker:** separate Notion-native tools exist for `generateCompanyBackendPlan`, `cutScopeForDeadline`, and `onProductRuntimeEvent`.
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem", margin: "1.5rem 0" }}>
+  {[
+    ["Next.js", "dashboard, startup flow, product routes, Stripe webhook"],
+    ["Notion REST", "root pages, data sources, rows, product manifests"],
+    ["Cloudflare Worker", "installation API, startup registry, billing mirror"],
+    ["D1", "encrypted OAuth installs, startup mappings, audit events"],
+    ["Stripe", "checkout, portal, subscription lifecycle"],
+    ["OpenAI Responses", "structured startup and product artifact generation"]
+  ].map(([title, body]) => (
+    <div key={title} style={{ border: "1px solid var(--color-bg-2)", borderRadius: "0.5rem", padding: "0.9rem", background: "var(--color-bg-1)" }}>
+      <strong>{title}</strong>
+      <p style={{ margin: "0.35rem 0 0", fontSize: "0.92rem", lineHeight: 1.5 }}>{body}</p>
+    </div>
+  ))}
+</div>
+
+## Command Center
+
+The startup dashboard is an operator console over the Notion backend. It shows product, lead, event, roadmap, scope, task, decision, risk, and metric rows; opens the root Notion page; creates additional product artifacts; and cuts scope against a deadline.
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", margin: "1.5rem 0" }}>
+  <div>
+    <p align="center">
+      <img
+        src="/assets/media/notion-vibestartup/still-decision-card.png"
+        alt="A row in the Notion decisions log with killed alternatives beside it"
+        width="100%"
+      />
+    </p>
+    <p><em>Decisions preserve alternatives killed, reversibility, and context.</em></p>
+  </div>
+  <div>
+    <video
+      src="/assets/media/notion-vibestartup/loop-tab-cycle.mp4"
+      poster="/assets/media/notion-vibestartup/loop-tab-cycle.png"
+      autoPlay
+      loop
+      muted
+      playsInline
+      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
+    />
+    <p><em>The launchroom shifts between product and customer views.</em></p>
+  </div>
+</div>
+
+## Implementation Notes
+
+The media in this entry is split intentionally. The short loops are retained as H.264 captures because the source Remotion scenes are motion-driven and MP4 has reliable autoplay support. Some static conceptual visuals were replaced by native MDX/HTML because their source scenes were rendered on a baked paper `Stage`; recreating those as markup makes them fit the page background without pretending the exported PNGs have alpha.
+
+The next technical upgrade would be to add a reusable MDX media-grid or figure component to the portfolio reader, then re-export selected Remotion stills with transparent or theme-aware backgrounds. The app itself is already past the toy phase: it has OAuth installation state, encrypted token storage, structured generation, public product runtime APIs, Notion writeback, subscriptions, and a worker-shaped path toward Notion-native agent tools.
+
+Repo: [JacobFV/notion-vibestartup-pro](https://github.com/JacobFV/notion-vibestartup-pro). Archive: [notion-vibestartup.vercel.app](https://notion-vibestartup.vercel.app). Event: [Notion Developer Platform Hackathon](https://techjobsforgood.com/events/notion-developer-platform-hackathon).
