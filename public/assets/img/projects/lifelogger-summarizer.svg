@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 478" role="img" aria-labelledby="t2 d2">
+  <title id="t2">lifelogger staged summarization</title>
+  <desc id="d2">Raw events roll up through hourly digests into daily wraps and a weekly arc. Each tier summarizes a window of the tier below and cites earlier summaries instead of replaying raw logs.</desc>
+  <defs>
+    <pattern id="ticks" width="22" height="44" patternUnits="userSpaceOnUse">
+      <rect x="4" y="10" width="2.6" height="24" rx="1.3" fill="#a3b9b5"/>
+      <rect x="13" y="17" width="2.6" height="14" rx="1.3" fill="#c0cfcb"/>
+    </pattern>
+    <marker id="up" viewBox="0 0 12 12" refX="6" refY="3" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M1 11l5-9 5 9z" fill="#2e7d78"/>
+    </marker>
+    <marker id="cite" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M1 1l9 5-9 5z" fill="#b07527"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="478" rx="26" fill="#ece7dc"/>
+
+  <!-- lane labels -->
+  <g text-anchor="end" font-family="ui-sans-serif,system-ui,sans-serif">
+    <rect x="206" y="63" width="10" height="10" rx="2" fill="#1e5b56"/>
+    <text x="194" y="70" font-size="14" font-weight="600" fill="#22241f">weekly arc</text>
+    <text x="194" y="88" font-size="11" font-style="italic" fill="#9a917a">the month-scale story</text>
+
+    <rect x="206" y="173" width="10" height="10" rx="2" fill="#2e7d78"/>
+    <text x="194" y="180" font-size="14" font-weight="600" fill="#22241f">daily wrap</text>
+    <text x="194" y="198" font-size="11" font-style="italic" fill="#9a917a">what the day became</text>
+
+    <rect x="206" y="283" width="10" height="10" rx="2" fill="#7fb1ab"/>
+    <text x="194" y="290" font-size="14" font-weight="600" fill="#22241f">hourly digest</text>
+    <text x="194" y="308" font-size="11" font-style="italic" fill="#9a917a">what just happened</text>
+
+    <rect x="206" y="393" width="10" height="10" rx="2" fill="#a3b9b5"/>
+    <text x="194" y="400" font-size="14" font-weight="600" fill="#22241f">raw signal</text>
+    <text x="194" y="418" font-size="11" font-style="italic" fill="#9a917a">every tracked event</text>
+  </g>
+
+  <!-- connectors: raw -> hourly -->
+  <g fill="none" stroke="#2e7d78" stroke-width="2.4" stroke-linecap="round" opacity="0.85">
+    <path d="M280 372V328" marker-end="url(#up)"/>
+    <path d="M399 372V328" marker-end="url(#up)"/>
+    <path d="M518 372V328" marker-end="url(#up)"/>
+    <path d="M680 372V328" marker-end="url(#up)"/>
+    <path d="M799 372V328" marker-end="url(#up)"/>
+    <path d="M918 372V328" marker-end="url(#up)"/>
+  </g>
+  <!-- connectors: hourly -> daily (3 into 1) -->
+  <g fill="none" stroke="#2e7d78" stroke-width="2.8" stroke-linecap="round">
+    <path d="M280 262C300 240 350 232 379 220" marker-end="url(#up)"/>
+    <path d="M399 262V220" marker-end="url(#up)"/>
+    <path d="M518 262C498 240 448 232 419 220" marker-end="url(#up)"/>
+    <path d="M680 262C700 240 750 232 779 220" marker-end="url(#up)"/>
+    <path d="M799 262V220" marker-end="url(#up)"/>
+    <path d="M918 262C898 240 848 232 819 220" marker-end="url(#up)"/>
+  </g>
+  <!-- connectors: daily -> weekly (2 into 1) -->
+  <g fill="none" stroke="#2e7d78" stroke-width="3.2" stroke-linecap="round">
+    <path d="M399 150C440 132 520 122 580 110" marker-end="url(#up)"/>
+    <path d="M799 150C758 132 678 122 620 110" marker-end="url(#up)"/>
+  </g>
+
+  <!-- citation back-references -->
+  <path d="M636 183H572" fill="none" stroke="#b07527" stroke-width="2.6"
+        stroke-dasharray="1 6" stroke-linecap="round" marker-end="url(#cite)"/>
+  <path d="M636 293H572" fill="none" stroke="#b07527" stroke-width="2.4"
+        stroke-dasharray="1 6" stroke-linecap="round" marker-end="url(#cite)"/>
+
+  <!-- weekly card -->
+  <rect x="336" y="40" width="528" height="66" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <rect x="346" y="52" width="5" height="42" rx="2.5" fill="#1e5b56"/>
+  <text x="366" y="65" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#1e5b56">May 18 – 24</text>
+  <rect x="366" y="76" width="468" height="6" rx="3" fill="#d8d1bf"/>
+  <rect x="366" y="90" width="338" height="6" rx="3" fill="#d8d1bf"/>
+
+  <!-- daily cards -->
+  <g>
+    <rect x="236" y="150" width="326" height="66" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+    <rect x="246" y="162" width="5" height="42" rx="2.5" fill="#2e7d78"/>
+    <text x="266" y="175" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#2e7d78">Tuesday</text>
+    <rect x="266" y="185" width="276" height="6" rx="3" fill="#d8d1bf"/>
+    <rect x="266" y="199" width="210" height="6" rx="3" fill="#d8d1bf"/>
+  </g>
+  <g>
+    <rect x="636" y="150" width="326" height="66" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+    <rect x="646" y="162" width="5" height="42" rx="2.5" fill="#2e7d78"/>
+    <text x="666" y="175" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#2e7d78">Wednesday</text>
+    <rect x="666" y="185" width="276" height="6" rx="3" fill="#d8d1bf"/>
+    <rect x="666" y="199" width="194" height="6" rx="3" fill="#d8d1bf"/>
+  </g>
+
+  <!-- hourly cards -->
+  <g font-family="ui-monospace,Menlo,monospace" font-size="9.5" font-weight="700" fill="#4f8e87">
+    <g><rect x="236" y="262" width="88" height="60" rx="11" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+      <rect x="246" y="272" width="4" height="40" rx="2" fill="#7fb1ab"/>
+      <text x="258" y="285">09:00</text>
+      <rect x="258" y="293" width="52" height="5" rx="2.5" fill="#ddd6c4"/>
+      <rect x="258" y="304" width="38" height="5" rx="2.5" fill="#ddd6c4"/></g>
+    <g><rect x="355" y="262" width="88" height="60" rx="11" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+      <rect x="365" y="272" width="4" height="40" rx="2" fill="#7fb1ab"/>
+      <text x="377" y="285">10:00</text>
+      <rect x="377" y="293" width="52" height="5" rx="2.5" fill="#ddd6c4"/>
+      <rect x="377" y="304" width="44" height="5" rx="2.5" fill="#ddd6c4"/></g>
+    <g><rect x="474" y="262" width="88" height="60" rx="11" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+      <rect x="484" y="272" width="4" height="40" rx="2" fill="#7fb1ab"/>
+      <text x="496" y="285">11:00</text>
+      <rect x="496" y="293" width="52" height="5" rx="2.5" fill="#ddd6c4"/>
+      <rect x="496" y="304" width="34" height="5" rx="2.5" fill="#ddd6c4"/></g>
+    <g><rect x="636" y="262" width="88" height="60" rx="11" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+      <rect x="646" y="272" width="4" height="40" rx="2" fill="#7fb1ab"/>
+      <text x="658" y="285">13:00</text>
+      <rect x="658" y="293" width="52" height="5" rx="2.5" fill="#ddd6c4"/>
+      <rect x="658" y="304" width="40" height="5" rx="2.5" fill="#ddd6c4"/></g>
+    <g><rect x="755" y="262" width="88" height="60" rx="11" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+      <rect x="765" y="272" width="4" height="40" rx="2" fill="#7fb1ab"/>
+      <text x="777" y="285">14:00</text>
+      <rect x="777" y="293" width="52" height="5" rx="2.5" fill="#ddd6c4"/>
+      <rect x="777" y="304" width="46" height="5" rx="2.5" fill="#ddd6c4"/></g>
+    <g><rect x="874" y="262" width="88" height="60" rx="11" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+      <rect x="884" y="272" width="4" height="40" rx="2" fill="#7fb1ab"/>
+      <text x="896" y="285">15:00</text>
+      <rect x="896" y="293" width="52" height="5" rx="2.5" fill="#ddd6c4"/>
+      <rect x="896" y="304" width="32" height="5" rx="2.5" fill="#ddd6c4"/></g>
+  </g>
+
+  <!-- raw event track -->
+  <rect x="236" y="378" width="726" height="44" rx="10" fill="#e8eeec" stroke="#c4d2cf" stroke-width="1.5"/>
+  <rect x="240" y="378" width="718" height="44" fill="url(#ticks)"/>
+
+  <!-- footnote -->
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#6a6c62">
+    <path d="M256 456h22" stroke="#b07527" stroke-width="2.4" stroke-dasharray="1 6" stroke-linecap="round"/>
+    <text x="290" y="460">each tier summarizes a window of the tier below, and cites earlier summaries — not raw logs</text>
+  </g>
+</svg>

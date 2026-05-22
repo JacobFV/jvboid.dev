@@ -1,5 +1,5 @@
 ---
-title: jacobfv-site
+title: personal site
 date: 2026-04-15
 lane: building
 status: active
@@ -27,21 +27,26 @@ phases 3 and 4. See `docs/ROADMAP.md`.
 Four versions of a personal site, oldest to newest — a Weebly portfolio,
 two iterations of an al-folio Jekyll fork, and this rewrite.
 
+{/* The "This site" frame (04-this-site.png) goes stale as the homepage
+    changes — regenerate it occasionally with scripts/regen-site-screenshot.sh */}
+
 <ScreenshotTimeline
   steps={[
     {
       date: "pre-2021",
       title: "Weebly portfolio",
-      caption: "A drag-and-drop Weebly site collecting school-era engineering and programming projects. It pointed visitors onward to the next version with a single line: “Please see my new website at jacobfv.github.io.”",
+      caption: "Started in a 9th-grade engineering class and grown from there — a drag-and-drop Weebly site collecting school-era engineering and programming projects. It pointed visitors onward to the next version with a single line: “Please see my new website at jacobfv.github.io.”",
       src: "/assets/img/jacobfv-site/01-weebly.png",
       alt: "Jacob Valdez's old Weebly portfolio homepage",
+      href: "https://jacobfvaldez.weebly.com/",
     },
     {
       date: "2021",
       title: "al-folio fork",
-      caption: "Forked from alshedivat/al-folio: a Jekyll theme with a clean academic layout. Tech used: Jekyll, Liquid, Jupyter, GPT-3.",
+      caption: "Forked from alshedivat/al-folio: a Jekyll theme with a clean academic layout. Tech used: Jekyll, Liquid, Jupyter, GPT-3. In hindsight, a little cringe — a borrowed grad-student CV theme worn as a personal identity, with GPT-3 namedropped in the tech list for flair.",
       src: "/assets/img/jacobfv-site/02-al-folio-2021.png",
       alt: "The 2021 al-folio Jekyll site homepage",
+      href: "https://github.com/JacobFV/jacobfv.github.io",
     },
     {
       date: "2026",
@@ -49,6 +54,7 @@ two iterations of an al-folio Jekyll fork, and this rewrite.
       caption: "Years of incremental edits later — the same Jekyll base carried a dark theme, an updates feed, and a refreshed bio before being retired.",
       src: "/assets/img/jacobfv-site/03-al-folio-2026.png",
       alt: "The al-folio Jekyll site homepage in its final 2026 state",
+      href: "https://github.com/JacobFV/jacobfv.github.io",
     },
     {
       date: "2026",
@@ -56,6 +62,7 @@ two iterations of an al-folio Jekyll fork, and this rewrite.
       caption: "The current rewrite — Next.js + MDX, every artifact a node in a graph, the navigation is the relationship.",
       src: "/assets/img/jacobfv-site/04-this-site.png",
       alt: "The current Next.js + MDX site homepage",
+      href: "https://github.com/jacobfv123/jacobfv-site",
     },
   ]}
 />
