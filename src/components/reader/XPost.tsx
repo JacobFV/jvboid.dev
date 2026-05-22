@@ -10,6 +10,7 @@ type XFallbackPost = {
   date?: string;
   meta?: string;
   alt?: string;
+  embed?: boolean;
 };
 
 type XPostProps = {
@@ -72,21 +73,23 @@ export function XPost({ url, urls, posts, caption }: XPostProps) {
         </p>
       )}
       <div ref={ref} className={showFallback ? "hidden" : "grid gap-4"}>
-        {fallbackPosts.map((post, index) => (
+        {fallbackPosts.map((post, index) =>
+          post.embed === false ? null : (
           <blockquote
-            key={post.url}
+            key={`${post.url}-${index}`}
             className="twitter-tweet"
             data-theme="dark"
             aria-label={post.alt ?? `${caption ?? "X post"} ${index + 1}`}
           >
             <a href={post.url}>{post.alt ?? caption ?? post.url}</a>
           </blockquote>
-        ))}
+          ),
+        )}
       </div>
       {showFallback && (
         <div className="grid gap-3">
-          {fallbackPosts.map((post) => (
-            <FallbackCard key={post.url} post={post} />
+          {fallbackPosts.map((post, index) => (
+            <FallbackCard key={`${post.url}-${index}`} post={post} />
           ))}
         </div>
       )}

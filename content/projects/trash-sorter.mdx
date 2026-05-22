@@ -1,0 +1,85 @@
+---
+title: "Trash Sorter"
+date: 2026-05-09
+endDate: 2026-05-10
+lane: building
+status: shipped
+tags: ["robotics", "embodied-ai", "hackathon", "lerobot"]
+summary: "A robotic trash-sorting prototype built as an initial hands-on learning experience with a LeRobot arm at the Founders Inc Physical AI Hack World Tour SF hackathon."
+hero:
+  src: "/assets/img/projects/trash-sorter.jpg"
+  alt: "Trash Sorter robot arm prototype at the Physical AI hackathon"
+realizes: ["chem-0"]
+influences: ["limboid"]
+critiques: []
+---
+
+Trash Sorter was a weekend robotic trash-sorting prototype built at [Founders Inc](https://x.com/fdotinc) during the Physical AI Hack World Tour SF stop on May 9-10, 2026. The project was an initial learning experience with the LeRobot arm: calibration, teleoperation, camera-to-world intuition, grasp setup, and the practical difference between a software plan and a physical motion that actually lands.
+
+I worked on it with [Kareem Dasilva](https://x.com/dasilvakareem), [Connor](https://x.com/adiabaticgarden), and [Tiffany Prentice](https://x.com/PRTiffany) at the [Founders Inc](https://x.com/fdotinc) Physical AI hackathon. The event brought together builders around MakerMods' open hardware stack, XLeRobot kits, Hugging Face LeRobot, modular robotics components, and real demo constraints.
+
+## Project
+
+The prototype explored a simple value-generating robotics workflow: identify trash, pick it up, and sort it into the right place. The task looks straightforward at the symbolic level, but it quickly turns into the harder robotics loop: calibrate the arm, stabilize the workspace, make perception actionable, tune the grasp, and shorten the human-in-the-loop correction cycle.
+
+For me, the main lesson was that robotics exposes a much higher-dimensional slice of reality than ordinary agentic software. The same engineering principles still apply, but the iteration cost is higher because the system has to bring predictability to lighting, geometry, latency, contact, and calibration before autonomy can compound.
+
+## Takeaways
+
+- Calibration speed dominated the early workflow.
+- Teleoperation and quick physical feedback mattered more than elaborate planning.
+- Useful autonomy depended on getting the environment into a predictable enough state.
+- The experience directly informed later work on Chem-0's robot-arm control, camera feedback, and event-grounded physical measurement loop.
+
+## Social Thread
+
+<XPost
+  caption="Trash Sorter X thread"
+  posts={[
+    {
+      url: "https://x.com/jvboid/status/2055040183188529409?s=20",
+      authorName: "Jacob",
+      authorHandle: "@jvboid",
+      date: "2:38 PM · May 14, 2026",
+      meta: "412 views",
+      alt: "Opening X post about working with Kareem, Connor, and Tiffany on robotic trash sorting at the Founders Inc Physical AI hackathon.",
+      text: `(sorry linkedin copypasta. ask and cta at the end)
+
+great working with @dasilvakareem, @adiabaticgarden, and @PRTiffany on robotic trash sorting at the @fdotinc Physical AI hackathon last weekend ❤️`,
+    },
+    {
+      url: "https://x.com/jvboid/status/2055040183188529409?s=20",
+      authorName: "Jacob",
+      authorHandle: "@jvboid",
+      date: "May 14, 2026",
+      embed: false,
+      alt: "Thread reply reflecting on calibration, articulation, and value-generating autonomy in robotics.",
+      text: `from calibration to articulation to actual value-generating autonomy, robotics often requires engaging with a much higher dimensional slice of reality than agentic or traditional software engineering does. the more i recognize this, the more i appreciate how those principles we distilled from swe are mostly all still relevant in robotics. just that everything costs more to iterate on tho that is improving both en simulo and irl.`,
+    },
+    {
+      url: "https://x.com/jvboid/status/2055040183188529409?s=20",
+      authorName: "Jacob",
+      authorHandle: "@jvboid",
+      date: "May 14, 2026",
+      embed: false,
+      alt: "Thread reply about the need to calibrate robots faster so Codex and Claude can help move physical work forward.",
+      text: `if there’s any nit i would takeaway from last weekend it would be to get the robot calibrated faster that way codex/claude could pick things up and move faster overall. so not really a new takeaway—when i was integration architect at agi, everytime i 1-on-1’d with the cto and he asked if there was anything in my way i’d tell him “humans” and that we need to “get humans out of the loop”—but this is even moreso the problem landscape i’m seeing in robotics. less about doing “work” inside a clean, predictable software environment and much more like the “work” is all about bringing predictability to an unstructured physical world`,
+    },
+    {
+      url: "https://x.com/jvboid/status/2055040183188529409?s=20",
+      authorName: "Jacob",
+      authorHandle: "@jvboid",
+      date: "May 14, 2026",
+      embed: false,
+      alt: "Thread reply looking for robotics or chemistry collaborators for the South Park Commons robotics hack.",
+      text: `(for anyone going to @southpkcommons robotics hack this weekend, we’re looking for a 4th and 5th with robotics or chemistry bg)`,
+    },
+  ]}
+/>
+
+## Context
+
+- [Original X post](https://x.com/jvboid/status/2055040183188529409?s=20)
+- [Post-event thread](https://x.com/jvboid/status/2056649613499924711?s=20)
+- [Physical AI Hack World Tour](https://physicalaihacks.com/)
+- [Tech Jobs for Good event page](https://techjobsforgood.com/events/physical-ai-hack-world-tour-sf)
