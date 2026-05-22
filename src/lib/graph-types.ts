@@ -58,8 +58,11 @@ export type Node = {
   tags: string[];
   summary: string;
   unlisted: boolean;
+  // Redirect alias: when set, this node has no page of its own — its
+  // route permanently redirects to the node with this id.
+  redirect?: string;
   body: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; fit?: "cover" | "contain" };
   influences: string[];
   realizes: string[];
   critiques: string[];
@@ -96,8 +99,7 @@ export type Node = {
   org?: string;
 
   // Decorative — set server-side by getGraph() from the orbit-overrides
-  // manifest + a filesystem check in public/img/orbiters/. Consumed by
-  // the home hero OrbitDecor; ignored elsewhere.
+  // manifest + a filesystem check in public/img/orbiters/.
   orbitAsset?: string;
   orbitEmbed?: string;
 };
@@ -133,6 +135,7 @@ export function nodeHref(node: { kind: NodeKind; id: string }): string {
   return `/${KIND_PREFIX[node.kind]}/${node.id}`;
 }
 
-export function isListedNode(node: { unlisted?: boolean }): boolean {
-  return !node.unlisted;
+export function isListedNode(node: { unlisted?: boolean; redirect?: string }): boolean {
+  // A redirect alias has no content of its own — never list it.
+  return !node.unlisted && !node.redirect;
 }

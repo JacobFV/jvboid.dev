@@ -58,6 +58,17 @@ const nextConfig = {
 
     return [
       ...collisionRedirects,
+      // Yearless legacy post URL kept for old shared links.
+      {
+        source: "/blog/the-master-plan-part-1/",
+        destination: "/posts/the-master-plan-part-1",
+        permanent: true,
+      },
+      {
+        source: "/blog/the-master-plan-part-1",
+        destination: "/posts/the-master-plan-part-1",
+        permanent: true,
+      },
       // Generic post redirect: /blog/2021/foo/ → /foo
       { source: "/blog/:year/:slug/", destination: "/:slug", permanent: true },
       { source: "/blog/:year/:slug", destination: "/:slug", permanent: true },
@@ -66,10 +77,6 @@ const nextConfig = {
       // Bio essays: /bio/foo/ → /foo (vision slug = bio basename)
       { source: "/bio/:slug/", destination: "/:slug", permanent: true },
       // Old index pages → their new equivalents.
-      { source: "/projects/", destination: "/list", permanent: true },
-      { source: "/projects", destination: "/list", permanent: true },
-      { source: "/papers/", destination: "/list", permanent: true },
-      { source: "/papers", destination: "/list", permanent: true },
       { source: "/experience/", destination: "/resume", permanent: true },
       { source: "/experience", destination: "/resume", permanent: true },
       { source: "/bio/", destination: "/focus-statement", permanent: true },

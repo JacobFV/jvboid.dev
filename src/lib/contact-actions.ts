@@ -2,7 +2,7 @@
 
 import crypto from "node:crypto";
 
-// Why a dedicated secret: bots scraping the homepage shouldn't be able to
+// Why a dedicated secret: bots scraping public pages shouldn't be able to
 // forge a "captcha passed" claim. Tokens are HMAC-signed so they can't be
 // crafted client-side.
 const SECRET = process.env.PHONE_REVEAL_SECRET || "dev-only-rotate-me";

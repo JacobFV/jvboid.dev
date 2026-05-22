@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { CmdK } from "./CmdK";
@@ -33,28 +33,49 @@ type Theme = "light" | "dark";
 // `cmdk:open` window event that CmdK listens for.
 
 const NAV = [
-  { label: "Posts", href: "/#posts" },
-  { label: "Projects", href: "/#projects" },
-  { label: "Profile", href: "/" },
+  { label: "Projects", href: "/projects" },
+  { label: "Posts", href: "/posts" },
 ];
 
-// kind → the home-page section (or index) the breadcrumb points back at.
+const MORE_NAV = [
+  { label: "Readings", href: "/readings" },
+  { label: "Papers", href: "/papers" },
+  { label: "Updates", href: "/updates" },
+  { label: "Events", href: "/events" },
+  { label: "Skills", href: "/skills" },
+  { label: "Friends", href: "/friends" },
+  { label: "Visions", href: "/visions" },
+  { label: "Experience", href: "/experiences" },
+  { label: "Resume", href: "/resume" },
+  { label: "Timeline", href: "/t" },
+  { label: "Loop", href: "/loop" },
+];
+
+// kind → the dedicated collection page the breadcrumb points back at.
 const SECTION: Partial<Record<NodeKind, { label: string; href: string }>> = {
-  project: { label: "Projects", href: "/#projects" },
-  post: { label: "Posts", href: "/#posts" },
+  project: { label: "Projects", href: "/projects" },
+  post: { label: "Posts", href: "/posts" },
+  paper: { label: "Papers", href: "/papers" },
+  reading: { label: "Readings", href: "/readings" },
   update: { label: "Updates", href: "/updates" },
+  skill: { label: "Skills", href: "/skills" },
+  friend: { label: "Friends", href: "/friends" },
   event: { label: "Events", href: "/events" },
+  vision: { label: "Visions", href: "/visions" },
+  experience: { label: "Experience", href: "/experiences" },
 };
 
 function sectionFor(kind: NodeKind): { label: string; href: string } {
-  return SECTION[kind] ?? { label: "Index", href: "/list" };
+  return SECTION[kind] ?? { label: "Projects", href: "/projects" };
 }
 
 export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
   const pathname = usePathname();
   const [docked, setDocked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [theme, setTheme] = useState<Theme | null>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
   // Whether the current page's own <h1> is still on screen. While it is,
   // the breadcrumb's Title segment stays hidden.
   const [titleInPage, setTitleInPage] = useState(true);
@@ -83,7 +104,26 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
   }, []);
 
   // Close the mobile menu on navigation.
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    setMenuOpen(false);
+    setMoreOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!moreRef.current?.contains(event.target as Node)) setMoreOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [moreOpen]);
 
   // Track the page <h1> (marked data-page-title in Hero). The Title
   // breadcrumb segment fades in once that heading leaves the viewport,
@@ -114,6 +154,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
 
   const openSearch = () => {
     setMenuOpen(false);
+    setMoreOpen(false);
     window.dispatchEvent(new Event("cmdk:open"));
   };
 
@@ -141,7 +182,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
               baseline as the larger display-font brand. */}
           <div className="flex min-w-0 items-baseline gap-2">
             <Link
-              href="/"
+              href="/projects"
               onClick={() => setMenuOpen(false)}
               className="shrink-0 font-[family-name:var(--font-display)] text-lg tracking-tight text-[var(--color-ink)] no-underline"
               style={{ fontVariationSettings: '"opsz" 72' }}
@@ -182,6 +223,35 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
                 {item.label}
               </Link>
             ))}
+            <div ref={moreRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMoreOpen((open) => !open)}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                className="flex items-center gap-1 px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] underline-offset-4 hover:text-[var(--color-accent)] hover:underline"
+              >
+                More
+                <TriangleIcon open={moreOpen} />
+              </button>
+              {moreOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full mt-2 grid w-44 gap-1 rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-0)] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
+                >
+                  {MORE_NAV.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      role="menuitem"
+                      className="rounded-md px-3 py-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-1)] hover:text-[var(--color-accent)]"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             <IconButton label="Search (⌘K)" onClick={openSearch}>
               <SearchIcon />
             </IconButton>
@@ -219,6 +289,17 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
             {NAV.map((item) => (
               <Link
                 key={item.label}
+                href={item.href}
+                tabIndex={menuOpen ? undefined : -1}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-md px-3 py-2.5 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-2)]"
+              >
+                {item.label}
+              </Link>
+            ))}
+            {MORE_NAV.map((item) => (
+              <Link
+                key={item.href}
                 href={item.href}
                 tabIndex={menuOpen ? undefined : -1}
                 onClick={() => setMenuOpen(false)}
@@ -300,6 +381,22 @@ function SearchIcon() {
     >
       <circle cx="11" cy="11" r="7" />
       <line x1="20" y1="20" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
+function TriangleIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      fill="currentColor"
+      aria-hidden
+      className="transition-transform duration-150"
+      style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+    >
+      <path d="M1.2 3.2h7.6L5 7.1 1.2 3.2z" />
     </svg>
   );
 }

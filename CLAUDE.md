@@ -3,7 +3,7 @@
 Things future agents (Claude, Codex, whatever) should keep in mind when
 editing this repo.
 
-## Read before touching the home page or projects
+## Read before touching routes or projects
 
 - **[docs/PORTFOLIO_PRINCIPLES.md](docs/PORTFOLIO_PRINCIPLES.md)** — the
   five portfolio rules (quality over quantity, document everything,
@@ -17,18 +17,9 @@ editing this repo.
 
 ## House rules
 
-- **Spotlight cap.** `pickFeatured()` in `src/app/page.tsx` returns at
-  most 6. Don't grow this past 6 — it dilutes "Active Threads."
-- **Projects index quick-view.** The home "Projects" section is the
-  client component `ProjectsBrowser.tsx` (list/grid toggle). Projects
-  with visual material — a `hero`, `video`, or `orbitEmbed` — open a
-  zoom-in modal preview (`quickView: true`, computed in `page.tsx`);
-  the rest link straight to their page. Keep that derivation in sync if
-  you change what counts as "previewable."
-- **No bare letters as orbiter graphics.** If a node lacks an asset, the
-  fallback is a lane-tinted radial gradient + a kind-specific SVG icon
-  (see `OrbitDecor.tsx#OrbiterContent`). Adding a letter monogram fallback
-  was previously rejected.
+- **No `/list` or standalone `/graph` page.** Broad browsing should happen
+  through dedicated kind indexes like `/projects`, `/posts`, and
+  `/readings`. Graph context belongs at the bottom of content pages.
 - **Contact details live in env, never in code.** `CONTACT_PHONE` and
   `CONTACT_EMAIL` go through `revealContact()` server action behind a
   math captcha. Don't hard-code or expose them in client bundles.
@@ -37,8 +28,8 @@ editing this repo.
   `node:fs`. Client components import from `graph-types`. Don't merge
   them — webpack will fail the build.
 - **Canonical URLs.** Every node lives at `/{kind-plural}/{slug}`. Use
-  `nodeHref(node)` to compute links. Old flat `/{slug}` 308-redirects via
-  `src/app/[kind]/page.tsx`.
+  `nodeHref(node)` to compute links. Bare kind paths such as `/projects`
+  are collection pages; old flat `/{slug}` routes should 404.
 - **Auto-deploy.** Pushing to `main` triggers a Vercel build. There is
   no separate deploy step. Env vars are managed in the Vercel dashboard.
 
@@ -49,6 +40,6 @@ pnpm exec tsc --noEmit         # types
 pnpm dev                       # spot-check the page you changed
 ```
 
-If a change touches the home hero (orbiters, planetoids, pfp), open the
-page in a browser — TypeScript can't catch z-stack regressions or
-animation jank.
+If a change touches a visual route or interactive component, open the page
+in a browser — TypeScript can't catch z-stack regressions or animation
+jank.

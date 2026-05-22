@@ -50,7 +50,7 @@ Concretely for Phase 1:
 2. Wire Velite into `next dev` (postbuild script or the `velite/next` plugin).
 3. Create `src/lib/graph.ts` exporting the `Node` and `Edge` types per ARCHITECTURE.md, and a `getGraph()` function that merges Velite collections + `src/data/edges.ts` into a typed `Graph`.
 4. Create `src/app/layout.tsx`, `src/app/globals.css` (Tailwind v4 with the design tokens from DESIGN.md as `@theme` CSS variables), and the Fraunces / Inter / JetBrains Mono fonts via `next/font`.
-5. `src/app/page.tsx` — plain `<ul>` of every node, sorted by date desc, linking to `/[slug]`.
+5. `src/app/[kind]/page.tsx` — plain `<ul>` for each kind, sorted by date desc, linking to `/{kind-plural}/{slug}`.
 6. `src/app/[slug]/page.tsx` — looks up the node by id, renders title + summary + MDX body. Polymorphic on `kind` is fine to leave for Phase 4; for now any kind renders the same template.
 7. Three sample MDX files in each of `content/posts/`, `content/projects/`, `content/papers/`, `content/visions/`, `content/experience/`, plus durable update nodes in `content/updates/`.
 8. `pnpm typecheck && pnpm build` both pass.

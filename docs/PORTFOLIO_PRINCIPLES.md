@@ -18,23 +18,16 @@ keep future changes aligned.
 > "Focus your efforts on 3 to 5 truly impressive, well-documented projects
 > that show a wide range of skills."
 
-**How this site implements it.** The home page has two project surfaces:
+**How this site implements it.** Projects live on dedicated project routes:
 
-- **Active Threads** — `pickFeatured()` in `src/app/page.tsx` returns at most 6
-  curated projects (a pinned list + the most recent shipped/active). This is
-  the 3-to-5 spotlight. Keep this list tight; if it grows past 6 the
-  "curated" signal dilutes.
-- **Projects (index)** — the comprehensive list of every project, sorted by
-  status then date. Reference material, not the spotlight.
-
-The hero **orbiters** carry the top 2 featured projects right next to the
-pfp; the **planetoids** carry the next 4 as drifting bodies with moons.
-Together they showcase up to 6 projects without forcing a wall of cards.
+- **Project pages** — `/projects/{slug}` is the canonical page for each
+  artifact.
+- **Projects index** — `/projects` is the comprehensive list of every
+  project, sorted newest first.
 
 **Convention.**
-- Cap the pinned array in `pickFeatured` at 5 (one extra slot is fine; more is dilution).
-- A project enters the spotlight only when it has a real summary, a hero
-  asset, and at least one external link.
+- A project is portfolio-ready only when it has a real summary, a hero
+  asset or video, and at least one external link.
 
 ## 2. Document everything
 
@@ -79,8 +72,7 @@ What went wrong? What would I do differently? One short paragraph.
   can be migrated incrementally; the cap on Active Threads enforces
   prioritization.
 - Reuse `realizes` / `influences` / `critiques` frontmatter to wire the
-  project into the graph — these become the moons in the home hero and
-  the local-graph neighborhood on the project page.
+  project into the graph and the local-graph neighborhood on the project page.
 
 ## 3. Visuals are a must
 
@@ -90,13 +82,6 @@ What went wrong? What would I do differently? One short paragraph.
 
 - **Per-project hero image** — set `hero: { src, alt }` in frontmatter.
   Renders at the top of `/projects/{slug}` via `src/components/reader/Hero.tsx`.
-- **Orbiter assets** — `src/data/orbit-overrides.ts` maps node ids to image
-  URLs; `getGraph()` also auto-discovers anything at
-  `/public/img/orbiters/{slug}.{png,jpg,webp,svg}`. The home hero orbits
-  render real graphics, never bare letters.
-- **Iframe embeds** — `orbit-overrides.ts` supports `embed: "https://…"`.
-  Used by `windows-web` to surface its live deploy as a tiny moving
-  thumbnail in the orbit.
 - **Per-project video** — `video` field in frontmatter (added 2026-05-19,
   see [CONTENT_MODEL.md](./CONTENT_MODEL.md#project)). The Hero component
   renders it as a 16:9 embed when present.
@@ -175,7 +160,7 @@ When adding a new project or reviewing site changes, ask:
 Re-read this doc and re-audit when:
 
 - The number of pinned projects in `pickFeatured` would exceed 6.
-- A new node kind is added that should surface on the home hero.
+- A new node kind is added that needs a dedicated index or visual treatment.
 - The contact-reveal flow changes shape (e.g. swapping the captcha).
 - A new visual layer (planetoids, orbits, …) is introduced — make sure it
   also follows the "real graphics, no letters" rule baked into

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
+import { getGraph, isListedNode, KIND_PREFIX, nodeHref } from "@/lib/graph";
 import chapters from "../../.velite/loop.json";
 
 const BASE = "https://jacobfv.com";
@@ -8,12 +8,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const { nodes } = getGraph();
 
   const staticRoutes = [
-    { url: `${BASE}/`, priority: 1.0, changeFrequency: "weekly" as const },
+    ...Object.values(KIND_PREFIX).map((prefix) => ({
+      url: `${BASE}/${prefix}`,
+      priority: prefix === "projects" || prefix === "posts" ? 0.8 : 0.6,
+      changeFrequency: "weekly" as const,
+    })),
     { url: `${BASE}/t`, priority: 0.7, changeFrequency: "weekly" as const },
-    { url: `${BASE}/list`, priority: 0.5, changeFrequency: "weekly" as const },
     { url: `${BASE}/loop`, priority: 0.7, changeFrequency: "monthly" as const },
-    { url: `${BASE}/updates`, priority: 0.6, changeFrequency: "weekly" as const },
-    { url: `${BASE}/events`, priority: 0.6, changeFrequency: "weekly" as const },
     { url: `${BASE}/resume`, priority: 0.5, changeFrequency: "monthly" as const },
   ];
 

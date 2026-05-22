@@ -576,12 +576,6 @@ export default function HomePage() {
 
             <div className="mt-5 flex flex-wrap justify-center gap-2 font-[family-name:var(--font-mono)] text-xs">
               <Link
-                href="/graph"
-                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-              >
-                explore as a graph →
-              </Link>
-              <Link
                 href="/t"
                 className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
@@ -600,10 +594,10 @@ export default function HomePage() {
                 resume
               </Link>
               <Link
-                href="/list"
+                href="/projects"
                 className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
-                all writing & projects
+                all projects
               </Link>
             </div>
 
@@ -669,7 +663,7 @@ export default function HomePage() {
         <Section
           eyebrow="Selected work"
           title="Active Threads:"
-          link={{ href: "/list", label: "every node →" }}
+          link={{ href: "/projects", label: "all projects →" }}
         >
           <ul className="flex flex-col">
             {featured.map((n) => (
@@ -688,7 +682,7 @@ export default function HomePage() {
           id="posts"
           eyebrow="Writing"
           title="Recent posts"
-          link={{ href: "/list?kind=post", label: "all posts →" }}
+          link={{ href: "/posts", label: "all posts →" }}
         >
           <ul className="flex flex-col">
             {recentPosts.map((n) => (
@@ -704,7 +698,7 @@ export default function HomePage() {
           <Section
             eyebrow="Reading"
             title="Favorites"
-            link={{ href: "/list?kind=reading", label: "all readings →" }}
+            link={{ href: "/readings", label: "all readings →" }}
           >
             <ReadingCoverRail nodes={recentReadings} />
           </Section>
@@ -712,7 +706,7 @@ export default function HomePage() {
 
         {/* ---- Papers ---- */}
         {recentPapers.length > 0 && (
-          <Section eyebrow="Research" title="Papers & notes">
+          <Section eyebrow="Research" title="Papers & notes" link={{ href: "/papers", label: "all papers →" }}>
             <CoverRail nodes={recentPapers} variant="paper" />
           </Section>
         )}

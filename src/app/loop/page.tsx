@@ -124,10 +124,10 @@ export default function LoopIndex() {
         }}
       >
         <Link
-          href="/"
+          href="/posts"
           style={{ color: "inherit", textDecoration: "none" }}
         >
-          ← back to home
+          ← back to posts
         </Link>
       </div>
     </main>

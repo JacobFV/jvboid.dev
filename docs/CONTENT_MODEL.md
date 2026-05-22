@@ -5,7 +5,7 @@ What every node looks like and how to write one.
 > **Before writing a new project**, read [PORTFOLIO_PRINCIPLES.md](./PORTFOLIO_PRINCIPLES.md)
 > — it sets the 6-section MDX body template (Problem / Solution / How /
 > Tests / Results / Lessons) and the rules for when a project earns a
-> spotlight slot on the home page.
+> portfolio-ready project page.
 
 ## Node kinds
 
@@ -55,7 +55,10 @@ lane: building
 status: shipped # idea | active | shipped | shelved
 tags: [agents, infra]
 summary: ...
-hero: { src: /img/projects/computatrum.png, alt: "..." }
+# `fit` is optional and defaults to "cover" (crop to fill the frame).
+# Use "contain" to letterbox the whole image with transparent padding —
+# right for logos, wordmarks, and diagrams that must not be cropped.
+hero: { src: /img/projects/computatrum.png, alt: "...", fit: cover }
 # Optional. YouTube / Vimeo / self-hosted demo. Renders as a 16:9
 # embed at the top of the project page.
 video: https://www.youtube.com/watch?v=...
@@ -251,8 +254,7 @@ Rules:
 
 ## Latest update
 
-The homepage and floating dock point at the newest `content/updates/*.mdx`
-node by `date`.
+Update listings sort `content/updates/*.mdx` nodes by `date`, newest first.
 
 ## Lanes
 
@@ -273,6 +275,20 @@ Don't add new lanes without a design discussion — they shape the timeline.
 - `shelved` — paused or abandoned, kept for the record
 
 Visualized as the project node's color/opacity in both views.
+
+## Redirect aliases
+
+Any node, of any kind, may carry two optional shared fields:
+
+- `unlisted: true` — keep the node out of every listing (index, graph,
+  timeline, feed, resume) while its page still renders at its URL.
+- `redirect: <node-id>` — the node has no page of its own; its route
+  permanently redirects (308) to the node with that id. A redirecting
+  node is automatically unlisted. Use it to fold one entity into
+  another without breaking old links.
+
+`redirect` is checked by `pnpm validate` — the target must be a real,
+different node.
 
 ## Authoring rules
 
