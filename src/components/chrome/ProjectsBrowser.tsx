@@ -503,7 +503,7 @@ function TileVisual({
     <>
       <span
         ref={iconRef}
-        className={`relative block aspect-square w-full overflow-hidden rounded-[26%] shadow-[var(--ring-soft),var(--shadow-soft)] ${
+        className={`relative block aspect-square w-full overflow-hidden rounded-[26%] shadow-[var(--shadow-soft)] ${
           lifted
             ? ""
             : "transition-transform duration-200 ease-out group-hover:scale-[1.03] group-active:scale-95"
