@@ -15,8 +15,7 @@ export type NodeKind =
   | "skill"
   | "friend"
   | "event"
-  | "vision"
-  | "experience";
+  | "vision";
 
 export type Lane = "research" | "building" | "writing" | "personal";
 
@@ -96,7 +95,6 @@ export type Node = {
   role?: string;
   location?: string;
   sceneId?: string;
-  org?: string;
 
   // Decorative — set server-side by getGraph() from the orbit-overrides
   // manifest + a filesystem check in public/img/orbiters/.
@@ -124,7 +122,6 @@ export const KIND_PREFIX: Record<NodeKind, string> = {
   friend: "friends",
   event: "events",
   vision: "visions",
-  experience: "experiences",
 };
 
 export const KIND_FROM_PREFIX: Record<string, NodeKind> = Object.fromEntries(

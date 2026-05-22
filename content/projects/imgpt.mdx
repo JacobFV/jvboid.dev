@@ -3,10 +3,51 @@ title: imgpt
 date: 2025-05-29
 lane: building
 status: active
-tags: [personal]
-summary: "Image processing and generation toolkit"
-links: 
+tags: [ai, cli, python, tooling]
+summary: "A Python CLI for generating OpenAI images from one-off prompts or whole prompt directories, with persisted defaults, model controls, and cost-aware batch behavior."
+hero:
+  src: "/assets/img/projects/imgpt-abstract-art.png"
+  alt: "Abstract vibrant image generated with imgpt"
+links:
   github: https://github.com/JacobFV/imgpt
+  pypi: https://pypi.org/project/imgpt/
 ---
-- Python-based image processing library
-- Built with modern Python tooling (Poetry)
+
+![Abstract vibrant image generated with imgpt](/assets/img/projects/imgpt-abstract-art.png)
+
+## Problem
+
+Image generation workflows often start as shell history: a prompt here, an output path there, a half-remembered model flag, then a directory of prompts that needs to be run again without overwriting the images that already exist. The OpenAI API is powerful, but the repeated work around configuration, naming, batching, retries, and output formats is easy to leave under-specified.
+
+`imgpt` turns that workflow into a small command-line tool. It is built for the moment when image generation becomes a repeatable production task instead of a single playground request.
+
+## Solution
+
+`imgpt` is a Python package and CLI for generating images from direct prompts or from folders of prompt files. It keeps persistent defaults for API keys, model choice, quality, output format, output directory, rate-limit delay, and skip-existing behavior, so the command line can stay short while the runs remain reproducible.
+
+```bash
+imgpt config set default_model gpt-image-1
+imgpt config set default_quality high
+imgpt generate --dir ./prompts --output ./images --skip-existing --delay 1
+```
+
+The project supports `.prompt`, `.txt`, and Markdown prompt files, including Markdown documents with a `Description` section and explicit style/mood fields. That makes it useful for maintaining image prompts as reviewable source files instead of treating them as disposable strings.
+
+## How
+
+- **Stack:** Python 3.12+, OpenAI Python SDK, Typer, Rich, Pydantic, TOML config writing, Poetry, and pytest.
+- **CLI surface:** `imgpt generate`, `imgpt config`, and `imgpt version`, with `generate-images` exposed as an alternate entrypoint.
+- **Generation modes:** direct prompt generation for one-off assets, or directory processing for prompt batches.
+- **Model controls:** `gpt-image-1`, DALL-E 3, and DALL-E 2, with size, quality, style, and output format flags normalized behind one CLI.
+- **Batch controls:** configurable delay, skip-existing output checks, prompt-file parsing, separate input/output directories, and continued processing when individual files fail.
+- **Configuration:** stored in the platform-specific user config directory, with `OPENAI_API_KEY` still supported as a fallback.
+
+## Results
+
+The tool is published as [`imgpt` on PyPI](https://pypi.org/project/imgpt/) and can be installed with `pipx install imgpt` or `pip install imgpt`. The current package metadata describes it as an OpenAI image generator with persistent configuration and supports Python 3.12+.
+
+The practical win is not just "generate an image from a prompt." It is being able to keep a directory of prompt specs, run them repeatedly, avoid paying for duplicate generations, and switch between speed, quality, format, and model choices without rewriting a script every time.
+
+## Lessons
+
+Small CLIs are worth treating like products. The persistent config layer, batch semantics, and explicit model/format flags are what make `imgpt` useful beyond a wrapper around a single API call. The next version should probably lean even harder into artifact discipline: manifest files, prompt/output provenance, thumbnails, and a dry-run preview for batch jobs.

@@ -1,0 +1,32 @@
+---
+title: "Differentiable Tensor Computers for End-to-End Program Synthesis"
+date: 2026-01-01
+lane: research
+tags: [differentiable-programming, program-synthesis, jax, agents, machine-code]
+summary: "A research paper specifying a complete von Neumann computer rebuilt as differentiable tensor operations in JAX, including soft ALU dispatch, soft memory hierarchies, temperature annealing, and a self-hosting compiler validation path."
+hero:
+  src: /assets/img/papers/tensor-computer.png
+  alt: "First page of Differentiable Tensor Computers for End-to-End Program Synthesis"
+  fit: contain
+authors: [Jacob Valdez]
+venue: working paper
+pdf: /assets/pdf/tensor-computer-paper.pdf
+bibKey: valdez2026tensorcomputer
+influences: [tensacode, computatrum, full-stack-artificial-intelligence]
+realizes: [tensor-computer]
+critiques: []
+---
+
+[Open the PDF](/assets/pdf/tensor-computer-paper.pdf).
+
+This paper is the formal specification behind the Tensor Computer project: a complete von Neumann architecture implemented as differentiable tensor operations in JAX. The design includes a softmax-gated ALU, differentiable register file, cache hierarchy, main memory, virtual memory, system bus, GPU, display framebuffer, and peripheral buffers.
+
+The central question is whether programs can be learned directly as machine code by gradient descent rather than generated as text. At high temperature, soft operation mixtures preserve gradient flow through the computer. As temperature anneals, those soft choices are meant to crystallize into discrete opcodes, register selectors, addresses, and branches.
+
+The paper's validation target is intentionally concrete: a self-hosting C compiler running on the architecture that compiles and executes recursive programs such as `factorial(5) = 120`. The broader research program connects this to low-latency software agents, where compact learned programs could eventually replace token-heavy LLM action traces.
+
+<iframe
+  src="/assets/pdf/tensor-computer-paper.pdf#view=FitH"
+  title="Differentiable Tensor Computers for End-to-End Program Synthesis"
+  style={{ width: "100%", height: "720px", border: "1px solid var(--color-border)", borderRadius: "8px" }}
+/>

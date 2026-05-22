@@ -1,0 +1,113 @@
+---
+title: Lunar Rover
+date: 2026-04-11
+endDate: 2026-04-12
+lane: building
+status: shipped
+tags: [robotics, lunar-rover, hackathon, autonomy, llm-routing]
+summary: "A lunar rover prototype built at RoboHacks at Y Combinator to collect regolith in a moon-surface scenario, with a four-node autonomous control architecture spanning remote viewing, ground control, satellite relay, and robot control."
+video: "https://www.youtube.com/watch?v=fFW-9yVCM8o"
+hero:
+  src: "/assets/media/lunar-rover/2045663872741527702-HGOnxLpagAAGotV.jpg"
+  alt: "Lunar rover prototype on the test surface"
+threadImages:
+  - src: "/assets/media/lunar-rover/2045663872741527702-HGOnxLpagAAGotV.jpg"
+    alt: "Lunar rover prototype on the test surface"
+  - src: "/assets/media/lunar-rover/2045667489808543868-HGOqht7bUAILQaO.jpg"
+    alt: "Lunar rover project slide"
+  - src: "/assets/media/lunar-rover/2045667489808543868-HGOq75SbYAAvSJ_.jpg"
+    alt: "Lunar rover system architecture slide"
+  - src: "/assets/media/lunar-rover/2045663877082624316-HGOn6-1asAAXtfV.jpg"
+    alt: "Lunar rover build photo"
+  - src: "/assets/media/lunar-rover/2045663881914388515-HGOoTsabcAA_-U8.jpg"
+    alt: "Lunar rover prototype"
+links:
+  site: https://luma.com/robohacks-at-YC
+  demo: https://x.com/jvboid/status/2045667489808543868?s=20
+---
+
+![Lunar rover project slide](/assets/media/lunar-rover/2045667489808543868-HGOqht7bUAILQaO.jpg)
+
+## Problem
+
+RoboHacks at Y Combinator was framed as the first robotics hackathon at the YC office: one weekend to build applications on general-purpose robots across manipulation, navigation, and interaction. The event ran April 11-12, 2026 in San Francisco, bringing together 120 builders using 25 MARS robots.
+
+Our team used that setting to build a lunar rover project for a moon-surface collection scenario. The project was originally called **Per Aspera**, but the clearer portfolio name is Lunar Rover. The concept was a rover that could pick up regolith from the dark side of the moon, while separating the human-facing interface from the autonomy and low-level robot control.
+
+Team: Aathavan Senthilkumar, Jacob Valdez, Pranesh Kumar, and Samuel Liu.
+
+## Solution
+
+The lunar rover split the system into four autonomous control nodes:
+
+- **Remote viewer:** a human-facing interface for observing the robot and mission state.
+- **Ground control:** the planning and supervisory layer.
+- **Satellite relay:** an intermediate communications node that imitates the constraints of off-world robotics.
+- **Robot control:** the node responsible for the rover itself.
+
+The point was not just to drive a robot around a table. We wanted the prototype to feel closer to a real lunar robotics setup, where commands, perception, routing, and actuation are mediated through a mission architecture instead of being collapsed into one direct controller.
+
+<div style={{ margin: "1.5rem 0" }}>
+  <video
+    src="/assets/media/lunar-rover/2045663872741527702-SfoWPKcz_ZxFYoUK.mp4"
+    poster="/assets/media/lunar-rover/2045663872741527702-HGOnNkLb0AA6vn-.jpg"
+    controls
+    playsInline
+    preload="metadata"
+    style={{ width: "100%", maxHeight: "720px", borderRadius: "0.75rem", display: "block", background: "var(--color-bg-1)", objectFit: "contain" }}
+  />
+  <p><em>Rover demo clip from the project thread.</em></p>
+</div>
+
+## How
+
+The project combined a rover build, mission-control software, and autonomous route planning. The public post described the core setup as a four-node control system built to imitate a more realistic remote robotics stack, plus autonomous LLM route planning.
+
+The important design move was architectural: each node had a different job, so the rover could be discussed as a distributed robotic system rather than a single script controlling motors. That made it easier to reason about what should be visible to a remote operator, what should be planned by ground control, what should pass through the relay, and what should happen locally on the robot.
+
+![Lunar rover overview slide](/assets/media/lunar-rover/2045667489808543868-HGOqgFxacAAv8j-.jpg)
+![Lunar rover project slide](/assets/media/lunar-rover/2045667489808543868-HGOqht7bUAILQaO.jpg)
+![Lunar rover system architecture slide](/assets/media/lunar-rover/2045667489808543868-HGOq75SbYAAvSJ_.jpg)
+![Lunar rover interface slide](/assets/media/lunar-rover/2045667489808543868-HGOq9LUa4AApHKQ.jpg)
+
+## Tests
+
+The hackathon test was an integrated demo: can the rover, interface, and autonomy stack behave like one mission system under time pressure?
+
+We validated the build through physical rover operation, video-recorded demos, and the project presentation materials. The tests were pragmatic rather than lab-grade: assemble the robot, run the route-planning and control flow, show the rover moving through the intended scenario, and make the system explainable to judges and other builders.
+
+<div style={{ margin: "1.5rem 0" }}>
+  <video
+    src="/assets/media/lunar-rover/2045663872741527702-9QoNuINkEzMA_-hi.mp4"
+    poster="/assets/media/lunar-rover/2045663872741527702-HGOnxLpagAAGotV.jpg"
+    controls
+    playsInline
+    preload="metadata"
+    style={{ width: "100%", maxHeight: "720px", borderRadius: "0.75rem", display: "block", background: "var(--color-bg-1)", objectFit: "contain" }}
+  />
+  <p><em>Second rover demo clip from the archived thread media.</em></p>
+</div>
+
+![Lunar rover photo](/assets/media/lunar-rover/2045663872741527702-HGOnNkLb0AA6vn-.jpg)
+![Lunar rover field photo](/assets/media/lunar-rover/2045663872741527702-HGOnxLpagAAGotV.jpg)
+![Lunar rover build table photo](/assets/media/lunar-rover/2045663877082624316-HGOn6-1asAAXtfV.jpg)
+![Lunar rover build photo](/assets/media/lunar-rover/2045663877082624316-HGOn6-2asAAANPU.jpg)
+![Lunar rover hardware photo](/assets/media/lunar-rover/2045663877082624316-HGOn6-2aQAA_PWM.jpg)
+![Lunar rover vertical photo](/assets/media/lunar-rover/2045663877082624316-HGOn6-3bUAA6WFH.jpg)
+
+## Results
+
+Lunar Rover became a complete weekend prototype: a rover concept, physical build, mission architecture, autonomous route-planning story, demo media, and project presentation.
+
+The result was useful because it made a hard robotics idea legible quickly. A viewer could understand the rover's mission, the distributed control stack, and the reason for using a remote-viewer / ground-control / satellite / robot-control split without needing to inspect every implementation detail.
+
+![Lunar rover detail](/assets/media/lunar-rover/2045663881914388515-HGOoBzNaAAAsDjJ.jpg)
+![Lunar rover side view](/assets/media/lunar-rover/2045663881914388515-HGOoBzJbIAA1DFG.jpg)
+![Lunar rover on test surface](/assets/media/lunar-rover/2045663881914388515-HGOoTsabcAA_-U8.jpg)
+![Lunar rover prototype](/assets/media/lunar-rover/2045663881914388515-HGOoXahbgAARDh2.jpg)
+
+## Lessons
+
+For robotics hackathons, architecture is part of the demo. A rover that moves is interesting; a rover that moves as one node in a believable mission system is much easier to explain as a serious autonomy project.
+
+The project also showed the value of turning LLM planning into a bounded subsystem. Route planning belongs inside a larger control architecture with clear interfaces and failure boundaries, especially when the story is remote robotics rather than a local toy demo.

@@ -42,13 +42,10 @@ const MORE_NAV = [
   { label: "Papers", href: "/papers" },
   { label: "Updates", href: "/updates" },
   { label: "Events", href: "/events" },
-  { label: "Skills", href: "/skills" },
   { label: "Friends", href: "/friends" },
   { label: "Visions", href: "/visions" },
-  { label: "Experience", href: "/experiences" },
   { label: "Resume", href: "/resume" },
   { label: "Timeline", href: "/t" },
-  { label: "Loop", href: "/loop" },
 ];
 
 // kind → the dedicated collection page the breadcrumb points back at.
@@ -62,7 +59,6 @@ const SECTION: Partial<Record<NodeKind, { label: string; href: string }>> = {
   friend: { label: "Friends", href: "/friends" },
   event: { label: "Events", href: "/events" },
   vision: { label: "Visions", href: "/visions" },
-  experience: { label: "Experience", href: "/experiences" },
 };
 
 function sectionFor(kind: NodeKind): { label: string; href: string } {
@@ -182,7 +178,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
               baseline as the larger display-font brand. */}
           <div className="flex min-w-0 items-baseline gap-2">
             <Link
-              href="/projects"
+              href="/"
               onClick={() => setMenuOpen(false)}
               className="shrink-0 font-[family-name:var(--font-display)] text-lg tracking-tight text-[var(--color-ink)] no-underline"
               style={{ fontVariationSettings: '"opsz" 72' }}

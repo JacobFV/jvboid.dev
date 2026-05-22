@@ -2,7 +2,6 @@
 // One source of truth; every view (constellation, timeline, document) is a
 // projection of this. See docs/ARCHITECTURE.md.
 
-import rawExperience from "../../.velite/experience.json";
 import rawPapers from "../../.velite/papers.json";
 import rawPosts from "../../.velite/posts.json";
 import rawProjects from "../../.velite/projects.json";
@@ -118,7 +117,6 @@ const toNode =
       role: extra.role as string | undefined,
       location: extra.location as string | undefined,
       sceneId: extra.sceneId as string | undefined,
-      org: extra.org as string | undefined,
     };
   };
 
@@ -137,7 +135,6 @@ export function getGraph(): Graph {
     ...asCollection(rawFriends).map(toNode("friend")),
     ...asCollection(rawEvents).map(toNode("event")),
     ...asCollection(rawVisions).map(toNode("vision")),
-    ...asCollection(rawExperience).map(toNode("experience")),
   ];
 
   const byId = new Map<string, Node>();

@@ -1,0 +1,32 @@
+---
+title: "Looped Attention in Video Diffusion Transformers"
+date: 2026-03-03
+lane: research
+tags: [video-diffusion, robotics, attention, multimodal-learning, empirical-ai]
+summary: "An empirical ROAM paper reporting 26 experiments and 236 training runs on looped attention, spatiotemporal canvases, CogVideoX-2B robot-video grafting, and the difference between parameter-efficient recurrence and actual iterative reasoning."
+hero:
+  src: /assets/img/papers/roam-looped-attention.png
+  alt: "First page of Looped Attention in Video Diffusion Transformers"
+  fit: contain
+authors: [Jacob Valdez, Claude Opus 4.6]
+venue: preprint
+pdf: /assets/pdf/roam/looped-attention-video-diffusion-transformers.pdf
+bibKey: valdez2026loopedattention
+influences: [roam-cortical-canvas, teaching-computers-to-use-computers]
+realizes: [recursive-omnimodal-video-action-model]
+critiques: []
+---
+
+[Open the PDF](/assets/pdf/roam/looped-attention-video-diffusion-transformers.pdf).
+
+This is the empirical paper behind ROAM's current research direction. It tests looped attention and the spatiotemporal canvas across 26 experiments, 236 training runs, three architecture generations, and scales from 1.5M-parameter toy models to a CogVideoX-2B graft on real Bridge V2 robot video.
+
+The central finding is deliberately unromantic: looped attention did not validate the "thinking in loops" story. Three independent reasoning tests came back null, and naive joint observation-action prediction made action quality worse by 19%. The mechanism that survived was parameter-efficient weight sharing: recurrence acted as regularization and fixed-point refinement, not as reliable multi-step reasoning.
+
+The positive result is still useful. A looped model reached 1.73x lower loss than a matched-parameter single-pass depth baseline, hidden states converged toward a fixed point across loops, and the CogVideoX grid found 3 loops consistently best across freeze configurations. The best frozen 3-loop condition used roughly 350K trainable parameters and still beat unfrozen 1-loop runs with about 33x more trainable parameters on action loss.
+
+<iframe
+  src="/assets/pdf/roam/looped-attention-video-diffusion-transformers.pdf#view=FitH"
+  title="Looped Attention in Video Diffusion Transformers"
+  style={{ width: "100%", height: "720px", border: "1px solid var(--color-border)", borderRadius: "8px" }}
+/>

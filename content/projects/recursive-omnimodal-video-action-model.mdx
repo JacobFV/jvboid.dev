@@ -1,0 +1,128 @@
+---
+title: Recursive Omnimodal Video Action Model
+date: 2026-03-03
+lane: research
+status: active
+tags: [ai, robotics, video-diffusion, attention, multimodal-learning, research]
+summary: "ROAM studies looped attention and spatiotemporal canvas layouts for video-action diffusion models, grounding a cortical-canvas hypothesis in 26 experiments across toy models, MuJoCo behavior cloning, and a CogVideoX-2B robot-video graft."
+hero:
+  src: /assets/img/projects/roam-robot-manipulation-canvas.png
+  alt: "ROAM robot manipulation canvas layout showing visual, action, proprioception, and reward regions"
+  fit: contain
+video: https://www.youtube.com/watch?v=LHEhdFAWkEc
+links:
+  github: https://github.com/JacobFV/recursive-omnimodal-video-action-model
+  paper: /assets/pdf/roam/looped-attention-video-diffusion-transformers.pdf
+influences: [teaching-computers-to-use-computers, tensor-computer, roam-cortical-canvas]
+realizes: [roam-looped-attention-video-diffusion-transformers]
+critiques: []
+---
+
+![ROAM robot manipulation canvas layout showing visual, action, proprioception, and reward regions](/assets/img/projects/roam-robot-manipulation-canvas.png)
+
+## Problem
+
+Most video-action models treat time, perception, action, and robot state as a sequence-format problem: encode the visual stream, append action or proprioceptive tokens, run a large transformer once, and decode the next behavior. That is workable, but it leaves two architectural questions under-tested.
+
+First: if a transformer block is applied repeatedly with shared weights, does the extra computation behave like real iterative reasoning, or does it mostly act as parameter sharing and regularization? Second: if video, action, proprioception, reward, and language are placed onto a shared spatiotemporal canvas, can the layout itself become the inductive bias for embodied intelligence?
+
+ROAM is the research program built around those questions. It started from a cortex-inspired intuition: mammalian cortex is a mostly uniform computational sheet whose real specialization comes from allocation, topology, recurrence, and routing. The project asks whether a similar principle can be useful for omnimodal video-action models: one shared processing substrate, many modality regions, and deliberate attention topology over space and time.
+
+## Solution
+
+The core abstraction is a **spatiotemporal canvas**: a 3D grid of embedding vectors indexed by time, height, and width. Different regions of the grid are assigned to different streams: visual patches, text, proprioception, action history, future action targets, and reward. A transformer backbone processes the flattened canvas, while positional encodings, modality embeddings, masks, and topology choices determine which information is present and which positions can interact.
+
+The second abstraction is **looped attention**. Instead of stacking many unique transformer blocks, ROAM can apply the same block multiple times per forward pass, adding loop embeddings and gates so each pass can refine the canvas state. In the strongest version, this is grafted onto CogVideoX-2B: a pretrained video diffusion transformer becomes the visual world-model backbone, and small trainable loop/action modules adapt it to Bridge V2 robot manipulation data.
+
+The active direction in the repository is "intentional topology." The README is explicit that the first 26 experiments all used dense attention. That proved looped attention has a useful effect, but dense attention is only one trivial point in a much larger design space. The next experiments test structured attention: central thought blocks, causal temporal connections, cortical hierarchy, thalamic relay patterns, and multi-agent information routing.
+
+## Why It Matters
+
+The important result is not "looping makes models think." The empirical paper is more careful, and more valuable: across 26 experiments and 236 training runs, the original reasoning and naive multimodal-binding hypotheses mostly failed.
+
+That failure is the point. ROAM turns a speculative architecture idea into a clean engineering claim:
+
+- **Looped attention is parameter-efficient weight sharing.** In the depth-vs-recurrence experiment, a 3-block x 4-loop model achieved 1.73x lower total loss than a matched-parameter 12-block single-pass baseline.
+- **The dynamics converge toward a fixed point.** Hidden-state cosine similarity rose from 0.926 to 0.996 across loops, matching the deep-equilibrium interpretation of weight-tied recurrence.
+- **Three loops appears to be the useful regime.** In the CogVideoX grid, 3 loops was best across freeze levels, while 4 loops regressed.
+- **Small trainable adapters can compete with much larger unfrozen runs.** The best frozen 3-loop condition used about 350K trainable parameters and still beat unfrozen 1-loop conditions with roughly 33x more trainable parameters on action loss.
+- **Naive multimodal binding is not free.** Joint observation-action prediction hurt action quality by 19%, which argues for better loss balancing, modality-specific routing, or richer decoders rather than simply dumping every modality into one shared objective.
+
+That makes the project significant in a practical way. It identifies a real advantage, names the mechanism honestly, and kills several attractive but unsupported stories early. For robotics and computer-use agents, that is exactly the kind of negative result that prevents months of wasted scaling.
+
+## Experiments
+
+The repository documents three architecture generations.
+
+| Version | Scope | What It Tested | What Survived |
+| --- | --- | --- | --- |
+| v1 | Toy multimodal canvas | Looped diffusion blocks, exit gates, depth vs recurrence, fixed-point dynamics | Weight sharing helps; per-token gates beat global gates; looping is not reasoning |
+| v2 | Geometric sparse attention | Position-aware Q/K, local plus sparse global attention, progressive sharpening | Mild sharpening helps contact detection; dense still wins at small token counts |
+| v3 | Morphology graphs and CogVideoX graft | MuJoCo behavior cloning, Bridge V2 robot video, frozen vs unfrozen video backbones | 3 loops is consistently best; action decoding is the bottleneck |
+
+The paper's headline negatives are just as important as the positives:
+
+- Multi-hop and physical-reasoning tests did not show the expected iterative-reasoning benefit.
+- Morphology tokens did not create a useful loop-by-body-topology interaction.
+- Joint multimodal prediction created gradient interference instead of free binding.
+- Sparse attention was worse than dense attention on a 120-token toy canvas, which is unsurprising but important: sparse topology only becomes relevant when the canvas is large enough for dense attention to be the wrong default.
+
+The active follow-up experiments move from "does looping help?" to "which interaction topology should the model use?" The README lists experiments 27-30: baselines, central-thought layouts, causal temporal topology, cortical hierarchy, sharpening, geometric Q/K, halting, thalamic relay, and multi-agent routing. This reframes the design surface from raw loop count to **which blocks attend to which other blocks, across both space and time**.
+
+## Papers
+
+The empirical paper is the evidence base for the current project direction: 26 experiments, three architecture versions, and a direct account of what worked, what failed, and why.
+
+<iframe
+  src="/assets/pdf/roam/looped-attention-video-diffusion-transformers.pdf#view=FitH"
+  title="Looped Attention in Video Diffusion Transformers"
+  style={{ width: "100%", height: "720px", border: "1px solid var(--color-border)", borderRadius: "8px" }}
+/>
+
+[Open empirical paper](/assets/pdf/roam/looped-attention-video-diffusion-transformers.pdf)
+
+The cortical-canvas paper lays out the theoretical frame: canvas allocation as an analogue of cortical magnification, local-dense plus global-sparse connectivity as a small-world routing prior, variable recurrence as adaptive compute, and progressive sharpening as a rough computational analogue of cortical refinement cascades. The paper is not claiming biological fidelity; it is using neuroscience as a source of testable architecture priors.
+
+<iframe
+  src="/assets/pdf/roam/cortical-canvas.pdf#view=FitH"
+  title="The Cortical Canvas"
+  style={{ width: "100%", height: "720px", border: "1px solid var(--color-border)", borderRadius: "8px" }}
+/>
+
+[Open cortical-canvas paper](/assets/pdf/roam/cortical-canvas.pdf)
+
+## Repository
+
+The current repository is organized around the new topology experiments while preserving the first 26 runs:
+
+```text
+scripts/
+  finetune_cogvideox.py
+  cogvideox_topology_ablation.py
+  video_dataset.py
+  launch_lambda.py
+
+experiments/runs/
+  per-condition results and checkpoints
+
+archive/
+  roam/
+  experiments/
+  docs/
+  papers/
+  report-video/
+  paper-video/
+
+papers/
+  new post-topology papers
+```
+
+The public code depends on `canvas-engine` for canvas layout, looped blocks, topology definitions, and CogVideoX grafting; `diffusers` for the CogVideoX-2B backbone; and PyTorch for training. The active runs target Bridge V2 robot manipulation data on A100-class hardware.
+
+## Lessons
+
+ROAM is useful because it corrected its own story. The initial inspiration was cortical and cognitive: maybe recurrence gives video-action models more time to reason, and maybe the canvas naturally binds modalities. The data says: not yet, and not automatically.
+
+What remains is sharper. Looped attention is a practical parameter-efficiency technique. The canvas is a promising substrate, but only if topology, loss balancing, and decoding are engineered deliberately. The next research question is no longer whether recurrence is magical. It is whether intentional attention topology can make a large video-action backbone spend computation in the right places: over the right modality regions, at the right times, with the right bottlenecks.
+
+That is the significance of the project. It turns "omnimodal embodied intelligence" from a metaphor into a concrete set of ablations: loop count, freeze policy, canvas allocation, temporal causality, sparse routing, sharpening, halting, and action-decoder capacity.

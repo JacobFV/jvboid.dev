@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">tf-som app icon</title>
+  <desc id="desc">A glowing self-organizing map grid with TensorFlow-style code sparks.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#173d44"/>
+      <stop offset="58%" stop-color="#071820"/>
+      <stop offset="100%" stop-color="#020506"/>
+    </radialGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7df9ff"/>
+      <stop offset="55%" stop-color="#8cff98"/>
+      <stop offset="100%" stop-color="#f7d46b"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.35 0 0 0 0 1 0 0 0 0 0.90 0 0 0 .8 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="78" y="78" width="356" height="356" rx="54" fill="#08151b" stroke="url(#stroke)" stroke-width="7" opacity=".96"/>
+  <g stroke="#24525a" stroke-width="2" opacity=".75">
+    <path d="M137 102 V410 M196 102 V410 M256 102 V410 M316 102 V410 M375 102 V410"/>
+    <path d="M102 137 H410 M102 196 H410 M102 256 H410 M102 316 H410 M102 375 H410"/>
+  </g>
+  <g filter="url(#glow)">
+    <circle cx="150" cy="151" r="25" fill="#7df9ff"/>
+    <circle cx="207" cy="196" r="17" fill="#7df9ff" opacity=".82"/>
+    <circle cx="282" cy="151" r="22" fill="#8cff98"/>
+    <circle cx="342" cy="211" r="27" fill="#8cff98" opacity=".86"/>
+    <circle cx="188" cy="318" r="29" fill="#f7d46b"/>
+    <circle cx="285" cy="354" r="18" fill="#f7d46b" opacity=".82"/>
+    <circle cx="356" cy="316" r="25" fill="#ff8f70"/>
+    <path d="M150 151 L207 196 M282 151 L342 211 M188 318 L285 354 L356 316" fill="none" stroke="#eaffff" stroke-width="5" stroke-opacity=".38"/>
+  </g>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-weight="700" text-anchor="middle">
+    <text x="256" y="462" fill="#dffff8" font-size="44">tf_som</text>
+  </g>
+</svg>

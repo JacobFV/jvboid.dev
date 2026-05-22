@@ -6,16 +6,45 @@ status: active
 tags: [ml, differentiable-programming, agents, framework]
 summary: "A framework for encoding and decoding arbitrary Python objects, differentiable programming, and runtime code generation — Programming 2.0 with the abstractions software engineers already know."
 hero:
-  src: /img/migrated/tensorcode-logo.png
-  alt: TensorCode
+  src: /assets/img/projects/tensorcode-slide-01.png
+  alt: TensorCode presentation title slide
   fit: contain
 links:
   github: https://github.com/Limboid/tensorcode
-  demo: "https://jacobvaldez.notion.site/TensorCode-8992f96752d44e919ddd30ffe85d8232?pvs=4"
+  site: https://tensaco.ai/
 influences: [jnumpy, full-stack-artificial-intelligence]
 realizes: []
 critiques: []
 ---
+
+<PresentationSlides
+  slides={[
+    { src: "/assets/img/projects/tensorcode-slide-01.png", alt: "TensorCode title slide with the github.com/limboid/tensorcode link" },
+    { src: "/assets/img/projects/tensorcode-slide-02.png", alt: "Capabilities: encode and decode arbitrary objects, develop and evolve multi-modal models, runtime code generation, differentiable programming, develop cognitive architectures" },
+    { src: "/assets/img/projects/tensorcode-slide-03.png", alt: "Reinforcement-learning loop diagram: an agent and a world exchanging action and observation" },
+    { src: "/assets/img/projects/tensorcode-slide-04.png", alt: "Hand-written step() function manually encoding inputs, deciding, and decoding the action tensor back to Python objects" },
+    { src: "/assets/img/projects/tensorcode-slide-05.png", alt: "Arbitrary object encoding and decoding with tc.encode and tc.decode" },
+    { src: "/assets/img/projects/tensorcode-slide-06.png", alt: "The fully hand-written step() function shown in full" },
+    { src: "/assets/img/projects/tensorcode-slide-07.png", alt: "The same step() function rewritten compactly with tc.encode and tc.decode" },
+    { src: "/assets/img/projects/tensorcode-slide-08.png", alt: "TensorCode step() alongside the Observation and Action class definitions it is inferred from" },
+    { src: "/assets/img/projects/tensorcode-slide-09.png", alt: "The same step() unchanged while Observation and Action grow extra typed fields" },
+    { src: "/assets/img/projects/tensorcode-slide-10.png", alt: "Observation and Action using a Union of Literals to type the direction field" },
+    { src: "/assets/img/projects/tensorcode-slide-11.png", alt: "Action using a tuple of direction literals, still decoded by the unchanged step()" },
+    { src: "/assets/img/projects/tensorcode-slide-12.png", alt: "How tc.encode turns an Observation object into query and key-value tensor pairs" },
+    { src: "/assets/img/projects/tensorcode-slide-13.png", alt: "Tensor-shape walkthrough showing how encoded objects batch across vision, text, and energy inputs" },
+    { src: "/assets/img/projects/tensorcode-slide-14.png", alt: "Runtime Code Generation: tc.exec, tc.select, tc.create, and tc.patterns.Factory examples" },
+    { src: "/assets/img/projects/tensorcode-slide-15.png", alt: "Differentiable Programming: @tc.If / .Elif / .Else decorators making control flow differentiable" },
+    { src: "/assets/img/projects/tensorcode-slide-16.png", alt: "Cognitive Architecture Development diagram: multi-modal fusion, memory, prediction, action, and training loss terms" },
+    { src: "/assets/img/projects/tensorcode-slide-17.png", alt: "Cognitive-architecture step() function, full listing" },
+    { src: "/assets/img/projects/tensorcode-slide-18.png", alt: "Cognitive-architecture step() highlighting the recurrent input and memory reads" },
+    { src: "/assets/img/projects/tensorcode-slide-19.png", alt: "Cognitive-architecture step() highlighting the global-workspace perception state" },
+    { src: "/assets/img/projects/tensorcode-slide-20.png", alt: "Cognitive-architecture step() highlighting the prediction stage" },
+    { src: "/assets/img/projects/tensorcode-slide-21.png", alt: "Cognitive-architecture step() highlighting the output and memory writes" },
+    { src: "/assets/img/projects/tensorcode-slide-22.png", alt: "Cognitive-architecture step() highlighting the training feedback and loss terms" },
+    { src: "/assets/img/projects/tensorcode-slide-23.png", alt: "Cognitive-architecture step() with the return statement highlighted" },
+    { src: "/assets/img/projects/tensorcode-slide-24.png", alt: "Closing capabilities slide with the github.com/limboid/tensorcode link" },
+  ]}
+/>
 
 ## Problem
 
@@ -86,40 +115,11 @@ generation, differentiable control flow, and a full differentiable
 cognitive architecture. The full deck is also available as a
 [downloadable PDF](/assets/pdf/tensorcode-presentation.pdf).
 
-<PresentationSlides
-  slides={[
-    { src: "/assets/img/projects/tensorcode-slide-01.png", alt: "TensorCode title slide with the github.com/limboid/tensorcode link" },
-    { src: "/assets/img/projects/tensorcode-slide-02.png", alt: "Capabilities: encode and decode arbitrary objects, develop and evolve multi-modal models, runtime code generation, differentiable programming, develop cognitive architectures" },
-    { src: "/assets/img/projects/tensorcode-slide-03.png", alt: "Reinforcement-learning loop diagram: an agent and a world exchanging action and observation" },
-    { src: "/assets/img/projects/tensorcode-slide-04.png", alt: "Hand-written step() function manually encoding inputs, deciding, and decoding the action tensor back to Python objects" },
-    { src: "/assets/img/projects/tensorcode-slide-05.png", alt: "Arbitrary object encoding and decoding with tc.encode and tc.decode" },
-    { src: "/assets/img/projects/tensorcode-slide-06.png", alt: "The fully hand-written step() function shown in full" },
-    { src: "/assets/img/projects/tensorcode-slide-07.png", alt: "The same step() function rewritten compactly with tc.encode and tc.decode" },
-    { src: "/assets/img/projects/tensorcode-slide-08.png", alt: "TensorCode step() alongside the Observation and Action class definitions it is inferred from" },
-    { src: "/assets/img/projects/tensorcode-slide-09.png", alt: "The same step() unchanged while Observation and Action grow extra typed fields" },
-    { src: "/assets/img/projects/tensorcode-slide-10.png", alt: "Observation and Action using a Union of Literals to type the direction field" },
-    { src: "/assets/img/projects/tensorcode-slide-11.png", alt: "Action using a tuple of direction literals, still decoded by the unchanged step()" },
-    { src: "/assets/img/projects/tensorcode-slide-12.png", alt: "How tc.encode turns an Observation object into query and key-value tensor pairs" },
-    { src: "/assets/img/projects/tensorcode-slide-13.png", alt: "Tensor-shape walkthrough showing how encoded objects batch across vision, text, and energy inputs" },
-    { src: "/assets/img/projects/tensorcode-slide-14.png", alt: "Runtime Code Generation: tc.exec, tc.select, tc.create, and tc.patterns.Factory examples" },
-    { src: "/assets/img/projects/tensorcode-slide-15.png", alt: "Differentiable Programming: @tc.If / .Elif / .Else decorators making control flow differentiable" },
-    { src: "/assets/img/projects/tensorcode-slide-16.png", alt: "Cognitive Architecture Development diagram: multi-modal fusion, memory, prediction, action, and training loss terms" },
-    { src: "/assets/img/projects/tensorcode-slide-17.png", alt: "Cognitive-architecture step() function, full listing" },
-    { src: "/assets/img/projects/tensorcode-slide-18.png", alt: "Cognitive-architecture step() highlighting the recurrent input and memory reads" },
-    { src: "/assets/img/projects/tensorcode-slide-19.png", alt: "Cognitive-architecture step() highlighting the global-workspace perception state" },
-    { src: "/assets/img/projects/tensorcode-slide-20.png", alt: "Cognitive-architecture step() highlighting the prediction stage" },
-    { src: "/assets/img/projects/tensorcode-slide-21.png", alt: "Cognitive-architecture step() highlighting the output and memory writes" },
-    { src: "/assets/img/projects/tensorcode-slide-22.png", alt: "Cognitive-architecture step() highlighting the training feedback and loss terms" },
-    { src: "/assets/img/projects/tensorcode-slide-23.png", alt: "Cognitive-architecture step() with the return statement highlighted" },
-    { src: "/assets/img/projects/tensorcode-slide-24.png", alt: "Closing capabilities slide with the github.com/limboid/tensorcode link" },
-  ]}
-/>
-
 ## Status
 
 TensorCode is an active, exploratory framework. The
 [GitHub repository](https://github.com/Limboid/tensorcode) holds the
-current implementation, and the
+current implementation. The
 [project notebook](https://jacobvaldez.notion.site/TensorCode-8992f96752d44e919ddd30ffe85d8232?pvs=4)
 tracks design notes. Encoding/decoding and runtime code generation are
 the furthest along; differentiable control flow and reinforcement

@@ -14,6 +14,7 @@ import {
   type Node,
   type NodeKind,
 } from "@/lib/graph";
+import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 
 const laneClass: Record<Lane, string> = {
   research: "text-[var(--color-lane-research)]",
@@ -32,8 +33,6 @@ const laneBg: Record<Lane, string> = {
 const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const eventRank = (n: Node) => (n.eventStatus === "upcoming" ? 0 : 1);
-const imageSrcPattern = /src:\s*["']([^"']+\.(?:avif|gif|heic|jpe?g|png|svg|webp))["']/gi;
-
 const socialLinks = [
   { label: "email", href: "mailto:jacob@humanrobots.ai" },
   { label: "text/call", href: "tel:+19724606353" },
@@ -43,27 +42,6 @@ const socialLinks = [
   { label: "art", href: "https://jvboid.art" },
   { label: "anonymous feedback", href: "https://www.admonymous.co/jvboid" },
 ];
-
-const initialProjectAdjacency = [
-  ["phys-0", "chem-0"],
-  ["windows-web", "macos-web-next"],
-] as const;
-
-function withAdjacentProjects(projects: Node[]): Node[] {
-  const ordered = [...projects];
-
-  for (const [leftId, rightId] of initialProjectAdjacency) {
-    const leftIndex = ordered.findIndex((p) => p.id === leftId);
-    const rightIndex = ordered.findIndex((p) => p.id === rightId);
-    if (leftIndex === -1 || rightIndex === -1 || rightIndex === leftIndex + 1) continue;
-
-    const [right] = ordered.splice(rightIndex, 1);
-    const nextLeftIndex = ordered.findIndex((p) => p.id === leftId);
-    ordered.splice(nextLeftIndex + 1, 0, right);
-  }
-
-  return ordered;
-}
 
 // Featured projects: shipped or active first, then by recency. Cap at 6.
 function pickFeatured(nodes: Node[]): Node[] {
@@ -90,84 +68,28 @@ function pickFeatured(nodes: Node[]): Node[] {
   return [...pinnedNodes, ...rest].slice(0, 6);
 }
 
-function imageRefsForNode(n: Node): { src: string; alt: string }[] {
-  const refs: { src: string; alt: string }[] = [];
-  if (n.hero?.src) refs.push({ src: n.hero.src, alt: n.hero.alt });
-
-  for (const match of n.body.matchAll(imageSrcPattern)) {
-    refs.push({ src: match[1], alt: n.title });
-  }
-
-  return refs;
-}
-
-function projectThreadImages(n: Node): { src: string; alt: string }[] {
-  const curated = n.threadImages?.map((img) => ({ src: img.src, alt: img.alt ?? n.title })) ?? [];
-  const refs = curated.length > 0 ? curated : imageRefsForNode(n);
-
-  const seen = new Set<string>();
-  return refs
-    .filter((img) => {
-      if (seen.has(img.src)) return false;
-      seen.add(img.src);
-      return true;
-    })
-    .slice(0, 4);
-}
-
 export default function HomePage() {
   const graph = getGraph();
   const { nodes } = graph;
   const listedNodes = nodes.filter(isListedNode);
 
   const featured = pickFeatured(listedNodes);
-  // Full project list, sorted by status (active first, then shipped, then
-  // shelved/idea), then by date desc within each bucket.
-  const statusRank: Record<string, number> = {
-    active: 0,
-    shipped: 1,
-    idea: 2,
-    shelved: 3,
-  };
+  // Full project list: curated hardware/polished projects first, then the rest
+  // by status and date.
   const allProjects = withAdjacentProjects(
-    listedNodes
-      .filter((n) => n.kind === "project")
-      .sort((a, b) => {
-        const ra = statusRank[a.status ?? "active"] ?? 9;
-        const rb = statusRank[b.status ?? "active"] ?? 9;
-        if (ra !== rb) return ra - rb;
-        return a.date < b.date ? 1 : -1;
-      }),
+    listedNodes.filter((n) => n.kind === "project").sort(byProjectRank),
   );
   // Lite shape for the client-side ProjectsBrowser. `quickView` marks
   // projects with enough visual material (hero / video / live embed) to
   // be worth a zoom-in modal; the rest just link to their page.
-  const projectItems: ProjectItem[] = allProjects.map((n) => ({
-    id: n.id,
-    kind: "project",
-    title: n.title,
-    summary: n.summary,
-    body: n.body,
-    status: n.status ?? "active",
-    date: n.date,
-    lane: n.lane,
-    tags: n.tags,
-    hero: n.hero,
-    icon: n.icon,
-    video: n.video,
-    threadImages: projectThreadImages(n),
-    orbitEmbed: n.orbitEmbed,
-    links: n.links,
-    quickView: Boolean(n.hero || n.video || n.orbitEmbed || n.links?.demo),
-  }));
+  const projectItems: ProjectItem[] = projectItemsFromNodes(allProjects);
   const recentPosts = listedNodes
     .filter((n) => n.kind === "post")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 6);
   const recentPapers = listedNodes
     .filter((n) => n.kind === "paper")
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, 3);
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
   const recentReadings = listedNodes
     .filter((n) => n.kind === "reading")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
@@ -582,10 +504,10 @@ export default function HomePage() {
                 timeline
               </Link>
               <Link
-                href="/loop"
+                href="/readings/a-beautiful-loop"
                 className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
-                /loop — book notes
+                book notes
               </Link>
               <Link
                 href="/resume"
@@ -706,7 +628,11 @@ export default function HomePage() {
 
         {/* ---- Papers ---- */}
         {recentPapers.length > 0 && (
-          <Section eyebrow="Research" title="Papers & notes" link={{ href: "/papers", label: "all papers →" }}>
+          <Section
+            eyebrow="Research"
+            title="Papers & notes"
+            link={{ href: "/papers", label: "all papers →" }}
+          >
             <CoverRail nodes={recentPapers} variant="paper" />
           </Section>
         )}

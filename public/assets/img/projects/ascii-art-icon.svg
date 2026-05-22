@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="ascii-art app icon">
+  <!-- terminal canvas -->
+  <rect width="32" height="32" rx="5" fill="#211c17"/>
+  <!-- a diagonal luminance ramp rendered in glyphs of rising ink density -->
+  <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="6.6" font-weight="700"
+     letter-spacing="0.6" fill="#e8e2d4">
+    <text x="3.5" y="8.4">. . : - =</text>
+    <text x="3.5" y="14">. : - = +</text>
+    <text x="3.5" y="19.6">: - = + *</text>
+    <text x="3.5" y="25.2">- = + * #</text>
+  </g>
+  <!-- brightest cell — the accent -->
+  <text x="22.6" y="28.4" font-family="ui-monospace,Menlo,Consolas,monospace"
+        font-size="8" font-weight="700" fill="#c5341b">@</text>
+</svg>
