@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">MPNets hero</title>
+  <desc id="desc">A multi-paradigm policy network diagram with inputs, graph nodes, update signals, and wider policy state.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f6f0e8"/>
+      <stop offset="0.52" stop-color="#e7f1ec"/>
+      <stop offset="1" stop-color="#e9eef8"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" x2="1">
+      <stop offset="0" stop-color="#244e5a"/>
+      <stop offset="1" stop-color="#5b3f72"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#1e293b" flood-opacity="0.16"/>
+    </filter>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="7" orient="auto">
+      <path d="M2 2 L12 7 L2 12 Z" fill="#4b5563"/>
+    </marker>
+    <style>
+      .label{font:600 28px Inter,Arial,sans-serif;fill:#1f2933}
+      .small{font:500 20px Inter,Arial,sans-serif;fill:#4b5563}
+      .mono{font:600 20px 'JetBrains Mono',Consolas,monospace;fill:#344054}
+      .math{font:600 24px 'Times New Roman',serif;fill:#283544}
+      .box{fill:#ffffff;stroke:#c9d3d8;stroke-width:2}
+      .soft{fill:#ffffffcc;stroke:#bac8d0;stroke-width:2}
+      .wire{stroke:#4b5563;stroke-width:4;fill:none;marker-end:url(#arrow)}
+      .thin{stroke:#7a8791;stroke-width:2.5;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g opacity="0.25">
+    <path d="M120 725 C360 590 560 775 780 610 S1210 490 1460 650" stroke="#7fa192" stroke-width="32" fill="none"/>
+    <path d="M40 250 C270 90 510 260 710 170 S1180 80 1540 210" stroke="#859bc3" stroke-width="28" fill="none"/>
+  </g>
+
+  <text x="120" y="105" class="label" font-size="46">MPNets</text>
+  <text x="120" y="147" class="small">Multi-Paradigm Networks: one policy shaped by many compatible ways of learning</text>
+
+  <g filter="url(#shadow)">
+    <rect x="105" y="225" width="300" height="430" rx="18" class="soft"/>
+    <text x="140" y="272" class="label">streams</text>
+    <text x="145" y="325" class="small">vision</text>
+    <text x="145" y="375" class="small">language</text>
+    <text x="145" y="425" class="small">actions</text>
+    <text x="145" y="475" class="small">reward</text>
+    <text x="145" y="525" class="small">labels</text>
+    <text x="145" y="575" class="small">feedback</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="555" y="190" width="490" height="500" rx="22" class="box"/>
+    <text x="600" y="245" class="label">graph of nodes</text>
+    <circle cx="700" cy="355" r="58" fill="#f7d06d" stroke="#9d6b16" stroke-width="3"/>
+    <circle cx="890" cy="335" r="58" fill="#86c5b4" stroke="#2d6d62" stroke-width="3"/>
+    <circle cx="790" cy="500" r="64" fill="#9eb4da" stroke="#526d9c" stroke-width="3"/>
+    <circle cx="940" cy="535" r="52" fill="#dc9fb4" stroke="#9c4f68" stroke-width="3"/>
+    <path d="M752 340 C785 320 820 320 838 330" class="thin"/>
+    <path d="M862 385 C840 420 820 445 805 462" class="thin"/>
+    <path d="M840 510 C865 515 885 522 895 528" class="thin"/>
+    <path d="M755 470 C720 435 705 415 700 388" class="thin"/>
+    <text x="666" y="362" class="mono">SOMP</text>
+    <text x="855" y="342" class="mono">RNN</text>
+    <text x="756" y="507" class="mono">policy</text>
+    <text x="910" y="542" class="mono">head</text>
+    <text x="610" y="640" class="math">yᵢᵗ = fᵢ(read(sₜ,Eᵢ); θᵢ,hᵢᵗ)</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1195" y="225" width="300" height="430" rx="18" class="soft"/>
+    <text x="1230" y="272" class="label">updates</text>
+    <text x="1235" y="325" class="small">supervised loss</text>
+    <text x="1235" y="375" class="small">self-supervised loss</text>
+    <text x="1235" y="425" class="small">STDP / Hebbian</text>
+    <text x="1235" y="475" class="small">RL return</text>
+    <text x="1235" y="525" class="small">feedback alignment</text>
+    <text x="1235" y="575" class="small">structural growth</text>
+  </g>
+
+  <path d="M405 440 L545 440" class="wire"/>
+  <path d="M1045 440 L1185 440" class="wire"/>
+  <path d="M1345 655 C1175 790 725 800 255 655" class="thin"/>
+  <text x="545" y="780" class="math">Δθ = Σₚ ηₚ Mₚ(G,sₜ) + ∇θ Jₚ(G,sₜ)</text>
+</svg>

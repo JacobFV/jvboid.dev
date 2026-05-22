@@ -4,10 +4,11 @@ date: 2025-11-28
 lane: building
 status: active
 tags: [agents, ui, sim]
-summary: "Browser-native desktop shell — generic OS chrome that windows-web and macos-web inherit from."
+summary: "Browser-native desktop shell — generic OS chrome that windows-web-next and macos-web-next inherit from."
 icon:
   src: "/assets/img/projects/browser-os-favicon.svg"
   alt: "browser-os desktop shell favicon"
+video: "https://www.youtube.com/watch?v=JVPbi7MRZFg"
 links:
   github: https://github.com/JacobFV/browser-os
   demo: https://desktop-shell.vercel.app
@@ -17,7 +18,7 @@ critiques: []
 ---
 
 ## Problem
-The windows-web and macos-web simulations share a lot of plumbing: window manager, virtual filesystem, app lifecycle, taskbar/menu chrome. Re-implementing each per-OS is wasteful and drifts the two apart.
+The windows-web-next and macos-web-next simulations share a lot of plumbing: window manager, virtual filesystem, app lifecycle, taskbar/menu chrome. Re-implementing each per-OS is wasteful and drifts the two apart.
 
 ## Solution
 A generic browser-native desktop shell that the OS-specific simulators reuse. Same window management, same app surface, same agent affordances — just different chrome and default apps.

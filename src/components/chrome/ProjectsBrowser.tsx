@@ -204,7 +204,11 @@ function IconFace({
         alt=""
         loading="lazy"
         draggable={false}
-        className="h-full w-full object-cover"
+        // Icons are designed at a fixed aspect (usually 1:1) — letterbox
+        // them inside the card so the inner content never gets squished
+        // when the card slot isn't perfectly square. Hero photos below
+        // still use object-cover.
+        className="h-full w-full object-contain"
         aria-hidden
       />
     );
@@ -347,17 +351,8 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
   }, [quickViewById]);
 
   return (
-    <section id={id} className="mt-24 scroll-mt-20">
-      <div className="mb-8 flex items-end justify-between gap-6">
-        <div>
-          <p className="text-xs text-[var(--color-ink-mute)]">Index</p>
-          <h2
-            className="mt-2 font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]"
-            style={{ fontVariationSettings: '"opsz" 96' }}
-          >
-            Projects
-          </h2>
-        </div>
+    <section id={id} className="mt-6 scroll-mt-20">
+      <div className="mb-6 flex justify-end">
         <div role="group" aria-label="Projects view" className="flex gap-1.5">
           <ViewButton label="List view" active={view === "list"} onClick={() => pickView("list")}>
             <svg

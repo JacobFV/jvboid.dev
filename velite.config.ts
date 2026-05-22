@@ -2,6 +2,7 @@ import { defineConfig, defineCollection, s } from "velite";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import { remarkDecodeMathEntities } from "./src/lib/remark-decode-math-entities";
 import { remarkImageGrid } from "./src/lib/remark-image-grid";
 
 // Shared shape for graph nodes. Frontmatter validation. See docs/CONTENT_MODEL.md.
@@ -41,7 +42,7 @@ const baseFields = {
   // parsing so LaTeX inside posts doesn't crash the build.
   body: s.mdx({
     copyLinkedFiles: false,
-    remarkPlugins: [remarkGfm, remarkMath, remarkImageGrid],
+    remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
     rehypePlugins: [rehypeKatex],
   }),
 };
@@ -233,7 +234,7 @@ const loop = defineCollection({
       slug: s.path(),
       body: s.mdx({
         copyLinkedFiles: false,
-        remarkPlugins: [remarkGfm, remarkMath, remarkImageGrid],
+        remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
         rehypePlugins: [rehypeKatex],
       }),
     })

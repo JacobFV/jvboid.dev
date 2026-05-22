@@ -30,7 +30,6 @@ const laneBg: Record<Lane, string> = {
   personal: "bg-[var(--color-lane-personal)]",
 };
 
-const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const eventRank = (n: Node) => (n.eventStatus === "upcoming" ? 0 : 1);
 const socialLinks = [
@@ -51,7 +50,7 @@ function pickFeatured(nodes: Node[]): Node[] {
   // Manual override — pin a few load-bearing ones to the top regardless of date.
   const pinned = [
     // Orbit slots (rank 0–1) — both live iframe embeds.
-    "windows-web",
+    "windows-web-next",
     "macos-web-next",
     // Planetoid slots (rank 2–5) — drift around the pfp with moons.
     "limboid",
@@ -557,47 +556,15 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ---- All projects ---- */}
+        <ProjectsBrowser id="projects" projects={projectItems} />
+
         {/* ---- Updates ---- */}
         {recentUpdates.length > 0 && (
           <Section title="Updates" link={{ href: "/updates", label: "all updates →" }}>
             <UpdateTimeline nodes={recentUpdates} />
           </Section>
         )}
-
-        {/* ---- Events ---- */}
-        {recentEvents.length > 0 && (
-          <Section
-            eyebrow="Events"
-            title="Places & Things"
-            link={{ href: "/events", label: "all events →" }}
-          >
-            <ul className="flex flex-col">
-              {recentEvents.map((n) => (
-                <li key={n.id}>
-                  <RowLink node={n} />
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
-
-        {/* ---- Featured projects ---- */}
-        <Section
-          eyebrow="Selected work"
-          title="Active Threads:"
-          link={{ href: "/projects", label: "all projects →" }}
-        >
-          <ul className="flex flex-col">
-            {featured.map((n) => (
-              <li key={n.id}>
-                <ProjectRow node={n} />
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        {/* ---- All projects ---- */}
-        <ProjectsBrowser id="projects" projects={projectItems} />
 
         {/* ---- Recent posts ---- */}
         <Section
@@ -615,17 +582,6 @@ export default function HomePage() {
           </ul>
         </Section>
 
-        {/* ---- Readings ---- */}
-        {recentReadings.length > 0 && (
-          <Section
-            eyebrow="Reading"
-            title="Favorites"
-            link={{ href: "/readings", label: "all readings →" }}
-          >
-            <ReadingCoverRail nodes={recentReadings} />
-          </Section>
-        )}
-
         {/* ---- Papers ---- */}
         {recentPapers.length > 0 && (
           <Section
@@ -634,6 +590,17 @@ export default function HomePage() {
             link={{ href: "/papers", label: "all papers →" }}
           >
             <CoverRail nodes={recentPapers} variant="paper" />
+          </Section>
+        )}
+
+        {/* ---- Readings ---- */}
+        {recentReadings.length > 0 && (
+          <Section
+            eyebrow="Reading"
+            title="Favorites"
+            link={{ href: "/readings", label: "all readings →" }}
+          >
+            <ReadingCoverRail nodes={recentReadings} />
           </Section>
         )}
 
@@ -739,33 +706,6 @@ function Section({
       </div>
       {children}
     </section>
-  );
-}
-
-function ProjectRow({ node }: { node: Node }) {
-  const status = node.status ?? "active";
-  return (
-    <Link href={nodeHref(node)} className="group block px-3 py-4 no-underline transition-colors">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <div className="flex items-baseline gap-3">
-          <span
-            className={`h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full ${laneBg[node.lane]}`}
-            aria-hidden
-          />
-          <span className="text-lg text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
-            {node.title}
-          </span>
-        </div>
-        <div className="shrink-0 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--color-ink-mute)] uppercase">
-          <span>{status}</span>
-          <span className="mx-1.5 opacity-40">·</span>
-          <span>{fmtYear(node.date)}</span>
-        </div>
-      </div>
-      <p className="mt-1.5 ml-5 text-sm leading-relaxed text-[var(--color-ink-dim)]">
-        {node.summary}
-      </p>
-    </Link>
   );
 }
 

@@ -431,9 +431,13 @@ def STDP(p):
 
 
 
-1.  **Inhibitory Spike Timing Dependant Plasticity (iSTDP)** increases (decreases) the strength of *existing ($w^{EI}_{ij}>0$)* inhibitory to excitatory connections when they are unsucessful (sucessful) at inhibiting their downstream excitatory neurons. Inhibitory synaptic growth is (target firing rate $\mu_{IP}$ times) slower to strengthen synapses than weaken them: $$\begin{align*}
+1.  **Inhibitory Spike Timing Dependant Plasticity (iSTDP)** increases (decreases) the strength of *existing ($w^{EI}_{ij}>0$)* inhibitory to excitatory connections when they are unsucessful (sucessful) at inhibiting their downstream excitatory neurons. Inhibitory synaptic growth is (target firing rate $\mu_{IP}$ times) slower to strengthen synapses than weaken them:
+
+    $$
+    \begin{align*}
     \Delta w^{EI}_{ij} =& \frac{\eta_{inh}}{\mu_{IP}}x_i(t)y_j(t-1) - \eta_{inh}(1-x_i(t))y_j(t-1) \\
-     =& -\eta_{inh}y_j(t-1)[1-x_i(t)(1+1/\mu_{IP})] \end{align*}$$
+     =& -\eta_{inh}y_j(t-1)[1-x_i(t)(1+1/\mu_{IP})] \end{align*}
+    $$
 
 
 
@@ -1192,4 +1196,3 @@ logger = experiment(
 - need to test character sequence inputs
 
 **Conclusion** I cannot make any conclusion of certainty from the above experiments. Criticality will continue to be a focus of study.
-

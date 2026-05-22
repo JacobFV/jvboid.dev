@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">MPNets paradigm map</title>
+  <desc id="desc">Seven learning paradigms surround one shared policy state.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+      <path d="M1 1 L12 6.5 L1 12 Z" fill="#52606d"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0f172a" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .bg{fill:#f4f1eb}
+      .node{fill:#fffdf8;stroke:#c7d0d5;stroke-width:2.5}
+      .core{fill:#263f54;stroke:#182738;stroke-width:3}
+      .wire{stroke:#52606d;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .title{font:700 34px Inter,Arial,sans-serif;fill:#1f2933}
+      .label{font:650 24px Inter,Arial,sans-serif;fill:#1f2933}
+      .small{font:500 18px Inter,Arial,sans-serif;fill:#4b5563}
+      .coreText{font:700 30px Inter,Arial,sans-serif;fill:#fff}
+      .math{font:600 22px 'Times New Roman',serif;fill:#364152}
+    </style>
+  </defs>
+  <rect width="1400" height="900" class="bg"/>
+  <text x="80" y="86" class="title">What "multi-paradigm" means</text>
+  <text x="80" y="124" class="small">Each paradigm contributes a different projection of the same world state.</text>
+  <g filter="url(#shadow)">
+    <circle cx="700" cy="470" r="135" class="core"/>
+    <text x="640" y="452" class="coreText">shared</text>
+    <text x="642" y="490" class="coreText">policy</text>
+    <text x="611" y="535" class="math" fill="#ffffff">π(a|x,h,G)</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="90" y="220" width="280" height="110" rx="14" class="node"/>
+    <text x="120" y="265" class="label">supervised</text>
+    <text x="120" y="298" class="small">labels reduce semantic error</text>
+    <rect x="120" y="560" width="280" height="110" rx="14" class="node"/>
+    <text x="150" y="605" class="label">self-supervised</text>
+    <text x="150" y="638" class="small">views and sequences align</text>
+    <rect x="545" y="120" width="310" height="110" rx="14" class="node"/>
+    <text x="575" y="165" class="label">unsupervised</text>
+    <text x="575" y="198" class="small">structure before labels</text>
+    <rect x="1000" y="220" width="300" height="110" rx="14" class="node"/>
+    <text x="1030" y="265" class="label">reinforcement</text>
+    <text x="1030" y="298" class="small">consequence shapes action</text>
+    <rect x="1010" y="560" width="290" height="110" rx="14" class="node"/>
+    <text x="1040" y="605" class="label">Hebbian / STDP</text>
+    <text x="1040" y="638" class="small">local timing updates</text>
+    <rect x="520" y="700" width="360" height="110" rx="14" class="node"/>
+    <text x="550" y="745" class="label">feedback alignment</text>
+    <text x="550" y="778" class="small">top-down teaching signals</text>
+    <rect x="540" y="305" width="320" height="95" rx="14" class="node"/>
+    <text x="570" y="345" class="label">structural plasticity</text>
+    <text x="570" y="374" class="small">grow useful graph edges</text>
+  </g>
+  <path d="M370 275 C480 300 540 365 590 420" class="wire"/>
+  <path d="M400 615 C500 595 555 550 585 515" class="wire"/>
+  <path d="M700 230 L700 330" class="wire"/>
+  <path d="M1000 275 C900 310 840 365 802 420" class="wire"/>
+  <path d="M1010 615 C910 595 845 548 815 520" class="wire"/>
+  <path d="M700 700 L700 610" class="wire"/>
+  <path d="M700 400 L700 330" class="wire"/>
+  <text x="415" y="872" class="math">z_MP = ⊕ₚ πₚ(xₜ, aₜ, rₜ, yₜ, hₜ, cₜ, Gₜ)</text>
+</svg>

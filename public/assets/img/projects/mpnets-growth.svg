@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" role="img" aria-labelledby="title desc">
+  <title id="title">MPNets growth</title>
+  <desc id="desc">A diagram linking lower confusion, effective rank, graph growth, and broader behavior.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg{fill:#eef3ef}
+      .panel{fill:#fffef9;stroke:#cbd5d9;stroke-width:2}
+      .accent1{fill:#f5cf72;stroke:#9d6b16;stroke-width:2}
+      .accent2{fill:#93c9ba;stroke:#2d6d62;stroke-width:2}
+      .accent3{fill:#a9bde4;stroke:#526d9c;stroke-width:2}
+      .wire{stroke:#475569;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .title{font:700 32px Inter,Arial,sans-serif;fill:#1f2933}
+      .label{font:650 22px Inter,Arial,sans-serif;fill:#1f2933}
+      .small{font:500 17px Inter,Arial,sans-serif;fill:#4b5563}
+      .math{font:600 21px 'Times New Roman',serif;fill:#344054}
+      .mono{font:600 17px 'JetBrains Mono',Consolas,monospace;fill:#344054}
+    </style>
+  </defs>
+  <rect width="1400" height="860" class="bg"/>
+  <text x="74" y="78" class="title">Less confused, happier, bigger</text>
+  <text x="74" y="116" class="small">In this project those are engineering claims about entropy, positive shaping, and functional breadth.</text>
+
+  <rect x="90" y="190" width="340" height="480" rx="18" class="panel"/>
+  <text x="128" y="240" class="label">less confused</text>
+  <text x="128" y="280" class="small">entropy and gradient conflict fall</text>
+  <polyline points="135,545 195,500 255,485 315,410 375,360" fill="none" stroke="#526d9c" stroke-width="5"/>
+  <line x1="135" y1="560" x2="380" y2="560" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="135" y1="330" x2="135" y2="560" stroke="#94a3b8" stroke-width="2"/>
+  <text x="150" y="620" class="math">min E[Cₜ + βDₜ]</text>
+
+  <rect x="530" y="190" width="340" height="480" rx="18" class="panel"/>
+  <text x="568" y="240" class="label">happier</text>
+  <text x="568" y="280" class="small">reward includes competence and curiosity</text>
+  <circle cx="700" cy="430" r="100" class="accent2"/>
+  <circle cx="655" cy="405" r="28" fill="#fffef9"/>
+  <circle cx="745" cy="405" r="28" fill="#fffef9"/>
+  <path d="M625 465 C660 515 740 515 775 465" fill="none" stroke="#2d6d62" stroke-width="8" stroke-linecap="round"/>
+  <text x="577" y="620" class="math">R_MP = r_ext + info + structure - confusion</text>
+
+  <rect x="970" y="190" width="340" height="480" rx="18" class="panel"/>
+  <text x="1008" y="240" class="label">bigger</text>
+  <text x="1008" y="280" class="small">more useful dimensions and edges</text>
+  <circle cx="1090" cy="398" r="34" class="accent1"/>
+  <circle cx="1190" cy="372" r="34" class="accent2"/>
+  <circle cx="1210" cy="500" r="34" class="accent3"/>
+  <circle cx="1070" cy="520" r="34" fill="#deb0bf" stroke="#9c4f68" stroke-width="2"/>
+  <path d="M1124 392 L1156 380" class="wire"/>
+  <path d="M1195 406 L1205 466" class="wire"/>
+  <path d="M1176 506 L1104 516" class="wire"/>
+  <path d="M1080 486 L1088 432" class="wire"/>
+  <text x="1010" y="620" class="math">r_eff(H) = exp(-Σ σ̄ᵢ log σ̄ᵢ)</text>
+
+  <path d="M430 430 L520 430" class="wire"/>
+  <path d="M870 430 L960 430" class="wire"/>
+  <text x="310" y="770" class="math">The policy grows in behavioral breadth when many signals point to reusable structure.</text>
+</svg>

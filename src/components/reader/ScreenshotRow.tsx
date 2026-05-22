@@ -12,14 +12,20 @@ export function ScreenshotRow({
   shots,
   caption,
   href,
+  columns,
 }: {
   shots: Shot[];
   caption?: string;
   href?: string;
+  columns?: number;
 }) {
+  const cols = columns ?? (shots.length === 2 ? 2 : shots.length === 3 ? 3 : 4);
   return (
     <figure className="my-7">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      >
         {shots.map((s) => (
           <ReaderImage
             key={s.src}

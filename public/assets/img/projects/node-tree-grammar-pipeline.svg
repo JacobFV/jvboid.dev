@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" role="img" aria-labelledby="title desc">
+  <title id="title">Node Tree grammar pipeline</title>
+  <desc id="desc">Typed grammar nodes generate a tree, then the same tree renders a natural language description and executes an environment demonstration.</desc>
+  <rect width="1000" height="620" rx="28" fill="#f4f0e8"/>
+  <rect x="42" y="42" width="916" height="536" rx="24" fill="#fffaf0" stroke="#d9ceb7" stroke-width="2"/>
+
+  <g font-family="ui-sans-serif, system-ui, sans-serif" fill="#242720">
+    <text x="74" y="94" font-size="34" font-weight="700">Node Tree</text>
+    <text x="74" y="126" font-size="17" fill="#68675f">one generated tree, two synchronized outputs</text>
+  </g>
+
+  <g font-family="ui-monospace, Menlo, monospace" font-size="13">
+    <rect x="74" y="172" width="230" height="250" rx="18" fill="#f0f6f3" stroke="#6b9c8e" stroke-width="2"/>
+    <text x="102" y="206" font-size="16" font-weight="700" fill="#236454">grammar</text>
+    <rect x="102" y="232" width="176" height="34" rx="8" fill="#fffaf0" stroke="#b7d2c8"/>
+    <text x="118" y="254" fill="#4a615a">SUBJECT = U(...)</text>
+    <rect x="102" y="280" width="176" height="34" rx="8" fill="#fffaf0" stroke="#b7d2c8"/>
+    <text x="118" y="302" fill="#4a615a">VERB = U(...)</text>
+    <rect x="102" y="328" width="176" height="34" rx="8" fill="#fffaf0" stroke="#b7d2c8"/>
+    <text x="118" y="350" fill="#4a615a">DIRECTION = U(...)</text>
+    <rect x="102" y="376" width="176" height="34" rx="8" fill="#fffaf0" stroke="#b7d2c8"/>
+    <text x="118" y="398" fill="#4a615a">SENTENCE = T(...)</text>
+  </g>
+
+  <g fill="none" stroke="#2f7564" stroke-width="3" stroke-linecap="round">
+    <path d="M304 298h78"/>
+    <path d="M370 286l14 12-14 12"/>
+  </g>
+
+  <g font-family="ui-sans-serif, system-ui, sans-serif">
+    <rect x="398" y="158" width="230" height="280" rx="20" fill="#232720"/>
+    <text x="432" y="204" font-size="17" font-weight="700" fill="#f4f0e8">generated tree</text>
+    <g fill="none" stroke="#e2c16b" stroke-width="2.8">
+      <path d="M513 242v40"/>
+      <path d="M513 282h-76v42"/>
+      <path d="M513 282v42"/>
+      <path d="M513 282h76v42"/>
+    </g>
+    <g>
+      <circle cx="513" cy="234" r="34" fill="#e2c16b"/>
+      <text x="513" y="240" text-anchor="middle" font-size="13" font-weight="700" fill="#232720">S</text>
+      <circle cx="437" cy="338" r="32" fill="#f4f0e8"/>
+      <text x="437" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#232720">Tom</text>
+      <circle cx="513" cy="338" r="32" fill="#f4f0e8"/>
+      <text x="513" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#232720">walks</text>
+      <circle cx="589" cy="338" r="32" fill="#f4f0e8"/>
+      <text x="589" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#232720">up</text>
+    </g>
+    <text x="432" y="404" font-size="13" fill="#bfc6b8">generate -> render -> execute</text>
+  </g>
+
+  <g fill="none" stroke="#2f7564" stroke-width="3" stroke-linecap="round">
+    <path d="M628 248h70"/>
+    <path d="M686 236l14 12-14 12"/>
+    <path d="M628 360h70"/>
+    <path d="M686 348l14 12-14 12"/>
+  </g>
+
+  <g font-family="ui-sans-serif, system-ui, sans-serif">
+    <rect x="716" y="176" width="208" height="108" rx="16" fill="#fffaf0" stroke="#d7c38a" stroke-width="2"/>
+    <text x="742" y="215" font-size="17" font-weight="700" fill="#242720">rendered text</text>
+    <text x="742" y="250" font-size="23" font-weight="700" fill="#8a641d">"Tom walks up"</text>
+
+    <rect x="716" y="322" width="208" height="142" rx="16" fill="#f0f6f3" stroke="#6b9c8e" stroke-width="2"/>
+    <text x="742" y="361" font-size="17" font-weight="700" fill="#242720">executed demo</text>
+    <rect x="742" y="386" width="110" height="42" rx="10" fill="#fffaf0" stroke="#b7d2c8"/>
+    <text x="758" y="412" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#4a615a">env.move()</text>
+    <path d="M872 406h32" stroke="#2f7564" stroke-width="3" stroke-linecap="round"/>
+    <path d="M894 394l14 12-14 12" fill="none" stroke="#2f7564" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <g font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#68675f">
+    <text x="74" y="506">passes can be limited, skipped, reordered, or extended</text>
+    <text x="74" y="532">scope + relations carry state across the traversal</text>
+    <text x="74" y="558">useful for UI, computer interaction, Blender, code, and structured decision-making demos</text>
+  </g>
+</svg>

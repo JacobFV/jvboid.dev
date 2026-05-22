@@ -10,6 +10,7 @@ import {
   type NodeKind,
 } from "@/lib/graph";
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
+import { CollectionTitle } from "@/components/chrome/CollectionTitle";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 
 type Params = Promise<{ kind: string }>;
@@ -67,16 +68,8 @@ export default async function KindIndexPage({ params }: { params: Params }) {
 
   if (nodeKind === "project") {
     return (
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <header className="mb-12 max-w-3xl">
-          <h1
-            className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
-            style={{ fontVariationSettings: '"opsz" 144' }}
-          >
-            Projects
-          </h1>
-          <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION.project}</p>
-        </header>
+      <main className="mx-auto max-w-5xl px-6 pb-16">
+        <CollectionTitle>Projects</CollectionTitle>
 
         {nodes.length === 0 ? (
           <p className="text-[var(--color-ink-dim)]">No entries yet.</p>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="256" height="256"
+     viewBox="0 0 256 256"
+     preserveAspectRatio="xMidYMid meet"
+     role="img" aria-labelledby="man-t man-d">
+  <title id="man-t">The Multi-Agent Network icon</title>
+  <desc id="man-d">A square terminal window with shadow, showing a few syntax-highlighted code primitives — comment, keyword, function definition, return, and a prompt — glowing against a dark editor background.</desc>
+
+  <defs>
+    <filter id="man-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="man-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+      <feOffset dx="0" dy="6"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.32"/></feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="256" height="256" rx="58" fill="#ece7dc"/>
+
+  <!-- Square terminal, 192×192, centered with 32px cream padding. -->
+  <g filter="url(#man-shadow)">
+    <rect x="32" y="32" width="192" height="192" rx="14" fill="#15181e"/>
+  </g>
+
+  <circle cx="48" cy="50" r="5" fill="#ff5f57"/>
+  <circle cx="64" cy="50" r="5" fill="#febc2e"/>
+  <circle cx="80" cy="50" r="5" fill="#28c840"/>
+  <line x1="32" y1="68" x2="224" y2="68" stroke="#23272f" stroke-width="1.5"/>
+
+  <!--
+    Bigger, well-spaced text — fewer lines so each glyph has room to
+    breathe at the small render size. font-size 18, letter-spacing 0.4
+    avoids the squished-monospace look that browser font hinting causes
+    when text is rendered very small.
+
+    Token coverage: comment, keyword, function name, identifier,
+    operator, punctuation, prompt — the full syntax-highlight palette.
+  -->
+  <g font-family="'JetBrains Mono','Fira Mono','SF Mono',ui-monospace,Menlo,Consolas,'Liberation Mono',monospace"
+     font-size="18" font-weight="600" letter-spacing="0.4" xml:space="preserve">
+
+    <!-- 1: comment -->
+    <text x="46" y="100" fill="#6c7380" font-style="italic" font-weight="500"># MAN</text>
+
+    <!-- 2: def run(x): -->
+    <text x="46" y="130" fill="#9097a3">
+      <tspan fill="#c678dd" filter="url(#man-glow)">def</tspan> <tspan fill="#f0b84a" filter="url(#man-glow)" font-weight="700">run</tspan><tspan>(</tspan><tspan fill="#5ee3d0" filter="url(#man-glow)">x</tspan><tspan>):</tspan>
+    </text>
+
+    <!-- 3:   return x -->
+    <text x="46" y="160" fill="#9097a3">
+      <tspan>  </tspan><tspan fill="#c678dd" filter="url(#man-glow)">return</tspan> <tspan fill="#5ee3d0" filter="url(#man-glow)">x</tspan>
+    </text>
+
+    <!-- 4: prompt -->
+    <text x="46" y="200" fill="#28c840" filter="url(#man-glow)">&gt;</text>
+  </g>
+
+  <!-- cursor block — sized to match the larger font -->
+  <rect x="64" y="186" width="11" height="17" rx="1.5" fill="#5ee3d0" filter="url(#man-glow)" opacity="0.9"/>
+</svg>
