@@ -28,14 +28,7 @@ export default function ResumePage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <Link
-        href="/"
-        className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]"
-      >
-        ← home
-      </Link>
-
-      <header className="mb-12 mt-8">
+      <header className="mb-12">
         <h1
           className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
           style={{ fontVariationSettings: '"opsz" 144' }}

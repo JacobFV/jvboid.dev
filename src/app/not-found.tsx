@@ -10,10 +10,10 @@ export default function NotFound() {
         That node doesn&rsquo;t exist — yet, or anymore.
       </p>
       <Link
-        href="/"
+        href="/projects"
         className="mt-6 inline-block font-[family-name:var(--font-mono)] text-xs"
       >
-        ← back to the index
+        ← browse projects
       </Link>
     </main>
   );

@@ -1,4 +1,4 @@
-// Manual overrides for what an orbiter looks like in the home hero.
+// Manual overrides for decorative orbit previews.
 // Match keys to node ids. `asset` is an image URL (any path served from
 // /public is fine); `embed` is a URL to iframe into the orbiter as a
 // live preview of a deployed app.

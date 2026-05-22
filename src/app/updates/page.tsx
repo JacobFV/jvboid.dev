@@ -16,14 +16,8 @@ export default function UpdatesPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <header className="mb-12">
-        <Link
-          href="/"
-          className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]"
-        >
-          ← home
-        </Link>
         <h1
-          className="mt-8 font-[family-name:var(--font-display)] text-4xl tracking-tight"
+          className="font-[family-name:var(--font-display)] text-4xl tracking-tight"
           style={{ fontVariationSettings: '"opsz" 144' }}
         >
           Updates
@@ -34,8 +28,7 @@ export default function UpdatesPage() {
       </header>
 
       {/* Vertical timeline: a continuous grey rail threads through a
-          neutral-grey dot on each row — same treatment as the home page
-          "Updates" section, just with summary text per row. */}
+          neutral-grey dot on each row, with summary text per row. */}
       <ul className="flex flex-col">
         {updates.map((n, i) => {
           const first = i === 0;

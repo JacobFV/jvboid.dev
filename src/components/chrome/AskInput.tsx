@@ -27,7 +27,7 @@ declare global {
   }
 }
 
-// "Ask me anything" prompt on the home hero.
+// "Ask me anything" contact prompt.
 //   [text input grows] [mic] [submit]
 // Submit morphs between phone (empty → CallSheet) and arrow-up
 // (has text → TextSheet which gates the reveal of phone/email with the

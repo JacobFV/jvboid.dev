@@ -228,8 +228,7 @@ export function CmdK({ nodes }: Props) {
                   if (recent) go(nodeHref(recent));
                 }}
               />
-              <ActionItem label="Open the constellation" onSelect={() => go("/graph")} />
-              <ActionItem label="Back to portfolio home" onSelect={() => go("/")} />
+              <ActionItem label="Browse projects" onSelect={() => go("/projects")} />
               <ActionItem label="Browse events" onSelect={() => go("/events")} />
               <ActionItem label="Switch to timeline" onSelect={() => go("/t")} />
               <ActionItem

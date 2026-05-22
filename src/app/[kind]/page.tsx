@@ -1,38 +1,118 @@
-import { notFound, redirect } from "next/navigation";
-import { getGraph, KIND_FROM_PREFIX, nodeHref } from "@/lib/graph";
-
-// Level-1 dynamic route shared with /[kind]/[slug]. Two jobs:
-//
-//   1. Legacy compat — old URLs were flat (/computatrum, /limboid, …).
-//      Anything that matches a known node id 308-redirects to the new
-//      canonical /{kind-plural}/{slug} home.
-//   2. 404 for bare kind indexes — we don't have kind-index pages, so a
-//      direct hit on /projects or /posts should 404 (not render
-//      something weird).
-//
-// Static routes (/graph, /list, /loop, /now, /resume, /t, /updates,
-// /events, /introduction, /focus-statement, /feed.xml) take precedence
-// over this dynamic route, so they keep working.
-//
-// Naming note: the param is called `kind` to satisfy Next.js's
-// "same dynamic name at the same level" rule — /[kind]/[slug] already
-// owns the name. The actual value here can be a kind prefix OR a legacy
-// slug; we disambiguate in the handler.
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  getGraph,
+  isListedNode,
+  KIND_FROM_PREFIX,
+  KIND_PREFIX,
+  nodeHref,
+  type Node,
+  type NodeKind,
+} from "@/lib/graph";
 
 type Params = Promise<{ kind: string }>;
 
+const KIND_TITLE: Record<NodeKind, string> = {
+  post: "Posts",
+  project: "Projects",
+  paper: "Papers",
+  reading: "Readings",
+  update: "Updates",
+  skill: "Skills",
+  friend: "Friends",
+  event: "Events",
+  vision: "Visions",
+  experience: "Experience",
+};
+
+const KIND_DESCRIPTION: Record<NodeKind, string> = {
+  post: "Essays, notes, arguments, and working thoughts.",
+  project: "Built systems, prototypes, experiments, tools, and artifacts.",
+  paper: "Research papers and formal writing.",
+  reading: "Books, papers, articles, and references worth tracking.",
+  update: "Durable updates, links, launches, and short notes.",
+  skill: "Capabilities, practice areas, and supporting evidence.",
+  friend: "People and collaborators in the graph.",
+  event: "Conferences, talks, trips, launches, and other dated events.",
+  vision: "Longer vision documents and application essays.",
+  experience: "Roles, education, and operating history.",
+};
+
 export function generateStaticParams() {
-  return getGraph().nodes.map((n) => ({ kind: n.id }));
+  return Object.values(KIND_PREFIX).map((kind) => ({ kind }));
 }
 
-export default async function LegacySlugOrKindIndex({ params }: { params: Params }) {
+export async function generateMetadata({ params }: { params: Params }) {
   const { kind } = await params;
+  const nodeKind = KIND_FROM_PREFIX[kind];
+  if (!nodeKind) return {};
+  return {
+    title: `${KIND_TITLE[nodeKind]} · Jacob Valdez`,
+    description: KIND_DESCRIPTION[nodeKind],
+  };
+}
 
-  // A known kind prefix (/projects, /posts, …): no index page exists.
-  if (KIND_FROM_PREFIX[kind]) notFound();
+function byDateDesc(a: Node, b: Node) {
+  return a.date < b.date ? 1 : -1;
+}
 
-  // Otherwise treat the segment as a legacy node id.
-  const node = getGraph().byId.get(kind);
-  if (!node) notFound();
-  redirect(nodeHref(node));
+export default async function KindIndexPage({ params }: { params: Params }) {
+  const { kind } = await params;
+  const nodeKind = KIND_FROM_PREFIX[kind];
+  if (!nodeKind) notFound();
+
+  const nodes = getGraph()
+    .nodes.filter((n) => n.kind === nodeKind && isListedNode(n))
+    .sort(byDateDesc);
+
+  return (
+    <main className="mx-auto max-w-3xl px-6 py-16">
+      <header className="mb-12">
+        <h1
+          className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
+          style={{ fontVariationSettings: '"opsz" 144' }}
+        >
+          {KIND_TITLE[nodeKind]}
+        </h1>
+        <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>
+      </header>
+
+      {nodes.length === 0 ? (
+        <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
+      ) : (
+        <ul className="grid gap-4">
+          {nodes.map((node) => (
+            <li key={node.id}>
+              <Link
+                href={nodeHref(node)}
+                className="block rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)]/45 p-5 no-underline transition-colors hover:border-[var(--color-ink-mute)] hover:bg-[var(--color-bg-1)]"
+              >
+                <div className="mb-2 flex flex-wrap items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                  <time>{new Date(node.date).toISOString().slice(0, 10)}</time>
+                  {node.status && (
+                    <>
+                      <span>·</span>
+                      <span>{node.status}</span>
+                    </>
+                  )}
+                  {node.eventStatus && (
+                    <>
+                      <span>·</span>
+                      <span>{node.eventStatus}</span>
+                    </>
+                  )}
+                  <span>·</span>
+                  <span>{node.lane}</span>
+                </div>
+                <div className="text-lg text-[var(--color-ink)]">{node.title}</div>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-dim)]">
+                  {node.summary}
+                </p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  );
 }

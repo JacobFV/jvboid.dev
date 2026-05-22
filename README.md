@@ -2,7 +2,7 @@
 
 Jacob Valdez's personal site: a Next.js app that turns projects, writing, papers, updates, experience, skills, events, and visions into one connected graph.
 
-The site is no longer a skeleton. It has a working App Router implementation, typed MDX content through Velite, graph-derived navigation, canonical kind-prefixed routes, legacy redirects, a resume view, event/update indexes, a loop reader, and a 3D vision-room treatment for selected vision essays.
+The site is no longer a skeleton. It has a working App Router implementation, typed MDX content through Velite, graph-derived navigation, canonical kind-prefixed routes, dedicated kind indexes, a resume view, event/update indexes, a loop reader, and a 3D vision-room treatment for selected vision essays.
 
 ## Stack
 
@@ -40,8 +40,14 @@ pnpm sync:assets  # Copy assets from ../jacobfv.github.io into public/
 Primary pages:
 
 - `/` - home page with featured graph-derived sections and orbit/planetoid chrome
-- `/list` - browse all graph nodes
-- `/graph` - graph view
+- `/projects` - projects index
+- `/posts` - posts index
+- `/papers` - papers index
+- `/readings` - readings index
+- `/skills` - skills index
+- `/friends` - friends index
+- `/visions` - visions index
+- `/experiences` - experience index
 - `/t` - timeline view
 - `/loop` - A Beautiful Loop reader
 - `/resume` - experience and skills
@@ -64,7 +70,7 @@ Every content node has one canonical URL:
 /experiences/:slug
 ```
 
-The single-segment dynamic route keeps old flat URLs working by redirecting known legacy slugs, for example `/computatrum` to `/projects/computatrum`. `next.config.mjs` also contains 301 redirects from old Jekyll paths such as `/blog/:year/:slug/`, `/projects/:slug/`, and `/bio/:slug/`.
+There is intentionally no `/list` catch-all index page, no standalone `/graph` page, and no flat-slug fallback. The local graph belongs at the bottom of content pages. `next.config.mjs` still contains explicit 301 redirects from old Jekyll paths such as `/blog/:year/:slug/`, `/projects/:slug/`, and `/bio/:slug/`.
 
 ## Content Model
 

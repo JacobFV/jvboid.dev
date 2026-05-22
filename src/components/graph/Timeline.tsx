@@ -389,7 +389,7 @@ function FilterBar({
       }}
     >
       <Link
-        href="/graph"
+        href="/"
         style={{
           fontFamily: "var(--font-mono)",
           fontSize: 12,
@@ -397,7 +397,7 @@ function FilterBar({
           textDecoration: "none",
         }}
       >
-        ← constellation
+        ← home
       </Link>
       <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--color-ink-mute)" }}>
         timeline
