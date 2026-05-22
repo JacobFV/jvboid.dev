@@ -96,6 +96,26 @@ async function loadFrontmatterEdges(): Promise<Edge[]> {
   return edges;
 }
 
+type Redirect = { source: string; target: string; origin: string };
+
+async function loadRedirects(): Promise<Redirect[]> {
+  const out: Redirect[] = [];
+  for (const c of COLLECTIONS) {
+    const file = path.join(VELITE, `${c}.json`);
+    if (!existsSync(file)) continue;
+    const data = JSON.parse(await readFile(file, "utf8")) as Array<{
+      slug: string;
+      redirect?: string;
+    }>;
+    for (const n of data) {
+      if (!n.redirect) continue;
+      const id = slugBase(n.slug);
+      out.push({ source: id, target: n.redirect, origin: `${c}/${id}.mdx` });
+    }
+  }
+  return out;
+}
+
 function color(s: string, code: number) {
   return process.stdout.isTTY ? `\x1b[${code}m${s}\x1b[0m` : s;
 }
@@ -112,6 +132,7 @@ async function main() {
 
   const { ids, outgoingByKind } = await loadNodes();
   const fmEdges = await loadFrontmatterEdges();
+  const redirects = await loadRedirects();
   const manual: Edge[] = manualEdges.map((e) => ({
     ...e,
     origin: "src/data/edges.ts",
@@ -136,6 +157,10 @@ async function main() {
 
   // ---- Self-edges ----------------------------------------------------
   const selfEdges = allEdges.filter((e) => e.source === e.target);
+
+  // ---- Redirect aliases ----------------------------------------------
+  // A `redirect` must point at a real, different node.
+  const badRedirects = redirects.filter((r) => !ids.has(r.target) || r.target === r.source);
 
   // ---- Weight sanity (manualEdges only — frontmatter has no weight) -
   const badWeights = manual.filter((e) => {
@@ -208,6 +233,21 @@ async function main() {
       console.log(`  ${e.source} -> ${e.target} (${e.kind})  ${dim("from")} ${e.origin}`);
   }
 
+  if (redirects.length > 0 && badRedirects.length === 0) {
+    console.log(
+      green("✓") +
+        ` all ${redirects.length} redirect alias${redirects.length === 1 ? "" : "es"} resolve`,
+    );
+  } else if (badRedirects.length > 0) {
+    console.log(
+      red(`✖ ${badRedirects.length} broken redirect alias${badRedirects.length === 1 ? "" : "es"}:`),
+    );
+    for (const r of badRedirects) {
+      const why = r.target === r.source ? "points to itself" : "target node does not exist";
+      console.log(`  ${red(r.source)} ${dim("→")} ${r.target}  ${dim(`(${why}, from ${r.origin})`)}`);
+    }
+  }
+
   if (badWeights.length > 0) {
     console.log(yellow(`! ${badWeights.length} weight outside [0, 1]:`));
     for (const e of badWeights) console.log(`  ${e.source} -> ${e.target}  weight=${e.weight}`);
@@ -249,7 +289,7 @@ async function main() {
   }
 
   console.log("");
-  if (missing.length > 0 || selfEdges.length > 0) {
+  if (missing.length > 0 || selfEdges.length > 0 || badRedirects.length > 0) {
     console.log(red("validation failed"));
     process.exit(1);
   }

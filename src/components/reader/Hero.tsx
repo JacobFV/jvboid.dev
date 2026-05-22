@@ -160,12 +160,19 @@ function ProjectLiveEmbed({ url, title }: { url: string; title: string }) {
 function ProjectHeroImage({ node }: { node: Node }) {
   const demo = node.links?.demo;
   if (!node.hero) return null;
+  // "contain" letterboxes the whole image against the frame background —
+  // padding keeps logos/diagrams clear of the rounded border.
+  const contain = node.hero.fit === "contain";
   return (
     <div className={projectVisualFrame}>
       <ProgressiveImage
         src={node.hero.src}
         alt={node.hero.alt}
-        className="max-h-[420px] w-full object-cover"
+        className={
+          contain
+            ? "max-h-[420px] w-full bg-[var(--color-bg-1)] object-contain p-6"
+            : "max-h-[420px] w-full object-cover"
+        }
       />
       {demo && <LiveOpenButton url={demo} center label="try it out ↗" />}
     </div>

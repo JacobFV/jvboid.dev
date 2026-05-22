@@ -34,7 +34,9 @@ const embedFrame =
 const PROJECT_ORDER_STORAGE_KEY = "jacobfv:projects:order";
 // Hold this long before a press becomes a drag — short taps still open
 // the project, and a scroll (moving > MOVE_CANCEL_PX first) aborts it.
-const LONGPRESS_MS = 320;
+// While the timer runs the pressed tile "charges" (scales down over
+// exactly this duration) so the hold reads as intentional, not dead.
+const LONGPRESS_MS = 280;
 const MOVE_CANCEL_PX = 10;
 const TILE_SPRING = { type: "spring" as const, stiffness: 620, damping: 46 };
 
@@ -83,7 +85,7 @@ export type ProjectItem = {
   date: string;
   lane: Lane;
   tags: string[];
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; fit?: "cover" | "contain" };
   icon?: { src: string; alt: string };
   video?: string;
   threadImages?: { src: string; alt: string }[];
@@ -173,6 +175,7 @@ function ThreadImageGrid({ images }: { images: { src: string; alt: string }[] })
           src={img.src}
           alt=""
           loading="lazy"
+          draggable={false}
           className="h-full w-full object-cover"
           aria-hidden
         />
@@ -200,6 +203,7 @@ function IconFace({
         src={project.icon.src}
         alt=""
         loading="lazy"
+        draggable={false}
         className="h-full w-full object-cover"
         aria-hidden
       />
@@ -216,15 +220,34 @@ function IconFace({
   }
 
   if (project.hero) {
+    // "contain" letterboxes the logo on a lane-tinted backdrop so square
+    // tiles never crop a wordmark; "cover" (default) fills the tile.
+    const contain = project.hero.fit === "contain";
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={project.hero.src}
-        alt=""
-        loading="lazy"
-        className="h-full w-full object-cover"
-        aria-hidden
-      />
+      <span
+        className="grid h-full w-full place-items-center"
+        style={
+          contain
+            ? {
+                background: `radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--color-lane-${project.lane}) 38%, transparent) 0%, var(--color-bg-1) 82%)`,
+              }
+            : undefined
+        }
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={project.hero.src}
+          alt=""
+          loading="lazy"
+          draggable={false}
+          className={
+            contain
+              ? "h-full w-full object-contain p-[14%]"
+              : "h-full w-full object-cover"
+          }
+          aria-hidden
+        />
+      </span>
     );
   }
   return (
@@ -494,10 +517,14 @@ function TileVisual({
   project,
   iconRef,
   lifted = false,
+  pressing = false,
 }: {
   project: ProjectItem;
   iconRef?: React.Ref<HTMLSpanElement>;
   lifted?: boolean;
+  // `pressing` charges the icon down while the long-press timer runs,
+  // so a hold reads as intentional rather than dead.
+  pressing?: boolean;
 }) {
   return (
     <>
@@ -508,6 +535,11 @@ function TileVisual({
             ? ""
             : "transition-transform duration-200 ease-out group-hover:scale-[1.03] group-active:scale-95"
         }`}
+        style={
+          pressing
+            ? { transform: "scale(0.85)", transitionDuration: `${LONGPRESS_MS}ms` }
+            : undefined
+        }
       >
         <IconFace project={project} preferIcon preferThread />
       </span>
@@ -518,9 +550,11 @@ function TileVisual({
   );
 }
 
-// The home-screen grid. Tiles rearrange on long-press + drag: the lifted
-// tile follows the pointer in a fixed overlay while the rest reflow with
-// a spring `layout` animation (wrapping across rows included). A short
+// The home-screen grid. Tiles rearrange on long-press + drag. The press
+// "charges" the held tile (scales it down for the hold duration) so the
+// gesture announces itself; on activation the lifted tile pops into a
+// fixed overlay that follows the pointer while the rest reflow with a
+// spring `layout` animation (wrapping across rows included). A short
 // tap still opens the project; the new order persists to localStorage.
 function ProjectGrid({
   projects,
@@ -537,6 +571,9 @@ function ProjectGrid({
   const tiles = useRef(new Map<string, HTMLElement>());
   const icons = useRef(new Map<string, HTMLSpanElement>());
   const [dragId, setDragId] = useState<string | null>(null);
+  // The tile whose long-press timer is currently running (pre-drag) —
+  // drives the "charging" shrink so a hold gives instant feedback.
+  const [pressId, setPressId] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<{ x: number; y: number; w: number } | null>(null);
   // True between a drag's pointerup and the click it would spawn — used
   // to swallow that click so a drop doesn't also open the project.
@@ -576,6 +613,7 @@ function ProjectGrid({
     const g = gesture.current;
     if (!g) return;
     g.active = true;
+    setPressId(null);
     setDragId(g.id);
     setOverlay({ x: g.lastX - g.grabX, y: g.lastY - g.grabY, w: g.w });
     navigator.vibrate?.(12);
@@ -593,6 +631,7 @@ function ProjectGrid({
       }, 0);
     }
     gesture.current = null;
+    setPressId(null);
     setDragId(null);
     setOverlay(null);
   };
@@ -615,6 +654,7 @@ function ProjectGrid({
       timer: window.setTimeout(activate, LONGPRESS_MS),
       active: false,
     };
+    setPressId(project.id);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -627,6 +667,7 @@ function ProjectGrid({
       if (Math.hypot(e.clientX - g.startX, e.clientY - g.startY) > MOVE_CANCEL_PX) {
         if (g.timer) clearTimeout(g.timer);
         gesture.current = null;
+        setPressId(null);
       }
       return;
     }
@@ -678,7 +719,7 @@ function ProjectGrid({
               }
               openTile(project);
             }}
-            className={`group flex w-full flex-col items-center gap-2 no-underline ${
+            className={`group flex w-full flex-col items-center gap-2 px-[7.5%] no-underline select-none ${
               project.status === "idea" || project.status === "shelved" ? "opacity-60" : ""
             }`}
             style={{
@@ -688,6 +729,7 @@ function ProjectGrid({
           >
             <TileVisual
               project={project}
+              pressing={pressId === project.id}
               iconRef={(el) => {
                 if (el) icons.current.set(project.id, el);
                 else icons.current.delete(project.id);
@@ -705,7 +747,10 @@ function ProjectGrid({
             className="pointer-events-none fixed z-[60]"
             style={{ left: overlay.x, top: overlay.y, width: overlay.w }}
           >
-            <div className="flex [transform:scale(1.09)] flex-col items-center gap-2 [filter:drop-shadow(0_16px_26px_rgba(0,0,0,0.4))]">
+            <div
+              className="flex flex-col items-center gap-2 px-[7.5%] [filter:drop-shadow(0_16px_26px_rgba(0,0,0,0.4))]"
+              style={{ animation: "tile-lift-in 200ms cubic-bezier(0.34, 1.5, 0.5, 1) both" }}
+            >
               <TileVisual project={dragged} lifted />
             </div>
           </div>,
@@ -884,7 +929,11 @@ function QuickView({
               <img
                 src={project.hero.src}
                 alt={project.hero.alt}
-                className="max-h-[360px] w-full object-cover"
+                className={
+                  project.hero.fit === "contain"
+                    ? "max-h-[360px] w-full bg-[var(--color-bg-1)] object-contain p-6"
+                    : "max-h-[360px] w-full object-cover"
+                }
               />
               {project.links?.demo && <TryItOutButton url={project.links.demo} center />}
             </div>
