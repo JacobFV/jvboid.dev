@@ -1,0 +1,49 @@
+---
+title: "Block Sparse Attention With Block Retrieval"
+date: 2025-03-29
+lane: building
+tags: [attention, transformers, retrieval, ml-systems]
+summary: "A technical note on BSBR: chunk-local attention plus block retrieval as a way to trade dense quadratic attention for reusable long-context structure."
+influences: [brain-model, design-patterns-for-ai]
+realizes: []
+critiques: []
+---
+
+<XPost
+  caption="Original BSBR thread"
+  urls={[
+    "https://x.com/jvboid/status/1905931398961127820",
+    "https://x.com/jvboid/status/1906056495814307949",
+    "https://x.com/jvboid/status/1906056501719953468",
+    "https://x.com/jvboid/status/1906056515192328598",
+    "https://x.com/jvboid/status/1906056522041582067",
+    "https://x.com/jvboid/status/1906056529008079170",
+    "https://x.com/jvboid/status/1906056531834990820",
+    "https://x.com/jvboid/status/1906056538332201129",
+    "https://x.com/jvboid/status/1906056545315536905",
+  ]}
+/>
+
+Dense attention is a beautiful default and a brutal scaling law. Standard transformer attention compares every token with every other token, which gives the familiar $O(n^2)$ memory and compute shape. That is tolerable until context stops being a prompt and starts becoming a working memory.
+
+Block Sparse Attention With Block Retrieval, or BSBR, is one attempt to make that memory more structured. The sequence is divided into blocks. Attention remains dense inside a local block, where nearby tokens usually need fine-grained access. Across blocks, the model retrieves compressed block states rather than attending naively to every token.
+
+The design pressure is simple:
+
+- Local attention should preserve short-range precision.
+- Block retrieval should preserve long-range access.
+- Compression should make old context cheap enough to keep around.
+- State reuse should make repeated long-context computation less wasteful.
+
+That gives several knobs that are more operational than theoretical:
+
+- **Block size** controls the local-context versus memory tradeoff.
+- **Compression factor** controls how much information survives into block state.
+- **Overlap** reduces discontinuities at block boundaries.
+- **State reuse** lets layers and decoding steps avoid recomputing context that has already been summarized.
+
+The interesting product direction is not just "longer context." It is streaming-first agent software. Agents do not merely answer once. They accumulate traces: files, tool calls, decisions, failures, user corrections, world state, and partial plans. A useful memory substrate has to weave those traces into something reusable without making every future step pay the full quadratic cost of the past.
+
+This connects to my older interest in structured sparsity in the [brain model](/brain-model) and the more speculative architectural notes in [Design Patterns for AI](/design-patterns-for-ai). The recurring intuition is that topology should be part of the interface. A model should not only learn weights; it should expose useful ways to route, compress, reuse, and inspect information.
+
+The missing work is the part that always matters: pretrained checkpoints, benchmarks, ablations, and uncomfortable comparisons against simpler baselines. A sparse attention pattern becomes real only when it earns its complexity.
