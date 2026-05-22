@@ -123,11 +123,30 @@ loop that length-generalizes to arrays it never saw; trained on a single
 size, it overfit into an unrolled straight-line solution — a clean,
 legible picture of generalization failure.
 
-The longer-horizon goal is GUI agents. The clip below is from the
-reinforcement-learning environment suite — three policy architectures
-(CNN, GRU, Transformer) driving the same pixel-art GUIs the Tensor
-Computer's learned programs are meant to eventually operate mechanically,
-calling a frozen reasoning model only when high-level judgment is needed.
+The longer-horizon goal is GUI agents, but the important detail in the
+clip below is not the UI polish. The "screen" is a literal
+`H×W×3 float32` tensor inside the machine state, rendered by JAX as part
+of the Tensor Computer's primitive video pipeline. The cursor is not a
+browser cursor moving over a mockup; it is another peripheral state being
+advanced by a program running inside the differentiable computer graph.
+
+In other words, the demo is showing a full computer running inside a
+tensor graph: CPU state, memory, GPU/framebuffer, peripherals, display
+scanout, and mouse movement are all tensors updated by the same compiled
+JAX step function. The pixel-art look is deliberate because it keeps the
+rendering pipeline inspectable while the research target remains much
+deeper than UI aesthetics.
+
+<div className="my-6 rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] p-4">
+  <p className="m-0 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wide text-[var(--color-ink-mute)]">
+    What the video is actually showing
+  </p>
+  <p className="mt-2 mb-0 max-w-[70ch] text-sm leading-relaxed text-[var(--color-ink)]">
+    A differentiable von Neumann computer in JAX, with a full display
+    framebuffer represented as an <code>H×W×3 float32</code> tensor and
+    a cursor rendered through the machine's own primitive video path.
+  </p>
+</div>
 
 <video
   src="/assets/media/tensor-computer/agent-comparison.webm"

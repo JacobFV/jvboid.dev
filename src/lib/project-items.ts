@@ -5,7 +5,7 @@ const imageSrcPattern = /src:\s*["']([^"']+\.(?:avif|gif|heic|jpe?g|png|svg|webp
 
 const initialProjectAdjacency = [
   ["phys-0", "chem-0"],
-  ["windows-web", "macos-web-next"],
+  ["windows-web-next", "macos-web-next"],
 ] as const;
 
 const featuredProjectOrder = [
@@ -21,7 +21,7 @@ const featuredProjectOrder = [
   "recursive-omnimodal-video-action-model",
   "tensor-computer",
   "brain-model",
-  "windows-web",
+  "windows-web-next",
   "macos-web-next",
   "browser-os",
   "yt2ctx",
@@ -127,6 +127,6 @@ export function projectItemsFromNodes(projects: Node[]): ProjectItem[] {
     threadImages: projectThreadImages(n),
     orbitEmbed: n.orbitEmbed,
     links: n.links,
-    quickView: Boolean(n.hero || n.video || n.orbitEmbed || n.links?.demo),
+    quickView: Boolean(n.body),
   }));
 }

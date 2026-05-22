@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Single-paradigm limitations</title>
+  <desc id="desc">Isolated learning paradigms see partial projections; MPNet combines the projections into a fuller training field.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg{fill:#f7f4ee}
+      .box{fill:#ffffff;stroke:#ccd3d8;stroke-width:2}
+      .bad{fill:#fff2f2;stroke:#c86b6b;stroke-width:2}
+      .good{fill:#eef7f1;stroke:#4f8d65;stroke-width:2.5}
+      .wire{stroke:#475569;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .title{font:700 32px Inter,Arial,sans-serif;fill:#1f2933}
+      .label{font:650 22px Inter,Arial,sans-serif;fill:#1f2933}
+      .small{font:500 17px Inter,Arial,sans-serif;fill:#4b5563}
+      .math{font:600 20px 'Times New Roman',serif;fill:#344054}
+    </style>
+  </defs>
+  <rect width="1400" height="900" class="bg"/>
+  <text x="72" y="78" class="title">Why one paradigm is not enough</text>
+  <text x="72" y="116" class="small">Each isolated objective throws away part of the real state-action-learning problem.</text>
+
+  <rect x="90" y="180" width="300" height="145" rx="15" class="bad"/>
+  <text x="122" y="225" class="label">supervised only</text>
+  <text x="122" y="258" class="small">sees labels, misses consequence</text>
+  <text x="122" y="296" class="math">min E[ℓ(f(x),y)]</text>
+
+  <rect x="90" y="385" width="300" height="145" rx="15" class="bad"/>
+  <text x="122" y="430" class="label">RL only</text>
+  <text x="122" y="463" class="small">sees reward, misses dense structure</text>
+  <text x="122" y="501" class="math">max E[Σ γᵗrₜ]</text>
+
+  <rect x="90" y="590" width="300" height="145" rx="15" class="bad"/>
+  <text x="122" y="635" class="label">local only</text>
+  <text x="122" y="668" class="small">sees coactivity, misses task value</text>
+  <text x="122" y="706" class="math">Δw ∝ xy</text>
+
+  <rect x="555" y="250" width="290" height="310" rx="18" class="box"/>
+  <text x="600" y="300" class="label">partial projections</text>
+  <circle cx="700" cy="405" r="86" fill="#dde7f7" stroke="#526d9c" stroke-width="2"/>
+  <path d="M700 319 L700 491" stroke="#526d9c" stroke-width="2"/>
+  <path d="M614 405 L786 405" stroke="#526d9c" stroke-width="2"/>
+  <text x="623" y="525" class="math">zₚ = πₚ(world)</text>
+
+  <rect x="1010" y="250" width="310" height="310" rx="18" class="good"/>
+  <text x="1050" y="300" class="label">MPNet field</text>
+  <text x="1050" y="348" class="small">labels + views + rewards</text>
+  <text x="1050" y="383" class="small">+ local plasticity</text>
+  <text x="1050" y="418" class="small">+ feedback + graph growth</text>
+  <text x="1050" y="485" class="math">z_MP = ⊕ₚ zₚ</text>
+  <text x="1050" y="525" class="math">Δθ = Σₚ Δθₚ</text>
+
+  <path d="M390 252 C480 265 520 310 555 360" class="wire"/>
+  <path d="M390 458 C465 455 510 430 555 410" class="wire"/>
+  <path d="M390 662 C495 640 535 555 600 500" class="wire"/>
+  <path d="M845 405 L1000 405" class="wire"/>
+  <text x="497" y="792" class="math">Less confusion comes from keeping more explanatory variables attached.</text>
+</svg>

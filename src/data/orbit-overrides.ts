@@ -20,7 +20,7 @@ export const ORBIT_OVERRIDES: Record<string, OrbitOverride> = {
   // Live iframe embeds — scaled hard inside the 36px orbiter so the
   // whole deployed app reads as a tiny moving thumbnail. Click sends
   // the user to the project page.
-  "windows-web": { embed: "https://windows-web-next.vercel.app" },
+  "windows-web-next": { embed: "https://windows-web-next.vercel.app" },
   "macos-web-next": { embed: "https://macos-web-next.vercel.app" },
   "browser-os": { embed: "https://desktop-shell.vercel.app" },
   "ascii-art": { embed: "https://ascii-art-sable.vercel.app" },

@@ -1,12 +1,62 @@
 ---
-title: node-tree
+title: "Node Tree"
 date: 2022-01-01
 lane: building
 status: active
-tags: []
-summary: "module for generating synthetic demonstration-description pairs using psuedo context-free grammar"
-links: 
+tags: [synthetic-data, grammars, agents, python, tooling]
+summary: "A Python toolkit for programming tree-shaped generative processes that can render natural-language descriptions and execute matching demonstrations in an environment."
+hero:
+  src: "/assets/img/projects/node-tree-grammar-pipeline.svg"
+  alt: "Node Tree grammar pipeline from typed node templates to generated trees, rendered descriptions, and executable demos"
+  fit: contain
+threadImages:
+  - src: "/assets/img/projects/node-tree-grammar-pipeline.svg"
+    alt: "Node Tree grammar pipeline"
+links:
   github: https://github.com/Limboid/node-tree
+influences: [the-fertile-crescent, general-unified-world-modeling]
+realizes: []
+critiques: []
 ---
-Lives at https://github.com/Limboid/node-tree.
 
+![Node Tree grammar pipeline](/assets/img/projects/node-tree-grammar-pipeline.svg)
+
+## What It Is
+
+Node Tree is a Python toolkit for programming with trees. The practical target is synthetic demonstration-description generation: define a small grammar of actions, entities, and phrase templates; sample a tree; render it into language; and execute the same tree against an environment.
+
+That makes it useful when text and behavior have to stay coupled. A generated instruction such as "Tom walks up" is not just a string. It is a tree whose selected subject, verb, and direction can also call `env.move("Tom", "up")`. The description and the demonstration come from the same structure.
+
+## How It Works
+
+The README frames the library around composable node types:
+
+- **Literal and empty nodes** for terminal values.
+- **Concat, repeat, while, do-while, and for nodes** for sequence and iteration.
+- **Union and optional nodes** for alternatives.
+- **Exclude, switch, if, and if-else nodes** for constrained generation and control flow.
+
+Users can define syntax directly with Python objects, decorators, operator overloads, or external context-free grammar text. The same node system then runs staged passes. By default, a root tree generates, renders, and executes recursively, but callers can run only selected passes, exclude execution, limit generation depth, or change traversal when a parent needs a child to execute last.
+
+## Why It Mattered
+
+The important idea was not just "make random sentences." It was to treat a sentence, a UI interaction, a Blender scene, a code snippet, or a computer task as the surface form of an executable program tree.
+
+That mattered for AI data generation because demo-description pairs are expensive when written by hand. Node Tree pointed at a repeatable path: compose a grammar, bind the leaves to an environment, then generate labeled examples where the natural language, the action trace, and the resulting state agree by construction.
+
+## Use Cases
+
+The README sketches several domains:
+
+- Natural-language task descriptions paired with environment demonstrations.
+- Relational synthetic data for training language models.
+- Programming tasks where nodes render code and execute through a REPL or notebook kernel.
+- Computer interaction tasks where the computer is the environment.
+- UI generation for HTML, mobile, desktop, and framework-specific components.
+- Blender scenes, images, animations, creative writing, and generated websites.
+
+The broader throughline is structured agency. A model or policy can operate over the tree, not just over a flat prompt. That creates room for generation, rendering, confirmation, rollback, and execution as separate passes on the same object.
+
+## Lessons
+
+Tree structure is a good boundary between language and action. Strings are easy to sample but hard to trust; programs are executable but often too rigid to describe naturally. Node Tree sits between those two: a grammar can produce varied language while still keeping a concrete action graph underneath it.

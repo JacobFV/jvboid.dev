@@ -3,12 +3,343 @@ title: MPNets
 date: 2022-01-30
 lane: building
 status: active
-tags: []
-summary: "Multi-Paradigm Networks."
+tags: [ai, research]
+summary: "Multi-Paradigm Networks: a graph-based neural architecture experiment for training one policy across supervised, self-supervised, unsupervised, reinforcement, Hebbian, feedback, and structural learning signals."
+hero:
+  src: /assets/img/projects/mpnets-hero.svg
+  alt: "MPNets diagram showing a policy trained by many learning paradigms"
+  fit: contain
+threadImages:
+  - src: /assets/img/projects/mpnets-hero.svg
+    alt: "MPNets diagram showing a policy trained by many learning paradigms"
 links: 
   github: https://github.com/Limboid/mpnets
 influences: []
 realizes: []
 critiques: []
 ---
-- Unifying framework for multitasking &times; multimodal &times; &#123; supervised, self-supervised, unsupervised, and reinforcement &#125; = multi-paradigm learning
+- Multi-Paradigm Networks: one network interface for multitask, multimodal, multi-loss, multi-environment learning
+- The repo sketches `MPNet` as a graph executor over named nodes, with `SOMP` nodes that combine many local and global update rules
+- The idea is not that any one paradigm wins; it is that a policy trained under several compatible paradigms can become less confused, more capable, and more positively directed than a policy trapped inside one signal
+
+![MPNets hero showing modalities, graph nodes, update paradigms, and a wider policy state](/assets/img/projects/mpnets-hero.svg)
+
+## Why I Called It MPNets
+
+`MPNets` means **Multi-Paradigm Networks**. The name is doing more work than "many tasks" or "many modalities." A paradigm is a whole training contract: what counts as data, what counts as feedback, what timescale the update lives on, and what kind of structure the model is allowed to build.
+
+Supervised learning says, "match the label." Self-supervised learning says, "predict, contrast, reconstruct, or agree across views." Unsupervised learning says, "discover the structure before anybody names it." Reinforcement learning says, "choose actions that improve return." Hebbian and plasticity rules say, "change locally when activity patterns deserve it." Structural plasticity says, "change the graph itself." Feedback alignment and forward-forward style updates say, "use alternative teaching signals when backpropagation is not the whole story."
+
+The repo's `README` captures the intended API as a graph of named nodes and typed edges:
+
+```python
+MPNet(
+    nodes={
+        "nodeA": Node((64, 64, dims), ...),
+        "nodeB": Node((16, 16, dims), ...),
+    },
+    edges=[
+        ("nodeA", "nodeB"),
+        Edge("nodeA", "nodeB", bidirectional=True),
+        SparseEdge(nodeB, "nodeA.param1", sparsity=0.1),
+    ],
+)
+```
+
+The implementation is early and incomplete, but the intent is clear: a network should not have to pretend that every learning signal is the same kind of scalar loss. It should be able to route observations, targets, rewards, feedback signals, recurrent state, local plasticity, and structural changes through one executable graph.
+
+![Paradigm map for MPNets showing supervised, self-supervised, unsupervised, reinforcement, Hebbian, feedback, and structural signals](/assets/img/projects/mpnets-paradigm-map.svg)
+
+## The Core Object
+
+An MPNets-style system is a directed recurrent computation graph:
+
+$$
+G = (V, E), \qquad v_i \in V,\qquad e_{ij}: v_i \rightarrow v_j
+$$
+
+Each node has parameters, state, tags, inputs, outputs, and possibly its own optimizer:
+
+$$
+v_i =
+(
+\theta_i,\; h_i^t,\; \mathcal{I}_i,\; \mathcal{O}_i,\; \mathcal{U}_i
+)
+$$
+
+At time $t$, graph execution builds a scoped state from previous and current node outputs:
+
+$$
+s_t = \{ \mathrm{prev}: y_{t-1},\; \mathrm{current}: y_t \}
+$$
+
+and calls every node whose dependencies are resolvable:
+
+$$
+y_i^t = f_i\left(\{ \mathrm{read}(s_t, e_{ji}) : e_{ji} \in E \}\,;\theta_i,h_i^t\right)
+$$
+
+That graph abstraction matters because a multi-paradigm learner needs more than a stack of layers. It needs a place to say:
+
+- this visual encoder receives supervised class labels
+- this temporal state receives self-supervised sequence regularization
+- this action head receives reward
+- this local circuit receives Hebbian or STDP updates
+- this feedback path carries target gradients or modulatory signals
+- this node can add a new input adapter when a new modality arrives
+
+![MPNet graph execution diagram showing previous state, current graph calls, node-local objectives, and policy output](/assets/img/projects/mpnets-graph-executor.svg)
+
+## One Objective Is Too Narrow
+
+The simplest version of deep learning optimizes one expected loss:
+
+$$
+\min_\theta \; \mathbb{E}_{(x,y)\sim \mathcal{D}}[\ell(f_\theta(x),y)]
+$$
+
+That is useful, but it compresses the world into $(x,y)$ pairs. A single-paradigm policy has to treat every missing variable as irrelevant, every unlabelled observation as waste, every future consequence as outside the batch, and every internal representation as whatever happens to help the chosen loss.
+
+The MPNets objective is closer to a vector field of compatible pressures:
+
+$$
+\Delta \theta
+=
+\sum_{p \in \mathcal{P}}
+\eta_p
+M_p(G,s_t)
++ \nabla_\theta J_p(G,s_t)
+$$
+
+where $\mathcal{P}$ is the set of active paradigms. Some terms are ordinary differentiable losses. Some are local update rules. Some change learning rates. Some change graph structure. Some apply only to a subset of nodes.
+
+Written as a scalarized training target:
+
+$$
+\mathcal{L}_{MP}
+=
+\lambda_{sup}\mathcal{L}_{sup}
++ \lambda_{ssl}\mathcal{L}_{ssl}
++ \lambda_{unsup}\mathcal{L}_{unsup}
+- \lambda_{rl}J_{rl}
++ \lambda_{reg}\Omega
++ \lambda_{align}\mathcal{L}_{align}
++ \lambda_{plastic}\mathcal{L}_{plastic}
+$$
+
+but the scalar version hides the important part: these terms do not need to touch the same weights, arrive at the same frequency, or have the same credit-assignment path.
+
+## What The `SOMP` Node Was Trying To Be
+
+The most revealing file in the repo is `mpnets/nodes/somp.py`. `SOMP` reads like an attempt to build a **Self-Organizing Multi-Paradigm** cell. It has dynamic bottom-up input encoders, top-down feedback encoders, a leaky spiking bucket head, local optimizer state, and toggles for many learning rules.
+
+The node mixes rules like:
+
+| Rule | Signal | What it tries to preserve |
+| --- | --- | --- |
+| STDP | spike timing | temporal causal structure |
+| covariance decay | activity covariance | nontrivial correlations |
+| structural plasticity | random new synapses | graph growth and exploration |
+| intrinsic plasticity | target firing rate | homeostasis |
+| temporal VIC | variance, invariance, covariance | stable noncollapsed sequences |
+| L2 / L1 / clipping | weight magnitude | bounded parameters |
+| mean and sparsity regularization | activation statistics | useful coding regime |
+| local / soft WTA | competition | specialization |
+| Oja's rule | Hebbian normalization | principal components without blowup |
+| VIC input | cross-input agreement | modality or augmentation invariance |
+| feedback alignment | top-down gradient-like signal | credit without strict backprop |
+| forward-forward / reward modulation | goodness and reward | positive activation shaping |
+
+That list is the name of the project in code form. The page used to say:
+
+> Unifying framework for multitasking times multimodal times supervised, self-supervised, unsupervised, and reinforcement equals multi-paradigm learning.
+
+The code expands that sentence: it is also multi-timescale, multi-loss, multi-topology, multi-credit-assignment, and multi-plasticity.
+
+## The Paradigm Limits
+
+The reason to combine paradigms is not aesthetic. Each individual paradigm has a failure mode that shows up when it is asked to stand alone.
+
+| Paradigm | Useful pressure | Failure mode when isolated |
+| --- | --- | --- |
+| Supervised learning | crisp external correction | brittle outside the label distribution |
+| Self-supervised learning | dense representation learning | may learn structure without caring what matters |
+| Unsupervised learning | discovery without annotation | can organize around irrelevant factors |
+| Reinforcement learning | action and consequence | sparse rewards, credit assignment, reward hacking |
+| Hebbian / STDP | local temporal association | unstable without normalization and global context |
+| Structural plasticity | growth and repair | combinatorial expansion without selection pressure |
+| Feedback alignment | alternative credit routing | weak or noisy teaching if feedback is not grounded |
+| Forward-forward / goodness | local positive-vs-negative phase | needs a definition of "good" that does not collapse |
+
+Mathematically, each paradigm observes a projection of the real training problem:
+
+$$
+z_p = \pi_p(x_t, a_t, r_t, y_t, h_t, c_t, G_t)
+$$
+
+and optimizes through that projection:
+
+$$
+\theta^\star_p
+=
+\arg\min_\theta
+\mathbb{E}[\mathcal{L}_p(f_\theta(z_p))]
+$$
+
+The limitation is that $\pi_p$ discards information. Supervised learning may see $y_t$ but not delayed consequence. RL may see $r_t$ but not the latent concepts that would make exploration efficient. Self-supervision may see temporal continuity but not task value. Hebbian rules may see local coactivity but not global usefulness.
+
+An MPNet tries to keep more of the world attached:
+
+$$
+z_{MP}
+=
+\bigoplus_{p\in\mathcal{P}} \pi_p(x_t,a_t,r_t,y_t,h_t,c_t,G_t)
+$$
+
+with the hope that incompatible blind spots cancel and compatible signals reinforce.
+
+![Single-paradigm limitations diagram showing isolated labels, rewards, reconstruction, local plasticity, and the combined MPNet field](/assets/img/projects/mpnets-limitations.svg)
+
+## Less Confused
+
+A model is confused when its internal state cannot decide which explanation, task, or timescale it is currently in. One proxy is predictive entropy:
+
+$$
+C_t = H_\theta(Y\mid x_t,h_t)
+=
+-\sum_y p_\theta(y\mid x_t,h_t)\log p_\theta(y\mid x_t,h_t)
+$$
+
+Another is gradient disagreement between paradigms:
+
+$$
+D_t
+=
+\frac{2}{|\mathcal{P}|(|\mathcal{P}|-1)}
+\sum_{p<q}
+\left(
+1 -
+\frac{
+\langle g_p, g_q\rangle
+}{
+\lVert g_p\rVert \lVert g_q\rVert + \epsilon
+}
+\right)
+$$
+
+where $g_p = \nabla_\theta \mathcal{L}_p$. A healthy multi-paradigm policy does not merely add more losses. It learns when signals agree, when they conflict, and which subgraph should absorb which update. The target is:
+
+$$
+\min_\theta\;
+\mathbb{E}_t[
+C_t
++ \beta D_t
++ \gamma \mathcal{L}_{collapse}
+]
+$$
+
+That is the "less confused" part: labels reduce semantic ambiguity, self-supervision reduces perceptual ambiguity, RL reduces action ambiguity, local plasticity reduces temporal association ambiguity, and graph routing reduces architectural ambiguity.
+
+## Happier
+
+By "happier" I do not mean the network has feelings. I mean the policy is trained under broader positive shaping signals than fear-like punishment or narrow error correction.
+
+Standard RL often becomes:
+
+$$
+\max_\pi \; \mathbb{E}\left[\sum_t \gamma^t r_t\right]
+$$
+
+If $r_t$ is sparse, adversarial, or overly narrow, the policy can become brittle: avoid loss, exploit reward, and overfit the cheapest behavior that moves the scalar.
+
+A multi-paradigm agent can add intrinsic and representational terms:
+
+$$
+R^{MP}_t
+=
+r^{ext}_t
++ \alpha I(s_{t+1}; z_t \mid a_t)
++ \beta \Delta \mathrm{coverage}(G_t)
++ \delta \Delta r_{\mathrm{eff}}(H_t)
+- \kappa C_t
+- \rho \mathrm{cost}(a_t)
+$$
+
+Here $I(s_{t+1};z_t\mid a_t)$ rewards informative controllability, $\Delta \mathrm{coverage}(G_t)$ rewards discovering useful graph structure, $r_{\mathrm{eff}}$ rewards distributed noncollapsed representation, and $C_t$ penalizes unresolved confusion. This is closer to the older broaden-and-build intuition: not just "avoid error," but "build capacities that make more futures navigable."
+
+In that engineering sense, a happier policy is one whose update field points toward coherence, competence, curiosity, and flexible control:
+
+$$
+\nabla_\theta R^{MP}
+\approx
+\nabla_\theta r^{ext}
++ \nabla_\theta \mathrm{information}
++ \nabla_\theta \mathrm{structure}
++ \nabla_\theta \mathrm{generalization}
+- \nabla_\theta \mathrm{confusion}
+$$
+
+## Bigger
+
+"Bigger" means bigger in behavioral surface area, not just parameter count. A single supervised classifier can get larger while remaining conceptually small. An MPNet can get bigger by attaching new modalities, objectives, heads, feedback channels, and graph nodes.
+
+If the active representational state is $H \in \mathbb{R}^{B\times d}$, one crude capacity proxy is effective rank:
+
+$$
+r_{\mathrm{eff}}(H)
+=
+\exp\left(
+-\sum_i \bar{\sigma}_i \log \bar{\sigma}_i
+\right),
+\qquad
+\bar{\sigma}_i=\frac{\sigma_i}{\sum_j \sigma_j}
+$$
+
+A collapsed learner has low $r_{\mathrm{eff}}$. A broad learner maintains many useful directions without turning into noise. The structural side is graph growth:
+
+$$
+G_{t+1}
+=
+G_t
+\cup
+\{e_{ij}: p(e_{ij}\mid s_t,\Delta\mathcal{L},\Delta R)>\tau\}
+$$
+
+and the functional side is transfer:
+
+$$
+\mathrm{breadth}(\pi)
+=
+\mathbb{E}_{\tau\sim\mathcal{T}}
+\left[
+\frac{J_\tau(\pi)-J_\tau(\pi_0)}
+{J_\tau(\pi^\star_\tau)-J_\tau(\pi_0)+\epsilon}
+\right]
+$$
+
+The project bet is that breadth improves when one policy is trained under many environments, modalities, and paradigms at once, because the model cannot solve the training stream with a single brittle shortcut.
+
+![MPNets growth diagram showing effective rank, graph growth, and broader behavior](/assets/img/projects/mpnets-growth.svg)
+
+## Current State
+
+This repo is a research sketch, not a finished library. Some pieces are stubs, some names drift, and some code paths would need repair before serious experiments. That is worth saying plainly because the idea is more mature than the implementation.
+
+What is present:
+
+- a graph-executor direction for named nodes and scoped current/previous state
+- a parser direction for compact connectivity strings like `nodeA --> nodeB`
+- dynamic multi-input encoder machinery
+- a `SOMP` node containing the project's real research agenda
+- notes toward custom pooling, dropout, batch norm, reward parameters, spiking nodes, RWKV/SpikeGPT-style nodes, forward-forward learning, and local feedback alignment
+
+What still needs to become real:
+
+- a working end-to-end `MPNet.forward` and training loop
+- clean separation between local node updates and global optimization
+- objective scheduling so signals cooperate instead of fighting
+- empirical tasks that actually require multiple paradigms
+- ablations showing which paradigms help and when they interfere
+- graph growth rules that do not explode topology
+
+The reason the project still matters is the same reason the name is right. General intelligence probably will not be one loss, one dataset, one optimizer, one environment, or one architecture trick. MPNets was my attempt to name the engineering object that sits above those choices: a network whose training interface can hold several ways of learning at once.

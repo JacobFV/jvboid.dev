@@ -4,27 +4,190 @@ date: 2019-01-01
 lane: building
 status: active
 tags: [work]
-summary: "Humanoid robot"
+summary: "Hydraulic musculoskeletal humanoid robot"
+hero:
+  src: "/assets/media/limboid/full-body-robot.jpg"
+  alt: "Full-body Limboid prototype staged in the garage"
+  fit: contain
+icon:
+  src: "/assets/media/limboid/face-shell.jpg"
+  alt: "3D printed Limboid head shell"
+threadImages:
+  - src: "/assets/media/limboid/garage-rig.jpg"
+    alt: "Limboid garage build with humanoid rig and head shell"
+  - src: "/assets/media/limboid/valve-manifold.jpg"
+    alt: "3D printed valve manifold with tubing"
+  - src: "/assets/media/limboid/upper-body-rig.gif"
+    alt: "Short GIF of the Limboid upper-body rig being adjusted"
 links: 
-  demo: https://limboid.ai
-influences: []
-realizes: []
+  site: https://limboid.ai
+influences: [the-master-plan-part-0, the-master-plan-part-1]
+realizes: [the-master-plan-part-2]
 critiques: []
 ---
 
+Limboid is an attempt at a hydraulic, endoskeletal humanoid robot: a full-scale musculoskeletal machine built around cheap artificial-muscle actuation instead of stacking expensive electric motors and transmissions into every joint.
+
+It is also the hardware core of the Master Plan posts. [Part 0](/posts/the-master-plan-part-0) is the origin story: leaving ordinary software work, resurrecting the 2019-2020 robotics obsession, and realizing that a low-cost humanoid drags you through CAD, electronics, hydraulics, pneumatics, ML, fabrication, and systems design. [Part 1](/posts/the-master-plan-part-1) is the public thesis: a $1,000 general-purpose humanoid requires vertically integrated hydraulic valves, actuators, and prime movers rather than buying the incumbent cost structure. The unlisted follow-up pushes the economic and open-source frame: Limboid as a foundation layer for accessible physical-world programming, not just a one-off robot.
+
+The core technical bet is that fluidic muscles are still underexplored for humanoids. The usual objections are real: proportional pressure control is hard, valves and sensors can dominate cost, mobile hydraulic loops are inefficient, and antagonistic tension-only muscles require careful coordination. But those constraints do not obviously kill the architecture anymore. Better learned control, cheaper sensing, simpler manufacturable manifolds, and batch-scale fabrication change the trade space enough that a low-cost human-power humanoid remains worth testing directly.
+
+![Full-body Limboid prototype staged in the garage](/assets/media/limboid/full-body-robot.jpg)
+
+## Build Direction
+
 - Hydraulic actuated, endoskeletal humanoid robot
-- Technologies: 3D Printing, CNC routing, plasma cutting, PCB fab
-- WIP! Artifacts available on request
+- Artificial muscle actuation with a musculoskeletal layout
+- Pressure, valve, and manifold design treated as the main system problem
+- Technologies: 3D printing, CNC routing, plasma cutting, PCB fabrication
+- Target analysis: full-scale human-power humanoid below $1k at batch scale
+- WIP; artifacts available on request
+
+## Why This Architecture
+
+Electric humanoids inherit a large bill of materials from high-torque motors, gearboxes, motor controllers, custom joints, and packaging. Fluidic actuation moves some of that complexity into a shared pressure system: a prime mover, accumulators, valves, sensors, distribution hardware, and many relatively cheap muscle units.
+
+That trade is only attractive if the controls stack can manage constantly changing pressure, volume, load, and contact conditions without resorting to expensive industrial proportional valves per muscle. Limboid frames that as the project rather than an implementation detail: build the body, sensing, and control policy together so the robot can learn usable behavior from a cheap, redundant, mechanically humanlike actuation substrate.
+
+<ScreenshotRow
+  columns={3}
+  shots={[
+    {
+      src: "/assets/media/limboid/lower-body-cad-01.jpg",
+      alt: "Lower-body CAD assembly showing both leg structures from the front",
+    },
+    {
+      src: "/assets/media/limboid/lower-body-cad-02.jpg",
+      alt: "CAD close-up of a rounded lower-body bracket with hinge and cylindrical joint feature",
+    },
+    {
+      src: "/assets/media/limboid/lower-body-cad-03.jpg",
+      alt: "CAD view of a single long leg assembly with joints and foot components",
+    },
+  ]}
+/>
+
+<ScreenshotRow
+  columns={2}
+  caption="Lower-body CAD pass: paired leg assemblies, joint brackets, single-leg stack-up, foot linkage geometry, and a related valve/manifold assembly."
+  shots={[
+    {
+      src: "/assets/media/limboid/lower-body-cad-04.jpg",
+      alt: "Lower-body CAD assembly close-up showing twin foot linkage geometry and hip bracket",
+    },
+    {
+      src: "/assets/media/limboid/lower-body-cad-05.jpg",
+      alt: "CAD interface showing a compact multi-channel valve or manifold assembly",
+    },
+  ]}
+/>
+
+<ScreenshotRow
+  caption="The actuation work moved between manufacturable manifolds, fluidic hand experiments, and tendon-style finger prototypes."
+  shots={[
+    {
+      src: "/assets/media/limboid/valve-manifold.jpg",
+      alt: "3D printed valve manifold with small motors or valves and clear tubing",
+    },
+    {
+      src: "/assets/media/limboid/fluidic-hand-bench.jpg",
+      alt: "Two experimental fluidic hand assemblies in a sink with tubing and syringes",
+    },
+    {
+      src: "/assets/media/limboid/printed-hand-bones.jpg",
+      alt: "Teal 3D printed finger and hand bone segments laid out on carpet",
+    },
+    {
+      src: "/assets/media/limboid/glove-hand-prototype.jpg",
+      alt: "Glove-based hand prototype with taped finger segments on a workbench",
+    },
+  ]}
+/>
+
+## Electronics
+
+This electronics work started before ChatGPT and before AI copilots were a practical way to ask a hundred small hardware questions per day. Debugging meant sitting with *Practical Electronics for Inventors*, KiCad simulations, datasheets, forum posts, and whatever intuition could be built by repeated board spins. A mistake was not a quick prompt away from explanation; it could mean another three-week turnaround from China before the next PCB arrived.
+
+That made the electronics side feel materially different from software. The feedback loop was slow, expensive, and physical: design the schematic, route the board, simulate what could be simulated, order parts, wait, solder, test, and then discover which assumption was wrong. By 2020 the board work had converged on EasyEDA for convenience, but the underlying discipline was the same: custom control electronics, sensor packaging, valve drivers, connectors, and power distribution for a low-cost hydraulic robot.
+
+<ScreenshotRow
+  caption="EasyEDA electronics work: arrayed board layouts, routed connector-heavy PCBs, and schematic sheets for the control electronics."
+  shots={[
+    {
+      src: "/assets/media/limboid/electronics-easyeda-01.jpg",
+      alt: "EasyEDA PCB layout showing an array of repeated small control boards",
+    },
+    {
+      src: "/assets/media/limboid/electronics-easyeda-02.jpg",
+      alt: "EasyEDA routed PCB close-up with headers, traces, and connector labels",
+    },
+    {
+      src: "/assets/media/limboid/electronics-easyeda-03.jpg",
+      alt: "EasyEDA schematic view showing repeated electronics channels",
+    },
+    {
+      src: "/assets/media/limboid/electronics-easyeda-04.jpg",
+      alt: "EasyEDA schematic overview with microcontroller pins and repeated connector blocks",
+    },
+  ]}
+/>
+
+## Physical Prototypes
+
+The archive shows Limboid as a broad hardware program rather than a single CAD model. There are printed head shells, glove and tendon experiments, clear-tube fluidic muscles, valve manifolds, electronics, shop fixtures, and full-body scale rigging. Some artifacts are rough, but that is the point: this was a search over architecture, fabrication, packaging, and controls.
+
+The head shell work explored the social/object identity of the robot: a soft-edged face module with an inset display area, closer to a productized companion machine than an exposed lab rig. The body rig work explored the opposite end of the problem: how full-scale joints, shoulder spans, hanging supports, tubing, and service access behave when the idea becomes room-sized.
+
+![3D printed Limboid head shell](/assets/media/limboid/face-shell.jpg)
+![Limboid parts and fabrication setup taking over a room](/assets/media/limboid/workshop-panorama.jpg)
+
+<ScreenshotRow
+  caption="Full-scale layout and electronics artifacts: body proportions, LED/display hardware, and garage integration work."
+  shots={[
+    {
+      src: "/assets/media/limboid/body-layout.jpg",
+      alt: "Aluminum extrusion segments laid out on carpet in a humanoid body shape",
+    },
+    {
+      src: "/assets/media/limboid/electronics-kit.jpg",
+      alt: "LED matrix display and electronics kit parts in an open box",
+    },
+    {
+      src: "/assets/media/limboid/garage-rig.jpg",
+      alt: "Garage workspace with Limboid humanoid rig and head shell",
+    },
+    {
+      src: "/assets/media/limboid/workshop-panorama.jpg",
+      alt: "Bedroom workshop full of fabrication tools, supplies, and robot parts",
+    },
+  ]}
+/>
+
+## Motion Notes
+
+The phone videos were converted into short GIF excerpts so the page can show motion without embedding long raw clips. They show four useful signals: soft hand deformation, tendon-style finger movement, the upper-body rig being adjusted at full scale, and the suspended torso rig standing against a garage door.
+
+![Soft hand prototype being compressed and flexed](/assets/media/limboid/soft-hand.gif)
+![Tendon-style hand prototype moving in hand](/assets/media/limboid/tendon-hand.gif)
+![Upper-body Limboid rig being adjusted in the garage](/assets/media/limboid/upper-body-rig.gif)
+![Suspended Limboid torso rig in front of a garage door](/assets/media/limboid/suspended-rig.gif)
+
+## Master Plan Thread
+
+The Master Plan posts are not adjacent essays; they are the project brief around Limboid.
+
+- [Part 0](/posts/the-master-plan-part-0) explains the first Limboid cycle, the 2019-2020 attempt, and why the project became the path back into robotics and AI.
+- [Part 1](/posts/the-master-plan-part-1) states the affordability thesis: a $1,000 general-purpose humanoid built through vertically integrated hydraulic/mechatronic systems.
+- [Part 2](/posts/the-master-plan-part-2) extends the thesis into pricing, open source, and Limboid as a platform for physical-world programming.
 
 ## Archive Signals
 
-The HumanRobots / Limboid thread shows the same project lineage from startup application, old robotics intuition, and the longer actuation question.
+The HumanRobots / Limboid thread shows the same project lineage from startup application and old robotics intuition.
 
 <XPost
   caption="Limboid and HumanRobots signals"
   urls={[
     "https://x.com/jvboid/status/1782650264291344406",
     "https://x.com/jvboid/status/1752780625487036864",
-    "https://x.com/jvboid/status/1892371399123124333",
   ]}
 />

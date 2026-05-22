@@ -76,9 +76,16 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
   // the breadcrumb's Title segment stays hidden.
   const [titleInPage, setTitleInPage] = useState(true);
 
-  // Derive the breadcrumb from the URL: artifact pages are /{prefix}/{slug}.
+  // Derive the breadcrumb from the URL. Artifact pages /{prefix}/{slug}
+  // get a full Section › Title trail; collection pages /{prefix} get a
+  // single Section crumb that fades in once the page's <h1> leaves view.
   const crumb = useMemo(() => {
     const seg = (pathname ?? "").split("/").filter(Boolean);
+    if (seg.length === 1) {
+      const kind = KIND_FROM_PREFIX[seg[0]];
+      if (!kind) return null;
+      return { title: null, section: sectionFor(kind) };
+    }
     if (seg.length !== 2) return null;
     const kind = KIND_FROM_PREFIX[seg[0]];
     if (!kind) return null;
@@ -185,7 +192,19 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
             >
               Jacob Valdez
             </Link>
-            {crumb && (
+            {crumb && crumb.title === null && (
+              <span
+                className="flex min-w-0 items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs transition-opacity duration-300"
+                style={{ opacity: titleInPage ? 0 : 1 }}
+                aria-hidden={titleInPage}
+              >
+                <Chevron />
+                <span className="truncate text-[var(--color-ink)]">
+                  {crumb.section.label}
+                </span>
+              </span>
+            )}
+            {crumb && crumb.title !== null && (
               <span className="flex min-w-0 items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs">
                 <Chevron />
                 <Link

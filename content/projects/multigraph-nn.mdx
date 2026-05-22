@@ -2,12 +2,59 @@
 title: multigraph-nn
 date: 2021-05-16
 lane: building
-status: active
-tags: []
-summary: "Dynamic time multi-graph neural network framework"
+status: shelved
+tags: [ai, research]
+summary: "A TensorFlow/Keras experiment for recurrent neural networks whose state is stored in typed, dynamically updated graphs."
+icon:
+  src: "/assets/img/projects/multigraph-nn-icon.svg"
+  alt: "multigraph-nn icon — two typed subgraphs linked by a learned cross-relation"
 links: 
   github: https://github.com/JacobFV/multigraph-nn
 ---
-- One graph isn't enough; multigraph neural networks are the way to go!
-- Enables end-to-end differentiable, dynamic graph construction, node-centric multihead attention, and many other powerful features
-- Developed library on top of tensorflow and keras
+- TensorFlow/Keras prototype for building neural networks over multiple typed subgraphs, relations, edge tensors, and adjacency matrices
+- Implements `Multigraph`, `GraphLayer`, and `MultigraphLayer` abstractions for graph-to-node, node-to-graph, graph-to-graph, sequence, grid, and structured-data experiments
+- Explores recurrent state as a backpropagatable graph, where vertices, edges, and adjacency weights can all be updated inside the model
+
+## Problem
+
+Most neural network code treats structure as fixed before learning starts: a sequence is a sequence, an image is a grid, and a graph neural network usually operates on one graph with one topology. The question behind `multigraph-nn` was more general: what if a model could carry its working state as a set of related graphs, route information between them, and learn parts of the connectivity as differentiable state?
+
+That makes the project a direct bridge between ordinary graph neural networks and the later [multi-graph-former](/projects/multi-graph-former-project) idea: sequence models are a special case of graph models, and a recurrent model can be given an explicit graph-shaped memory instead of a flat hidden vector.
+
+## Solution
+
+The repo sketches a small TensorFlow/Keras framework centered on a `Multigraph` object. A multigraph stores:
+
+- vertex tensors keyed by graph name
+- edge tensors keyed by `(source graph, destination graph)`
+- dense adjacency matrices for each relation
+
+A `GraphLayer` updates one relation at a time. It localizes source and destination vertex data around each edge, chooses an input function, pools messages into destination vertices, updates destination vertices, updates edge embeddings, and then updates the adjacency matrix. A `MultigraphLayer` sequences those relation updates across the whole multigraph and can be wrapped as recurrent state in a Keras `RNN`.
+
+## How
+
+The implementation is intentionally compact: four Python files in `src/`, using TensorFlow and Keras layers.
+
+- **`Multigraph`** stores the tensors and provides helpers for connecting subgraphs, adding root input/output graphs, batching state, and converting state to and from Keras-compatible lists.
+- **`GraphLayer`** composes pluggable functions for input selection, pooling, vertex updates, edge updates, and adjacency updates.
+- **Pooling options** include sum, average, product, and a custom multi-head attention operator over source-to-destination messages.
+- **Update options** include direct/additive vertex updates, gated vertex updates, dense edge updates, attention-based edge updates, and dense adjacency updates.
+- **`recurrent_multigraph_net.py`** demonstrates a dense-to-dense recurrent graph network with `in`, `cell`, and `out` subgraphs connected through learned relation updates.
+
+The most important design choice is that edges and adjacency are not passive metadata. They are tensors inside the model's state, so the network can update relationship embeddings and connection strengths alongside node embeddings.
+
+## Intention
+
+The README says the project was trying to be an "overreaching framework" for many shapes of neural computation: graph-to-node, node-to-graph, graph-to-graph, sequence-to-vector, vector-to-sequence, sequence-to-sequence, grid-structured data, learned structure for unstructured data, and ordinary structured-data processing.
+
+The more speculative goal was recurrent graph memory: a sentence graph folding into a more abstract thought graph, an RL agent managing a small short-term-memory graph, or a large graph being compressed into a smaller one and expanded again. In that sense, `multigraph-nn` was less a polished library and more an architectural probe: can differentiable programs learn not only values on a graph, but the graph they should be using?
+
+## Reality
+
+This is not a maintained production library. The repository README explicitly says support has been discontinued and recommends [Deep Graph Library](https://www.dgl.ai/) for production graph neural network work. It also warns that the dense adjacency approach is not meant for large graphs, roughly anything above a few dozen nodes, because dense matrices are expensive.
+
+That limitation is also the point of the experiment. Dense adjacency makes the topology directly differentiable and gives gradients a straightforward path to relationship weights. The tradeoff is scale: this architecture is better understood as a small-graph recurrent memory experiment than as infrastructure for web-scale graph learning.
+
+## Lessons
+
+`multigraph-nn` clarified a useful design pattern: if a network's hidden state is graph-shaped, then nodes, edges, and adjacency should all have first-class update rules. It also exposed the cost of trying to make every graph pattern fit one abstraction. The later work keeps the valuable part, multi-relation graph computation with attention and learned updates, while narrowing the interface around more concrete model families.

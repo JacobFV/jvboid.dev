@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="840" viewBox="0 0 1400 840" role="img" aria-labelledby="title desc">
+  <title id="title">MPNet graph executor</title>
+  <desc id="desc">Graph execution resolves previous state and current node outputs into a policy output.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg{fill:#eef4f2}
+      .panel{fill:#ffffff;stroke:#c3cbd3;stroke-width:2}
+      .prev{fill:#fff3cf;stroke:#ba7c14;stroke-width:2}
+      .cur{fill:#d8eee7;stroke:#348070;stroke-width:2}
+      .out{fill:#dee8fb;stroke:#526d9c;stroke-width:2}
+      .wire{stroke:#475569;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .thin{stroke:#64748b;stroke-width:2;fill:none;stroke-dasharray:6 8;marker-end:url(#arrow)}
+      .title{font:700 32px Inter,Arial,sans-serif;fill:#1f2933}
+      .label{font:650 22px Inter,Arial,sans-serif;fill:#1f2933}
+      .small{font:500 17px Inter,Arial,sans-serif;fill:#4b5563}
+      .mono{font:600 17px 'JetBrains Mono',Consolas,monospace;fill:#344054}
+      .math{font:600 22px 'Times New Roman',serif;fill:#344054}
+    </style>
+  </defs>
+  <rect width="1400" height="840" class="bg"/>
+  <text x="70" y="78" class="title">Graph execution as the training substrate</text>
+  <text x="70" y="115" class="small">The executor treats previous outputs, current outputs, node properties, and edge scopes as addressable state.</text>
+  <rect x="70" y="165" width="300" height="520" rx="18" class="panel"/>
+  <text x="105" y="215" class="label">prev scope</text>
+  <rect x="110" y="260" width="210" height="62" rx="10" class="prev"/>
+  <text x="140" y="298" class="mono">prev.vision</text>
+  <rect x="110" y="355" width="210" height="62" rx="10" class="prev"/>
+  <text x="140" y="393" class="mono">prev.memory</text>
+  <rect x="110" y="450" width="210" height="62" rx="10" class="prev"/>
+  <text x="140" y="488" class="mono">prev.reward</text>
+  <text x="110" y="590" class="math">sₜ.prev = yₜ₋₁</text>
+
+  <rect x="510" y="165" width="390" height="520" rx="18" class="panel"/>
+  <text x="545" y="215" class="label">current graph calls</text>
+  <circle cx="635" cy="315" r="56" class="cur"/>
+  <text x="603" y="322" class="mono">SOMP</text>
+  <circle cx="780" cy="315" r="56" class="cur"/>
+  <text x="751" y="322" class="mono">VIC</text>
+  <circle cx="650" cy="495" r="56" class="cur"/>
+  <text x="614" y="502" class="mono">critic</text>
+  <circle cx="805" cy="505" r="56" class="cur"/>
+  <text x="770" y="512" class="mono">actor</text>
+  <path d="M688 315 L724 315" class="wire"/>
+  <path d="M760 360 C735 400 700 430 668 448" class="wire"/>
+  <path d="M703 498 L749 502" class="wire"/>
+  <path d="M806 448 C805 410 790 380 775 360" class="thin"/>
+  <text x="560" y="610" class="math">call when dependencies resolve</text>
+
+  <rect x="1040" y="165" width="290" height="520" rx="18" class="panel"/>
+  <text x="1075" y="215" class="label">policy output</text>
+  <rect x="1085" y="285" width="200" height="70" rx="12" class="out"/>
+  <text x="1130" y="328" class="mono">action</text>
+  <rect x="1085" y="405" width="200" height="70" rx="12" class="out"/>
+  <text x="1125" y="448" class="mono">state h</text>
+  <rect x="1085" y="525" width="200" height="70" rx="12" class="out"/>
+  <text x="1125" y="568" class="mono">losses</text>
+  <text x="1078" y="640" class="math">πₜ = f_G(sₜ; θ)</text>
+
+  <path d="M320 291 C420 285 495 300 579 310" class="wire"/>
+  <path d="M320 386 C430 420 515 455 599 485" class="wire"/>
+  <path d="M320 481 C455 535 600 555 753 525" class="wire"/>
+  <path d="M861 505 C940 475 1000 420 1080 325" class="wire"/>
+  <path d="M861 505 C955 520 1010 545 1080 560" class="wire"/>
+  <path d="M1185 595 C1040 760 425 765 220 685" class="thin"/>
+  <text x="410" y="765" class="math">state rolls forward: yₜ becomes prev at t+1</text>
+</svg>
