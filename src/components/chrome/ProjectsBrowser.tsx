@@ -16,6 +16,7 @@
 // orbit embed. Bare stub projects just link straight to their page.
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
@@ -39,8 +40,7 @@ const TILE_SPRING = { type: "spring" as const, stiffness: 620, damping: 46 };
 
 // useLayoutEffect on the client (applies the stored order before paint,
 // so there is no shuffle), useEffect on the server (no SSR warning).
-const useIsoLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((v) => typeof v === "string");
@@ -84,6 +84,7 @@ export type ProjectItem = {
   lane: Lane;
   tags: string[];
   hero?: { src: string; alt: string };
+  icon?: { src: string; alt: string };
   video?: string;
   threadImages?: { src: string; alt: string }[];
   orbitEmbed?: string;
@@ -167,7 +168,14 @@ function ThreadImageGrid({ images }: { images: { src: string; alt: string }[] })
     <span className="grid h-full w-full grid-cols-2 grid-rows-2 gap-px bg-[var(--color-bg-2)]">
       {images.map((img) => (
         // eslint-disable-next-line @next/next/no-img-element
-        <img key={img.src} src={img.src} alt="" loading="lazy" className="h-full w-full object-cover" aria-hidden />
+        <img
+          key={img.src}
+          src={img.src}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover"
+          aria-hidden
+        />
       ))}
     </span>
   );
@@ -176,15 +184,47 @@ function ThreadImageGrid({ images }: { images: { src: string; alt: string }[] })
 // The square "app icon" face — hero image or a lane-tinted gradient.
 // Shared by the grid tile and the modal's cross-fade ghost so the morph
 // starts from a pixel-identical picture.
-function IconFace({ project, preferThread = false }: { project: ProjectItem; preferThread?: boolean }) {
-  if (preferThread && project.status === "active" && project.threadImages && project.threadImages.length >= 2) {
+function IconFace({
+  project,
+  preferThread = false,
+  preferIcon = false,
+}: {
+  project: ProjectItem;
+  preferThread?: boolean;
+  preferIcon?: boolean;
+}) {
+  if (preferIcon && project.icon) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={project.icon.src}
+        alt=""
+        loading="lazy"
+        className="h-full w-full object-cover"
+        aria-hidden
+      />
+    );
+  }
+
+  if (
+    preferThread &&
+    project.status === "active" &&
+    project.threadImages &&
+    project.threadImages.length >= 2
+  ) {
     return <ThreadImageGrid images={project.threadImages} />;
   }
 
   if (project.hero) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={project.hero.src} alt="" loading="lazy" className="h-full w-full object-cover" aria-hidden />
+      <img
+        src={project.hero.src}
+        alt=""
+        loading="lazy"
+        className="h-full w-full object-cover"
+        aria-hidden
+      />
     );
   }
   return (
@@ -231,9 +271,7 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
 
   const orderedProjects = useMemo(() => {
     const byId = new Map(projects.map((p) => [p.id, p]));
-    return order
-      .map((id) => byId.get(id))
-      .filter((p): p is ProjectItem => Boolean(p));
+    return order.map((id) => byId.get(id)).filter((p): p is ProjectItem => Boolean(p));
   }, [order, projects]);
 
   const handleReorder = useCallback((ids: string[]) => {
@@ -299,7 +337,16 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
         </div>
         <div role="group" aria-label="Projects view" className="flex gap-1.5">
           <ViewButton label="List view" active={view === "list"} onClick={() => pickView("list")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              aria-hidden
+            >
               <path d="M8 6h12M8 12h12M8 18h12" />
               <circle cx="3.5" cy="6" r="1.3" fill="currentColor" stroke="none" />
               <circle cx="3.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
@@ -307,7 +354,15 @@ export function ProjectsBrowser({ id, projects }: { id?: string; projects: Proje
             </svg>
           </ViewButton>
           <ViewButton label="Grid view" active={view === "grid"} onClick={() => pickView("grid")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              aria-hidden
+            >
               <rect x="3" y="3" width="7.5" height="7.5" rx="2" />
               <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" />
               <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" />
@@ -373,13 +428,6 @@ function ProjectRow({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn 
     <span className="flex gap-4">
       <span className="relative mt-1 block h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[var(--color-bg-1)] shadow-[var(--ring-soft)] sm:h-24 sm:w-24">
         <IconFace project={project} preferThread />
-        {project.status === "active" && (
-          <span
-            className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full ring-2 ring-[var(--color-bg-0)]"
-            style={{ background: "var(--color-accent)" }}
-            aria-hidden
-          />
-        )}
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -423,7 +471,11 @@ function ProjectRow({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn 
 
   if (project.quickView) {
     return (
-      <button type="button" onClick={() => onOpen(project)} className={`w-full text-left ${className}`}>
+      <button
+        type="button"
+        onClick={() => onOpen(project)}
+        className={`w-full text-left ${className}`}
+      >
         {inner}
       </button>
     );
@@ -457,44 +509,12 @@ function TileVisual({
             : "transition-transform duration-200 ease-out group-hover:scale-[1.03] group-active:scale-95"
         }`}
       >
-        <IconFace project={project} preferThread />
-        {project.status === "active" && (
-          <span
-            className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full ring-2 ring-[var(--color-bg-0)]"
-            style={{ background: "var(--color-accent)" }}
-            aria-hidden
-          />
-        )}
+        <IconFace project={project} preferIcon preferThread />
       </span>
       <span className="line-clamp-2 text-center text-xs leading-snug text-[var(--color-ink-dim)] group-hover:text-[var(--color-accent)]">
         {project.title}
       </span>
     </>
-  );
-}
-
-function TileButton({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn }) {
-  const iconRef = useRef<HTMLSpanElement>(null);
-  const dim = project.status === "idea" || project.status === "shelved";
-  const className = `group flex w-full flex-col items-center gap-2 no-underline ${
-    dim ? "opacity-60" : ""
-  }`;
-
-  if (project.quickView) {
-    return (
-      <button
-        type="button"
-        onClick={() => onOpen(project, iconRef.current?.getBoundingClientRect() ?? null)}
-        className={className}
-      >
-        <TileVisual project={project} iconRef={iconRef} />
-      </button>
-    );
-  }
-  return (
-    <Link href={nodeHref(project)} className={className}>
-      <TileVisual project={project} iconRef={iconRef} />
-    </Link>
   );
 }
 
@@ -513,7 +533,9 @@ function ProjectGrid({
   onReorder: (ids: string[]) => void;
   onOpen: OpenFn;
 }) {
+  const router = useRouter();
   const tiles = useRef(new Map<string, HTMLElement>());
+  const icons = useRef(new Map<string, HTMLSpanElement>());
   const [dragId, setDragId] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<{ x: number; y: number; w: number } | null>(null);
   // True between a drag's pointerup and the click it would spawn — used
@@ -622,12 +644,22 @@ function ProjectGrid({
 
   const dragged = dragId ? projects.find((p) => p.id === dragId) : null;
 
+  const openTile = (project: ProjectItem) => {
+    if (justDragged.current) return;
+    if (project.quickView) {
+      onOpen(project, icons.current.get(project.id)?.getBoundingClientRect() ?? null);
+    } else {
+      router.push(nodeHref(project));
+    }
+  };
+
   return (
     <>
       <div className="grid grid-cols-3 gap-x-5 gap-y-7 sm:grid-cols-4 md:grid-cols-5">
         {projects.map((project) => (
-          <motion.div
+          <motion.button
             key={project.id}
+            type="button"
             layout={hydrated}
             transition={TILE_SPRING}
             ref={(el) => {
@@ -638,19 +670,30 @@ function ProjectGrid({
             onPointerMove={onPointerMove}
             onPointerUp={endGesture}
             onPointerCancel={endGesture}
-            onClickCapture={(e) => {
+            onClick={(e) => {
               if (justDragged.current) {
                 e.preventDefault();
                 e.stopPropagation();
+                return;
               }
+              openTile(project);
             }}
+            className={`group flex w-full flex-col items-center gap-2 no-underline ${
+              project.status === "idea" || project.status === "shelved" ? "opacity-60" : ""
+            }`}
             style={{
               opacity: dragId === project.id ? 0 : 1,
               touchAction: "manipulation",
             }}
           >
-            <TileButton project={project} onOpen={onOpen} />
-          </motion.div>
+            <TileVisual
+              project={project}
+              iconRef={(el) => {
+                if (el) icons.current.set(project.id, el);
+                else icons.current.delete(project.id);
+              }}
+            />
+          </motion.button>
         ))}
       </div>
 
@@ -662,7 +705,7 @@ function ProjectGrid({
             className="pointer-events-none fixed z-[60]"
             style={{ left: overlay.x, top: overlay.y, width: overlay.w }}
           >
-            <div className="flex flex-col items-center gap-2 [filter:drop-shadow(0_16px_26px_rgba(0,0,0,0.4))] [transform:scale(1.09)]">
+            <div className="flex [transform:scale(1.09)] flex-col items-center gap-2 [filter:drop-shadow(0_16px_26px_rgba(0,0,0,0.4))]">
               <TileVisual project={dragged} lifted />
             </div>
           </div>,
@@ -758,7 +801,9 @@ function QuickView({
         style={{
           // List opens (no origin) use the plain center zoom; grid opens
           // are driven by the FLIP transform in the layout effect.
-          animation: origin ? undefined : "quickview-zoom-in 240ms cubic-bezier(0.32, 1.4, 0.42, 1)",
+          animation: origin
+            ? undefined
+            : "quickview-zoom-in 240ms cubic-bezier(0.32, 1.4, 0.42, 1)",
         }}
       >
         {/* ---- Docked header — project name + link out ---- */}
@@ -791,7 +836,16 @@ function QuickView({
               onClick={onClose}
               className="grid h-7 w-7 place-items-center rounded-full text-[var(--color-ink-mute)] transition-colors hover:bg-[var(--color-bg-1)] hover:text-[var(--color-ink)]"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden>
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.4}
+                strokeLinecap="round"
+                aria-hidden
+              >
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
@@ -898,7 +952,7 @@ function QuickView({
             className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-3xl"
             style={{ opacity: ghostFaded ? 0 : 1, transition: "opacity 300ms ease-out" }}
           >
-            <IconFace project={project} preferThread />
+            <IconFace project={project} preferIcon preferThread />
           </div>
         )}
       </div>
@@ -913,7 +967,7 @@ function TryItOutButton({ url, center = false }: { url: string; center?: boolean
       target="_blank"
       rel="noreferrer"
       className={`embed-cta absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
-        center ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" : "right-3 top-3"
+        center ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : "top-3 right-3"
       }`}
     >
       try it out ↗

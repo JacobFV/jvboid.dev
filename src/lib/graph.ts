@@ -90,6 +90,7 @@ const toNode =
       status: kind === "project" ? (extra.status as ProjectStatus | undefined) : undefined,
       video: kind === "project" ? (extra.video as string | undefined) : undefined,
       pdf: extra.pdf as string | undefined,
+      icon: kind === "project" ? (extra.icon as Node["icon"]) : undefined,
       threadImages:
         kind === "project"
           ? (extra.threadImages as { src: string; alt?: string }[] | undefined)
