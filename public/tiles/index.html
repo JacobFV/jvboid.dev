@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tiles Matching Game</title>
+    <style>
+        :root {
+            --grid-size: 5;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        #controls label {
+            margin: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        #controls select, #controls button {
+            margin: 5px;
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #controls select:hover, #controls button:hover {
+            background-color: #f9f9f9;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), auto);
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .tile {
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tile.success {
+            box-shadow: 0 0 15px 5px #4CAF50;
+        }
+        .tile.error {
+            box-shadow: 0 0 15px 5px #F44336;
+        }
+        .tile.fade-out {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        #score, #timer, #high-score {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        #score span, #high-score span {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #reset-button, #share-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 8px 4px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #reset-button:hover, #share-button:hover {
+            background-color: #45a049;
+        }
+        #credits {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        #credits a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        #credits a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Tiles Matching Game</h1>
+        <div id="controls">
+            <label for="grid-size-select">Grid Size:</label>
+            <select id="grid-size-select">
+                <option value="5">5x5 (Regular)</option>
+                <option value="8">8x8 (Large)</option>
+            </select>
+            <label for="shape-count-select">Shapes:</label>
+            <select id="shape-count-select">
+                <option value="3">3 Shapes (Easy)</option>
+                <option value="6">6 Shapes (Hard)</option>
+            </select>
+            <label for="color-palette-select">Color Palette:</label>
+            <select id="color-palette-select">
+                <option value="pastel">Pastel</option>
+                <option value="nature">Nature</option>
+                <option value="greyscale">Greyscale</option>
+            </select>
+            <label for="time-limit-select">Time Limit:</label>
+            <select id="time-limit-select">
+                <option value="0">None</option>
+                <option value="60">1 Minute</option>
+                <option value="180">3 Minutes</option>
+                <option value="300">5 Minutes</option>
+            </select>
+            <button id="new-game-button">Start New Game</button>
+        </div>
+        <div id="timer"></div>
+        <div id="score">Current Combo: <span id="current-combo">0</span> | Longest Combo: <span id="longest-combo">0</span></div>
+        <div id="high-score">High Score: <span id="high-score-value">0</span></div>
+        <div id="game-board"></div>
+        <button id="reset-button">Reset Game</button>
+        <button id="share-button">Share Game</button>
+        <div id="credits">Made with love by <a href="https://jvboid.dev" target="_blank">Jacob Valdez</a></div>
+    </div>
+
+    <!-- Include html2canvas library for capturing screenshots -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        const colorsPastel = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#82E0AA', '#F1948A', '#85C1E9'];
+        const colorsNature = ['#556B2F', '#6B8E23', '#2E8B57', '#3CB371', '#8FBC8F', '#228B22', '#006400', '#8B4513', '#A0522D', '#CD853F'];
+        const colorsGreyscale = ['#000000', '#2F2F2F', '#555555', '#7F7F7F', '#A9A9A9', '#D3D3D3', '#FFFFFF'];
+        let colors = colorsPastel;
+
+        const shapes3 = ['circle', 'rect', 'triangle'];
+        const shapes6 = ['circle', 'rect', 'triangle', 'ellipse', 'diamond', 'star'];
+        let shapes = shapes3;
+
+        let currentCombo = 0;
+        let longestCombo = 0;
+        let highScore = 0;
+        let selectedTiles = [];
+        let gridSize = 5;
+        let timeLimit = 0; // in seconds
+        let timerInterval;
+        let remainingTime = 0;
+        let gameBoardState = [];
+
+        function createSVG(color, shape, shapeColor) {
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('width', '80');
+            svg.setAttribute('height', '80');
+            svg.setAttribute('viewBox', '0 0 80 80');
+
+            const background = document.createElementNS(svgNS, 'rect');
+            background.setAttribute('width', '80');
+            background.setAttribute('height', '80');
+            background.setAttribute('fill', color);
+            svg.appendChild(background);
+
+            const shapeElement = document.createElementNS(svgNS, 'path');
+            let pathData = '';
+            switch (shape) {
+                case 'circle':
+                    shapeElement.setAttribute('d', 'M40 15 A25 25 0 1 0 40 65 A25 25 0 1 0 40 15');
+                    break;
+                case 'rect':
+                    shapeElement.setAttribute('d', 'M20 20 H60 V60 H20 Z');
+                    break;
+                case 'triangle':
+                    shapeElement.setAttribute('d', 'M40 15 L65 65 L15 65 Z');
+                    break;
+                case 'ellipse':
+                    shapeElement.setAttribute('d', 'M10 40 A30 20 0 1 0 70 40 A30 20 0 1 0 10 40');
+                    break;
+                case 'diamond':
+                    shapeElement.setAttribute('d', 'M40 15 L65 40 L40 65 L15 40 Z');
+                    break;
+                case 'star':
+                    shapeElement.setAttribute('d', 'M40 10 L47 35 H72 L52 50 L60 75 L40 60 L20 75 L28 50 L8 35 H33 Z');
+                    break;
+            }
+            shapeElement.setAttribute('fill', shapeColor);
+            svg.appendChild(shapeElement);
+
+            return svg;
+        }
+
+        function createTile(color, shape, shapeColor) {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.appendChild(createSVG(color, shape, shapeColor));
+            tile.addEventListener('click', handleTileClick);
+            // Save tile attributes for state saving
+            tile.dataset.color = color;
+            tile.dataset.shape = shape;
+            tile.dataset.shapeColor = shapeColor;
+            return tile;
+        }
+
+        function initializeGame(loadSavedGame = false) {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            selectedTiles = [];
+            currentCombo = 0;
+            longestCombo = 0;
+            updateScore();
+            updateHighScoreDisplay();
+            clearInterval(timerInterval);
+            if (timeLimit > 0) {
+                remainingTime = timeLimit;
+                startTimer();
+            } else {
+                document.getElementById('timer').textContent = '';
+            }
+
+            // Ensure gridSize is set before rendering the game board
+            document.documentElement.style.setProperty('--grid-size', gridSize);
+
+            if (loadSavedGame && localStorage.getItem('gameState')) {
+                loadGameState();
+                return;
+            }
+
+            gameBoardState = [];
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                const shapeColor = colors[Math.floor(Math.random() * colors.length)];
+                const tile = createTile(color, shape, shapeColor);
+                gameBoard.appendChild(tile);
+                gameBoardState.push({ color, shape, shapeColor });
+            }
+            saveGameState();
+        }
+
+        function handleTileClick(event) {
+            const tile = event.currentTarget;
+            if (selectedTiles.includes(tile)) return;
+
+            selectedTiles.push(tile);
+            tile.style.opacity = '0.7';
+
+            if (selectedTiles.length === 2) {
+                if (tilesMatch(selectedTiles[0], selectedTiles[1])) {
+                    currentCombo++;
+                    longestCombo = Math.max(longestCombo, currentCombo);
+                    selectedTiles.forEach(t => t.classList.add('success'));
+                    setTimeout(() => {
+                        selectedTiles.forEach(t => {
+                            t.classList.add('fade-out');
+                            t.addEventListener('transitionend', () => t.remove(), { once: true });
+                        });
+                        selectedTiles = [];
+                        updateScore();
+                        saveGameState();
+                        if (document.querySelectorAll('.tile').length === 0) {
+                            setTimeout(() => {
+                                alert('Congratulations! You cleared the board!');
+                                updateHighScore();
+                                initializeGame();
+                            }, 500);
+                        }
+                    }, 500);
+                } else {
+                    currentCombo = 0;
+                    selectedTiles.forEach(t => t.classList.add('error'));
+                    setTimeout(() => {
+                        selectedTiles.forEach(t => {
+                            t.classList.remove('error');
+                            t.style.opacity = '1';
+                        });
+                        selectedTiles = [];
+                        updateScore();
+                        saveGameState();
+                    }, 500);
+                }
+            }
+        }
+
+        function tilesMatch(tile1, tile2) {
+            const bgColor1 = tile1.dataset.color;
+            const bgColor2 = tile2.dataset.color;
+
+            const shape1 = tile1.dataset.shape;
+            const shape2 = tile2.dataset.shape;
+
+            return bgColor1 === bgColor2 || shape1 === shape2;
+        }
+
+        function updateScore() {
+            document.getElementById('current-combo').textContent = currentCombo;
+            document.getElementById('longest-combo').textContent = longestCombo;
+        }
+
+        function updateHighScore() {
+            highScore = Math.max(highScore, longestCombo);
+            localStorage.setItem('highScore', highScore);
+            updateHighScoreDisplay();
+        }
+
+        function updateHighScoreDisplay() {
+            document.getElementById('high-score-value').textContent = highScore;
+        }
+
+        function startTimer() {
+            document.getElementById('timer').textContent = 'Time Remaining: ' + formatTime(remainingTime);
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                document.getElementById('timer').textContent = 'Time Remaining: ' + formatTime(remainingTime);
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Time\'s up! Game over.');
+                    updateHighScore();
+                    initializeGame();
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        document.getElementById('new-game-button').addEventListener('click', () => {
+            gridSize = parseInt(document.getElementById('grid-size-select').value);
+            timeLimit = parseInt(document.getElementById('time-limit-select').value);
+            document.documentElement.style.setProperty('--grid-size', gridSize);
+
+            // Get selected shapes count
+            const shapeCount = parseInt(document.getElementById('shape-count-select').value);
+            shapes = shapeCount === 3 ? shapes3 : shapes6;
+
+            // Get selected color palette
+            const colorPalette = document.getElementById('color-palette-select').value;
+            if (colorPalette === 'pastel') {
+                colors = colorsPastel;
+            } else if (colorPalette === 'nature') {
+                colors = colorsNature;
+            } else if (colorPalette === 'greyscale') {
+                colors = colorsGreyscale;
+            }
+
+            initializeGame();
+        });
+
+        document.getElementById('reset-button').addEventListener('click', () => {
+            localStorage.removeItem('gameState');
+            currentCombo = 0;
+            longestCombo = 0;
+            initializeGame();
+        });
+
+        function saveGameState() {
+            const tilesData = Array.from(document.querySelectorAll('.tile')).map(tile => {
+                return {
+                    color: tile.dataset.color,
+                    shape: tile.dataset.shape,
+                    shapeColor: tile.dataset.shapeColor
+                };
+            });
+            const gameState = {
+                gridSize,
+                timeLimit,
+                remainingTime,
+                currentCombo,
+                longestCombo,
+                colors: colors,
+                shapes: shapes,
+                gameBoardState: tilesData
+            };
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+            updateHighScore();
+        }
+
+        function loadGameState() {
+            const gameState = JSON.parse(localStorage.getItem('gameState'));
+            gridSize = gameState.gridSize;
+            timeLimit = gameState.timeLimit;
+            remainingTime = gameState.remainingTime;
+            currentCombo = gameState.currentCombo;
+            longestCombo = gameState.longestCombo;
+            document.getElementById('grid-size-select').value = gridSize;
+            document.getElementById('time-limit-select').value = timeLimit;
+            document.documentElement.style.setProperty('--grid-size', gridSize);
+            updateScore();
+            updateHighScoreDisplay();
+            if (timeLimit > 0) {
+                startTimer();
+            }
+            // Set colors and shapes
+            colors = gameState.colors;
+            shapes = gameState.shapes;
+            // Update selects
+            document.getElementById('color-palette-select').value = (colors === colorsPastel) ? 'pastel' : (colors === colorsNature) ? 'nature' : 'greyscale';
+            document.getElementById('shape-count-select').value = (shapes.length === 3) ? '3' : '6';
+
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            gameState.gameBoardState.forEach(tileData => {
+                const tile = createTile(tileData.color, tileData.shape, tileData.shapeColor);
+                tile.dataset.color = tileData.color;
+                tile.dataset.shape = tileData.shape;
+                tile.dataset.shapeColor = tileData.shapeColor;
+                gameBoard.appendChild(tile);
+            });
+        }
+
+        function loadHighScore() {
+            highScore = parseInt(localStorage.getItem('highScore')) || 0;
+            updateHighScoreDisplay();
+        }
+
+        document.getElementById('share-button').addEventListener('click', () => {
+            shareGame();
+        });
+
+        function shareGame() {
+            html2canvas(document.querySelector('#game-container')).then(canvas => {
+                const dataUrl = canvas.toDataURL();
+                const shareText = `I scored ${longestCombo} in Tiles Matching Game! Try it out: ${window.location.href}`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Tiles Matching Game',
+                        text: shareText,
+                        url: window.location.href,
+                    }).then(() => {
+                        console.log('Thanks for sharing!');
+                    }).catch(console.error);
+                } else {
+                    // Fallback for browsers that don't support navigator.share
+                    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+                    window.open(shareUrl, '_blank');
+                }
+            });
+        }
+
+        // Load high score on page load
+        loadHighScore();
+
+        // Initialize game on page load
+        if (localStorage.getItem('gameState')) {
+            // Ensure gridSize is set before rendering the game board
+            const savedGameState = JSON.parse(localStorage.getItem('gameState'));
+            gridSize = savedGameState.gridSize;
+            document.documentElement.style.setProperty('--grid-size', gridSize);
+            initializeGame(true);
+        } else {
+            // Set default grid size before initializing the game
+            document.documentElement.style.setProperty('--grid-size', gridSize);
+            initializeGame();
+        }
+    </script>
+</body>
+</html>

@@ -18,7 +18,7 @@ I generate a lot of small signals during the day — git commits, browser histor
 ## Solution
 A daemon that quietly ingests activity from multiple sources, batches it, and runs LLM summarization on a configurable cadence (hourly digest, daily wrap, weekly arc).
 
-![lifelogger system diagram](/assets/img/projects/lifelogger-diagram.svg)
+![lifelogger system diagram — local signals are reduced into an on-device event store, summarized in batched LLM calls, and surfaced as review notes whose corrections tune the next window](/assets/img/projects/lifelogger-diagram.svg)
 
 ## How
 - **Stack:** Python.
@@ -36,6 +36,8 @@ happened?" Daily summaries answer "what did this day become?" Weekly summaries
 look for continuity, stalled threads, recurring distractions, and projects that
 quietly consumed more time than expected. That separation keeps each prompt
 small and lets later summaries cite earlier ones instead of replaying raw logs.
+
+![lifelogger staged summarization — raw events roll up through hourly digests into daily wraps and a weekly arc, each tier summarizing a window of the tier below and citing earlier summaries](/assets/img/projects/lifelogger-summarizer.svg)
 
 The privacy boundary is local-first. Sensitive sources can stay as counts or
 labels, and the daemon can redact URLs, contact names, or terminal content

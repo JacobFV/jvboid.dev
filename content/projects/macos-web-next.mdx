@@ -16,15 +16,29 @@ realizes: []
 critiques: []
 ---
 
+## Credits
+`macos-web-next` is a fork of **[macOS Web](https://github.com/PuruVJ/macos-web)** by **[Puru Vijay](https://github.com/PuruVJ)** (MIT-licensed, © 2021 Puru Vijay). Puru built the original browser-based macOS desktop in Svelte — the menu bar, dock, window manager, desktop chrome, SCSS styling system, and the first set of apps. I forked it because I needed a controllable, instrumentable desktop for a synthetic-data pipeline for computer-use agents, and a polished macOS desktop already existed rather than being something worth rebuilding from scratch. Attribution is also surfaced in the running app's About pane, which credits both developers.
+
+## What was already there
+From Puru's macOS Web: the core desktop simulation — Svelte architecture, window management and traffic-light titlebars, the dock, the menu bar, the SCSS styling and visual fidelity, and the original app shells.
+
+## What I added
+- **20+ new macOS app components** and fleshed-out implementations for previously-skeleton apps.
+- **Consolidated OS services** — a virtual filesystem, clipboard, and notification layer so agent actions hit structured affordances instead of raw pixels.
+- **Embed bridge** (`html2canvas` + relative-path build) so the desktop can be embedded as an orbiter and screenshotted for training data.
+- **Edge/corner window resizing** with corrected diagonal-cursor mapping.
+- Screenshot-driven visual polish across Finder, Safari, Music, Notes, Calculator, Reminders, Photos, Mail, Messages, and more.
+
 ## Problem
 Computer-use agents need controllable, instrument-able desktop environments to learn from. Real OS instances are messy: state isn't inspectable, actions aren't transactional, and resets are slow. `macos-web-next` extends the same idea behind `windows-web` to the macOS UI vocabulary.
 
 ## Solution
-A browser-based macOS desktop — menu bar, dock, window management, a small suite of apps — built so an agent (or a human annotator) can act on it through structured affordances rather than pixel-level guesses.
+A browser-based macOS desktop — menu bar, dock, window management, a suite of apps — built so an agent (or a human annotator) can act on it through structured affordances rather than pixel-level guesses.
 
 ## How
 - **Stack:** Svelte, deployed on Vercel.
-- **Companion to:** [`windows-web`](https://github.com/commandAGI/windows-web) — same controllable-desktop shape, different OS chrome.
+- **Upstream:** forked from [PuruVJ/macos-web](https://github.com/PuruVJ/macos-web) (itself preceded by a Preact version, [PuruVJ/macos-preact](https://github.com/puruvj/macos-preact)).
+- **Companion to:** [`windows-web`](https://github.com/JacobFV/windows-web-next) — same controllable-desktop shape, different OS chrome.
 
 ## Results
 Live at [macos-web-next.vercel.app](https://macos-web-next.vercel.app). Embedded as an orbiter on the home hero.

@@ -1,17 +1,134 @@
 ---
-title: TensaCode
+title: TensorCode
 date: 2022-04-14
 lane: building
 status: active
-tags: []
-summary: "SE + ML = Programming 2.0"
-hero: 
+tags: [ml, differentiable-programming, agents, framework]
+summary: "A framework for encoding and decoding arbitrary Python objects, differentiable programming, and runtime code generation — Programming 2.0 with the abstractions software engineers already know."
+hero:
   src: /img/migrated/tensorcode-logo.png
-  alt: TensaCode
-links: 
+  alt: TensorCode
+  fit: contain
+links:
   github: https://github.com/Limboid/tensorcode
   demo: "https://jacobvaldez.notion.site/TensorCode-8992f96752d44e919ddd30ffe85d8232?pvs=4"
+influences: [jnumpy, full-stack-artificial-intelligence]
+realizes: []
+critiques: []
 ---
-- provides simple abstractions and functions for encoding and decoding arbitrary python objects
-- introduces intelligent object creation / selection / other runtime code generation and execution features
-- will support differentiable programming (including differentiable control flow) and reinforcement programming
+
+## Problem
+
+Building a multi-modal model means writing the same plumbing over and
+over: pick an encoder per input type, concatenate latents, run a
+decision network, then hand-decode the output tensor back into the
+Python objects the rest of your program expects. Every time the
+`Observation` or `Action` shape changes, that glue code changes with
+it. You end up thinking in tensors when you'd rather be thinking in
+objects, patterns, and architecture.
+
+## Solution
+
+TensorCode introduces simple abstractions and functions for encoding
+and decoding arbitrary Python objects, differentiable programming
+(including differentiable control flow), and intelligent object
+creation, selection, and other runtime code-generation features.
+
+Rather than just think about the underlying mathematical objects,
+TensorCode's **Programming 2.0** paradigm gives your brain the
+abstractions it needs to apply ordinary software-engineering patterns
+— encapsulation, abstraction, composition, design patterns, and the
+concepts derived from them — to your underlying problem. If you're
+developing a multi-modal agent, building the next generation of
+end-to-end differentiable cognitive architectures, or just adding
+magic to an existing program, TensorCode may fit right into your
+stack.
+
+```python
+import tensorcode as tc
+
+def step(self, obs: Observation) -> Action:
+    latent = tc.encode(obs)
+    action = self.mlp(latent)
+    return tc.decode(action, Action)
+```
+
+`tc.encode` turns any annotated object into a latent tensor;
+`tc.decode` turns a tensor back into a typed object. When the
+`Observation` or `Action` definition grows a new field, the encode
+and decode calls don't change — TensorCode infers the wiring from the
+type annotations.
+
+## How
+
+The framework centers on a few primitives:
+
+- **`tc.encode` / `tc.decode`** — bidirectional conversion between
+  arbitrary Python objects and tensors, driven by type annotations
+  (`Image`, `str`, `float`, `Union`, `Literal`, tuples, nested
+  classes).
+- **Runtime code generation** — `tc.exec`, `tc.select`, `tc.create`,
+  and `tc.patterns.Factory` let a program describe what it wants in
+  natural language and have TensorCode produce, choose, or run the
+  object at runtime.
+- **Differentiable programming** — `tc.If` / `.Elif` / `.Else`
+  decorators make control flow differentiable, so gradients flow
+  through branches the same way they flow through arithmetic.
+- **Cognitive-architecture building blocks** — multi-modal fusion,
+  short- and long-term memory, a global-workspace prediction loop, and
+  composable loss terms for training the whole thing end to end.
+
+## Presentation
+
+The deck below walks from a hand-wired RL agent to the same agent
+expressed with TensorCode primitives, then through runtime code
+generation, differentiable control flow, and a full differentiable
+cognitive architecture. The full deck is also available as a
+[downloadable PDF](/assets/pdf/tensorcode-presentation.pdf).
+
+<PresentationSlides
+  slides={[
+    { src: "/assets/img/projects/tensorcode-slide-01.png", alt: "TensorCode title slide with the github.com/limboid/tensorcode link" },
+    { src: "/assets/img/projects/tensorcode-slide-02.png", alt: "Capabilities: encode and decode arbitrary objects, develop and evolve multi-modal models, runtime code generation, differentiable programming, develop cognitive architectures" },
+    { src: "/assets/img/projects/tensorcode-slide-03.png", alt: "Reinforcement-learning loop diagram: an agent and a world exchanging action and observation" },
+    { src: "/assets/img/projects/tensorcode-slide-04.png", alt: "Hand-written step() function manually encoding inputs, deciding, and decoding the action tensor back to Python objects" },
+    { src: "/assets/img/projects/tensorcode-slide-05.png", alt: "Arbitrary object encoding and decoding with tc.encode and tc.decode" },
+    { src: "/assets/img/projects/tensorcode-slide-06.png", alt: "The fully hand-written step() function shown in full" },
+    { src: "/assets/img/projects/tensorcode-slide-07.png", alt: "The same step() function rewritten compactly with tc.encode and tc.decode" },
+    { src: "/assets/img/projects/tensorcode-slide-08.png", alt: "TensorCode step() alongside the Observation and Action class definitions it is inferred from" },
+    { src: "/assets/img/projects/tensorcode-slide-09.png", alt: "The same step() unchanged while Observation and Action grow extra typed fields" },
+    { src: "/assets/img/projects/tensorcode-slide-10.png", alt: "Observation and Action using a Union of Literals to type the direction field" },
+    { src: "/assets/img/projects/tensorcode-slide-11.png", alt: "Action using a tuple of direction literals, still decoded by the unchanged step()" },
+    { src: "/assets/img/projects/tensorcode-slide-12.png", alt: "How tc.encode turns an Observation object into query and key-value tensor pairs" },
+    { src: "/assets/img/projects/tensorcode-slide-13.png", alt: "Tensor-shape walkthrough showing how encoded objects batch across vision, text, and energy inputs" },
+    { src: "/assets/img/projects/tensorcode-slide-14.png", alt: "Runtime Code Generation: tc.exec, tc.select, tc.create, and tc.patterns.Factory examples" },
+    { src: "/assets/img/projects/tensorcode-slide-15.png", alt: "Differentiable Programming: @tc.If / .Elif / .Else decorators making control flow differentiable" },
+    { src: "/assets/img/projects/tensorcode-slide-16.png", alt: "Cognitive Architecture Development diagram: multi-modal fusion, memory, prediction, action, and training loss terms" },
+    { src: "/assets/img/projects/tensorcode-slide-17.png", alt: "Cognitive-architecture step() function, full listing" },
+    { src: "/assets/img/projects/tensorcode-slide-18.png", alt: "Cognitive-architecture step() highlighting the recurrent input and memory reads" },
+    { src: "/assets/img/projects/tensorcode-slide-19.png", alt: "Cognitive-architecture step() highlighting the global-workspace perception state" },
+    { src: "/assets/img/projects/tensorcode-slide-20.png", alt: "Cognitive-architecture step() highlighting the prediction stage" },
+    { src: "/assets/img/projects/tensorcode-slide-21.png", alt: "Cognitive-architecture step() highlighting the output and memory writes" },
+    { src: "/assets/img/projects/tensorcode-slide-22.png", alt: "Cognitive-architecture step() highlighting the training feedback and loss terms" },
+    { src: "/assets/img/projects/tensorcode-slide-23.png", alt: "Cognitive-architecture step() with the return statement highlighted" },
+    { src: "/assets/img/projects/tensorcode-slide-24.png", alt: "Closing capabilities slide with the github.com/limboid/tensorcode link" },
+  ]}
+/>
+
+## Status
+
+TensorCode is an active, exploratory framework. The
+[GitHub repository](https://github.com/Limboid/tensorcode) holds the
+current implementation, and the
+[project notebook](https://jacobvaldez.notion.site/TensorCode-8992f96752d44e919ddd30ffe85d8232?pvs=4)
+tracks design notes. Encoding/decoding and runtime code generation are
+the furthest along; differentiable control flow and reinforcement
+programming are still in progress.
+
+## Lessons
+
+The recurring lesson is that the bottleneck in multi-modal ML isn't
+the math — it's the abstractions. Giving the encode/decode boundary a
+name, and letting type annotations carry the wiring, is what makes the
+software-engineering toolkit (composition, design patterns,
+encapsulation) usable on a learning system at all.
