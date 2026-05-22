@@ -55,12 +55,14 @@ const projects = defineCollection({
       // Optional project deck, poster, or paper. Rendered in the
       // project hero as the primary visual when present.
       pdf: s.string().optional(),
+      // Optional square app/project icon. Used by compact project grid
+      // tiles when a project has a distinct favicon/logo separate from
+      // its hero or cover image.
+      icon: s.object({ src: s.string(), alt: s.string() }).optional(),
       // Optional curated image set for active project thread previews.
       // When omitted, the homepage falls back to the first images found
       // on the project and its graph neighbors.
-      threadImages: s
-        .array(s.object({ src: s.string(), alt: s.string().optional() }))
-        .optional(),
+      threadImages: s.array(s.object({ src: s.string(), alt: s.string().optional() })).optional(),
       links: s
         .object({
           github: s.string().optional(),

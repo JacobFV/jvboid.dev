@@ -70,6 +70,7 @@ export type Node = {
   // page. Rendered in Hero as a 16:9 iframe when present.
   video?: string;
   pdf?: string;
+  icon?: { src: string; alt: string };
   threadImages?: { src: string; alt?: string }[];
   links?: Record<string, string | undefined>;
   authors?: string[];

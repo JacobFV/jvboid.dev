@@ -164,6 +164,7 @@ export default function HomePage() {
     lane: n.lane,
     tags: n.tags,
     hero: n.hero,
+    icon: n.icon,
     video: n.video,
     threadImages: projectThreadImages(n, graph),
     orbitEmbed: n.orbitEmbed,
@@ -698,7 +699,7 @@ export default function HomePage() {
           id="posts"
           eyebrow="Writing"
           title="Recent posts"
-          link={{ href: "/list", label: "all posts →" }}
+          link={{ href: "/list?kind=post", label: "all posts →" }}
         >
           <ul className="flex flex-col">
             {recentPosts.map((n) => (
@@ -714,7 +715,7 @@ export default function HomePage() {
           <Section
             eyebrow="Reading"
             title="Favorites"
-            link={{ href: "/list", label: "all readings →" }}
+            link={{ href: "/list?kind=reading", label: "all readings →" }}
           >
             <ReadingCoverRail nodes={recentReadings} />
           </Section>
@@ -807,7 +808,12 @@ function Section({
         <div>
           {eyebrow && <p className="text-xs text-[var(--color-ink-mute)]">{eyebrow}</p>}
           <h2
-            className={`${eyebrow ? "mt-2 " : ""}font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]`}
+            className={[
+              eyebrow ? "mt-2" : "",
+              "font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             style={{ fontVariationSettings: '"opsz" 96' }}
           >
             {title}
@@ -830,10 +836,7 @@ function Section({
 function ProjectRow({ node }: { node: Node }) {
   const status = node.status ?? "active";
   return (
-    <Link
-      href={nodeHref(node)}
-      className="group block px-3 py-4 no-underline transition-colors"
-    >
+    <Link href={nodeHref(node)} className="group block px-3 py-4 no-underline transition-colors">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex items-baseline gap-3">
           <span
