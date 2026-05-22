@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
-import { getGraph, KIND_PREFIX } from "@/lib/graph";
+import { notFound, permanentRedirect } from "next/navigation";
+import { getGraph, KIND_PREFIX, nodeHref } from "@/lib/graph";
 import { MDXContent } from "@/lib/mdx";
 import { Hero } from "@/components/reader/Hero";
 import { LocalGraph } from "@/components/reader/LocalGraph";
@@ -27,6 +27,14 @@ export default async function NodePage({ params }: { params: Params }) {
   // 404 on either missing slug OR a prefix that doesn't match the node's
   // real kind — keeps each node canonically reachable at exactly one URL.
   if (!node || KIND_PREFIX[node.kind] !== kind) notFound();
+
+  // Redirect alias: this node carries no page of its own, just a pointer
+  // to another entity (`redirect` frontmatter = target node id).
+  if (node.redirect) {
+    const target = graph.byId.get(node.redirect);
+    if (!target) notFound(); // dangling redirect — fail loudly, don't render
+    permanentRedirect(nodeHref(target));
+  }
 
   // Vision nodes with a registered sceneId open into the 3D room. The
   // article body stays in the DOM as the skip-to-text fallback.

@@ -55,10 +55,11 @@ type RawCollectionItem = {
   lane: Lane;
   summary: string;
   unlisted?: boolean;
+  redirect?: string;
   body: string;
   tags?: string[];
   endDate?: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; fit?: "cover" | "contain" };
   influences?: string[];
   realizes?: string[];
   critiques?: string[];
@@ -82,6 +83,7 @@ const toNode =
       tags: raw.tags ?? [],
       summary: raw.summary,
       unlisted: raw.unlisted ?? false,
+      redirect: raw.redirect,
       body: raw.body,
       hero: raw.hero,
       influences: raw.influences ?? [],
