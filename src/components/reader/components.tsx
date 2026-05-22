@@ -3,6 +3,7 @@ import type { MDXComponents } from "@/lib/mdx";
 import { ReaderImage } from "./ReaderImage";
 import { ImageGrid } from "./ImageGrid";
 import { PresentationSlides } from "./PresentationSlides";
+import { XPost } from "./XPost";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
 // inherit Fraunces / Inter / JetBrains Mono and the dark-first palette
@@ -192,4 +193,5 @@ export const readerComponents: MDXComponents = {
   // Injected by remark-image-grid around runs of consecutive images.
   ImageGrid,
   PresentationSlides,
+  XPost,
 };
