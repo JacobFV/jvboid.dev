@@ -81,6 +81,8 @@ const projects = defineCollection({
         .object({
           github: s.string().optional(),
           demo: s.string().optional(),
+          site: s.string().optional(),
+          pypi: s.string().optional(),
           paper: s.string().optional(),
         })
         .optional(),
@@ -220,19 +222,6 @@ const visions = defineCollection({
     .transform((d) => ({ ...d, kind: "vision" as const })),
 });
 
-const experience = defineCollection({
-  name: "Experience",
-  pattern: "experience/**/*.mdx",
-  schema: s
-    .object({
-      ...baseFields,
-      slug: s.path(),
-      org: s.string(),
-      links: s.object({ org: s.string().optional() }).optional(),
-    })
-    .transform((d) => ({ ...d, kind: "experience" as const })),
-});
-
 const loop = defineCollection({
   name: "LoopChapter",
   pattern: "loop/**/*.mdx",
@@ -270,7 +259,6 @@ export default defineConfig({
     friends,
     events,
     visions,
-    experience,
     loop,
   },
 });

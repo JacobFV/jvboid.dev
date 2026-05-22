@@ -9,6 +9,8 @@ import {
   type Node,
   type NodeKind,
 } from "@/lib/graph";
+import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
+import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 
 type Params = Promise<{ kind: string }>;
 
@@ -22,7 +24,6 @@ const KIND_TITLE: Record<NodeKind, string> = {
   friend: "Friends",
   event: "Events",
   vision: "Visions",
-  experience: "Experience",
 };
 
 const KIND_DESCRIPTION: Record<NodeKind, string> = {
@@ -35,7 +36,6 @@ const KIND_DESCRIPTION: Record<NodeKind, string> = {
   friend: "People and collaborators in the graph.",
   event: "Conferences, talks, trips, launches, and other dated events.",
   vision: "Longer vision documents and application essays.",
-  experience: "Roles, education, and operating history.",
 };
 
 export function generateStaticParams() {
@@ -63,7 +63,29 @@ export default async function KindIndexPage({ params }: { params: Params }) {
 
   const nodes = getGraph()
     .nodes.filter((n) => n.kind === nodeKind && isListedNode(n))
-    .sort(byDateDesc);
+    .sort(nodeKind === "project" ? byProjectRank : byDateDesc);
+
+  if (nodeKind === "project") {
+    return (
+      <main className="mx-auto max-w-5xl px-6 py-16">
+        <header className="mb-12 max-w-3xl">
+          <h1
+            className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
+            style={{ fontVariationSettings: '"opsz" 144' }}
+          >
+            Projects
+          </h1>
+          <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION.project}</p>
+        </header>
+
+        {nodes.length === 0 ? (
+          <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
+        ) : (
+          <ProjectsBrowser projects={projectItemsFromNodes(withAdjacentProjects(nodes))} />
+        )}
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">

@@ -899,19 +899,7 @@ function QuickView({
 
         {/* ---- Scrolling body — visual, meta, and the full project ---- */}
         <div className="flex-1 overflow-y-auto px-3.5 py-5">
-          {liveUrl ? (
-            <div className={embedFrame} style={{ aspectRatio: "16 / 10" }}>
-              <iframe
-                src={liveUrl}
-                title={`${project.title} — live demo`}
-                loading="lazy"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                className="absolute inset-0 h-full w-full"
-                style={{ border: 0 }}
-              />
-              <TryItOutButton url={liveUrl} />
-            </div>
-          ) : videoEmbed ? (
+          {videoEmbed ? (
             <div className={embedFrame} style={{ aspectRatio: "16 / 9" }}>
               <iframe
                 src={videoEmbed}
@@ -922,6 +910,18 @@ function QuickView({
                 className="absolute inset-0 h-full w-full"
                 style={{ border: 0 }}
               />
+            </div>
+          ) : liveUrl ? (
+            <div className={embedFrame} style={{ aspectRatio: "16 / 10" }}>
+              <iframe
+                src={liveUrl}
+                title={`${project.title} — live demo`}
+                loading="lazy"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                className="absolute inset-0 h-full w-full"
+                style={{ border: 0 }}
+              />
+              <TryItOutButton url={liveUrl} />
             </div>
           ) : project.hero ? (
             <div className={embedFrame}>

@@ -5,6 +5,9 @@ lane: building
 status: shipped
 tags: [graphics, ui]
 summary: "Multi-layer ASCII art generator with dithering, edge detection, and compositing — browser-native."
+icon:
+  src: "/assets/img/projects/ascii-art-icon.svg"
+  alt: "ascii-art app icon"
 links:
   github: https://github.com/JacobFV/ascii-art
   demo: https://ascii-art-sable.vercel.app
@@ -22,6 +25,20 @@ A browser-based ASCII compositor where each effect is a layer with its own palet
 ## How
 - **Stack:** TypeScript on the client, no backend.
 - **Algorithms:** Floyd-Steinberg dithering, Sobel edge detection, configurable luminance ramps.
+
+The render pipeline runs in two parts. A *global adjust* pass greyscales the
+source and applies tone work — blur, high-pass, unsharp mask, levels, gamma,
+tone curve, posterize — exactly once. Then every layer runs the same four-step
+loop over that adjusted image: downsample to a character grid, score each cell's
+intensity, dither the result, and map intensity to a glyph by ink density.
+Finished layers are stacked with per-layer blend modes and opacity.
+
+![ascii-art rendering pipeline — a source image is greyscaled and tone-adjusted once, then each layer downsamples it to a character grid, scores per-cell intensity, applies Floyd–Steinberg dithering, and maps intensity to a glyph by ink density before the layers are composited with blend modes and opacity](/assets/img/projects/ascii-art-pipeline.svg)
+
+The key trick is the **character lookup table**: the ramp isn't ordered by hand
+but by each glyph's *measured* coverage in the chosen font, so intensity maps to
+the visually correct character. Dithering then diffuses each cell's quantization
+error into its neighbours, recovering tone the coarse grid would otherwise lose.
 
 ## Results
 Live at [ascii-art-sable.vercel.app](https://ascii-art-sable.vercel.app).

@@ -2,11 +2,52 @@
 title: jplotlib
 date: 2021-03-29
 lane: building
-status: active
-tags: [personal]
-summary: "Quick plotting utilities for jupyter notebooks"
-links: 
+status: shelved
+tags: [python, research, visualization]
+summary: "A tiny matplotlib helper I used in a few research notebooks to quickly lay out many generated images in a grid."
+hero:
+  src: "/assets/img/projects/jplotlib-grid-plot-example.png"
+  alt: "jplotlib GridPlot example showing many random image tiles arranged in a grid"
+links:
   github: https://github.com/JacobFV/jplotlib
 ---
-- `pip install jplotlib`
-- A useful library, until I discovered `plt.subplots`
+
+![jplotlib GridPlot example showing many random image tiles arranged in a grid](/assets/img/projects/jplotlib-grid-plot-example.png)
+
+## Problem
+
+Some research notebooks need to look at dozens of generated or intermediate images at once: sampled tensors, model outputs, augmentation checks, or quick visual sanity tests. Rewriting the same `matplotlib` grid boilerplate every time was annoying enough that I packaged the pattern.
+
+This was not meant to be a serious visualization framework. It was a small convenience library for a few research workflows.
+
+## Solution
+
+`jplotlib` exposes a single main helper, `GridPlot`, for collecting images and displaying them as a compact matplotlib grid.
+
+```python
+import numpy as np
+import jplotlib as jpl
+
+with jpl.GridPlot(width=20) as grid_plot:
+    for _ in range(50):
+        grid_plot.imshow(np.random.uniform(size=(100, 100, 3)))
+```
+
+The context manager keeps notebook code terse: append images as they are produced, then render the grid when the block exits.
+
+## How
+
+- **Stack:** Python, matplotlib, setuptools.
+- **Core API:** `GridPlot(ncols=10, width=10)`.
+- **Behavior:** collect images through `imshow`, compute rows from image count, call `plt.subplots`, hide axes, and display each image tile.
+- **Distribution:** packaged as `jplotlib`; installable with `pip install jplotlib`.
+
+## Results
+
+The library did what it needed to do for quick image inspection in a few research works. It made exploratory notebooks a little cleaner, especially when comparing many candidate outputs side by side.
+
+The repo is now archived, which is the right status for it. Once I became more comfortable with `plt.subplots`, the package stopped needing to exist as an active dependency.
+
+## Lessons
+
+The useful part was not abstraction for its own sake; it was capturing a repeated notebook gesture while I was still moving quickly through experiments. In hindsight, the project is a good reminder that some tools are allowed to be temporary: they solve a local friction, teach the underlying library, and then get retired.

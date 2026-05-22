@@ -4,10 +4,61 @@ date: 2021-03-08
 endDate: 2021-05-15
 lane: building
 status: shipped
-tags: []
-summary: "Self-organizing maps in tensorflow"
-links: 
+tags: [tensorflow, unsupervised-learning, python]
+summary: "TensorFlow layers for locally competitive, self-organizing-map-style feature learning."
+hero:
+  src: "/assets/img/projects/tf-som-demo.svg"
+  alt: "Glowing tf-som code demo showing LCA and Conv2DLCA imports beside a self-organizing map grid"
+  fit: contain
+icon:
+  src: "/assets/img/projects/tf-som-icon.svg"
+  alt: "tf-som glowing self-organizing map icon"
+links:
   github: https://github.com/JacobFV/tf-som
+  pypi: https://pypi.org/project/tf-som/
 ---
-- developed variant of the popular unsupervised learning algorithm SOM
-- available on pypi: `pip install tf-som`
+
+![Glowing tf-som code demo showing TensorFlow SOM layers and feature clusters](/assets/img/projects/tf-som-demo.svg)
+
+## Problem
+
+Self-organizing maps are useful for unsupervised representation learning, but most Python examples live as standalone training loops instead of composable TensorFlow layers. That makes them harder to drop into image pipelines or compare against supervised convolutional baselines.
+
+## Solution
+
+`tf-som` packages a locally competitive algorithm as Keras-compatible TensorFlow layers. The library exposes dense and convolutional variants, so a model can learn winner-take-all feature activations first, then freeze that unsupervised base and attach a supervised head.
+
+```python
+from tf_som.layers import LCA, Conv2DLCA
+
+som = LCA(N_w=32, lr_w=1e-3)
+features = Conv2DLCA(filters=64, kernel_size=(3, 3))
+
+activations = som(x, training=True)
+```
+
+Install from PyPI:
+
+```bash
+pip install tf-som
+```
+
+## How
+
+- **Package:** published on [PyPI](https://pypi.org/project/tf-som/) as `tf-som`; imported in Python as `tf_som`.
+- **Core layer:** `LCA` computes L1 distance from inputs to learned weight vectors, converts distance to activation, and can collapse to a winner-take-all one-hot code.
+- **Convolutional form:** `Conv2DLCA` unfolds image patches into local vectors, then applies the same competitive update across spatial neighborhoods.
+- **Model helper:** `ConvNet` stacks `LCA`, pooling, and `Conv2DLCA` layers into an unsupervised image feature extractor.
+- **Training behavior:** during `training=True`, winning units move toward observed inputs using the layer learning rate; `backpropagatable=True` can make weights trainable through TensorFlow.
+
+## Tests
+
+The repository includes `tf_som/models_test.py` alongside the package source. The important checks for this kind of library are shape stability through Keras models, layer call behavior in training mode, and keeping the PyPI import path aligned with the package namespace.
+
+## Results
+
+The project shipped as a minimal MIT-licensed TensorFlow package: [github.com/JacobFV/tf-som](https://github.com/JacobFV/tf-som) and [pypi.org/project/tf-som](https://pypi.org/project/tf-som/). It is a compact experiment in turning SOM-style local competition into reusable neural network components rather than a notebook-only algorithm.
+
+## Lessons
+
+The main product lesson was packaging the mental model clearly. The distribution name is `tf-som`, the import namespace is `tf_som`, and the concept is easiest to understand when shown as a glowing code snippet beside a clustered feature map: input vectors compete for local units, and the winning units become a learned topological code.

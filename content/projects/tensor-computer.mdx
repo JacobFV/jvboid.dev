@@ -1,0 +1,163 @@
+---
+title: The Tensor Computer
+date: 2026-01-01
+lane: building
+status: active
+tags: [differentiable-programming, program-synthesis, jax, agents, research]
+summary: "A complete von Neumann computer — ALU, registers, cache, virtual memory, bus, GPU, peripherals — rebuilt as differentiable tensor operations in JAX, so that programs written in machine code can, in principle, be learned end-to-end by gradient descent."
+hero:
+  src: /assets/img/projects/tensor-computer-blender.gif
+  alt: A pixel-art Blender-style GUI environment the tensor computer's agents are trained to operate
+  fit: contain
+links:
+  paper: /assets/pdf/tensor-computer-paper.pdf
+influences: [tensacode, computatrum, full-stack-artificial-intelligence]
+realizes: [tensor-computer-paper]
+critiques: []
+---
+
+## Problem
+
+An LLM agent that "increments a loop counter" spends 20–50 tokens doing
+what one machine instruction — `ADD R1, R1, 1` — does in four bytes. That
+100–1000× representational overhead compounds across every step of every
+task: a 50-step workflow becomes thousands of tokens of inference, when
+the equivalent compiled program would finish in microseconds. Worse, the
+architecture is a mismatch — transformer autoregression is not isomorphic
+with the symbolic composition and recurrence that structured cognition
+actually needs.
+
+Mechanistic interpretability hints that the overhead is unnecessary:
+grokked transformers implement clean, sparse algorithms (Nanda et al.
+showed modular-addition models computing a literal discrete Fourier
+transform), and specific behaviors in large models live in
+sub-1000-dimensional subspaces. If the useful computation is algorithmic,
+why carry 8GB of weights to run it? The question this project asks: can a
+program be **learned directly as machine code**, with gradients, instead
+of generated as text?
+
+## Solution
+
+The Tensor Computer is a complete von Neumann architecture — ALU,
+register file, flags, cache, NTM-style main memory, a 4KB-sector hard
+disk, two-level virtual memory with a TLB, a softmax-arbitrated system
+bus, a GPU, and peripheral ring buffers — implemented **entirely as
+differentiable tensor operations in JAX**. Every discrete decision a real
+CPU makes is replaced by a temperature-scaled softmax:
+
+- The **opcode** is a distribution over 32 operations; the ALU computes
+  all 32 in parallel and blends them by weight.
+- The **program counter** is a probability distribution over instruction
+  addresses; instruction fetch is `(PC)ᵀ · I_mem`.
+- **Register selectors, memory addresses, and branch conditions** are all
+  soft.
+
+At temperature τ → 0 every softmax collapses to one-hot and the machine
+recovers exact discrete semantics. At higher τ, gradients flow through
+the entire computation, so a program — encoded as 112 real-valued
+parameters per instruction — is just another differentiable object you
+can optimize. To prove the architecture is real and not a toy, a
+**self-hosting C compiler** written in tensor machine code compiles and
+runs `factorial(5) = 120`, exercising recursion, stack frames,
+conditionals, and function calls.
+
+## How
+
+- **Language / runtime:** Python, JAX — `float32` throughout,
+  `jax.nn.softmax` for all soft addressing, `jax.grad` for end-to-end
+  differentiation, JIT-compiled and vectorized across a batch of
+  programs.
+- **Architecture:** 16×32-bit registers, 256-line cache with soft LRU
+  eviction, 256×32 NTM-style main memory with content-based addressing,
+  64MB disk with 4KB sector loading, two-level page tables + TLB, a
+  64K-word tensor GPU, and a 480×640×3 display framebuffer — each a
+  tensor in the machine-state tuple.
+- **Training strategy:** five-phase temperature annealing (warm-up →
+  anneal → crystallize → discrete local search → extraction), curriculum
+  learning over program length and task difficulty, shaped rewards plus
+  auxiliary losses for credit assignment, hierarchical subroutine
+  libraries, and population-based training for solution diversity.
+- **Validation harness:** a self-hosting C compiler emitting tensor
+  machine code; an algorithmic task suite from `add` through
+  `bubble_sort`, `binary_search`, and `gcd`.
+
+## Tests
+
+The honest result first: **the Tensor Computer never learned through SGD
+on its own.** The soft loss landscape at medium temperature does not
+track the discrete one — a blend of 32 operations has different semantics
+from any single operation — and the gradients through the annealed
+softmax stack are too sharp to descend. Pure gradient-based program
+synthesis stalled.
+
+What *did* work was scaffolding. With temperature annealing, a
+length/difficulty curriculum, shaped rewards, imitation warmstart, and
+discrete local search all stacked on top of each other, the system
+learned correct machine-code programs for basic tasks. The caveat is
+worth stating plainly: with that much scaffolding the "learner" is doing
+very little learning on its own — the search procedure carries most of
+the weight. It is closer to guided program search than to an autonomous
+gradient learner.
+
+Within those bounds the results are real and verifiable:
+
+| Task         | Episodes to 100% | Learned program                     |
+| ------------ | ---------------- | ------------------------------------ |
+| `add`        | 847 ± 123        | `ADD R0,R0,R1; HALT` — optimal       |
+| `max`        | 2,341 ± 412      | `CMP; JGE; MOV; HALT` — optimal      |
+| `sum_array`  | 15K              | correct loop, generalizes to any `n` |
+| `bubble_sort`| 50K              | nested-loop bubble sort, 98.5% @ n=4 |
+
+Fixed high temperature (no annealing) plateaus at ~10% — chance.
+Annealing is not optional; it is the experiment.
+
+## Results
+
+The trained programs are correct machine code, and some are genuinely
+*alien*. Asked for absolute value, one run rediscovered the branchless
+two's-complement trick (`SRA` to build a sign mask, then `XOR`/`SUB`) —
+a technique most programmers would not reach for. An in-place swap was
+solved with the classic XOR swap, rediscovered from scratch.
+`sum_array` trained on multiple input sizes converged on a real
+loop that length-generalizes to arrays it never saw; trained on a single
+size, it overfit into an unrolled straight-line solution — a clean,
+legible picture of generalization failure.
+
+The longer-horizon goal is GUI agents. The clip below is from the
+reinforcement-learning environment suite — three policy architectures
+(CNN, GRU, Transformer) driving the same pixel-art GUIs the Tensor
+Computer's learned programs are meant to eventually operate mechanically,
+calling a frozen reasoning model only when high-level judgment is needed.
+
+<video
+  src="/assets/media/tensor-computer/agent-comparison.webm"
+  poster="/assets/img/projects/tensor-computer-agent-comparison-poster.png"
+  controls
+  loop
+  muted
+  playsInline
+  style={{ width: "100%", borderRadius: "1rem" }}
+/>
+
+Full architecture, mathematical formalization, training strategy, and the
+$1,000 / two-week research program are in the
+[paper](/assets/pdf/tensor-computer-paper.pdf).
+
+## Lessons
+
+The central lesson is about where the difficulty actually lives.
+Building a differentiable computer is mostly bookkeeping — every
+component is a tensor, every dispatch is a softmax, and JAX makes the
+whole thing differentiable for free. The hard part is that
+*differentiable* and *learnable* are not the same thing. A gradient
+exists at every point and still points nowhere useful, because the soft
+relaxation of a discrete program is a different function than the program
+itself, and the relaxation gap is exactly where the optimizer gets lost.
+
+So the project lands as an honest negative-leaning result: gradient
+descent did not learn programs here, and the working system is better
+described as heavily-scaffolded program search than as a learner. That is
+still worth having — it sharpens the question of *when* gradients help
+program synthesis, and the differentiable substrate remains a clean
+testbed for interpretability and for the RL-driven phases of the research
+program.

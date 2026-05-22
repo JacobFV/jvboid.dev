@@ -71,8 +71,6 @@ function KindMeta({ node }: { node: Node }) {
       return <FriendMeta node={node} />;
     case "event":
       return <EventMeta node={node} />;
-    case "experience":
-      return <ExperienceMeta node={node} />;
     case "vision":
       return <VisionMeta node={node} />;
     default:
@@ -88,19 +86,17 @@ function ProjectMeta({ node }: { node: Node }) {
     <div className="mt-5 flex flex-col gap-5">
       {/* Prefer project PDFs when there is a deck/poster/paper attached:
           they are the artifact itself, not just a supporting image.
-          Then fall back through live demos, videos, and hero images. */}
+          Explicit videos come next so presentation/demo reels can be the
+          primary asset even when a separate live URL also exists. */}
       {node.pdf ? (
         <ProjectPdfEmbed node={node} />
-      ) : liveUrl ? (
-        <ProjectLiveEmbed url={liveUrl} title={node.title} />
       ) : node.video ? (
         <ProjectVideo url={node.video} title={node.title} />
+      ) : liveUrl ? (
+        <ProjectLiveEmbed url={liveUrl} title={node.title} />
       ) : node.hero ? (
         <ProjectHeroImage node={node} />
       ) : null}
-      {/* Live embeds use the overlay link as a deliberate fallback. Some
-          third-party sites block iframing; the overlay link is the
-          deliberate fallback and stays available on every visual. */}
       {hasLinks && (
         <div className="flex flex-wrap gap-3 font-[family-name:var(--font-mono)] text-xs">
           {Object.entries(node.links!).map(([k, v]) =>
@@ -431,28 +427,6 @@ function EventMeta({ node }: { node: Node }) {
         >
           source ↗
         </a>
-      )}
-    </div>
-  );
-}
-
-function ExperienceMeta({ node }: { node: Node }) {
-  if (!node.org) return null;
-  const orgUrl = node.links?.org;
-  return (
-    <div className="mt-5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)]">
-      at{" "}
-      {orgUrl ? (
-        <a
-          href={orgUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
-        >
-          {node.org}
-        </a>
-      ) : (
-        <span className="text-[var(--color-ink)]">{node.org}</span>
       )}
     </div>
   );

@@ -1,0 +1,43 @@
+---
+title: Bonk
+date: 2026-05-22
+lane: building
+status: shipped
+tags: [electron, ai-coach, desktop-pet, productivity, hackathon]
+summary: "A tiny AI life coach: a friendly desktop doge watches your active window, tracks goals, and gently bonks you back toward the work you meant to do."
+video: "https://www.youtube.com/watch?v=E6majVNvS5s"
+links:
+  github: "https://github.com/yayashuxue/ai-life-coach"
+influences: [lifelogger, workplace-surveillance-system]
+realizes: []
+critiques: []
+---
+
+## What It Is
+
+Bonk is an Electron desktop pet for staying aligned with your own goals. A small doge sits in a transparent window while you work. When the app detects that you have drifted into distracting apps or sites for long enough, it swaps into a bonk animation, plays a small sound, and posts a short supportive nudge in chat.
+
+The pitch is deliberately gentle: not a harsh alarm, not a surveillance dashboard, and not a productivity scorecard. It is a lightweight companion that remembers what you said you wanted to do and notices when your attention is sliding away from it.
+
+## How It Works
+
+The app has two surfaces:
+
+- A main window for goals, settings, and coach chat.
+- A transparent desktop pet window that stays visible while you work.
+
+The repo describes the current behavior as polling the active window once per second. If a distracting app or site remains active for about 15 seconds, and the cooldown has passed, Bonk runs a 1.2 second animation, briefly swaps from the idle doge image to the bonk image, plays a beep, and adds a concise nudge to the chat.
+
+AI support is optional. The settings UI can store OpenAI or Anthropic keys locally through Electron storage, and the coach can use those providers for small supportive messages and proactive check-ins. Without that, the core loop still works as a local desktop pet and distraction detector.
+
+## Why It Matters
+
+The interesting product choice is tone. Bonk treats focus as a relationship with intent rather than a punishment problem. The transcript frames the core use case clearly: you open the laptop to work, end up 30 minutes into YouTube or Twitter, and need a friendly cue that reconnects you to the proposal, task, or goal you sat down for.
+
+That makes Bonk closer to a tiny ambient coach than a full life-management system. It knows your goals, watches for obvious attention drift, and gives just enough friction to help you remember what mattered before the distraction took over.
+
+## Build Notes
+
+The implementation is a compact JavaScript, HTML, and CSS Electron app. The main process owns timers, active-window checks, AI calls, IPC, and the pet window. The preload bridge exposes safe `window.coach` calls to the renderer. The renderer handles the main app UI, settings, goals, chat, and pet surface.
+
+The remaining product frontier is smarter context classification: distinguishing harmless research from real drift, making nudges more personalized without feeling invasive, and keeping the desktop pet useful over repeated work sessions instead of turning into another ignored notification.

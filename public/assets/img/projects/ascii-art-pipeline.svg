@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 540" role="img" aria-labelledby="t1 d1">
+  <title id="t1">ascii-art rendering pipeline</title>
+  <desc id="d1">A source image is greyscaled and tone-adjusted once, then each layer downsamples it to a character grid, scores per-cell intensity, diffuses quantization error with Floyd–Steinberg dithering, and maps each cell to a glyph by ink density. The layers are stacked with per-layer blend modes and opacity to form the final composite.</desc>
+  <rect width="1100" height="540" rx="26" fill="#ece7dc"/>
+
+  <defs>
+    <marker id="af" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M1 1l9 5-9 5z" fill="#2e7d78"/>
+    </marker>
+    <marker id="al" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1l9 5-9 5z" fill="#b07527"/>
+    </marker>
+  </defs>
+
+  <!-- Stage 1: source image -->
+  <rect x="32" y="186" width="156" height="168" rx="16" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="52" y="222" font-family="ui-sans-serif,system-ui,sans-serif" font-size="17" font-weight="600" fill="#22241f">Source image</text>
+  <g transform="translate(60 240)" fill="none" stroke="#2e7d78" stroke-width="2" stroke-linejoin="round">
+    <rect x="0" y="0" width="100" height="72" rx="4"/>
+    <circle cx="26" cy="24" r="9"/>
+    <path d="M0 60l30-26 22 18 20-14 28 22v12H0z" fill="#e7efec"/>
+  </g>
+  <text x="52" y="338" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#8e8f84">any photo</text>
+
+  <!-- Stage 2: global adjust -->
+  <rect x="222" y="118" width="200" height="304" rx="16" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="244" y="154" font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" font-weight="600" fill="#22241f">Global adjust</text>
+  <text x="244" y="175" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-style="italic" fill="#9a917a">applied once, before layers</text>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">
+    <circle cx="248" cy="203" r="3" fill="#2e7d78"/><text x="264" y="208">greyscale</text>
+    <circle cx="248" cy="237" r="3" fill="#2e7d78"/><text x="264" y="242">blur · high-pass</text>
+    <circle cx="248" cy="271" r="3" fill="#2e7d78"/><text x="264" y="276">unsharp mask</text>
+    <circle cx="248" cy="305" r="3" fill="#2e7d78"/><text x="264" y="310">levels · brightness</text>
+    <circle cx="248" cy="339" r="3" fill="#2e7d78"/><text x="264" y="344">contrast · gamma · curve</text>
+    <circle cx="248" cy="373" r="3" fill="#2e7d78"/><text x="264" y="378">posterize · invert</text>
+  </g>
+
+  <!-- Stage 3: per-layer loop -->
+  <rect x="456" y="56" width="468" height="428" rx="22" fill="#e4decd"
+        stroke="#a89c7e" stroke-width="2" stroke-dasharray="2 8" stroke-linecap="round"/>
+  <rect x="476" y="44" width="208" height="24" rx="12" fill="#23251f"/>
+  <text x="490" y="60" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="600" fill="#ece7dc">for each layer in the stack</text>
+
+  <!-- 3a downsample -->
+  <rect x="480" y="86" width="420" height="86" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="500" y="118" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="600" fill="#22241f">1 · Downsample to a character grid</text>
+  <text x="500" y="142" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">cell size = font advance + spacing → cols × rows</text>
+  <text x="500" y="160" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">one sample per glyph cell</text>
+
+  <!-- 3b intensity -->
+  <rect x="480" y="186" width="420" height="86" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="500" y="218" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="600" fill="#22241f">2 · Score per-cell intensity</text>
+  <text x="500" y="242" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">luminance ramp · Sobel edge detection</text>
+  <text x="500" y="260" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">per layer: contrast · threshold · sensitivity</text>
+
+  <!-- 3c dither -->
+  <rect x="480" y="286" width="420" height="86" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="500" y="318" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="600" fill="#22241f">3 · Dither</text>
+  <text x="500" y="342" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">Floyd–Steinberg error diffusion</text>
+  <text x="500" y="360" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">spreads quantization error to neighbour cells</text>
+
+  <!-- 3d char LUT -->
+  <rect x="480" y="386" width="420" height="86" rx="14" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="500" y="418" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="600" fill="#22241f">4 · Map intensity → glyph</text>
+  <text x="500" y="442" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">ramp sorted by measured ink density</text>
+  <text x="500" y="460" font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#5d6058">draw each cell at its grid position</text>
+
+  <!-- inner flow arrows -->
+  <g fill="none" stroke="#2e7d78" stroke-width="3" stroke-linecap="round">
+    <path d="M690 172v10" marker-end="url(#af)"/>
+    <path d="M690 272v10" marker-end="url(#af)"/>
+    <path d="M690 372v10" marker-end="url(#af)"/>
+  </g>
+
+  <!-- Stage 4: composite -->
+  <rect x="958" y="170" width="118" height="200" rx="16" fill="#fbf8f0" stroke="#cfc8b4" stroke-width="1.5"/>
+  <text x="978" y="206" font-family="ui-sans-serif,system-ui,sans-serif" font-size="17" font-weight="600" fill="#22241f">Composite</text>
+  <g transform="translate(980 224)">
+    <rect x="0" y="0" width="64" height="40" rx="3" fill="#e7efec" stroke="#2e7d78" stroke-width="1.6"/>
+    <rect x="10" y="14" width="64" height="40" rx="3" fill="#fbf8f0" stroke="#b07527" stroke-width="1.6"/>
+    <rect x="20" y="28" width="64" height="40" rx="3" fill="#fbf8f0" stroke="#23251f" stroke-width="1.6"/>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#5d6058">
+    <text x="978" y="324">blend mode</text>
+    <text x="978" y="342">+ opacity</text>
+    <text x="978" y="360">per layer</text>
+  </g>
+
+  <!-- stage flow arrows -->
+  <g fill="none" stroke="#2e7d78" stroke-width="3.4" stroke-linecap="round">
+    <path d="M188 270h26" marker-end="url(#af)"/>
+    <path d="M422 270h26" marker-end="url(#af)"/>
+    <path d="M924 270h26" marker-end="url(#af)"/>
+  </g>
+
+  <!-- loop-back arrow: next layer -->
+  <path d="M820 478c54 22 104 8 104 -54v-118" fill="none" stroke="#b07527" stroke-width="2.6"
+        stroke-dasharray="1 7" stroke-linecap="round" marker-end="url(#al)"/>
+  <text x="700" y="510" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="600" fill="#b07527">repeat for the next layer, then composite the stack</text>
+</svg>
