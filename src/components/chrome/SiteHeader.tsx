@@ -40,12 +40,7 @@ const NAV = [
 const MORE_NAV = [
   { label: "Readings", href: "/readings" },
   { label: "Papers", href: "/papers" },
-  { label: "Updates", href: "/updates" },
-  { label: "Events", href: "/events" },
-  { label: "Friends", href: "/friends" },
-  { label: "Visions", href: "/visions" },
   { label: "Resume", href: "/resume" },
-  { label: "Timeline", href: "/t" },
 ];
 
 // kind → the dedicated collection page the breadcrumb points back at.
