@@ -79,6 +79,11 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Clip horizontal overflow from decorative wide elements (homepage
+     Planetoids field is 1200px, reader LocalGraph labels can spill).
+     `clip` avoids creating a scroll container, so the sticky site
+     header keeps working. */
+  overflow-x: clip;
 }
 
 ::selection {
