@@ -134,10 +134,10 @@ export default function HomePage() {
                 timeline
               </Link>
               <Link
-                href="/readings/a-beautiful-loop"
+                href="/posts"
                 className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
-                book notes
+                blog
               </Link>
               <Link
                 href="/resume"
@@ -149,7 +149,7 @@ export default function HomePage() {
                 href="/projects"
                 className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
               >
-                all projects
+                projects
               </Link>
             </div>
 
@@ -237,51 +237,7 @@ export default function HomePage() {
 
         {/* ---- Footer ---- */}
         <footer className="mt-32 border-t border-[var(--color-bg-2)]/50 pt-8 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-          <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <div>
-              <Link
-                href="/introduction"
-                className="text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
-              >
-                /introduction
-              </Link>
-              <span className="mx-2 opacity-40">·</span>
-              <Link
-                href="/focus-statement"
-                className="text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
-              >
-                /the-robot
-              </Link>
-              <span className="mx-2 opacity-40">·</span>
-              <Link
-                href="/updates"
-                className="text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
-              >
-                /updates
-              </Link>
-              <span className="mx-2 opacity-40">·</span>
-              <Link
-                href="/events"
-                className="text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
-              >
-                /events
-              </Link>
-              <span className="mx-2 opacity-40">·</span>
-              <a
-                href="/feed.xml"
-                className="text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
-              >
-                rss
-              </a>
-            </div>
-            <div className="opacity-60">
-              Press{" "}
-              <kbd className="rounded-md bg-[var(--color-bg-1)] px-1.5 py-0.5 font-[family-name:var(--font-mono)]">
-                ⌘K
-              </kbd>{" "}
-              to search.
-            </div>
-          </div>
+          <p className="opacity-45">Copyright Jacob Valdez.</p>
         </footer>
       </main>
       {latestUpdate && (
