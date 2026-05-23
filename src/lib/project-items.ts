@@ -32,6 +32,7 @@ const featuredProjectOrder = [
   "imgpt",
   "desparados-a-eye",
   "20q",
+  "space-pong",
   "sqtest",
   "sale",
   "labatron",
