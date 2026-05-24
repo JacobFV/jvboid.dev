@@ -32,12 +32,15 @@ The basic unit on the data side is not an instruction or a click trace. It is a 
 ## What It Generates
 
 - Long-form behavioral instructions and specs.
-- Artifacts such as design docs, code modules, tests, PR text, incident timelines, runbooks, source tables, and research memos — varied per task family rather than identical templates.
-- Symbolic computer-use trajectories across Notion, Slack, GitHub, Editor, Terminal, Browser, and dashboards. Trajectories are emitted by walking the sampled behavior tree, not by a per-surface if-ladder, so the trace is genuinely a rendering of the latent program.
-- Observations that vary per (surface, action, args) instead of constant strings, with timestamps that scale with the actual cost of each action (typing length, command class, etc.).
+- Artifacts such as design docs, code modules, tests, PR text, incident timelines, runbooks, source tables, and research memos — varied per task family rather than identical templates, and **causally coupled**: the PR cites the actual code module's exported symbol, the test imports that symbol's module, the Slack handoff references the file by path.
+- Symbolic computer-use trajectories across Notion, Slack, GitHub, Editor, Terminal, Browser, and dashboards, emitted by walking the sampled behavior tree against a shared **EpisodeState** (workspace, threads, branches, terminal history, notion pages, dashboard panels). Each emitter reads and writes that state; the final state is serialized into `latent.final_state` so downstream training and evaluation can inspect what an episode actually accomplished.
+- **Per-domain emitter overrides**: ops episodes dashboard-first with `drill_into_alert`, post a hypothesis-vs-mitigation split to `#incident`, and create an Incident Doc page. Research episodes start at arxiv, extract source quotes, and build a Source Triage with hypothesis-then-evidence structure. SWE keeps the generic emitters. The trace is domain-coherent, not the SWE if-ladder dressed in different clothes.
+- Observations that vary per (surface, action, args) instead of constant strings, with timestamps that scale with the actual cost of each action (typing length, command class).
 - Real failure-and-recovery branches when the latent declares ambiguity: pytest-fail → edit → pytest-pass, Slack clarification, or assumption-of-record patterns.
-- Export routing metadata for specialized fine-tunes.
-- Rubrics, content-aware scores (constraint grounding, observation uniqueness, ambiguity resolved), and expected quality bands for filtering and curriculum construction.
+- **Archetype-based conditional sampling**: each domain declares coherent (organization, repository, role, goal, expert, task_family) tuples. Sampling picks an archetype first so episodes never end up with a "staff engineer" working on a "Svelte browser-desktop simulator" for an "open-source maintainer group" while filing a bug fix PR.
+- **Constraint predicates**: each declared constraint maps to a structural predicate over (latent, artifacts, trajectory). "Include a rollback note and failure mode analysis" actually checks for those strings; "avoid risky production writes" rejects `DROP TABLE` in action args; "make the behavior easy to verify from a CLI" requires a terminal action. Score includes `constraints_satisfied` and `constraints_checked`.
+- Export routing metadata for specialized fine-tunes (includes the `archetype_id` so downstream filters can route by it).
+- Content-aware quality scores: `causal_coupling` measures how many trajectory actions target real artifact paths; `constraint_grounding` measures token overlap with declared constraints; `observation_uniqueness`, `ambiguity_resolved`, `expected_min_quality`.
 
 ## Why It Exists
 
@@ -86,7 +89,17 @@ The Remotion layer is intentionally ~25 lines: it loads the beauty PNG sequence 
   Your browser does not support embedded video. <a href="/assets/media/synthux/launch.mp4">Download the launch reel</a>.
 </video>
 
-The 16-second vertical slice above is three shots: a luxury-product-cinema macro of the behavior-program core (cold studio rim + warm underside return), an interface-choreography workbench, and an academic-research-film push over routed expert datasets. Each is a real Blender 4.x EEVEE render — 495 frames total — assembled by Remotion without any on-frame text. The placeholder geometry is intentionally a beveled cube while per-shot meshes (etched logic core, multi-screen workbench, sorted dataset stacks) are still upcoming.
+The 32-second vertical slice above is seven shots forming an industrial-design-film arc, each shot borrowing authority from a different register:
+
+1. **Revelation** (luxury-product-cinema / aesthetic) — macro reveal of an etched logic core, seven emissive amber nodes carved into the face under a cyan rim.
+2. **Material-Proof** (engineering-demonstration / operational) — extreme macro on a single etched trace; material specificity as proof.
+3. **Instrumentation** (interface-choreography / operational) — top-down workbench of mock-tool panels with emissive accent strips lighting up in cause-and-effect order.
+4. **Trajectory-Evidence** (documentary-proof / evidentiary) — a single editor-buffer slab populated with emissive code lines, modified indicator lit.
+5. **Routing-Lock-In** (academic-research-film / scientific) — translucent dataset slabs sliding along parallel engraved rails into expert lanes with paper rubric tabs.
+6. **Consequence** (manifesto / civilizational) — an expert-model glyph (sphere-on-cylinder, brushed-titanium with amber core) absorbing dataset slabs.
+7. **Naming** (luxury-product-cinema / aesthetic) — a brushed-titanium nameplate with `SYNTHUX` engraved as a real 3D text object extruded into the metal. Diegetic typography per the cinematic-pipeline contract.
+
+Each shot is built from a `subjectArchetype` in the JSON spec; the Blender layer dispatches to a per-archetype mesh builder. The seven narration lines, read in sequence, form the linguistic register of the film: declarative, materially grounded, impersonal — closer to a luxury watch launch than to a SaaS announcement. The full arc and per-shot rationale lives in [`cinematic/storyboard.md`](https://github.com/JacobFV/synthux/blob/main/cinematic/storyboard.md).
 
 {/*
   TODO(synthux): once per-shot meshes land and there is more to show, sprinkle
