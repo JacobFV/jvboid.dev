@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">SynthUX behavior generation pipeline</title>
+  <desc id="desc">A diagram showing domain priors flowing into a behavior program, then into instructions, artifacts, UX trajectories, routing, rubrics, and expert model training.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#10151f"/>
+      <stop offset="0.55" stop-color="#172018"/>
+      <stop offset="1" stop-color="#201815"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" x2="1">
+      <stop offset="0" stop-color="#f8d27a"/>
+      <stop offset="1" stop-color="#d08b45"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" x2="1">
+      <stop offset="0" stop-color="#7bd5df"/>
+      <stop offset="1" stop-color="#8fb2ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <style>
+      .label{font:600 28px Inter,ui-sans-serif,system-ui,sans-serif;fill:#f4efe3}
+      .small{font:500 18px Inter,ui-sans-serif,system-ui,sans-serif;fill:#c9c2b2}
+      .mono{font:500 17px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#b8d9dc}
+      .box{fill:#1b2230;stroke:#394254;stroke-width:1.5;rx:18}
+      .box2{fill:#22251d;stroke:#535741;stroke-width:1.5;rx:18}
+      .box3{fill:#261f1d;stroke:#5c493e;stroke-width:1.5;rx:18}
+      .line{fill:none;stroke:#7c8796;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+      .dash{fill:none;stroke:#d7aa5f;stroke-width:2;stroke-dasharray:10 10;opacity:.8}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#8d97a6"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="820" fill="url(#bg)"/>
+  <path d="M100 695 C310 610 462 735 690 655 C925 573 1047 650 1280 540" class="dash"/>
+  <text x="84" y="92" class="label" font-size="44">SynthUX</text>
+  <text x="84" y="126" class="small">statistical behavior programs for instruction, artifact, trajectory, route, and score generation</text>
+
+  <g filter="url(#shadow)">
+    <rect x="80" y="190" width="260" height="238" class="box"/>
+    <text x="112" y="240" class="label">Domain pack</text>
+    <text x="112" y="284" class="small">weighted priors</text>
+    <text x="112" y="318" class="mono">task families</text>
+    <text x="112" y="348" class="mono">roles and goals</text>
+    <text x="112" y="378" class="mono">surfaces</text>
+    <text x="112" y="408" class="mono">rubrics</text>
+
+    <rect x="430" y="150" width="330" height="320" class="box2"/>
+    <text x="466" y="204" class="label">Behavior program</text>
+    <text x="466" y="248" class="small">node tree above the UI layer</text>
+    <circle cx="500" cy="306" r="13" fill="url(#amber)"/>
+    <circle cx="575" cy="358" r="10" fill="#89d0d7"/>
+    <circle cx="650" cy="358" r="10" fill="#89d0d7"/>
+    <circle cx="538" cy="416" r="9" fill="#dcb66f"/>
+    <circle cx="613" cy="416" r="9" fill="#dcb66f"/>
+    <circle cx="688" cy="416" r="9" fill="#dcb66f"/>
+    <path d="M510 313 L570 350 M510 313 L646 350 M575 368 L542 407 M575 368 L613 407 M650 368 L688 407" class="line" marker-end="url(#arrow)"/>
+    <text x="466" y="288" class="mono">intent</text>
+    <text x="466" y="340" class="mono">plan</text>
+    <text x="466" y="395" class="mono">artifacts + UX policy</text>
+  </g>
+
+  <path d="M340 309 L430 309" class="line" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="850" y="94" width="230" height="130" class="box"/>
+    <text x="882" y="144" class="label" font-size="24">Instruction</text>
+    <text x="882" y="180" class="small">multi-paragraph spec</text>
+
+    <rect x="1100" y="94" width="230" height="130" class="box3"/>
+    <text x="1132" y="144" class="label" font-size="24">Artifacts</text>
+    <text x="1132" y="180" class="small">docs, code, tests</text>
+
+    <rect x="850" y="292" width="230" height="130" class="box2"/>
+    <text x="882" y="342" class="label" font-size="24">UX trace</text>
+    <text x="882" y="378" class="small">symbolic tool actions</text>
+
+    <rect x="1100" y="292" width="230" height="130" class="box"/>
+    <text x="1132" y="342" class="label" font-size="24">Routing</text>
+    <text x="1132" y="378" class="small">expert labels</text>
+
+    <rect x="975" y="512" width="230" height="130" class="box3"/>
+    <text x="1007" y="562" class="label" font-size="24">Rubrics</text>
+    <text x="1007" y="598" class="small">scores and filters</text>
+  </g>
+
+  <path d="M760 270 C820 180 810 160 850 159" class="line" marker-end="url(#arrow)"/>
+  <path d="M760 270 C914 225 1000 185 1100 159" class="line" marker-end="url(#arrow)"/>
+  <path d="M760 310 C813 340 820 356 850 357" class="line" marker-end="url(#arrow)"/>
+  <path d="M760 340 C900 375 1010 358 1100 357" class="line" marker-end="url(#arrow)"/>
+  <path d="M760 382 C885 510 920 575 975 577" class="line" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="470" y="610" width="460" height="82" rx="18" fill="#151b24" stroke="#36404b"/>
+    <text x="500" y="650" class="label" font-size="24">Small routed experts</text>
+    <text x="500" y="678" class="small">cheap, specific, behaviorally coherent fine-tunes</text>
+    <path d="M1086 642 C1025 681 970 687 930 664" class="line" marker-end="url(#arrow)"/>
+  </g>
+</svg>

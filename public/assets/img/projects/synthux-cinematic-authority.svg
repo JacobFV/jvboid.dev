@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">Cinematic authority taxonomy</title>
+  <desc id="desc">A taxonomy of cinematic registers organized by the authority source each borrows from.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#111317"/>
+      <stop offset="1" stop-color="#202018"/>
+    </linearGradient>
+    <style>
+      .title{font:700 42px Inter,ui-sans-serif,system-ui,sans-serif;fill:#f4efe3}
+      .sub{font:500 19px Inter,ui-sans-serif,system-ui,sans-serif;fill:#c6c0b4}
+      .label{font:700 22px Inter,ui-sans-serif,system-ui,sans-serif;fill:#f4efe3}
+      .small{font:500 15px Inter,ui-sans-serif,system-ui,sans-serif;fill:#c9c1b0}
+      .micro{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#9ed4d8;text-transform:uppercase;letter-spacing:1.4px}
+      .ring{fill:none;stroke:#696f73;stroke-width:1.3;opacity:.55}
+      .node{fill:#1d2328;stroke:#424a50;stroke-width:1.3}
+      .warm{fill:#28231c;stroke:#6b5432}
+      .cool{fill:#19262a;stroke:#3e6a70}
+      .red{fill:#2a1d1d;stroke:#70453f}
+      .green{fill:#1d251d;stroke:#53673f}
+      .line{stroke:#5b6368;stroke-width:1.4;opacity:.7}
+    </style>
+  </defs>
+  <rect width="1400" height="820" fill="url(#bg)"/>
+  <text x="82" y="88" class="title">Cinematic Authority Stack</text>
+  <text x="82" y="122" class="sub">Every generated film segment declares the authority it borrows before it declares style.</text>
+  <circle cx="700" cy="440" r="292" class="ring"/>
+  <circle cx="700" cy="440" r="204" class="ring"/>
+  <circle cx="700" cy="440" r="112" class="ring"/>
+  <line x1="700" y1="148" x2="700" y2="732" class="line"/>
+  <line x1="408" y1="440" x2="992" y2="440" class="line"/>
+  <line x1="493" y1="233" x2="907" y2="647" class="line"/>
+  <line x1="907" y1="233" x2="493" y2="647" class="line"/>
+
+  <g>
+    <rect x="570" y="380" width="260" height="120" rx="18" class="node warm"/>
+    <text x="610" y="425" class="label">Shot ontology</text>
+    <text x="610" y="454" class="small">camera, lens, material, light</text>
+    <text x="610" y="480" class="micro">physical substrate first</text>
+  </g>
+
+  <g>
+    <rect x="140" y="240" width="276" height="130" rx="18" class="node warm"/>
+    <text x="172" y="285" class="label">Luxury product</text>
+    <text x="172" y="314" class="small">object inevitability</text>
+    <text x="172" y="340" class="micro">aesthetic authority</text>
+  </g>
+  <g>
+    <rect x="503" y="140" width="276" height="130" rx="18" class="node cool"/>
+    <text x="535" y="185" class="label">Academic film</text>
+    <text x="535" y="214" class="small">the bottleneck made visible</text>
+    <text x="535" y="240" class="micro">scientific authority</text>
+  </g>
+  <g>
+    <rect x="984" y="240" width="276" height="130" rx="18" class="node green"/>
+    <text x="1016" y="285" class="label">Engineering demo</text>
+    <text x="1016" y="314" class="small">apparatus, signal, failure, fix</text>
+    <text x="1016" y="340" class="micro">operational authority</text>
+  </g>
+  <g>
+    <rect x="1042" y="500" width="276" height="130" rx="18" class="node"/>
+    <text x="1074" y="545" class="label">Interface choreography</text>
+    <text x="1074" y="574" class="small">state transitions, not slides</text>
+    <text x="1074" y="600" class="micro">instrument authority</text>
+  </g>
+  <g>
+    <rect x="562" y="642" width="276" height="130" rx="18" class="node red"/>
+    <text x="594" y="687" class="label">Manifesto</text>
+    <text x="594" y="716" class="small">artifact to system to consequence</text>
+    <text x="594" y="742" class="micro">civilizational authority</text>
+  </g>
+  <g>
+    <rect x="82" y="500" width="276" height="130" rx="18" class="node"/>
+    <text x="114" y="545" class="label">Documentary proof</text>
+    <text x="114" y="574" class="small">provenance and constraint</text>
+    <text x="114" y="600" class="micro">evidentiary authority</text>
+  </g>
+
+  <text x="86" y="730" class="sub">Rule: never let the register drift unconsciously. Each segment declares authority, proof object, forbidden cliches, and visual grammar.</text>
+</svg>

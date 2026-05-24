@@ -1,0 +1,102 @@
+---
+title: "SynthUX"
+date: 2026-05-23
+lane: building
+status: active
+tags: [synthetic-data, computer-use, agents, fine-tuning, world-modeling, cinematic]
+summary: "A statistical synthetic behavior generator paired with a Blender-first cinematic pipeline. Behavior programs render into instructions, artifacts, computer-use traces, routing labels, and rubrics; shot specs render into physically grounded 3D footage."
+hero:
+  src: "/assets/img/projects/synthux-launch-poster.png"
+  alt: "Macro 85mm Blender render of the SynthUX behavior-program core: amber emissive accent arcs wrap a beveled black-glass cube under a cyan rim and large softbox key"
+  fit: contain
+threadImages:
+  - src: "/assets/img/projects/synthux-launch-poster.png"
+    alt: "SynthUX cinematic vertical slice — Blender macro render of the behavior-program core"
+  - src: "/assets/img/projects/synthux-pipeline.svg"
+    alt: "SynthUX behavior program pipeline"
+  - src: "/assets/img/projects/synthux-cinematic-authority.svg"
+    alt: "Cinematic authority taxonomy used by the SynthUX shot-spec pipeline"
+links:
+  github: https://github.com/JacobFV/synthux
+influences: [node-tree, browser-os, windows-web-next, macos-web-next]
+realizes: [general-unified-world-modeling]
+critiques: []
+---
+
+SynthUX is a low-compute synthetic data system for generating behavior-specific training records — and a Blender-first cinematic pipeline that applies the same discipline to video.
+
+![SynthUX behavior program pipeline](/assets/img/projects/synthux-pipeline.svg)
+
+The basic unit on the data side is not an instruction or a click trace. It is a sampled behavior program that renders a multi-paragraph spec, generates supporting artifacts, executes a symbolic UX trajectory across mock tools, and attaches routing labels plus score rubrics for small expert models.
+
+## What It Generates
+
+- Long-form behavioral instructions and specs.
+- Artifacts such as design docs, code modules, tests, PR text, incident timelines, runbooks, source tables, and research memos — varied per task family rather than identical templates.
+- Symbolic computer-use trajectories across Notion, Slack, GitHub, Editor, Terminal, Browser, and dashboards. Trajectories are emitted by walking the sampled behavior tree, not by a per-surface if-ladder, so the trace is genuinely a rendering of the latent program.
+- Observations that vary per (surface, action, args) instead of constant strings, with timestamps that scale with the actual cost of each action (typing length, command class, etc.).
+- Real failure-and-recovery branches when the latent declares ambiguity: pytest-fail → edit → pytest-pass, Slack clarification, or assumption-of-record patterns.
+- Export routing metadata for specialized fine-tunes.
+- Rubrics, content-aware scores (constraint grounding, observation uniqueness, ambiguity resolved), and expected quality bands for filtering and curriculum construction.
+
+## Why It Exists
+
+Small routed experts need dense examples around a behavior domain. Full VM data collection is expensive, slow, and hard to inspect. Prompt-only synthetic data is cheap but usually loses the connection between task, artifacts, actions, and outcomes.
+
+SynthUX sits between those approaches. Domain packs define statistical priors over task families, roles, goals, constraints, tools, artifacts, and trajectory policies. The generator samples from those priors and uses shared latent state so the instruction, artifacts, actions, routing labels, and scores agree.
+
+## Initial Domains
+
+- **SWE:** specs, implementation artifacts (per-task module variants — bugfix gets `reproduce_failure`+`patched`, refactor gets `migrate`, review gets `apply_review_notes`), tests that match, PRs with per-episode branch names, and mock Notion/Slack/GitHub/Editor/Terminal workflows.
+- **Ops:** incident response, dashboards, Slack coordination, runbook updates, and postmortems.
+- **Research:** literature triage, source notes, synthesis memos, and browser/document workflows.
+
+## Bigger Picture
+
+This is the same principle as executable node trees, but lifted above the UI level. A tree can describe a software project, a team workflow, a research process, or eventually a world-simulator episode. The UX trace is one rendering of the behavior program, not the whole program.
+
+That makes on-demand data generation possible: choose a narrow behavioral domain, sample many coherent episodes cheaply, route them to the right expert model, and fine-tune or evaluate without waiting on human demonstrations or heavyweight virtual machines.
+
+## Cinematic Generation: Blender Is The Substrate
+
+![Cinematic authority taxonomy](/assets/img/projects/synthux-cinematic-authority.svg)
+
+The same programmatic discipline applies to video, with a strict hierarchy: **Blender creates physically coherent reality, diffusion finishes that reality photographically, and Remotion assembles the edit.** Remotion is the finishing table, not the aesthetic substrate.
+
+The core object is the **shot**: authority source, register, subject, lens, camera rig, motion curve, material emphasis, lighting state, proof object, render passes, narration alignment, transition logic, and forbidden cliches. A `cinematic/shots/*.json` file is the contract; everything downstream — Blender scene, render passes, diffusion job spec, Remotion timeline — is generated from it.
+
+The Blender layer is real, not a scaffold. `python cinematic/scripts/generate_scene.py` emits a Blender 4.x renderer that:
+
+- builds a per-shot proof object with PBR material slots derived from `shot.materials`, with emissive accent geometry for any material declaring emission;
+- builds a three-light rig (large area key, narrow rim, soft fill) coloured from keyword analysis of the lighting block;
+- configures a world background tuned per register;
+- aims the camera via look-at math so the framing works in `--background` mode where TRACK_TO constraints don't get re-evaluated;
+- animates the camera according to `motion.curve` (linear, ease-in-out, slow-dolly, macro-orbit, locked-off);
+- writes beauty PNGs plus depth (EXR), normal (PNG), and mask (PNG) passes when declared.
+
+The Remotion layer is intentionally ~25 lines: it loads the beauty PNG sequence with a 14-frame fade in/out and that's it. **No floating HUDs, no register/authority chips, no proof-object headlines, no narration subtitles, no frame counters.** A static lint at `cinematic/scripts/lint_remotion.mjs` refuses to ship Shot.tsx variants that re-introduce any of those patterns. Taste is encoded as type safety.
+
+<video
+  src="/assets/media/synthux/launch.mp4"
+  poster="/assets/img/projects/synthux-launch-poster.png"
+  controls
+  preload="metadata"
+  className="w-full rounded"
+>
+  Your browser does not support embedded video. <a href="/assets/media/synthux/launch.mp4">Download the launch reel</a>.
+</video>
+
+The 16-second vertical slice above is three shots: a luxury-product-cinema macro of the behavior-program core (cold studio rim + warm underside return), an interface-choreography workbench, and an academic-research-film push over routed expert datasets. Each is a real Blender 4.x EEVEE render — 495 frames total — assembled by Remotion without any on-frame text. The placeholder geometry is intentionally a beveled cube while per-shot meshes (etched logic core, multi-screen workbench, sorted dataset stacks) are still upcoming.
+
+{/*
+  TODO(synthux): once per-shot meshes land and there is more to show, sprinkle
+  inline GIFs through the page above. MDX supports raw <img src="...gif"/> just
+  like the <video> block above. Candidates:
+    - macro orbit GIF over the etched logic core (latent-core final geometry)
+    - quick state-transition GIF of the interface-instrument workbench
+    - sort/lock-in GIF for the expert-routing dataset stacks
+    - a generator-trace GIF showing a single episode's program tree
+      rendering into instruction -> artifacts -> trajectory -> rubric
+  Holding off until there is enough visual signal that a GIF is worth its
+  weight; one cube doing the same macro three times is not.
+*/}
