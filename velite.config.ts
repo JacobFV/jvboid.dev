@@ -73,7 +73,13 @@ const projects = defineCollection({
       // Optional square app/project icon. Used by compact project grid
       // tiles when a project has a distinct favicon/logo separate from
       // its hero or cover image.
-      icon: s.object({ src: s.string(), alt: s.string() }).optional(),
+      icon: s
+        .object({
+          src: s.string(),
+          alt: s.string(),
+          fit: s.enum(["cover", "contain"]).default("contain"),
+        })
+        .optional(),
       // Optional curated image set for active project thread previews.
       // When omitted, the homepage falls back to the first images found
       // on the project and its graph neighbors.

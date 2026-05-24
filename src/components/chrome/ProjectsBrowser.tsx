@@ -86,7 +86,7 @@ export type ProjectItem = {
   lane: Lane;
   tags: string[];
   hero?: { src: string; alt: string; fit?: "cover" | "contain" };
-  icon?: { src: string; alt: string };
+  icon?: { src: string; alt: string; fit?: "cover" | "contain" };
   video?: string;
   threadImages?: { src: string; alt: string }[];
   orbitEmbed?: string;
@@ -197,6 +197,7 @@ function IconFace({
   preferIcon?: boolean;
 }) {
   if (preferIcon && project.icon) {
+    const contain = project.icon.fit !== "cover";
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
@@ -204,11 +205,9 @@ function IconFace({
         alt=""
         loading="lazy"
         draggable={false}
-        // Icons are designed at a fixed aspect (usually 1:1) — letterbox
-        // them inside the card so the inner content never gets squished
-        // when the card slot isn't perfectly square. Hero photos below
-        // still use object-cover.
-        className="h-full w-full object-contain"
+        // Most explicit icons are logos and diagrams that should stay
+        // intact; thumbnail-derived icons can opt into cover cropping.
+        className={contain ? "h-full w-full object-contain" : "h-full w-full object-cover"}
         aria-hidden
       />
     );
