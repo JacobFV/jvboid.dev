@@ -29,11 +29,11 @@ export const variantMeta: Record<ResumeVariant, {
     summary:
       "Agent infrastructure, full-stack AI products, and the runtime glue that turns research ideas into shipped software.",
     strengths: [
-      "AI agents — runtime, tool use, schemas, evaluation",
-      "Full-stack TypeScript / Next.js / Python / FastAPI",
-      "Mobile & on-device ML; multimodal pipelines",
-      "Research synthesis & technical writing",
-      "Rapid prototyping across product, infra, and ML",
+      "AI agents", "agent runtime", "tool use", "schemas", "evals",
+      "TypeScript", "Next.js", "React", "Python", "FastAPI",
+      "iOS", "on-device LLMs", "model quantization", "multimodal pipelines",
+      "Postgres", "Redis", "Vercel", "Cloudflare", "Modal",
+      "research synthesis", "technical writing", "rapid prototyping",
     ],
     highlights: [
       "Architected production integration surfaces for mobile AI agents — agent runtime ↔ mobile clients ↔ web clients ↔ internal eval tooling — at AGI, Inc.",
@@ -47,11 +47,12 @@ export const variantMeta: Record<ResumeVariant, {
     summary:
       "Embodied intelligence, hydraulic actuation, lab automation, and the agent stack that drives physical systems.",
     strengths: [
-      "Robotics prototypes — CAD → control, hydraulic actuation",
-      "Embodied AI & multimodal world modeling",
-      "Hardware-aware ML; lab automation & procurement",
-      "Rapid prototyping (CNC, 3D-print, electronics)",
-      "Full-stack glue around physical systems (sim, UI, telemetry)",
+      "robotics", "CAD", "hydraulic actuation", "low-level control", "calibration",
+      "embodied AI", "world models", "multimodal perception", "sim-to-real",
+      "LeRobot", "SO-101", "ROS",
+      "CNC", "3D printing", "electronics", "lab automation", "procurement",
+      "Python", "PyTorch", "JAX",
+      "agent control loops", "telemetry", "rapid prototyping",
     ],
     highlights: [
       "Founded Limboid — hydraulic actuation, embodied intelligence, low-cost physical automation; ran the full prototype lineage (Computatrum → Limboid).",
