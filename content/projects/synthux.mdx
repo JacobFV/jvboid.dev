@@ -80,12 +80,13 @@ SynthUX inherits the important idea from [Node Tree](/projects/node-tree): langu
 For computer-use data, that matters because the training record can preserve relations across levels:
 
 - root task goal;
-- medium-level grammar nodes and constraints;
+- arbitrary-depth grammar nodes and constraints;
+- nested subgoals, branches, workflows, and affordance clusters;
 - terminal affordances such as `editor.replace_buffer` or `slack.post_message`;
 - low-level mouse moves, clicks, keyboard shortcuts, and per-character text input;
 - visual frames and simulator state observations caused by those inputs.
 
-This creates data where high-level task structure and low-level interaction traces are aligned without requiring full VM rollouts.
+This creates data where high-level task structure and low-level interaction traces are aligned without requiring full VM rollouts. The tree is not supposed to be a fixed root/medium/terminal stack. Some samples can be shallow, but the grammar should be able to expand into many layers whenever the task demands it.
 
 ## Execution Substrates
 
@@ -171,4 +172,6 @@ Simulator identity is metadata in the row, not a top-level directory grouping. A
 
 The current run is serious causal trajectory data, but it is still a web-workbench execution layer rather than native app-specific simulator behavior. The next quality jump is to move the workbench semantics into first-class apps inside the simulators while preserving the same row schema.
 
-The distinction matters. SynthUX now records low-level cursor and keyboard evidence, and the visible transition is caused by replayed input. But the web desktop is still hosting a dataset workbench rather than each terminal affordance being expressed through native simulator app internals. The schema is meant to survive that upgrade: the target side remains the tree, the observed side remains the trajectory, and native app semantics become a better execution substrate rather than a new dataset format.
+The distinction matters. SynthUX now records low-level cursor and keyboard evidence, and the visible transition is caused by replayed input. But the web desktop is still hosting a dataset workbench rather than each terminal affordance being expressed through native simulator app internals. That collapses the visible affordance space: a row may contain GitHub, editor, terminal, Slack, browser, Notion, and dashboard terminals, while the video still mostly shows one workbench application.
+
+That is the main gap in the current dataset. The pseudo-context-sensitive grammar exists to explode choices across application, action, target, payload, order, branch, and cross-app handoff dimensions. Future runs need app-specific low-level compilers so those choices are visible as movement across simulator applications, not just represented as labels in one workbench. The schema is meant to survive that upgrade: the target side remains the tree, the observed side remains the trajectory, and native app semantics become a better execution substrate rather than a new dataset format.
