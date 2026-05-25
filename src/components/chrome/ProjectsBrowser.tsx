@@ -109,6 +109,32 @@ const laneBg: Record<Lane, string> = {
 
 const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
 
+// Pick an at-a-glance emoji for a project tile. Walks the tags in a
+// rough specificity order (most distinctive first) and falls back to a
+// lane-level glyph, then a generic wrench. The list is intentionally
+// hand-tuned for the current project set rather than algorithmic.
+function tileEmoji(project: ProjectItem): string {
+  const tags = new Set(project.tags.map((t) => t.toLowerCase()));
+  const has = (...t: string[]) => t.some((x) => tags.has(x));
+  if (project.video || has("video", "video-diffusion", "cinematic", "documentary")) return "🎬";
+  if (has("music", "audio")) return "🎵";
+  if (has("animation", "blender")) return "🎨";
+  if (has("game")) return "🎮";
+  if (has("rocketry")) return "🚀";
+  if (has("robotics", "embodied-ai", "lunar-rover", "hardware", "lerobot")) return "🤖";
+  if (has("chemistry")) return "⚗️";
+  if (has("graphics", "ui")) return "🖼️";
+  if (has("voice-ai")) return "🎙️";
+  if (has("agents", "multi-agent")) return "🧠";
+  if (has("research", "ml", "deep-learning", "unsupervised-learning", "attention")) return "🔬";
+  if (has("school", "hamlet", "spanish")) return "🎓";
+  if (has("community")) return "🌱";
+  if (has("cli", "tooling", "python", "web", "infra", "framework", "meta")) return "💻";
+  if (project.lane === "research") return "🔬";
+  if (project.lane === "personal") return "🌱";
+  return "🔧";
+}
+
 function isView(value: unknown): value is View {
   return value === "list" || value === "grid";
 }
@@ -539,6 +565,12 @@ function TileVisual({
       </span>
       <span className="line-clamp-2 text-center text-xs leading-snug text-[var(--color-ink-dim)] group-hover:text-[var(--color-accent)]">
         {project.title}
+      </span>
+      <span className="flex items-center justify-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--color-ink-mute)] uppercase">
+        <span aria-hidden className="text-[11px] leading-none normal-case">
+          {tileEmoji(project)}
+        </span>
+        <span>{fmtYear(project.date)}</span>
       </span>
     </>
   );
