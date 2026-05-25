@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="640" viewBox="0 0 1400 640" role="img" aria-labelledby="title desc">
+  <title id="title">SynthUX causal launch flow</title>
+  <desc id="desc">A horizontal diagram showing how a low-level Playwright click on the SynthUX launcher overlay button flows through window.__synthuxLaunchApp into the simulator's existing app launch event, opening a real app whose visible state is then driven by further low-level input.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0c111b"/>
+      <stop offset="1" stop-color="#171a25"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" x2="1">
+      <stop offset="0" stop-color="#f8d27a"/>
+      <stop offset="1" stop-color="#d08b45"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" x2="1">
+      <stop offset="0" stop-color="#7bd5df"/>
+      <stop offset="1" stop-color="#8fb2ff"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" x2="1">
+      <stop offset="0" stop-color="#b09bff"/>
+      <stop offset="1" stop-color="#7d6bff"/>
+    </linearGradient>
+    <linearGradient id="sage" x1="0" x2="1">
+      <stop offset="0" stop-color="#a8d8a8"/>
+      <stop offset="1" stop-color="#6fb37c"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .h1{font:700 38px Inter,ui-sans-serif,system-ui,sans-serif;fill:#f4efe3}
+      .h2{font:700 20px Inter,ui-sans-serif,system-ui,sans-serif;fill:#e9e3d3}
+      .h3{font:600 16px Inter,ui-sans-serif,system-ui,sans-serif;fill:#d9d1bd}
+      .sub{font:500 14px Inter,ui-sans-serif,system-ui,sans-serif;fill:#9aa3b2}
+      .mono{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#9cd2d8}
+      .mono-amber{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#e7b96d}
+      .mono-violet{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#c1b3ff}
+      .mono-d{font:500 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#6c7a8a}
+      .step{font:700 12px Inter,sans-serif;fill:#fff;letter-spacing:0.1em}
+    </style>
+    <marker id="ar" markerWidth="14" markerHeight="14" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#d7aa5f"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="640" fill="url(#bg)"/>
+
+  <text x="68" y="74" class="h1">Causal launch flow</text>
+  <text x="68" y="106" class="sub">The only "write" the SynthUX bridge accepts is a launch — and that launch is itself caused by a real low-level click.</text>
+
+  <!-- Step 1: Compiler -->
+  <g transform="translate(60, 180)" filter="url(#shadow)">
+    <rect width="240" height="280" rx="20" fill="#191628" stroke="#3a3460"/>
+    <circle cx="34" cy="38" r="18" fill="url(#violet)"/>
+    <text x="34" y="44" text-anchor="middle" class="step">1</text>
+    <text x="68" y="44" class="h2">Compiler</text>
+    <text x="22" y="100" class="h3">compiler.run(driver, ...)</text>
+    <text x="22" y="124" class="sub">looks up the launcher button</text>
+    <text x="22" y="142" class="sub">for the target surface</text>
+    <rect x="22" y="172" width="196" height="84" rx="10" fill="#0e131c" stroke="#2a304a"/>
+    <text x="36" y="196" class="mono-violet">driver.click(</text>
+    <text x="36" y="216" class="mono-violet">  "#synthux-launcher</text>
+    <text x="36" y="232" class="mono-violet">   [data-launch=...]")</text>
+    <text x="36" y="248" class="mono-d">// real mouse_click event</text>
+  </g>
+
+  <!-- arrow 1->2 -->
+  <path d="M308 320 L348 320" stroke="url(#amber)" stroke-width="3" fill="none" marker-end="url(#ar)"/>
+
+  <!-- Step 2: Launcher overlay -->
+  <g transform="translate(355, 180)" filter="url(#shadow)">
+    <rect width="240" height="280" rx="20" fill="#1f1a13" stroke="#5c4326"/>
+    <circle cx="34" cy="38" r="18" fill="url(#amber)"/>
+    <text x="34" y="44" text-anchor="middle" class="step">2</text>
+    <text x="68" y="44" class="h2">Launcher</text>
+    <text x="22" y="100" class="h3">DOM overlay</text>
+    <text x="22" y="124" class="sub">installed pre-capture, visible</text>
+    <text x="22" y="142" class="sub">button per surface</text>
+    <rect x="22" y="172" width="196" height="84" rx="10" fill="#16110a" stroke="#5c4326"/>
+    <text x="36" y="196" class="mono-amber">onclick = () =&gt; {</text>
+    <text x="36" y="216" class="mono-amber">  window.__synthux</text>
+    <text x="36" y="232" class="mono-amber">    LaunchApp(appId)</text>
+    <text x="36" y="248" class="mono-amber">}</text>
+  </g>
+
+  <!-- arrow 2->3 -->
+  <path d="M603 320 L643 320" stroke="url(#amber)" stroke-width="3" fill="none" marker-end="url(#ar)"/>
+
+  <!-- Step 3: Bridge -->
+  <g transform="translate(650, 180)" filter="url(#shadow)">
+    <rect width="240" height="280" rx="20" fill="#132028" stroke="#2d4e5e"/>
+    <circle cx="34" cy="38" r="18" fill="url(#cyan)"/>
+    <text x="34" y="44" text-anchor="middle" class="step">3</text>
+    <text x="68" y="44" class="h2">Bridge</text>
+    <text x="22" y="100" class="h3">simulator bridge</text>
+    <text x="22" y="124" class="sub">only allowed write path:</text>
+    <text x="22" y="142" class="sub">delegate to OS launcher</text>
+    <rect x="22" y="172" width="196" height="84" rx="10" fill="#0f181f" stroke="#2d4e5e"/>
+    <text x="36" y="196" class="mono">eventBus.emit(</text>
+    <text x="36" y="216" class="mono">  "taskbar:</text>
+    <text x="36" y="232" class="mono">    shortcut:clicked",</text>
+    <text x="36" y="248" class="mono">  { appId })</text>
+  </g>
+
+  <!-- arrow 3->4 -->
+  <path d="M898 320 L938 320" stroke="url(#amber)" stroke-width="3" fill="none" marker-end="url(#ar)"/>
+
+  <!-- Step 4: Simulator -->
+  <g transform="translate(945, 180)" filter="url(#shadow)">
+    <rect width="240" height="280" rx="20" fill="#152018" stroke="#2e4a35"/>
+    <circle cx="34" cy="38" r="18" fill="url(#sage)"/>
+    <text x="34" y="44" text-anchor="middle" class="step">4</text>
+    <text x="68" y="44" class="h2">Simulator</text>
+    <text x="22" y="100" class="h3">real OS path opens</text>
+    <text x="22" y="124" class="sub">window manager mounts</text>
+    <text x="22" y="142" class="sub">the app's real React/Svelte</text>
+    <rect x="22" y="172" width="196" height="84" rx="10" fill="#0f1611" stroke="#2e4a35"/>
+    <text x="36" y="196" class="mono">windowManager.openApp</text>
+    <text x="36" y="216" class="mono">  (appId)</text>
+    <text x="36" y="248" class="mono-d">// identical to dock click</text>
+  </g>
+
+  <!-- arrow 4->5 -->
+  <path d="M1193 320 L1233 320" stroke="url(#amber)" stroke-width="3" fill="none" marker-end="url(#ar)"/>
+
+  <!-- Step 5: Driven app -->
+  <g transform="translate(1240, 180)" filter="url(#shadow)">
+    <rect width="120" height="280" rx="20" fill="#191628" stroke="#3a3460"/>
+    <circle cx="34" cy="38" r="18" fill="url(#violet)"/>
+    <text x="34" y="44" text-anchor="middle" class="step">5</text>
+    <text x="22" y="92" class="h3">Drive</text>
+    <text x="22" y="118" class="sub">type · click</text>
+    <text x="22" y="138" class="sub">press</text>
+    <text x="22" y="172" class="mono-violet" filter="url(#glow)">⌨</text>
+    <text x="22" y="208" class="mono-violet" filter="url(#glow)">🖱</text>
+    <text x="22" y="240" class="mono-d">low-level only</text>
+  </g>
+
+  <!-- Bottom strip: what's NOT allowed -->
+  <g transform="translate(60, 510)" filter="url(#shadow)">
+    <rect width="1300" height="92" rx="20" fill="#261518" stroke="#7a3a44"/>
+    <text x="24" y="40" class="h3" fill="#f49aae">Not allowed during capture</text>
+    <text x="24" y="62" class="mono" fill="#e1a7b0">synthux.targetAction(...) ·  direct VFS writes  ·  event-bus emits that bypass input  ·  app-state mutation as the success channel</text>
+    <text x="24" y="82" class="sub" fill="#c5a4a9">High-level commands may guide compilation; they may never be the mutation channel. The validator flags rows that violate this.</text>
+  </g>
+</svg>
