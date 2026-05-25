@@ -109,30 +109,138 @@ const laneBg: Record<Lane, string> = {
 
 const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
 
-// Pick an at-a-glance emoji for a project tile. Walks the tags in a
-// rough specificity order (most distinctive first) and falls back to a
-// lane-level glyph, then a generic wrench. The list is intentionally
-// hand-tuned for the current project set rather than algorithmic.
-function tileEmoji(project: ProjectItem): string {
+// Hand-tuned, hairline-stroke glyph per project. Walks tags in rough
+// specificity order, falls back to lane, then to a generic wrench.
+// Inline SVGs (Lucide-derived paths) so the icons inherit currentColor
+// and stay crisp at 11px without an icon-library dependency.
+type IconKey =
+  | "video"
+  | "music"
+  | "palette"
+  | "gamepad"
+  | "rocket"
+  | "bot"
+  | "flask"
+  | "image"
+  | "mic"
+  | "brain"
+  | "microscope"
+  | "cap"
+  | "sprout"
+  | "code"
+  | "wrench";
+
+function tileIconKey(project: ProjectItem): IconKey {
   const tags = new Set(project.tags.map((t) => t.toLowerCase()));
   const has = (...t: string[]) => t.some((x) => tags.has(x));
-  if (project.video || has("video", "video-diffusion", "cinematic", "documentary")) return "🎬";
-  if (has("music", "audio")) return "🎵";
-  if (has("animation", "blender")) return "🎨";
-  if (has("game")) return "🎮";
-  if (has("rocketry")) return "🚀";
-  if (has("robotics", "embodied-ai", "lunar-rover", "hardware", "lerobot")) return "🤖";
-  if (has("chemistry")) return "⚗️";
-  if (has("graphics", "ui")) return "🖼️";
-  if (has("voice-ai")) return "🎙️";
-  if (has("agents", "multi-agent")) return "🧠";
-  if (has("research", "ml", "deep-learning", "unsupervised-learning", "attention")) return "🔬";
-  if (has("school", "hamlet", "spanish")) return "🎓";
-  if (has("community")) return "🌱";
-  if (has("cli", "tooling", "python", "web", "infra", "framework", "meta")) return "💻";
-  if (project.lane === "research") return "🔬";
-  if (project.lane === "personal") return "🌱";
-  return "🔧";
+  if (project.video || has("video", "video-diffusion", "cinematic", "documentary")) return "video";
+  if (has("music", "audio")) return "music";
+  if (has("animation", "blender")) return "palette";
+  if (has("game")) return "gamepad";
+  if (has("rocketry")) return "rocket";
+  if (has("robotics", "embodied-ai", "lunar-rover", "hardware", "lerobot")) return "bot";
+  if (has("chemistry")) return "flask";
+  if (has("graphics", "ui")) return "image";
+  if (has("voice-ai")) return "mic";
+  if (has("agents", "multi-agent")) return "brain";
+  if (has("research", "ml", "deep-learning", "unsupervised-learning", "attention"))
+    return "microscope";
+  if (has("school", "hamlet", "spanish")) return "cap";
+  if (has("community")) return "sprout";
+  if (has("cli", "tooling", "python", "web", "infra", "framework", "meta")) return "code";
+  if (project.lane === "research") return "microscope";
+  if (project.lane === "personal") return "sprout";
+  return "wrench";
+}
+
+function TileIcon({ kind }: { kind: IconKey }) {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {kind === "video" && (
+        <>
+          <rect x="3" y="6" width="13" height="12" rx="2" />
+          <path d="M16 10l5-3v10l-5-3z" />
+        </>
+      )}
+      {kind === "music" && (
+        <>
+          <path d="M9 18V6l11-2v12" />
+          <circle cx="6" cy="18" r="2.5" />
+          <circle cx="17" cy="16" r="2.5" />
+        </>
+      )}
+      {kind === "palette" && (
+        <>
+          <path d="M12 3a9 9 0 100 18 2 2 0 001.5-3.3c-.6-.7-.2-1.7.7-1.7H17a4 4 0 004-4c0-5-4-9-9-9z" />
+          <circle cx="7.5" cy="10.5" r="1" />
+          <circle cx="12" cy="7.5" r="1" />
+          <circle cx="16.5" cy="10.5" r="1" />
+        </>
+      )}
+      {kind === "gamepad" && (
+        <>
+          <path d="M6 12h4M8 10v4" />
+          <circle cx="15" cy="11" r="0.8" fill="currentColor" />
+          <circle cx="17" cy="13" r="0.8" fill="currentColor" />
+          <rect x="2" y="7" width="20" height="11" rx="5.5" />
+        </>
+      )}
+      {kind === "rocket" && (
+        <path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.9.7-2.2-.1-3-.8-.8-2.1-.8-2.9 0zM12 15l-3-3m6-9c2 0 5 1 7 3-2 .7-3.5 2-4 4l-4 5-5-5 5-4c2-.5 3.3-2 4-4z" />
+      )}
+      {kind === "bot" && (
+        <>
+          <rect x="4" y="8" width="16" height="12" rx="2.5" />
+          <path d="M12 8V4M9 4h6" />
+          <circle cx="9" cy="14" r="1" fill="currentColor" />
+          <circle cx="15" cy="14" r="1" fill="currentColor" />
+          <path d="M2 13v3M22 13v3" />
+        </>
+      )}
+      {kind === "flask" && (
+        <path d="M9 3h6M10 3v6L4.5 19a2 2 0 001.8 3h11.4a2 2 0 001.8-3L14 9V3M7 15h10" />
+      )}
+      {kind === "image" && (
+        <>
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <circle cx="9" cy="10" r="1.5" />
+          <path d="M21 16l-5-5-9 9" />
+        </>
+      )}
+      {kind === "mic" && (
+        <>
+          <rect x="9" y="3" width="6" height="12" rx="3" />
+          <path d="M5 11a7 7 0 0014 0M12 18v3M8 21h8" />
+        </>
+      )}
+      {kind === "brain" && (
+        <path d="M9.5 3A3 3 0 006.5 6c-1.5.5-2.5 2-2.5 3.5 0 1 .5 2 1.2 2.7-.7.7-1.2 1.7-1.2 2.8 0 2 1.7 3.5 3.5 3.5h2A3 3 0 0012 21V3a3 3 0 00-2.5 0zm5 0A3 3 0 0117.5 6c1.5.5 2.5 2 2.5 3.5 0 1-.5 2-1.2 2.7.7.7 1.2 1.7 1.2 2.8 0 2-1.7 3.5-3.5 3.5h-2A3 3 0 0112 21" />
+      )}
+      {kind === "microscope" && (
+        <path d="M6 21h12M7 21l1-4h5l1 4M9 11l3-1 1-3-3-2-3 3 2 3zm5 0a4 4 0 014 4M10 17a6 6 0 008-5.7" />
+      )}
+      {kind === "cap" && (
+        <path d="M2 9l10-4 10 4-10 4L2 9zm4 2v5c0 1.5 3 3 6 3s6-1.5 6-3v-5m2-1v5" />
+      )}
+      {kind === "sprout" && (
+        <path d="M12 21v-9M12 12c0-3 2-6 6-6 0 3-2 6-6 6zM12 13c0-2-1.5-4-4-4 0 2 1.5 4 4 4z" />
+      )}
+      {kind === "code" && <path d="M16 7l5 5-5 5M8 17l-5-5 5-5M14 5l-4 14" />}
+      {kind === "wrench" && (
+        <path d="M14.7 6.3a4 4 0 015.5 5.5l-3-3-2.5 2.5 3 3a4 4 0 01-5.5-5.5l-7 7a2 2 0 102.8 2.8l7-7" />
+      )}
+    </svg>
+  );
 }
 
 function isView(value: unknown): value is View {
@@ -563,14 +671,14 @@ function TileVisual({
       >
         <IconFace project={project} preferIcon preferThread />
       </span>
-      <span className="line-clamp-2 text-center text-xs leading-snug text-[var(--color-ink-dim)] group-hover:text-[var(--color-accent)]">
-        {project.title}
-      </span>
-      <span className="flex items-center justify-center gap-1.5 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--color-ink-mute)] uppercase">
-        <span aria-hidden className="text-[11px] leading-none normal-case">
-          {tileEmoji(project)}
+      <span className="flex flex-col items-center gap-0.5">
+        <span className="line-clamp-2 text-center text-xs leading-snug text-[var(--color-ink-dim)] group-hover:text-[var(--color-accent)]">
+          {project.title}
         </span>
-        <span>{fmtYear(project.date)}</span>
+        <span className="flex items-center justify-center gap-1 font-[family-name:var(--font-mono)] text-[10px] leading-none tracking-wider text-[var(--color-ink-mute)] uppercase">
+          <TileIcon kind={tileIconKey(project)} />
+          <span>{fmtYear(project.date)}</span>
+        </span>
       </span>
     </>
   );
