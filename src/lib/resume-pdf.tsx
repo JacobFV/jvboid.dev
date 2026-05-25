@@ -46,17 +46,24 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
 
-  highlightItem: { marginBottom: 3, paddingLeft: 9, fontSize: 9, color: colors.inkDim },
+  highlightItem: {
+    position: "relative",
+    marginBottom: 3,
+    paddingLeft: 10,
+    fontSize: 9,
+    color: colors.inkDim,
+  },
   highlightBullet: {
     position: "absolute",
     left: 0,
-    top: 4,
+    top: 5,
     width: 3,
     height: 3,
+    borderRadius: 1.5,
     backgroundColor: colors.accent,
   },
 
-  strengthsRow: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
+  strengthsRow: { flexDirection: "row", flexWrap: "wrap" },
   strengthChip: {
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -64,12 +71,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f1ec",
     color: colors.inkDim,
     fontSize: 8.5,
-    marginRight: 3,
-    marginBottom: 3,
+    marginRight: 4,
+    marginBottom: 4,
   },
 
   expRow: { flexDirection: "row", marginBottom: 8 },
-  expDate: { width: 78, fontSize: 8.5, color: colors.inkMute },
+  expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
   expBody: { flex: 1 },
   expTitle: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
