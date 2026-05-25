@@ -184,7 +184,7 @@ export default async function ResumePage({
           {experience.map((n) => {
             const Wrap = n.href ? Link : "div";
             return (
-              <li key={`${n.org}-${n.title}`} className="grid grid-cols-[120px_1fr] gap-4">
+              <li key={`${n.org}-${n.title}`} className="grid grid-cols-[160px_1fr] gap-4">
                 <div className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
                   {n.range}
                 </div>

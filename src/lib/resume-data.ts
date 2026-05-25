@@ -15,7 +15,7 @@ export const contact = {
   website: "jacobfv.com",
   github: "github.com/JacobFV",
   twitter: "@jvboid",
-  location: "Dallas–Fort Worth, TX",
+  location: "San Francisco, CA",
 };
 
 export const variantMeta: Record<ResumeVariant, {
@@ -92,34 +92,51 @@ export const experience: {
     title: "API / Integration Architect",
     org: "AGI, Inc.",
     href: "https://agi.app",
-    range: "2024",
+    range: "Jan 2026 – Apr 2026",
     summary:
-      "Owned the contract between agent runtime, mobile clients, web clients, and internal eval tools. Led schema + integration work through fast product pivots.",
-    tags: ["agents", "mobile", "schemas"],
+      "Owned the integration surface across API, SDKs, and partner-facing edges — iOS, on-device LLMs, model quantization, agent control plane. Led schema + integration work through fast product pivots.",
+    tags: ["agents", "ios", "on-device", "schemas"],
   },
   {
-    title: "Engineer",
+    title: "Software Engineer",
+    org: "AGI, Inc.",
+    href: "https://agi.app",
+    range: "Oct 2025 – Jan 2026",
+    summary:
+      "Infrastructure for AGI — agent runtime, mobile glue, eval tooling. Promoted into the integration architect role.",
+    tags: ["agents", "infra", "mobile"],
+  },
+  {
+    title: "Software Engineer",
     org: "Breezy",
-    range: "2023",
+    range: "Apr 2025 – Oct 2025",
     summary:
       "Voice-AI automation product — agent workflows, conversational interfaces, integration plumbing.",
     tags: ["voice-ai", "agents"],
   },
   {
-    title: "ML Engineer",
+    title: "Applied ML Engineer (Intern)",
     org: "Deepshard",
-    range: "2022 – 2023",
+    range: "Sep 2024 – Dec 2024",
     summary:
-      "Distributed training, large-model experimentation, multi-agent research and tooling.",
-    tags: ["ml", "distributed", "research"],
+      "The Truffle computer — large-model experimentation, multi-agent research, on-device inference tooling.",
+    tags: ["ml", "on-device", "research"],
   },
   {
-    title: "Engineer",
-    org: "Motio",
-    range: "2022",
+    title: "Full-Stack Pipeline Engineer",
+    org: "FLORA",
+    range: "Jun 2024",
     summary:
-      "Full-stack engineering across product surfaces — APIs, web clients, integrations.",
-    tags: ["full-stack", "product"],
+      "Generative-AI creative pipeline — TypeScript, Python, Modal, fal.ai, ComfyUI, diffusion models, serverless Next.js front end.",
+    tags: ["generative-ai", "diffusion", "full-stack"],
+  },
+  {
+    title: "Software Engineer",
+    org: "Motio",
+    range: "Jun 2022 – Jan 2023",
+    summary:
+      "Built Soterre for Qlik Sense — full-stack engineering across product surfaces in Java/Hibernate. Started as an intern; converted to full-time in August.",
+    tags: ["full-stack", "java", "product"],
   },
   {
     title: "Research Assistant",
@@ -133,10 +150,18 @@ export const experience: {
     title: "B.S., Computer Science",
     org: "The University of Texas at Arlington",
     href: "https://uta.edu",
-    range: "2018 – 2022",
+    range: "2020 – 2022",
     summary:
-      "CS coursework alongside heavy lab work, independent ML/robotics prototypes, and a steady research output.",
+      "CS coursework alongside heavy lab work, independent ML/robotics prototypes, and a steady research output. GPA 3.6/4.0.",
     tags: ["education", "cs"],
+  },
+  {
+    title: "A.A.S., Mathematics",
+    org: "Navarro College",
+    range: "2016 – 2018",
+    summary:
+      "Math associate degree taken dual-credit during high school. GPA 3.9/4.0.",
+    tags: ["education", "math"],
   },
 ];
 
