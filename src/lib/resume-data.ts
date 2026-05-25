@@ -11,8 +11,8 @@ export type ResumeVariant = "software" | "robotics";
 export const contact = {
   name: "Jacob Valdez",
   email: "jacob@humanrobots.ai",
-  phone: "+1 (972) 460-6353",
-  website: "jacobfv.com",
+  phone: "+1 (469) 968-9490",
+  website: "jvboid.dev",
   github: "github.com/JacobFV",
   twitter: "@jvboid",
   location: "San Francisco, CA",
@@ -36,7 +36,7 @@ export const variantMeta: Record<ResumeVariant, {
       "research synthesis", "technical writing", "rapid prototyping",
     ],
     highlights: [
-      "Architected production integration surfaces for mobile AI agents — agent runtime ↔ mobile clients ↔ web clients ↔ internal eval tooling — at AGI, Inc.",
+      "Architected production integration surfaces for mobile and web clients at AGI, Inc.",
       "Building VibeStartup, an end-to-end platform for spinning up startups (planning, code, infra, growth) on top of agent workflows.",
       "Founded Limboid — a long-horizon robotics company; ship the software side end to end (control, sim, agent stack, dashboards).",
       "Authored a wide technical archive (ML systems, agents, multi-agent networks, consciousness, dev platforms) backing each project.",
@@ -55,7 +55,7 @@ export const variantMeta: Record<ResumeVariant, {
       "agent control loops", "telemetry", "rapid prototyping",
     ],
     highlights: [
-      "Founded Limboid — hydraulic actuation, embodied intelligence, low-cost physical automation; ran the full prototype lineage (Computatrum → Limboid).",
+      "Founded Limboid — hydraulic actuation and embodied intelligence; ran the full prototype lineage (Computatrum → Limboid).",
       "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
       "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
       "AGI, Inc. integration architect — same agent-runtime skills feed directly into robot agent control loops.",
@@ -71,24 +71,6 @@ export const experience: {
   summary: string;
   tags: string[];
 }[] = [
-  {
-    title: "Founder",
-    org: "VibeStartup",
-    href: "https://vibestartup.pro",
-    range: "2025 – present",
-    summary:
-      "End-to-end platform for building startups on top of agent workflows. Notion-native, OAuth + Stripe billing, Cloudflare/Vercel deploys.",
-    tags: ["agents", "startups", "platform"],
-  },
-  {
-    title: "Founder",
-    org: "Limboid",
-    href: "/projects/limboid",
-    range: "2019 – present",
-    summary:
-      "Long-horizon robotics company. Hydraulic actuation, embodied intelligence, on-demand physical automation. Computatrum → Limboid prototype lineage.",
-    tags: ["robotics", "hardware", "founder"],
-  },
   {
     title: "API / Integration Architect",
     org: "AGI, Inc.",
