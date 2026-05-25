@@ -90,15 +90,33 @@ This creates data where high-level task structure and low-level interaction trac
 
 ## Execution Substrates
 
-SynthUX currently targets lightweight web desktop simulators:
+SynthUX targets three lightweight web desktop simulators, each with its own SynthUX bridge:
 
-- [`windows-web-next`](/projects/windows-web-next)
-- [`macos-web-next`](/projects/macos-web-next)
-- [`browser-os`](/projects/browser-os)
+- [`browser-os`](/projects/browser-os) — generic browser-native desktop shell.
+- [`windows-web-next`](/projects/windows-web-next) — Windows 11 simulation in Svelte.
+- [`macos-web-next`](/projects/macos-web-next) — macOS desktop simulation in Svelte.
 
-The simulator bridge is observation-only during capture. Visible state changes have to be caused by Playwright mouse and keyboard replay. The current implementation drives a visible dataset workbench inside the web desktop, captures dense cursor/input frames, records key observations, and writes alignment back to terminal `node_id`s.
+The simulator bridge is observation-only during capture with one specific exception: a `synthux-launch` / `window.__synthuxLaunchApp` shim that is invoked **only** by a real low-level click on the SynthUX launcher overlay button. Clicking the launcher button routes through the simulator's normal app launch event (`taskbar:shortcut:clicked` / `wm.openApp` / `windowManager.openApp`), so visible state changes still flow from real DOM events, not from a high-level mutation command.
 
-That bridge constraint is important. Earlier versions could mutate simulator state through high-level commands, which produced plausible-looking state transitions without enough low-level evidence. The current direction cuts that out: high-level grammar leaves may guide input compilation, but they are not allowed to be the mutation channel during capture.
+That constraint is what keeps the dataset honest. Earlier versions could mutate simulator state through `synthux.targetAction`-style high-level commands, which produced plausible-looking state transitions without enough low-level evidence. The current direction cuts that out: high-level grammar leaves may guide input compilation, but they are not allowed to be the mutation channel during capture.
+
+## Per-(env, surface) Compiler Dispatch
+
+Each terminal affordance node is handled by an env-specific compiler. The full registry is 21 compilers — 7 surfaces × 3 simulators — defined in `src/synthux/_compilers/` and registered at import time:
+
+| Surface   | browser-os         | windows-web-next | macos-web-next |
+|-----------|--------------------|------------------|----------------|
+| github    | browser            | edge             | safari         |
+| browser   | browser            | edge             | safari         |
+| dashboard | browser (Grafana)  | edge             | safari         |
+| editor    | notepad            | vscode           | vscode         |
+| terminal  | terminal           | terminal         | terminal       |
+| notion    | notes              | wordpad          | notes          |
+| slack     | messaging-client   | mail             | messages       |
+
+Each compiler walks the live page through an `ExecutionDriver` (click, type, press, wait) instead of pre-computing coordinates. The driver re-reads the DOM before each click, so launcher clicks land on real launcher buttons and post-launch selectors target the just-opened app's controls. When a compiler's selector misses the live DOM (app didn't render, layout shifted), the executor falls back to a workbench overlay and tags the observation with `state.used_fallback=true` so the validator (`synthux validate`) can flag rows that did not exercise the native simulator surface.
+
+The result: a tree containing GitHub, editor, terminal, Slack, browser, Notion, and dashboard terminals produces visible movement across the corresponding native apps in each simulator, not just rows appended to a generic workbench.
 
 ## Dataset Shape
 
@@ -139,15 +157,15 @@ The alignment table links simulator observations and input-event ranges back to 
 
 ## Current Dataset
 
-The first full run of the corrected schema contains:
+The first multi-simulator, app-native run contains:
 
 - 9 trajectory rows;
-- 3 domains: software engineering, ops, and research;
-- 3 simulators: `browser-os`, `windows-web-next`, and `macos-web-next`;
-- 126 simulator observations;
-- 17,781 low-level input frames;
-- 18 replay videos;
-- 12,993 single-character text input events.
+- 3 domains: software engineering, ops, and research (1 episode per domain × 3 envs);
+- 3 simulators driven natively: `browser-os`, `windows-web-next`, and `macos-web-next`;
+- 111 simulator observations, of which **90 (81.1%) are app-native** and 21 fell back to the workbench overlay;
+- 1,949 low-level input frames + 111 application-state keyframe screenshots;
+- 9 replay videos (mp4);
+- 0 validator errors, 0 warnings under `synthux validate`.
 
 It is published as a Hugging Face dataset:
 
@@ -168,10 +186,11 @@ data.jsonl
 
 Simulator identity is metadata in the row, not a top-level directory grouping. Asset refs are relative blob references, so a trajectory viewer can resolve screenshots and videos directly from the dataset root.
 
-## Current Limitation
+## Remaining Limitations
 
-The current run is serious causal trajectory data, but it is still a web-workbench execution layer rather than native app-specific simulator behavior. The next quality jump is to move the workbench semantics into first-class apps inside the simulators while preserving the same row schema.
+The single-workbench visual-collapse failure mode is closed architecturally — `synthux validate` flags any row that fell back to the workbench overlay for all observations, and the build summary now publishes an `app_native_ratio` per dataset. Two known gaps remain:
 
-The distinction matters. SynthUX now records low-level cursor and keyboard evidence, and the visible transition is caused by replayed input. But the web desktop is still hosting a dataset workbench rather than each terminal affordance being expressed through native simulator app internals. That collapses the visible affordance space: a row may contain GitHub, editor, terminal, Slack, browser, Notion, and dashboard terminals, while the video still mostly shows one workbench application.
+- The ~19% of observations that still fall back are concentrated in browser-os Slack and Notes. The messaging-client app needs a pre-existing conversation before its message input appears, and the Notes app's "New Note" affordance is fragile to layout shifts. Adding stable test ids to those two apps would push browser-os to 100% app-native and is the highest-leverage simulator-side change left.
+- The dataset published here is intentionally modest (9 rows) to bound disk and iteration time during the architectural upgrade. With frame-capture throttling in place, larger length-multiplied runs are now safe.
 
-That is the main gap in the current dataset. The pseudo-context-sensitive grammar exists to explode choices across application, action, target, payload, order, branch, and cross-app handoff dimensions. Future runs need app-specific low-level compilers so those choices are visible as movement across simulator applications, not just represented as labels in one workbench. The schema is meant to survive that upgrade: the target side remains the tree, the observed side remains the trajectory, and native app semantics become a better execution substrate rather than a new dataset format.
+The schema survives both improvements: the target side remains the tree, the observed side remains the trajectory, and the per-(env, surface) compiler dispatch is the substrate that gets richer over time. The 2026-05-24 upgrade replaced the single-workbench codepath; the next upgrades are pure compiler/selector work and per-app shim polish inside the simulators.
