@@ -158,21 +158,14 @@ export default async function ResumePage({
         </ul>
       </section>
 
-      {/* Strengths ------------------------------------------------------- */}
+      {/* Skills ---------------------------------------------------------- */}
       <section className="mb-12">
         <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Strengths
+          Skills
         </h2>
-        <div className="flex flex-wrap gap-2">
-          {meta.strengths.map((s) => (
-            <span
-              key={s}
-              className="rounded-full border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] px-3 py-1.5 text-xs text-[var(--color-ink-dim)]"
-            >
-              {s}
-            </span>
-          ))}
-        </div>
+        <p className="text-sm leading-relaxed text-[var(--color-ink-dim)]">
+          {meta.strengths.join(", ")}
+        </p>
       </section>
 
       {/* Experience ------------------------------------------------------ */}

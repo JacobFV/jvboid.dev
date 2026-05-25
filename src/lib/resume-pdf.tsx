@@ -70,17 +70,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
 
-  strengthsRow: { flexDirection: "row", flexWrap: "wrap" },
-  strengthChip: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    backgroundColor: "#f3f1ec",
-    color: colors.inkDim,
-    fontSize: 8.5,
-    marginRight: 4,
-    marginBottom: 4,
-  },
+  skillsLine: { fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
 
   expRow: { flexDirection: "row", marginBottom: 8 },
   expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
@@ -212,12 +202,8 @@ export function ResumeDocument({
           ))}
         </View>
 
-        <Text style={styles.sectionLabel}>Strengths</Text>
-        <View style={styles.strengthsRow}>
-          {meta.strengths.map((s) => (
-            <Text key={s} style={styles.strengthChip}>{s}</Text>
-          ))}
-        </View>
+        <Text style={styles.sectionLabel}>Skills</Text>
+        <Text style={styles.skillsLine}>{meta.strengths.join(", ")}</Text>
 
         <Text style={styles.sectionLabel}>Experience</Text>
         <View>
