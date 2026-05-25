@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">SynthUX per-(env, surface) compiler dispatch</title>
+  <desc id="desc">A diagram showing a generated tree expansion, terminal affordance leaves, a 7-surface compiler registry dispatching to three simulators (browser-os, windows-web-next, macos-web-next), an ExecutionDriver that re-reads the live DOM, and the recorded trajectory of input events, frames, observations, and videos.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0c111b"/>
+      <stop offset="0.5" stop-color="#11161f"/>
+      <stop offset="1" stop-color="#1a1410"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" x2="1">
+      <stop offset="0" stop-color="#f8d27a"/>
+      <stop offset="1" stop-color="#d08b45"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" x2="1">
+      <stop offset="0" stop-color="#7bd5df"/>
+      <stop offset="1" stop-color="#8fb2ff"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" x2="1">
+      <stop offset="0" stop-color="#b09bff"/>
+      <stop offset="1" stop-color="#7d6bff"/>
+    </linearGradient>
+    <linearGradient id="rose" x1="0" x2="1">
+      <stop offset="0" stop-color="#f49aae"/>
+      <stop offset="1" stop-color="#c46b7e"/>
+    </linearGradient>
+    <linearGradient id="sage" x1="0" x2="1">
+      <stop offset="0" stop-color="#a8d8a8"/>
+      <stop offset="1" stop-color="#6fb37c"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .h1{font:700 38px Inter,ui-sans-serif,system-ui,sans-serif;fill:#f4efe3}
+      .h2{font:600 22px Inter,ui-sans-serif,system-ui,sans-serif;fill:#e9e3d3}
+      .h3{font:600 18px Inter,ui-sans-serif,system-ui,sans-serif;fill:#d9d1bd}
+      .sub{font:500 14px Inter,ui-sans-serif,system-ui,sans-serif;fill:#9aa3b2}
+      .mono{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#9cd2d8}
+      .mono-d{font:500 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#6c7a8a}
+      .box{fill:#161c28;stroke:#2c3548;stroke-width:1.5}
+      .box-amber{fill:#1f1a13;stroke:#5c4326;stroke-width:1.5}
+      .box-cyan{fill:#132028;stroke:#2d4e5e;stroke-width:1.5}
+      .box-violet{fill:#191628;stroke:#3a3460;stroke-width:1.5}
+      .box-sage{fill:#152018;stroke:#2e4a35;stroke-width:1.5}
+      .flow{fill:none;stroke:#6e7a8c;stroke-width:2.5;stroke-linecap:round;opacity:.85}
+      .flow-amber{fill:none;stroke:#d7aa5f;stroke-width:2.5;stroke-linecap:round;opacity:.9}
+      .flow-cyan{fill:none;stroke:#7bd5df;stroke-width:2.5;stroke-linecap:round;opacity:.9}
+      .dash{fill:none;stroke:#3f4858;stroke-width:1.5;stroke-dasharray:6 6;opacity:.7}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#8d97a6"/>
+    </marker>
+    <marker id="arrow-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#d7aa5f"/>
+    </marker>
+    <marker id="arrow-cyan" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#7bd5df"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="820" fill="url(#bg)"/>
+  <path d="M60 740 C300 660 500 760 780 660 C1060 560 1200 660 1340 580" class="dash"/>
+
+  <text x="68" y="74" class="h1">SynthUX</text>
+  <text x="68" y="106" class="sub">grammar tree → per-(env, surface) compiler → live simulator → recorded trajectory</text>
+
+  <!-- 1. Tree expansion (left) -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="170" width="320" height="430" rx="20" class="box-amber"/>
+    <text x="92" y="216" class="h2">Concrete grammar tree</text>
+    <text x="92" y="244" class="sub">arbitrary depth · single source of truth</text>
+
+    <!-- Tree visualization -->
+    <g transform="translate(220, 320)">
+      <!-- root -->
+      <circle cx="0" cy="0" r="14" fill="url(#amber)" filter="url(#glow)"/>
+      <text x="22" y="5" class="mono-d">root goal</text>
+      <!-- level 2 -->
+      <line x1="0" y1="14" x2="-70" y2="60" stroke="#5c4326" stroke-width="2"/>
+      <line x1="0" y1="14" x2="0"   y2="60" stroke="#5c4326" stroke-width="2"/>
+      <line x1="0" y1="14" x2="70"  y2="60" stroke="#5c4326" stroke-width="2"/>
+      <circle cx="-70" cy="74" r="10" fill="#cf9358"/>
+      <circle cx="0"   cy="74" r="10" fill="#cf9358"/>
+      <circle cx="70"  cy="74" r="10" fill="#cf9358"/>
+      <!-- level 3 / leaves -->
+      <line x1="-70" y1="84" x2="-110" y2="130" stroke="#3a4255" stroke-width="2"/>
+      <line x1="-70" y1="84" x2="-40"  y2="130" stroke="#3a4255" stroke-width="2"/>
+      <line x1="0"   y1="84" x2="20"   y2="130" stroke="#3a4255" stroke-width="2"/>
+      <line x1="70"  y1="84" x2="60"   y2="130" stroke="#3a4255" stroke-width="2"/>
+      <line x1="70"  y1="84" x2="110"  y2="130" stroke="#3a4255" stroke-width="2"/>
+      <!-- terminals -->
+      <rect x="-128" y="128" width="36" height="20" rx="6" fill="url(#cyan)"/>
+      <rect x="-58"  y="128" width="36" height="20" rx="6" fill="url(#cyan)"/>
+      <rect x="2"    y="128" width="36" height="20" rx="6" fill="url(#cyan)"/>
+      <rect x="42"   y="128" width="36" height="20" rx="6" fill="url(#cyan)"/>
+      <rect x="92"   y="128" width="36" height="20" rx="6" fill="url(#cyan)"/>
+    </g>
+
+    <text x="92" y="510" class="h3">terminal affordance leaves</text>
+    <text x="92" y="534" class="mono">{surface, action, target, args}</text>
+    <text x="92" y="560" class="mono-d">editor.replace_buffer  ·  slack.post_message</text>
+    <text x="92" y="578" class="mono-d">terminal.run_command   ·  browser.search</text>
+  </g>
+
+  <!-- arrow 1->2 -->
+  <path d="M384 380 L460 380" class="flow-amber" marker-end="url(#arrow-amber)"/>
+
+  <!-- 2. Compiler dispatch -->
+  <g filter="url(#shadow)">
+    <rect x="465" y="170" width="450" height="430" rx="20" class="box-violet"/>
+    <text x="497" y="216" class="h2">Compiler registry</text>
+    <text x="497" y="244" class="sub">21 entries · keyed by (env, surface)</text>
+
+    <!-- Surface chips -->
+    <g transform="translate(497, 268)">
+      <g>
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">terminal</text>
+      </g>
+      <g transform="translate(100,0)">
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">editor</text>
+      </g>
+      <g transform="translate(200,0)">
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">notion</text>
+      </g>
+      <g transform="translate(300,0)">
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">slack</text>
+      </g>
+      <g transform="translate(0,34)">
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">browser</text>
+      </g>
+      <g transform="translate(100,34)">
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">github</text>
+      </g>
+      <g transform="translate(200,34)">
+        <rect width="92" height="26" rx="13" fill="#2a2438" stroke="#4d4470"/>
+        <text x="46" y="18" text-anchor="middle" class="mono" fill="#cbbfff">dashboard</text>
+      </g>
+    </g>
+
+    <text x="497" y="370" class="h3">ExecutionDriver</text>
+    <text x="497" y="394" class="sub">re-reads live DOM before every click</text>
+    <rect x="497" y="406" width="386" height="138" rx="12" fill="#10131c" stroke="#2a304a"/>
+    <text x="515" y="432" class="mono">driver.click(launcher[surface])</text>
+    <text x="515" y="456" class="mono">driver.click(app input selector)</text>
+    <text x="515" y="480" class="mono">driver.type_text(payload)</text>
+    <text x="515" y="504" class="mono">driver.press(key)</text>
+    <text x="515" y="528" class="mono-d">// captures frame after each event</text>
+
+    <text x="497" y="572" class="sub">on selector miss → FallbackWorkbenchCompiler</text>
+    <text x="497" y="590" class="mono-d">state.used_fallback = true · flagged by validator</text>
+  </g>
+
+  <!-- arrow 2->3 -->
+  <path d="M919 380 L990 380" class="flow-cyan" marker-end="url(#arrow-cyan)"/>
+
+  <!-- 3. Live simulators -->
+  <g filter="url(#shadow)">
+    <rect x="995" y="170" width="345" height="280" rx="20" class="box-cyan"/>
+    <text x="1027" y="216" class="h2">Live simulators</text>
+    <text x="1027" y="244" class="sub">Playwright drives real apps via low-level input</text>
+
+    <g transform="translate(1027, 268)">
+      <rect width="280" height="44" rx="10" fill="#11212b" stroke="#2d4e5e"/>
+      <circle cx="22" cy="22" r="8" fill="url(#cyan)"/>
+      <text x="42" y="26" class="h3">browser-os</text>
+      <text x="42" y="42" class="mono-d">React · terminal · notepad · notes · browser</text>
+    </g>
+    <g transform="translate(1027, 322)">
+      <rect width="280" height="44" rx="10" fill="#11212b" stroke="#2d4e5e"/>
+      <circle cx="22" cy="22" r="8" fill="url(#cyan)"/>
+      <text x="42" y="26" class="h3">windows-web-next</text>
+      <text x="42" y="42" class="mono-d">Svelte · vscode · terminal · edge · mail</text>
+    </g>
+    <g transform="translate(1027, 376)">
+      <rect width="280" height="44" rx="10" fill="#11212b" stroke="#2d4e5e"/>
+      <circle cx="22" cy="22" r="8" fill="url(#cyan)"/>
+      <text x="42" y="26" class="h3">macos-web-next</text>
+      <text x="42" y="42" class="mono-d">Svelte · vscode · terminal · safari · notes</text>
+    </g>
+  </g>
+
+  <!-- 4. Recorded trajectory -->
+  <g filter="url(#shadow)">
+    <rect x="995" y="465" width="345" height="135" rx="20" class="box-sage"/>
+    <text x="1027" y="510" class="h2">Recorded trajectory</text>
+    <text x="1027" y="534" class="mono">input_events · frames · keyframes</text>
+    <text x="1027" y="556" class="mono">observations · alignment · video</text>
+    <text x="1027" y="582" class="mono-d">state.causal = true</text>
+  </g>
+
+  <!-- 3->4 arrow -->
+  <path d="M1167 450 L1167 460" class="flow" marker-end="url(#arrow)"/>
+
+  <!-- Bottom strip: dataset stats -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="650" width="1280" height="120" rx="20" class="box"/>
+    <text x="92" y="690" class="h2">Current dataset</text>
+    <g transform="translate(92, 712)">
+      <text class="mono" x="0"   y="20">9 trajectories</text>
+      <text class="mono" x="180" y="20">111 observations</text>
+      <text class="mono" x="380" y="20">90 app-native (81.1%)</text>
+      <text class="mono" x="620" y="20">1949 input frames · 9 videos</text>
+      <text class="mono" x="940" y="20">0 validator errors</text>
+    </g>
+    <text x="92" y="754" class="mono-d">jacob-valdez/synthux-visual-tree · 3 simulators × 3 domains</text>
+  </g>
+</svg>

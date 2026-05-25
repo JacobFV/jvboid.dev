@@ -6,10 +6,16 @@ status: active
 tags: [synthetic-data, computer-use, agents, fine-tuning, node-tree, datasets]
 summary: "A low-compute synthetic visual computer-use dataset generator: goals expand into concrete Node Tree-style grammar trees, terminal affordances are replayed as low-level mouse and keyboard input in browser desktop simulators, and the resulting trajectories are recorded as frames, observations, videos, and alignment metadata."
 hero:
-  src: "/assets/img/projects/synthux-pipeline.svg"
-  alt: "SynthUX behavior generation pipeline"
+  src: "/assets/img/projects/synthux-architecture.svg"
+  alt: "SynthUX per-(env, surface) compiler dispatch: tree expansion drives native simulator apps via low-level input"
   fit: contain
 threadImages:
+  - src: "/assets/img/projects/synthux-architecture.svg"
+    alt: "SynthUX per-(env, surface) compiler dispatch architecture"
+  - src: "/assets/img/projects/synthux-surface-matrix.svg"
+    alt: "Surface-to-app matrix across browser-os, windows-web-next, and macos-web-next"
+  - src: "/assets/img/projects/synthux-causal-flow.svg"
+    alt: "Causal launch flow: low-level click routes through the simulator's normal app open path"
   - src: "/assets/img/projects/synthux-pipeline.svg"
     alt: "SynthUX behavior generation pipeline"
 links:
@@ -30,22 +36,19 @@ goal -> concrete Node Tree-style grammar expansion -> terminal affordance leaves
 
 The point is to generate grounded computer-use data without full virtual machines and without asking a huge model to invent every action from a flat prompt.
 
-![SynthUX behavior generation pipeline](/assets/img/projects/synthux-pipeline.svg)
+![SynthUX per-(env, surface) compiler dispatch](/assets/img/projects/synthux-architecture.svg)
 
 <video
   controls
   preload="metadata"
+  poster="/assets/img/projects/synthux-architecture.svg"
   className="w-full rounded"
 >
   <source
-    src="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-dadb4cebae--97631595/videos/replay.webm"
-    type="video/webm"
-  />
-  <source
-    src="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-dadb4cebae--97631595/videos/replay.mp4"
+    src="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-afc0e8e0b9--97631595/videos/replay.mp4"
     type="video/mp4"
   />
-  Your browser does not support embedded video. <a href="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-dadb4cebae--97631595/videos/replay.mp4">Open the replay video</a>.
+  Your browser does not support embedded video. <a href="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-afc0e8e0b9--97631595/videos/replay.mp4">Open the replay video</a>.
 </video>
 
 ## What It Generates
@@ -100,19 +103,13 @@ The simulator bridge is observation-only during capture with one specific except
 
 That constraint is what keeps the dataset honest. Earlier versions could mutate simulator state through `synthux.targetAction`-style high-level commands, which produced plausible-looking state transitions without enough low-level evidence. The current direction cuts that out: high-level grammar leaves may guide input compilation, but they are not allowed to be the mutation channel during capture.
 
+![Causal launch flow: low-level click → launcher overlay → bridge → real OS app open → low-level drive](/assets/img/projects/synthux-causal-flow.svg)
+
 ## Per-(env, surface) Compiler Dispatch
 
-Each terminal affordance node is handled by an env-specific compiler. The full registry is 21 compilers — 7 surfaces × 3 simulators — defined in `src/synthux/_compilers/` and registered at import time:
+Each terminal affordance node is handled by an env-specific compiler. The full registry is 21 compilers — 7 surfaces × 3 simulators — defined in `src/synthux/_compilers/` and registered at import time.
 
-| Surface   | browser-os         | windows-web-next | macos-web-next |
-|-----------|--------------------|------------------|----------------|
-| github    | browser            | edge             | safari         |
-| browser   | browser            | edge             | safari         |
-| dashboard | browser (Grafana)  | edge             | safari         |
-| editor    | notepad            | vscode           | vscode         |
-| terminal  | terminal           | terminal         | terminal       |
-| notion    | notes              | wordpad          | notes          |
-| slack     | messaging-client   | mail             | messages       |
+![Surface-to-app matrix across browser-os, windows-web-next, and macos-web-next](/assets/img/projects/synthux-surface-matrix.svg)
 
 Each compiler walks the live page through an `ExecutionDriver` (click, type, press, wait) instead of pre-computing coordinates. The driver re-reads the DOM before each click, so launcher clicks land on real launcher buttons and post-launch selectors target the just-opened app's controls. When a compiler's selector misses the live DOM (app didn't render, layout shifted), the executor falls back to a workbench overlay and tags the observation with `state.used_fallback=true` so the validator (`synthux validate`) can flag rows that did not exercise the native simulator surface.
 
@@ -186,11 +183,3 @@ data.jsonl
 
 Simulator identity is metadata in the row, not a top-level directory grouping. Asset refs are relative blob references, so a trajectory viewer can resolve screenshots and videos directly from the dataset root.
 
-## Remaining Limitations
-
-The single-workbench visual-collapse failure mode is closed architecturally — `synthux validate` flags any row that fell back to the workbench overlay for all observations, and the build summary now publishes an `app_native_ratio` per dataset. Two known gaps remain:
-
-- The ~19% of observations that still fall back are concentrated in browser-os Slack and Notes. The messaging-client app needs a pre-existing conversation before its message input appears, and the Notes app's "New Note" affordance is fragile to layout shifts. Adding stable test ids to those two apps would push browser-os to 100% app-native and is the highest-leverage simulator-side change left.
-- The dataset published here is intentionally modest (9 rows) to bound disk and iteration time during the architectural upgrade. With frame-capture throttling in place, larger length-multiplied runs are now safe.
-
-The schema survives both improvements: the target side remains the tree, the observed side remains the trajectory, and the per-(env, surface) compiler dispatch is the substrate that gets richer over time. The 2026-05-24 upgrade replaced the single-workbench codepath; the next upgrades are pure compiler/selector work and per-app shim polish inside the simulators.
