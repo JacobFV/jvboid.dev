@@ -1,0 +1,37 @@
+---
+title: ESP32-S3 USB Webcam
+date: 2026-05-25
+lane: building
+status: shipped
+tags: [hardware, esp32, usb, camera, embedded]
+summary: "Firmware that makes a Seeed XIAO ESP32S3 Sense enumerate as a real USB Video Class webcam, with Linux seeing it as a normal /dev/video camera."
+hero:
+  src: "/assets/img/projects/esp32-usb-webcam-frame.jpg"
+  alt: "Frame captured from the ESP32-S3 USB webcam"
+icon:
+  src: "/assets/img/projects/esp32-usb-webcam-frame.jpg"
+  alt: "Frame captured from the ESP32-S3 USB webcam"
+threadImages:
+  - src: "/assets/img/projects/esp32-usb-webcam-frame.jpg"
+    alt: "Frame captured from the ESP32-S3 USB webcam"
+links:
+  github: https://github.com/JacobFV/esp32-usb-webcam
+  site: https://gist.github.com/JacobFV/f36f57def2b0b1446036fef3fa4c1016
+---
+
+- Turns the XIAO ESP32S3 Sense into a standard USB Video Class device
+- Uses MJPEG frames from the onboard camera over native USB, not Wi-Fi
+- Verified on Linux as `303a:8000 Espressif ESP UVC Device` with `/dev/video0`
+
+![Frame captured from the ESP32-S3 USB webcam](/assets/img/projects/esp32-usb-webcam-frame.jpg)
+
+This was a small hardware integration project with one strict requirement: the board had to behave like a USB webcam. The useful distinction is that the host operating system should not need a stream URL, access point, password, or custom camera adapter. It should see a UVC device and hand back a normal V4L2 camera node.
+
+The working build targets the Seeed XIAO ESP32S3 Sense. The firmware uses ESP-IDF through PlatformIO, Espressif's camera driver, and a vendored `usb_device_uvc` component. The camera produces MJPEG frames and the USB stack exposes them through the standard webcam interface.
+
+The main failure mode was also the most tempting one: an ESP32 Wi-Fi camera with an AP and HTTP server. That path is common for older ESP32-CAM boards, but it was the wrong interface. The final repository deliberately removes that whole path and keeps the project UVC-only.
+
+The proof was host-side. Linux enumerated the board as `303a:8000 Espressif ESP UVC Device`, created `/dev/video0` and `/dev/video1`, and OpenCV captured a real `640x480` frame from the device.
+
+Repo: [JacobFV/esp32-usb-webcam](https://github.com/JacobFV/esp32-usb-webcam)  
+Build note: [public gist](https://gist.github.com/JacobFV/f36f57def2b0b1446036fef3fa4c1016)
