@@ -20,7 +20,7 @@ threadImages:
     alt: "SynthUX behavior generation pipeline"
 links:
   github: https://github.com/JacobFV/synthux
-  dataset: https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree
+  dataset: https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree-0.1-beta
 influences: [node-tree, browser-os, windows-web-next, macos-web-next]
 realizes: [general-unified-world-modeling]
 critiques: []
@@ -45,10 +45,10 @@ The point is to generate grounded computer-use data without full virtual machine
   className="w-full rounded"
 >
   <source
-    src="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-afc0e8e0b9--97631595/videos/replay.mp4"
+    src="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree-0.1-beta/resolve/main/swe-000001-afc0e8e0b9--97631595/videos/replay.mp4"
     type="video/mp4"
   />
-  Your browser does not support embedded video. <a href="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree/resolve/main/swe-000001-afc0e8e0b9--97631595/videos/replay.mp4">Open the replay video</a>.
+  Your browser does not support embedded video. <a href="https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree-0.1-beta/resolve/main/swe-000001-afc0e8e0b9--97631595/videos/replay.mp4">Open the replay video</a>.
 </video>
 
 ## What It Generates
@@ -164,9 +164,11 @@ The first multi-simulator, app-native run contains:
 - 9 replay videos (mp4);
 - 0 validator errors, 0 warnings under `synthux validate`.
 
-It is published as a Hugging Face dataset:
+The original release is published as a Hugging Face dataset:
 
-[jacob-valdez/synthux-visual-tree](https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree)
+[jacob-valdez/synthux-visual-tree-0.1-beta](https://huggingface.co/datasets/jacob-valdez/synthux-visual-tree-0.1-beta)
+
+The current generation packages full multi-company *economy simulations* — dozens of companies, hundreds of workers in one causally-coherent world — and publishes **each simulation as its own dataset repo** (so no single repo bloats and a sim can be shared or versioned independently). Each record is one worker's device session: goal + node tree, the low-level input stream, causal observations, the screen recording, and a per-node frame. First sim: [jacob-valdez/synthux-economy-pilot-w000](https://huggingface.co/datasets/jacob-valdez/synthux-economy-pilot-w000).
 
 The dataset layout is deliberately flat per trajectory:
 
