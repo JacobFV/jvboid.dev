@@ -1,0 +1,36 @@
+---
+title: Microscope Viewer
+date: 2026-05-28
+lane: building
+status: shipped
+tags: [hardware, usb, electron, python, microscope, non-uvc]
+summary: "Electron desktop viewer that streams a non-UVC USB microscope by driving the Geek Szitman supercamera protocol over a small Python USB bridge, since the device never exposes a /dev/video node."
+hero:
+  src: "/assets/img/projects/microscope-viewer-cover.png"
+  alt: "Microscope Viewer cover"
+  fit: contain
+icon:
+  src: "/assets/img/projects/microscope-viewer-icon.png"
+  alt: "Microscope Viewer app icon"
+threadImages:
+  - src: "/assets/img/projects/microscope-viewer-cover.png"
+    alt: "Microscope Viewer cover"
+links:
+  github: https://github.com/JacobFV/microscope-viewer
+---
+
+- Streams a USB microscope that refuses to enumerate as a standard UVC webcam
+- Pairs an Electron UI with a Python `supercamera` USB bridge that emits JPEG frames
+- Ships device refresh, start/stop, live FPS/frame counters, snapshots, and a bridge log
+
+![Microscope Viewer](/assets/img/projects/microscope-viewer-cover.png)
+
+This is a companion to the [ESP32-S3 USB Webcam](/projects/esp32-usb-webcam) project, but from the opposite direction: instead of making hardware behave like a clean UVC camera, this app makes the host usable when the hardware refuses to.
+
+The microscope shows up on the USB bus as `0329:2022 Geek szitman supercamera`, but it reports a `Vendor Specific Class` rather than USB Video Class. Linux attaches no kernel driver, so no `/dev/video*` node ever appears. That single fact rules out the easy path — browser `getUserMedia()` and any normal V4L2 capture only enumerate standard camera devices, so they simply cannot see this device.
+
+The architecture splits cleanly across that constraint. A small Python bridge talks directly to the USB interface through a reverse-engineered `supercamera` driver, reads the camera's JPEG frames at `640x480`, and streams them out as newline-delimited JSON. The Electron main process spawns that bridge, parses its event stream, and forwards frames to the renderer, which paints them as a live feed and tracks FPS, frame count, and serial. Snapshots are just the last decoded JPEG written to disk.
+
+The honest details are in the failure modes. Direct USB access needs a udev permission rule or the bridge has to run as root, so the repo ships an installer for a `plugdev` rule. When a device is detected but streaming still fails, it is almost always USB permissions, a busy or stale interface, or a protocol variant the driver does not handle yet — and the app surfaces exactly that in its right-side bridge log instead of failing silently.
+
+Repo: [JacobFV/microscope-viewer](https://github.com/JacobFV/microscope-viewer)
