@@ -25,7 +25,6 @@ import type {
   Lane,
   Node,
   NodeKind,
-  ProjectStatus,
   ReadingStatus,
   ReadingTier,
   ReadingWorkType,
@@ -88,7 +87,10 @@ const toNode =
       influences: raw.influences ?? [],
       realizes: raw.realizes ?? [],
       critiques: raw.critiques ?? [],
-      status: kind === "project" ? (extra.status as ProjectStatus | undefined) : undefined,
+      resumeDescription:
+        kind === "project" ? (extra.resume_description as string | undefined) : undefined,
+      datePrecision:
+        kind === "project" ? (extra.datePrecision as Node["datePrecision"]) : undefined,
       video: kind === "project" ? (extra.video as string | undefined) : undefined,
       pdf: extra.pdf as string | undefined,
       icon: kind === "project" ? (extra.icon as Node["icon"]) : undefined,

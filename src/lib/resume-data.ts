@@ -38,7 +38,6 @@ export const variantMeta: Record<ResumeVariant, {
     highlights: [
       "Architected production integration surfaces for mobile and web clients at AGI, Inc.",
       "Building VibeStartup, an end-to-end platform for spinning up startups (planning, code, infra, growth) on top of agent workflows.",
-      "Founded Limboid — a long-horizon robotics company; ship the software side end to end (control, sim, agent stack, dashboards).",
       "Authored a wide technical archive (ML systems, agents, multi-agent networks, consciousness, dev platforms) backing each project.",
     ],
   },
@@ -55,7 +54,6 @@ export const variantMeta: Record<ResumeVariant, {
       "agent control loops", "telemetry", "rapid prototyping",
     ],
     highlights: [
-      "Founded Limboid — hydraulic actuation and embodied intelligence; ran the full prototype lineage (Computatrum → Limboid).",
       "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
       "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
       "AGI, Inc. integration architect — same agent-runtime skills feed directly into robot agent control loops.",
@@ -115,19 +113,35 @@ export const experience: {
   },
   {
     title: "Software Engineer",
-    org: "Motio",
-    range: "Jun 2022 – Jan 2023",
-    summary:
-      "Built Soterre for Qlik Sense — full-stack engineering across product surfaces in Java/Hibernate. Started as an intern; converted to full-time in August.",
-    tags: ["full-stack", "java", "product"],
+    org: "Motio, Inc.",
+    range: "Aug 2022 – Jan 2023",
+    summary: "Develop Soterre for Qlik Sense.",
+    tags: ["java", "hibernate"],
   },
   {
-    title: "Research Assistant",
-    org: "UT Arlington research labs",
-    range: "2020 – 2022",
+    title: "Software Engineer (Intern)",
+    org: "Motio, Inc.",
+    range: "Jun 2022 – Aug 2022",
+    summary: "Develop Soterre for Qlik Sense.",
+    tags: ["java", "hibernate"],
+  },
+  {
+    title: "Software Developer",
+    org: "IT Lab · UT Arlington",
+    href: "https://uta.edu",
+    range: "Jun 2021 – May 2022",
     summary:
-      "Multi-agent learning, differentiable programming, world models, robotics — early prototypes that became the lineage in the project archive.",
-    tags: ["research", "ml", "agents"],
+      "Evolved and tested CoWiz, a Flask-based statistical visualization tool, and built MLN-Dashboard, a full-stack web server on a Next/React/GraphQL stack.",
+    tags: ["react", "next.js", "graphql", "flask"],
+  },
+  {
+    title: "Software Developer",
+    org: "College of Social Work · UT Arlington",
+    href: "https://uta.edu",
+    range: "Jun 2021 – May 2022",
+    summary:
+      "Maintained and enhanced MyAmble, a multi-platform (iOS + Android) data-collection app, plus its web admin interface, using Flutter and Firebase.",
+    tags: ["flutter", "firebase", "mobile"],
   },
   {
     title: "B.S., Computer Science",
@@ -224,25 +238,45 @@ export function projectFocus(node: Node): { software: boolean; robotics: boolean
     "jacobfv-site",
     "macos-web-next",
     "windows-web-next",
-    "computatrum",
     "browser-os",
     "canvas-engineering",
     "tensor-computer",
-    "the-multi-agent-network",
     "multigraph-nn",
     "multiparadigm-networks",
     "multi-graph-former-project",
-    "predictive-general-intelligence",
     "general-unified-world-modeling",
     "imgpt",
     "brain-model",
     "yt2ctx",
     "node-tree",
     "belief-graph-orchestrator",
-    "polonius-as-a-fool",
     "synthux",
     "standup-ai",
     "lifelogger",
+    // Promoted into the software focus list (hand-curated).
+    "esp32-usb-webcam",
+    "bsbr",
+    "mln-dashboard",
+    "jnumpy",
+    "dash",
+    "20q",
+    "stanford-open-datathon-group-project",
+    "desparados-a-eye",
+    "home-internet-factory",
+    "workplace-surveillance-system",
+    "sqtest",
+    "labatron",
+    "sale",
+    "cookie-cutter-cnc",
+    "copyright-calculator",
+  ]);
+  // Forced OUT of the software focus list into "adjacent work", even if
+  // their tags would otherwise match SOFTWARE_TAGS (hand-curated).
+  const softwareExcluded = new Set([
+    "predictive-general-intelligence",
+    "computatrum",
+    "polonius-as-a-fool",
+    "the-multi-agent-network",
   ]);
   const roboticsPinned = new Set([
     "limboid",
@@ -263,9 +297,41 @@ export function projectFocus(node: Node): { software: boolean; robotics: boolean
     "recursive-omnimodal-video-action-model",
   ]);
   return {
-    software: softwarePinned.has(node.id) || has(SOFTWARE_TAGS),
+    software: !softwareExcluded.has(node.id) && (softwarePinned.has(node.id) || has(SOFTWARE_TAGS)),
     robotics: roboticsPinned.has(node.id) || has(ROBOTICS_TAGS),
   };
+}
+
+// Date formatting for the resume project list. The graph stores a single
+// ISO `date` per node; `datePrecision` records how much of it is real.
+// Default ("month"/"day") → "Jun 2024"; "season" → "Summer 2024"; "year" →
+// "2024" (only the year is documented). Parsed by string slice, not Date(),
+// so there's no timezone drift on the month boundary.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function seasonOf(month: number): string {
+  if (month === 12 || month <= 2) return "Winter";
+  if (month <= 5) return "Spring";
+  if (month <= 8) return "Summer";
+  return "Fall";
+}
+
+export function formatResumeDate(node: Pick<Node, "date" | "datePrecision">): string {
+  const iso = node.date;
+  if (!iso) return "";
+  const year = iso.slice(0, 4);
+  const month = Number.parseInt(iso.slice(5, 7), 10);
+  const precision = node.datePrecision;
+  if (precision === "year") return year;
+  if (!month || Number.isNaN(month)) return year;
+  if (precision === "season") return `${seasonOf(month)} ${year}`;
+  return `${MONTHS[month - 1]} ${year}`;
+}
+
+// The blurb the resume shows for a project: the tight resume_description
+// when authored, otherwise the longer narrative summary.
+export function resumeBlurb(node: Pick<Node, "summary" | "resumeDescription">): string {
+  return node.resumeDescription ?? node.summary;
 }
 
 export function variantHref(v: ResumeVariant): string {

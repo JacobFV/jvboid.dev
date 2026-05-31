@@ -104,12 +104,6 @@ export default async function KindIndexPage({ params }: { params: Params }) {
               >
                 <div className="mb-2 flex flex-wrap items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
                   <time>{new Date(node.date).toISOString().slice(0, 10)}</time>
-                  {node.status && (
-                    <>
-                      <span>·</span>
-                      <span>{node.status}</span>
-                    </>
-                  )}
                   {node.eventStatus && (
                     <>
                       <span>·</span>

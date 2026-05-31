@@ -55,7 +55,7 @@ Rules:
 ## The constellation visual
 
 - WebGL via React Flow's edge renderer + a custom node renderer for performance at ~150 nodes.
-- Nodes = 64×40 cards with title, lane stripe (4px left), and a tiny status dot.
+- Nodes = 64×40 cards with title and a lane stripe (4px left).
 - Force layout: charge -340, link distance based on edge weight (60 + 100 \* (1 - weight)), gravity 0.04. Re-runs once on load, then nodes are static unless filtered.
 - Edges are thin curved lines, opacity tied to weight. Influence = solid, realization = dashed, critique = dotted.
 - Hovering a node fades all non-neighbor edges and nodes to 0.18 opacity.

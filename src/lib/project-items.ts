@@ -42,13 +42,6 @@ const featuredProjectRank = new Map<string, number>(
   featuredProjectOrder.map((id, index) => [id, index]),
 );
 
-const statusRank: Record<string, number> = {
-  active: 0,
-  shipped: 1,
-  idea: 2,
-  shelved: 3,
-};
-
 function byDateDesc(a: Node, b: Node) {
   return a.date < b.date ? 1 : -1;
 }
@@ -60,9 +53,6 @@ export function byProjectRank(a: Node, b: Node) {
     return (featuredA ?? Number.POSITIVE_INFINITY) - (featuredB ?? Number.POSITIVE_INFINITY);
   }
 
-  const ra = statusRank[a.status ?? "active"] ?? 9;
-  const rb = statusRank[b.status ?? "active"] ?? 9;
-  if (ra !== rb) return ra - rb;
   return byDateDesc(a, b);
 }
 
@@ -118,7 +108,6 @@ export function projectItemsFromNodes(projects: Node[]): ProjectItem[] {
     title: n.title,
     summary: n.summary,
     body: n.body,
-    status: n.status ?? "active",
     date: n.date,
     lane: n.lane,
     tags: n.tags,

@@ -22,7 +22,6 @@ export type Lane = "research" | "building" | "writing" | "personal";
 export type EdgeKind = ManualEdge["kind"];
 export type Edge = ManualEdge;
 
-export type ProjectStatus = "idea" | "active" | "shipped" | "shelved";
 export type ReadingStatus = "queued" | "reading" | "finished" | "paused" | "reference";
 export type ReadingWorkType = "book" | "paper" | "article" | "course" | "other";
 export type ReadingTier = "S" | "A" | "B" | "C" | "D" | "F";
@@ -67,7 +66,9 @@ export type Node = {
   critiques: string[];
 
   // kind-specific (all optional on the union)
-  status?: ProjectStatus;
+  // Resume-only override for `summary` + precision of `date`. See resume-data.
+  resumeDescription?: string;
+  datePrecision?: "year" | "season" | "month" | "day";
   // Optional demo video URL (project kind). YouTube/Vimeo/embeddable
   // page. Rendered in Hero as a 16:9 iframe when present.
   video?: string;
