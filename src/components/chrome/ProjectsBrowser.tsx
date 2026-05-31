@@ -22,7 +22,7 @@ import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { MDXContent } from "@/lib/mdx";
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
-import { nodeHref, type Lane, type ProjectStatus } from "@/lib/graph-types";
+import { nodeHref, type Lane } from "@/lib/graph-types";
 import { InviteCursor } from "@/components/reader/InviteCursor";
 
 // Live embeds and visuals inside the modal carry a hairline border so
@@ -81,7 +81,6 @@ export type ProjectItem = {
   kind: "project";
   title: string;
   summary: string;
-  status: ProjectStatus;
   date: string;
   lane: Lane;
   tags: string[];
@@ -247,14 +246,6 @@ function isView(value: unknown): value is View {
   return value === "list" || value === "grid";
 }
 
-function statusColor(status: ProjectStatus): string {
-  return status === "active"
-    ? "var(--color-accent)"
-    : status === "shipped"
-      ? "var(--color-ink-dim)"
-      : "var(--color-ink-mute)";
-}
-
 // Compact YouTube/Vimeo → embed-URL resolver. Mirrors Hero.tsx; kept
 // local so this client bundle doesn't pull the server reader module.
 function toEmbedUrl(raw: string): string | null {
@@ -347,12 +338,7 @@ function IconFace({
     );
   }
 
-  if (
-    preferThread &&
-    project.status === "active" &&
-    project.threadImages &&
-    project.threadImages.length >= 2
-  ) {
+  if (preferThread && project.threadImages && project.threadImages.length >= 2) {
     return <ThreadImageGrid images={project.threadImages} />;
   }
 
@@ -608,8 +594,6 @@ function ProjectRow({ project, onOpen }: { project: ProjectItem; onOpen: OpenFn 
             )}
           </span>
           <span className="shrink-0 font-[family-name:var(--font-mono)] text-[10px] tracking-wider text-[var(--color-ink-mute)] uppercase">
-            <span>{project.status}</span>
-            <span className="mx-1.5 opacity-40">·</span>
             <span>{fmtYear(project.date)}</span>
           </span>
         </span>
@@ -858,9 +842,7 @@ function ProjectGrid({
               }
               openTile(project);
             }}
-            className={`group flex w-full flex-col items-center gap-2 px-[7.5%] no-underline select-none ${
-              project.status === "idea" || project.status === "shelved" ? "opacity-60" : ""
-            }`}
+            className="group flex w-full flex-col items-center gap-2 px-[7.5%] no-underline select-none"
             style={{
               opacity: dragId === project.id ? 0 : 1,
               touchAction: "manipulation",
@@ -1079,11 +1061,7 @@ function QuickView({
           ) : null}
 
           <div className="mt-4 font-[family-name:var(--font-mono)] text-[11px] tracking-wider text-[var(--color-ink-mute)] uppercase">
-            <span style={{ color: statusColor(project.status) }}>{project.status}</span>
-            <span className="mx-1.5 opacity-40">·</span>
             <span>{fmtYear(project.date)}</span>
-            <span className="mx-1.5 opacity-40">·</span>
-            <span>{project.lane}</span>
           </div>
 
           <p className="mt-3 text-base leading-relaxed text-[var(--color-ink-dim)]">

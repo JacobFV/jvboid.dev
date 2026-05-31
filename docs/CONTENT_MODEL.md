@@ -52,9 +52,16 @@ title: Computatrum
 date: 2021-10-19 # start date
 endDate: 2022-06-01 # optional, for completed projects
 lane: building
-status: shipped # idea | active | shipped | shelved
 tags: [agents, infra]
 summary: ...
+# Resume-only one-liner. When present, it replaces `summary` everywhere the
+# resume (page + PDF) renders this project — a tight "what it is" phrase plus
+# a comma-separated tech list. Omit to fall back to `summary`.
+resume_description: "..."
+# Precision of `date` for the resume's month display. Omitted/"month"/"day"
+# → "Jun 2024"; "season" → "Summer 2024"; "year" → "2024" (only the year is
+# known). See formatResumeDate() in src/lib/resume-data.ts.
+datePrecision: year # optional
 # `fit` is optional and defaults to "cover" (crop to fill the frame).
 # Use "contain" to letterbox the whole image with transparent padding —
 # right for logos, wordmarks, and diagrams that must not be cropped.
@@ -266,15 +273,6 @@ Lanes are the timeline's horizontal swimlanes. Pick exactly one per node:
 - `personal` — visions, life, experience entries, friends, personal events
 
 Don't add new lanes without a design discussion — they shape the timeline.
-
-## Status (projects only)
-
-- `idea` — written down, not started
-- `active` — currently working on
-- `shipped` — released, in use
-- `shelved` — paused or abandoned, kept for the record
-
-Visualized as the project node's color/opacity in both views.
 
 ## Redirect aliases
 

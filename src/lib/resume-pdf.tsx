@@ -6,7 +6,15 @@
 
 import { Document, Page, Text, View, StyleSheet, Link, renderToBuffer } from "@react-pdf/renderer";
 import type { Node } from "./graph-types";
-import { contact, experience, projectFocus, variantMeta, type ResumeVariant } from "./resume-data";
+import {
+  contact,
+  experience,
+  formatResumeDate,
+  projectFocus,
+  resumeBlurb,
+  variantMeta,
+  type ResumeVariant,
+} from "./resume-data";
 
 const colors = {
   ink: "#111111",
@@ -92,7 +100,7 @@ const styles = StyleSheet.create({
   projCols: { flexDirection: "row", gap: 14 },
   projCol: { flex: 1 },
   projItem: { flexDirection: "row", marginBottom: 2.4 },
-  projYear: { width: 28, fontSize: 7.5, color: colors.inkMute },
+  projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
@@ -108,11 +116,6 @@ const styles = StyleSheet.create({
   },
 });
 
-function year(iso?: string): string {
-  if (!iso) return "";
-  return new Date(iso).getUTCFullYear().toString();
-}
-
 function splitColumns<T>(items: T[]): [T[], T[]] {
   const mid = Math.ceil(items.length / 2);
   return [items.slice(0, mid), items.slice(mid)];
@@ -123,10 +126,10 @@ function ProjectColumn({ items }: { items: Node[] }) {
     <View style={styles.projCol}>
       {items.map((n) => (
         <View key={n.id} style={styles.projItem} wrap={false}>
-          <Text style={styles.projYear}>{year(n.date)}</Text>
+          <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
           <Text style={styles.projText}>
             <Text style={styles.projTitle}>{n.title}</Text>
-            {n.summary ? <Text> — {n.summary}</Text> : null}
+            {resumeBlurb(n) ? <Text> — {resumeBlurb(n)}</Text> : null}
           </Text>
         </View>
       ))}

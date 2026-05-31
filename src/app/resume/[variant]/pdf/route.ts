@@ -27,7 +27,7 @@ export async function GET(
   const { nodes } = getGraph();
   const projects = nodes
     .filter(isListedNode)
-    .filter((n) => n.kind === "project" && n.status !== "shelved");
+    .filter((n) => n.kind === "project");
 
   const pdf = await renderResumePdf(variant, projects);
   return new NextResponse(pdf as unknown as BodyInit, {

@@ -4,7 +4,9 @@ import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 import {
   contact,
   experience,
+  formatResumeDate,
   projectFocus,
+  resumeBlurb,
   variantHref,
   variantMeta,
   variantPdfHref,
@@ -15,9 +17,6 @@ export const metadata = {
   title: "Resume · Jacob Valdez",
   description: "AI systems engineer and robotics builder — software and robotics resume variants.",
 };
-
-const fmt = (iso?: string) => (iso ? new Date(iso).toISOString().slice(0, 7) : null);
-const yr = (iso?: string) => (iso ? new Date(iso).getUTCFullYear().toString() : "");
 
 function isVariant(v: string): v is ResumeVariant {
   return v === "software" || v === "robotics";
@@ -39,7 +38,7 @@ export default async function ResumePage({
   const { nodes } = getGraph();
   const listed = nodes.filter(isListedNode);
   const projects = listed
-    .filter((n) => n.kind === "project" && n.status !== "shelved")
+    .filter((n) => n.kind === "project")
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const focused = projects.filter((p) => projectFocus(p)[variant]);
@@ -215,16 +214,16 @@ export default async function ResumePage({
         </h3>
         <ul className="mb-6 grid gap-1.5">
           {focused.map((n) => (
-            <li key={n.id} className="grid grid-cols-[60px_1fr] gap-3">
+            <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
               <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
-                {yr(n.date) || fmt(n.date)}
+                {formatResumeDate(n)}
               </div>
               <Link
                 href={nodeHref(n)}
                 className="text-sm text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
               >
-                <span className="font-medium">{n.title}</span>
-                <span className="text-[var(--color-ink-dim)]"> — {n.summary}</span>
+                <span className="font-medium underline decoration-1 underline-offset-2">{n.title}</span>
+                <span className="text-[var(--color-ink-dim)]"> — {resumeBlurb(n)}</span>
               </Link>
             </li>
           ))}
@@ -235,16 +234,16 @@ export default async function ResumePage({
         </h3>
         <ul className="grid gap-1.5">
           {adjacent.map((n) => (
-            <li key={n.id} className="grid grid-cols-[60px_1fr] gap-3">
+            <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
               <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
-                {yr(n.date) || fmt(n.date)}
+                {formatResumeDate(n)}
               </div>
               <Link
                 href={nodeHref(n)}
                 className="text-sm text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
               >
-                <span className="font-medium">{n.title}</span>
-                <span className="text-[var(--color-ink-dim)]"> — {n.summary}</span>
+                <span className="font-medium underline decoration-1 underline-offset-2">{n.title}</span>
+                <span className="text-[var(--color-ink-dim)]"> — {resumeBlurb(n)}</span>
               </Link>
             </li>
           ))}

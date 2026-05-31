@@ -1,14 +1,13 @@
 "use client";
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { Lane, NodeKind, ProjectStatus } from "@/lib/graph";
+import type { Lane, NodeKind } from "@/lib/graph";
 
 export type NodeCardData = {
   id: string;
   title: string;
   lane: Lane;
   kind: NodeKind;
-  status?: ProjectStatus;
   dim?: boolean;
 };
 
@@ -19,19 +18,11 @@ const laneColor: Record<Lane, string> = {
   personal: "var(--color-lane-personal)",
 };
 
-const statusOpacity: Record<ProjectStatus, number> = {
-  idea: 0.55,
-  active: 1,
-  shipped: 0.85,
-  shelved: 0.4,
-};
-
 // 64×40 cards per docs/DESIGN.md. Title truncates to a single line; the
 // full title surfaces on hover (native title attr) and via Cmd-K search.
 export function NodeCard({ data, selected }: NodeProps) {
   const d = data as unknown as NodeCardData;
-  const opacity =
-    (d.dim ? 0.18 : 1) * (d.status ? statusOpacity[d.status] : 1);
+  const opacity = d.dim ? 0.18 : 1;
 
   return (
     <div
@@ -85,23 +76,6 @@ export function NodeCard({ data, selected }: NodeProps) {
       >
         {d.title}
       </div>
-      {/* Status dot — only meaningful for projects */}
-      {d.status && (
-        <span
-          style={{
-            position: "absolute",
-            top: 4,
-            right: 4,
-            width: 4,
-            height: 4,
-            borderRadius: 999,
-            background:
-              d.status === "active"
-                ? "var(--color-accent)"
-                : "var(--color-ink-mute)",
-          }}
-        />
-      )}
 
       {/* React Flow needs handles for edges to connect — kept invisible */}
       <Handle

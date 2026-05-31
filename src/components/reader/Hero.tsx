@@ -29,15 +29,7 @@ export function Hero({ node }: { node: Node }) {
       <div className="mb-3 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
         <time>{range}</time>
         <span>·</span>
-        <span>{node.lane}</span>
-        <span>·</span>
         <span>{node.kind}</span>
-        {node.kind === "project" && node.status && (
-          <>
-            <span>·</span>
-            <StatusBadge status={node.status} />
-          </>
-        )}
       </div>
 
       <h1
@@ -446,16 +438,3 @@ function VisionMeta({ node }: { node: Node }) {
   );
 }
 
-function StatusBadge({ status }: { status: NonNullable<Node["status"]> }) {
-  const color =
-    status === "active"
-      ? "var(--color-accent)"
-      : status === "shipped"
-        ? "var(--color-ink-dim)"
-        : "var(--color-ink-mute)";
-  return (
-    <span style={{ color }} className="uppercase">
-      {status}
-    </span>
-  );
-}

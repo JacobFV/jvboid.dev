@@ -12,7 +12,7 @@ import "@xyflow/react/dist/base.css";
 import { NodeCard, type NodeCardData } from "./NodeCard";
 import { CustomEdge, type EdgeStyleData } from "./CustomEdge";
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
-import { nodeHref, type Edge, type Lane, type Node, type ProjectStatus } from "@/lib/graph-types";
+import { nodeHref, type Edge, type Lane, type Node } from "@/lib/graph-types";
 
 const LANES: Lane[] = ["research", "building", "writing", "personal"];
 const TIMELINE_FILTERS_STORAGE_KEY = "jacobfv:timeline:filters";
@@ -34,7 +34,6 @@ const edgeTypes = { thread: CustomEdge };
 
 type Filters = {
   lanes: Set<Lane>;
-  status: Set<ProjectStatus | "any">;
 };
 
 type StoredFilters = {
@@ -43,13 +42,6 @@ type StoredFilters = {
 
 const defaultFilters = (): Filters => ({
   lanes: new Set<Lane>(LANES),
-  status: new Set<ProjectStatus | "any">([
-    "any",
-    "idea",
-    "active",
-    "shipped",
-    "shelved",
-  ]),
 });
 
 function isLane(value: unknown): value is Lane {
@@ -130,7 +122,6 @@ export function Timeline({
   const filtered = useMemo(() => {
     return nodes.filter((n) => {
       if (!filters.lanes.has(n.lane)) return false;
-      if (n.status && !filters.status.has(n.status)) return false;
       return true;
     });
   }, [nodes, filters]);
@@ -164,7 +155,6 @@ export function Timeline({
           title: n.title,
           lane: n.lane,
           kind: n.kind,
-          status: n.status,
           dim,
         },
       };

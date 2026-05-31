@@ -38,11 +38,9 @@ const socialLinks = [
   { label: "anonymous feedback", href: "https://www.admonymous.co/jvboid" },
 ];
 
-// Featured projects: shipped or active first, then by recency. Cap at 6.
+// Featured projects: a few pinned load-bearing ones, then by recency. Cap at 6.
 function pickFeatured(nodes: Node[]): Node[] {
-  const candidates = nodes.filter(
-    (n) => n.kind === "project" && (n.status === "active" || n.status === "shipped"),
-  );
+  const candidates = nodes.filter((n) => n.kind === "project");
   // Manual override — pin a few load-bearing ones to the top regardless of date.
   const pinned = [
     // Orbit slots (rank 0–1) — both live iframe embeds.
@@ -70,7 +68,7 @@ export default function HomePage() {
 
   const featured = pickFeatured(listedNodes);
   // Full project list: curated hardware/polished projects first, then the rest
-  // by status and date.
+  // by date.
   const allProjects = withAdjacentProjects(
     listedNodes.filter((n) => n.kind === "project").sort(byProjectRank),
   );

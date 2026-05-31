@@ -62,7 +62,14 @@ const projects = defineCollection({
     .object({
       ...baseFields,
       slug: s.path(),
-      status: s.enum(["idea", "active", "shipped", "shelved"]).default("active"),
+      // Resume-only blurb. When present it replaces `summary` everywhere the
+      // resume renders this project — a tight one-liner ("what it is") plus a
+      // comma-separated tech list, instead of the longer narrative summary.
+      resume_description: s.string().max(400).optional(),
+      // How precisely `date` is known. Undefined / "month" / "day" → the
+      // resume shows "Mon YYYY". "season" → "Winter 2024". "year" → "2024"
+      // (used when only the year is documented). See formatResumeDate().
+      datePrecision: s.enum(["year", "season", "month", "day"]).optional(),
       // YouTube/Vimeo/self-hosted demo video. When present, the reader
       // Hero renders it as a 16:9 embed. See docs/PORTFOLIO_PRINCIPLES.md
       // — "visuals are a must".
