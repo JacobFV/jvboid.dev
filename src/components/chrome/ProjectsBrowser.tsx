@@ -658,7 +658,12 @@ function TileVisual({
     <>
       <span
         ref={iconRef}
-        className={`relative block aspect-square w-full overflow-hidden rounded-[26%] shadow-[var(--shadow-soft)] ${
+        // Squircle (superellipse) app-icon face. The high border-radius
+        // pushes the corner curves all the way to the edge midpoints so
+        // each side bulges out prominently — the puffy iOS-style shape,
+        // not a plain rounded square. `corner-shape` degrades to a
+        // rounded square on browsers that don't support it yet.
+        className={`relative block aspect-square w-full overflow-hidden rounded-[50%] [corner-shape:squircle] shadow-[var(--shadow-soft)] ${
           lifted
             ? ""
             : "transition-transform duration-200 ease-out group-hover:scale-[1.03] group-active:scale-95"
