@@ -152,16 +152,16 @@ export default function HomePage() {
             </div>
 
             <p className="mt-10 max-w-2xl text-left text-lg leading-[1.65] text-[var(--color-ink-dim)]">
-              Currently building{" "}
+              Currently working on{" "}
               <a
-                href="https://vibestartup.pro"
+                href="https://commandagi.com"
                 target="_blank"
                 rel="noreferrer"
                 className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
               >
-                VibeStartup
-              </a>{" "}
-              — a platform for building startups end to end. Most recently API/Integration Architect
+                commandAGI
+              </a>
+              . Most recently API/Integration Architect
               at{" "}
               <a
                 href="https://agi.app"
