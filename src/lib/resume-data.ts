@@ -250,7 +250,6 @@ export function projectFocus(node: Node): { software: boolean; robotics: boolean
     "yt2ctx",
     "node-tree",
     "belief-graph-orchestrator",
-    "synthux",
     "standup-ai",
     "lifelogger",
     // Promoted into the software focus list (hand-curated).
