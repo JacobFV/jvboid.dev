@@ -28,3 +28,7 @@ The in-memory filesystem is a good example of the project's intent. It models dr
 The result is a pragmatic middle layer: more realistic than a toy benchmark, safer and more inspectable than a real desktop, and much easier to instrument for human annotation and agent evaluation.
 
 Repo: [JacobFV/windows-web-next](https://github.com/JacobFV/windows-web-next)
+
+## Used by
+
+[`synthux`](/projects/synthux) uses this simulator as one of its three native execution substrates. Each terminal affordance in a synthux grammar tree is compiled into low-level mouse and keyboard input against the real Notepad, Terminal, Edge, Mail, Wordpad, and VSCode windows here. The SynthUX bridge (`src/lib/embed-bridge.ts`) exposes `window.__synthuxLaunchApp(appId)` so the synthux launcher overlay can route launches through the simulator's normal `wm.openApp` flow without any high-level state mutation.

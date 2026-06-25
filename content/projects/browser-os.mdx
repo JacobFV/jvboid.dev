@@ -32,3 +32,6 @@ Foundation layer for the controllable-desktop family. Both windows-web-next and 
 
 ## Lessons
 Splitting the chrome from the shell makes new "OS" simulators cheap. Worth doing earlier in similar product-research stacks.
+
+## Used by
+[`synthux`](/projects/synthux) drives this desktop natively for visual computer-use dataset capture. The synthux executor installs a small launcher overlay, clicks the launcher button for a target surface via a real low-level mouse event, and the click flows through the existing `taskbar:shortcut:clicked` event so an app opens identically to a real taskbar click. The SynthUX bridge in `packages/os/src/synthuxBridge.ts` exposes `window.__synthuxLaunchApp(appId)` for that path.
