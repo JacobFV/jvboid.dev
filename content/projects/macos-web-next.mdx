@@ -45,3 +45,7 @@ Live at [macos-web-next.vercel.app](https://macos-web-next.vercel.app). Embedded
 
 ## Lessons
 Open question: how much OS-specific surface area pays off vs. a single abstracted desktop? Documenting tradeoffs as they emerge.
+
+## Used by
+
+[`synthux`](/projects/synthux) uses this simulator as one of its three native execution substrates. The synthux executor drives the real Notes, Messages, Safari, VSCode, and Terminal apps via low-level mouse and keyboard input through a launcher overlay; the bridge (`src/lib/embed-bridge.ts`) exposes `window.__synthuxLaunchApp(appId)` for the launch path so an app opens the same way it would from a dock click. The current synthux dataset run shows 100% app-native observations on macos-web-next.
