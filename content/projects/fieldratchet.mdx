@@ -1,0 +1,49 @@
+---
+title: fieldratchet
+date: 2026-06-27
+endDate: 2026-06-28
+datePrecision: day
+lane: building
+tags: [agents, hardware, rsi, eda, hackathon]
+summary: "A recursively self-improving compiler for PCB layout: schematic in, routed board out — where the placement engine is a coupled-oscillator substrate that mutates and improves itself on every iteration."
+resume_description: "recursively self-improving pcb layout compiler; coupled-oscillator (kuramoto) placement substrate that mutates itself under a score gate; independent damped-wave emi validator (4mm→10µm). typescript, remotion, electron, kicad, mojo/max. aie world's fair hackathon (recursive intelligence)."
+hero:
+  src: "/assets/media/fieldratchet/hero.png"
+  alt: "fieldratchet rendering the routed 187-component autonomy mainboard with a magnified fine-trace detail and layer stack"
+video: "/assets/media/fieldratchet/demo.mp4"
+links:
+  github: https://github.com/JacobFV/fieldratchet
+influences: [precisionbom]
+---
+- Turns hand-done PCB place-and-route into an executable, self-improving loop — schematic in, scored & routed KiCad board out
+- The optimizer is a coupled-oscillator (Kuramoto) substrate that **mutates itself** and only promotes changes that lower a real geometric + field-risk score
+- Ships fully offline (no `kicad-cli`, no network, no API keys) as an Electron app + CLI; built for the AI Engineer World's Fair Hackathon under **Recursive Intelligence**
+
+![fieldratchet rendering the routed autonomy mainboard](/assets/media/fieldratchet/hero.png)
+
+## Problem
+Electrical design engineers place and route every board by hand — agonizing over where the buck switching node goes, how far the crystal sits from the noisy regulator, whether the USB pair stays balanced, which decoupling cap hugs which power pin — then run DRC, find the field-risk and EMI problems, rip it up, and do it again. The intuition they earn on one board never compounds back into the tool; the loop runs in the engineer's head, not in software.
+
+## Solution
+fieldratchet makes that loop executable and self-improving. It parses a KiCad schematic, classifies parts and nets, places and routes a real `.kicad_pcb`, and scores it on a concrete objective (ratsnest length, courtyard/DRC violations, buck switch-loop area, noisy↔sensitive coupling, antenna keepout, thermal density). The twist that makes it *recursive*: each iteration doesn't just optimize the board — it mutates its own optimizer and keeps the mutation only if the canonical score improves **and** an independent field check doesn't regress. The best score is therefore monotonically non-increasing — a true ratchet — and the improved optimizer transfers to boards it has never seen.
+
+## How
+- **Language / runtime:** TypeScript (engine + RSI loop), Electron + a CLI, Remotion for the rendered walkthrough.
+- **Placement substrate:** a coupled-oscillator (Kuramoto) field — the netlist compiles into phase oscillators where shared nets are attractive (synchronizing → placed near) and noisy↔sensitive nets are repulsive (anti-phase → kept apart). A conditioning block (board intent + thermal hotspots + engineer feedback) biases the field; hundreds of random phase-seeds are raced and each synchronized field is decoded with `coord = board_size · sigmoid(a·sin θ + b·cos θ)`. The mechanism is borrowed from [Un-0](https://github.com/unconv-ai/Un-0) (coupled oscillators steered by a conditioning block) and repurposed from image synthesis into a placement optimizer.
+- **The promotable thing:** an `OscSubstrate` — coupling gains, drives, damping, readout — is what the RSI loop mutates and promotes; it also synthesizes symbolic layout rules from hotspots under the same score gate.
+- **Independent validator:** a 2.5D damped-wave EMI voxel solver that progressively refines from 4 mm full-board down to **10 µm** inside hotspots of interest (added a region-of-interest window to the solver for the µm-scale zoom).
+- **Optional accel:** a Mojo/MAX GPU custom-op kernel mirrors the Kuramoto dynamics 1:1 for large seed batches (CPU TypeScript path is the shipping default).
+
+## Tests
+No unit suite — the *objective is the test*. Promotion is gated on the canonical score, so regressions can't be promoted by construction. A CLI `bench` pits the oscillator substrate against a simulated-annealing baseline across every example board, and the EMI validator runs as an independent second opinion (refinement-stability + hotspot ranking) that can veto a promotion the geometric score would have accepted.
+
+## Results
+- On a **187-component autonomy mainboard** (450 nets, 1,685 couplings, four 3-phase BLDC channels, dual radios, Ethernet/CAN/USB) the oscillator substrate beats simulated annealing by **78%**; across the smaller boards it wins **21–70%**.
+- **Transfer:** a substrate evolved on one board makes the optimizer ~**24% better** on a new motor-driver board with **zero new feedback**.
+- The EMI pass resolves field risk continuously from millimeters to 10 µm, attributing hotspots to the aggressor (switch nodes / motor phases) and victim (crystal / sensor) nets.
+- The demo above (rendered with Remotion from real engine output + a real Electron capture) walks the full pipeline: layers → coupled-oscillator core → multi-scale EMI → live run → benchmark.
+
+## Lessons
+The hard part wasn't the oscillator math — it was making "self-improvement" *honest*. A loop that grades its own homework will happily drift; gating every promotion on a fixed, externally-meaningful score plus an independent field validator is what turns "it changes" into "it gets better." If I rebuilt it, I'd compile the Mojo/MAX kernel into the live path from day one so the seed race runs on a GPU, and push the EMI solver toward a properly calibrated (not just refinement-stable) verdict.
+
+Repo: [JacobFV/fieldratchet](https://github.com/JacobFV/fieldratchet)
