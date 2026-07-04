@@ -190,9 +190,6 @@ export const manualEdges: ManualEdge[] = [
     kind: "influence",
     weight: 0.5,
   },
-  // whose-dead-get-to-live-again → can-an-echo-become-a-voice-again:
-  // in frontmatter.
-
   // ---- Site meta ------------------------------------------------------
   {
     source: "jacobfv-site",
