@@ -84,6 +84,19 @@ const nextConfig = {
       { source: "/resume/", destination: "/resume", permanent: true },
       // Legacy slug for the introduction bio page that the home used to embed.
       { source: "/about/", destination: "/introduction", permanent: true },
+      // canvas-engineering moved to the commandAGI org; forward the docs
+      // (deep links included). Temporary on purpose: the destination will
+      // become commandagi.com/research/canvas-engineering once that exists.
+      {
+        source: "/canvas-engineering",
+        destination: "https://commandagi.github.io/canvas-engineering/",
+        permanent: false,
+      },
+      {
+        source: "/canvas-engineering/:path*",
+        destination: "https://commandagi.github.io/canvas-engineering/:path*",
+        permanent: false,
+      },
     ];
   },
 };
