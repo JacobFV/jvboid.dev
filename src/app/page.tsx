@@ -176,7 +176,7 @@ export default function HomePage() {
               from UT Arlington. I love science and engineering and people — this site maps the
               arguments behind the work.
               <Link
-                href="/introduction"
+                href="/visions/introduction"
                 className="ml-1 text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
               >
                 More about me.

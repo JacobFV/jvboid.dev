@@ -25,65 +25,122 @@ const nextConfig = {
     config.plugins.push(new VeliteWebpackPlugin());
     return config;
   },
-  // 301 redirects from the old Jekyll URLs to the new flat-slug routes.
-  // Old conventions (see ../jacobfv.github.io/_config.yml):
-  //   posts:    /blog/:year/:title/
-  //   projects: /projects/:slug/
-  //   bio:      /bio/:slug/
-  //   pages:    /resume/, /experience/, /projects/, /bio/, /papers/, ...
+  // 308 redirects from the old Jekyll (al-folio) jacobfv.github.io URLs to
+  // the current canonical routes at /{kind-plural}/{slug}. The old GitHub
+  // Pages domain now forwards every path verbatim to jvboid.dev, so these
+  // legacy shapes still arrive here and must resolve.
   //
-  // Three migrated post slugs collide with project slugs and got a
-  // `-post` suffix during migration; their old URLs need explicit
-  // overrides because the regex rule below would land them on the
-  // project page instead. See scripts/migrate-jekyll.ts.
+  // Old formats                                    New canonical
+  //   /blog/:year/:title/  and  /blog/:title/  →   /posts/:id
+  //   /blog/, /blog/page/:n/, /blog/:year/,        /posts
+  //     /blog/category/:c/, /blog/tag/:t/      →   /posts
+  //   /projects/:slug/   (underscore / MixedCase) → /projects/:id
+  //   /bio/:slug/                              →   /visions/:id
+  //   /jobs/:slug/, /experience/               →   /resume
+  //   /news/:slug/                             →   /updates
+  //   /feed/                                   →   /feed.xml
+  //   /repositories/, /repos/                  →   /projects
+  //
+  // NB: current canonical is /{kind}/{slug}; the old flat /{slug} routes are
+  // gone (they 404 by design — see CLAUDE.md), so destinations are prefixed.
   async redirects() {
-    const collisionOverrides = [
-      ["computatrum", "computatrum-post"],
-      ["full-stack-artificial-intelligence", "full-stack-artificial-intelligence-post"],
-      ["the-multi-agent-network", "the-multi-agent-network-post"],
+    // Emit both the trailing-slash and non-slash variants of a rule. The old
+    // al-folio permalinks always ended in "/"; Next serves canonical paths
+    // without one. Listing both avoids relying on trailing-slash normalization
+    // ordering relative to redirect matching.
+    const dual = (source, destination) => [
+      { source, destination, permanent: true },
+      { source: `${source}/`, destination, permanent: true },
     ];
 
-    const collisionRedirects = collisionOverrides.flatMap(([oldSlug, newSlug]) => [
-      {
-        source: `/blog/:year/${oldSlug}/`,
-        destination: `/${newSlug}`,
-        permanent: true,
-      },
-      {
-        source: `/blog/:year/${oldSlug}`,
-        destination: `/${newSlug}`,
-        permanent: true,
-      },
-    ]);
+    // A blog post reachable at BOTH its dated and yearless legacy permalink.
+    // (al-folio exposed both shapes; see the Wayback archive.)
+    const post = (oldSlug, destination) => [
+      ...dual(`/blog/:year(\\d{4})/${oldSlug}`, destination),
+      ...dual(`/blog/${oldSlug}`, destination),
+    ];
+
+    // Posts renamed during migration — mapped explicitly so the generic
+    // /blog rule below doesn't send them to a non-existent /posts/<oldslug>.
+    // Three collide with same-named project slugs and carry a `-post` suffix.
+    const renamedPosts = [
+      post("computatrum", "/posts/computatrum-post"),
+      post("full-stack-artificial-intelligence", "/posts/full-stack-artificial-intelligence-post"),
+      post("the-multi-agent-network", "/posts/the-multi-agent-network-post"),
+      post("embodied-and-situated-ai-with-feelings", "/posts/0embodied-and-situated-ai-with-feelings"),
+      post("teaching-learning-machines", "/posts/1teaching-learning-machines"),
+      post(
+        "self-learning-meta-learners-teach-themselves-to-teach",
+        "/posts/2self-learning-meta-learners-teach-themselves-to-teach",
+      ),
+      post("P-versus-NP", "/posts/p-versus-np"),
+      // Was a blog post in the old site; now lives as a project.
+      post("cookie-cutter-cnc", "/projects/cookie-cutter-cnc"),
+    ].flat();
+
+    // Legacy project slugs (underscores / MixedCase) → hyphen-case node ids.
+    // Projects whose slug is unchanged only need trailing-slash normalization,
+    // which Next handles automatically, so they're omitted here.
+    const projectRenames = {
+      "20Q": "20q",
+      DesparadosAEye: "desparados-a-eye",
+      "Jacobs-hits-2023": "jacobs-hits-2023",
+      "Summer-Break-2021-album": "summer-break-2021-album",
+      Workplace_Surveillance_System: "workplace-surveillance-system",
+      cookie_baker_3d_printer: "cookie-baker-3d-printer",
+      cookie_cutter_cnc: "cookie-cutter-cnc",
+      copyright_calculator: "copyright-calculator",
+      full_stack_artificial_intelligence: "full-stack-artificial-intelligence",
+      "jacobfv.github.io": "jacobfv-github-io",
+      "multi-graph-former": "multi-graph-former-project",
+    };
+    const projectRedirects = Object.entries(projectRenames).flatMap(([oldSlug, id]) =>
+      dual(`/projects/${oldSlug}`, `/projects/${id}`),
+    );
 
     return [
-      ...collisionRedirects,
-      // Yearless legacy post URL kept for old shared links.
-      {
-        source: "/blog/the-master-plan-part-1/",
-        destination: "/posts/the-master-plan-part-1",
-        permanent: true,
-      },
-      {
-        source: "/blog/the-master-plan-part-1",
-        destination: "/posts/the-master-plan-part-1",
-        permanent: true,
-      },
-      // Generic post redirect: /blog/2021/foo/ → /foo
-      { source: "/blog/:year/:slug/", destination: "/:slug", permanent: true },
-      { source: "/blog/:year/:slug", destination: "/:slug", permanent: true },
-      // Projects: /projects/foo/ → /foo
-      { source: "/projects/:slug/", destination: "/:slug", permanent: true },
-      // Bio essays: /bio/foo/ → /foo (vision slug = bio basename)
-      { source: "/bio/:slug/", destination: "/:slug", permanent: true },
-      // Old index pages → their new equivalents.
-      { source: "/experience/", destination: "/resume", permanent: true },
-      { source: "/experience", destination: "/resume", permanent: true },
-      { source: "/bio/", destination: "/focus-statement", permanent: true },
-      { source: "/bio", destination: "/focus-statement", permanent: true },
-      { source: "/resume/", destination: "/resume", permanent: true },
-      // Legacy slug for the introduction bio page that the home used to embed.
-      { source: "/about/", destination: "/introduction", permanent: true },
+      // --- Renamed posts & projects (must precede the generic rules) ---
+      ...renamedPosts,
+      ...projectRedirects,
+      // Bio essays whose slug changed; the rest fall through to /bio/:slug.
+      ...dual("/bio/life-story", "/visions/background"),
+      ...dual(
+        "/bio/describe-your-greatest-engineering-accomplishment",
+        "/visions/describe-some-technical-accomplishments-youre-proud-of",
+      ),
+
+      // --- Blog index & taxonomy (before the generic /blog/:slug rule) ---
+      ...dual("/blog", "/posts"),
+      ...dual("/blog/page/:n", "/posts"),
+      ...dual("/blog/category/:cat", "/posts"),
+      ...dual("/blog/tag/:tag", "/posts"),
+      ...dual("/blog/:year(\\d{4})", "/posts"),
+
+      // --- Generic blog post → /posts/:slug (dated form first) ---
+      ...dual("/blog/:year(\\d{4})/:slug", "/posts/:slug"),
+      ...dual("/blog/:slug", "/posts/:slug"),
+
+      // --- Bio essays → visions ---
+      ...dual("/bio", "/visions"),
+      ...dual("/bio/:slug", "/visions/:slug"),
+
+      // --- Jobs / experience → resume ---
+      ...dual("/jobs/:slug", "/resume"),
+      ...dual("/jobs", "/resume"),
+      ...dual("/experience", "/resume"),
+
+      // --- News → updates ---
+      ...dual("/news/:slug", "/updates"),
+      ...dual("/news", "/updates"),
+
+      // --- Other standardized legacy pages ---
+      ...dual("/feed", "/feed.xml"),
+      ...dual("/repositories", "/projects"),
+      ...dual("/repos", "/projects"),
+      ...dual("/about", "/visions/introduction"),
+      // The homepage briefly linked the flat /introduction path; keep it alive.
+      ...dual("/introduction", "/visions/introduction"),
+
       // canvas-engineering moved to the commandAGI org; forward the docs
       // (deep links included). Temporary on purpose: the destination will
       // become commandagi.com/research/canvas-engineering once that exists.
