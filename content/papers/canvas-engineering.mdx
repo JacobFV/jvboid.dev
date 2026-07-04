@@ -1,0 +1,34 @@
+---
+title: "Canvas Engineering: Declared Causal Macrostructure for Reverse-Diffusion Latent Dynamics"
+date: 2026-07-04
+lane: research
+tags: [video-diffusion, world-models, neurosymbolic, attention, type-systems, robotics]
+summary: "Prompt engineering structures what a model sees; canvas engineering structures what a diffusion model thinks in. You declare the latent regions, their connectivity, temporal frequencies, and loss roles as a typed schema, and a compiler lowers it into attention masks on a stock diffusion transformer — turning declared connectivity into an explicit causal graph inside the reverse-diffusion dynamics."
+hero:
+  src: /assets/img/papers/canvas-engineering.png
+  alt: "First page of Canvas Engineering: Declared Causal Macrostructure for Reverse-Diffusion Latent Dynamics"
+  fit: contain
+authors: [Jacob Valdez]
+venue: working paper
+pdf: /assets/pdf/canvas-engineering-paper.pdf
+bibKey: valdez2026canvasengineering
+influences: [roam-looped-attention-video-diffusion-transformers, roam-cortical-canvas]
+realizes: [canvas-engineering]
+critiques: []
+---
+
+[Open the PDF](/assets/pdf/canvas-engineering-paper.pdf). Published under [CommandAGI](https://commandagi.com); code and docs at [github.com/commandAGI/canvas-engineering](https://github.com/commandAGI/canvas-engineering) and [commandagi.github.io/canvas-engineering](https://commandagi.github.io/canvas-engineering/).
+
+Prompt engineering structures what a language model *sees*. Canvas engineering structures what a diffusion model *thinks in*. You declare the macrostructure of a diffusion transformer's latent space — which regions carry which modalities, their geometry, their temporal update frequencies, their loss roles, and a directed graph of *permitted* block-to-block attention operations — and a compiler lowers that declaration into attention masks, loss weights, and frame mappings on an off-the-shelf pretrained backbone.
+
+Because reverse diffusion is an iterated denoising map over the whole canvas, a hard connectivity constraint on attention induces an explicit, human-legible causal interaction graph *inside* the generative dynamics, while gradient descent remains free to shape all fine structure within and along the declared edges. Macro is symbolic, micro is neural, and there is no discrete/continuous interface to cross — the symbolic layer *is* the attention mask. If two regions have no path between them, their independence is exact by construction: d-separation compiled into a denoiser.
+
+The paper gives the underlying mathematics (region index sets, the mask construction, the position-weighted denoising objective, and the reachability semantics), the abstraction stack from typed entity schemas to compiled deployment, and worked designs spanning robot manipulation, a compiler-allocated hospital ICU ward with 199 typed regions, air-traffic control, and a 23-region cortical model that predicts real brain dynamics at R²=0.825. It reports the early empirical record — 26 experiments and 236 training runs on CogVideoX-2B — including a 1.73× parameter-efficiency result for looped attention and a frozen 350K-parameter configuration that beats 11.7M unfrozen parameters on action prediction, and reads those small-scale results as calibration rather than narrative.
+
+This is a companion to the empirical ROAM paper on [looped attention](/roam-looped-attention-video-diffusion-transformers); where that work asks *what works and why* in the video-diffusion substrate, this one asks *how to make latent structure declarable at all*, and argues that declared structure — versionable, diffable, compilable, shareable — is the production-ready on-ramp to intuition-guided symbolic world modeling.
+
+<iframe
+  src="/assets/pdf/canvas-engineering-paper.pdf#view=FitH"
+  title="Canvas Engineering: Declared Causal Macrostructure for Reverse-Diffusion Latent Dynamics"
+  style={{ width: "100%", height: "720px", border: "1px solid var(--color-border)", borderRadius: "8px" }}
+/>
