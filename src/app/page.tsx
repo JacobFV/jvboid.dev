@@ -175,12 +175,6 @@ export default function HomePage() {
               agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science
               from UT Arlington. I love science and engineering and people — this site maps the
               arguments behind the work.
-              <Link
-                href="/visions/introduction"
-                className="ml-1 text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-              >
-                More about me.
-              </Link>
             </p>
           </div>
         </section>
