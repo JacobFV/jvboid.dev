@@ -159,7 +159,7 @@ export default function HomePage() {
                 rel="noreferrer"
                 className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
               >
-                commandAGI
+                CommandAGI
               </a>
               . Most recently API/Integration Architect
               at{" "}
@@ -173,8 +173,7 @@ export default function HomePage() {
               </a>
               , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
               agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science
-              from UT Arlington. I love science and engineering and people — this site maps the
-              arguments behind the work.
+              from UT Arlington. I love science and engineering and people
             </p>
           </div>
         </section>
