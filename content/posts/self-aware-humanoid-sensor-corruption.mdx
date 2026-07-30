@@ -1,0 +1,33 @@
+---
+title: "Sensor corruption: evidence about the reliability of perception"
+date: 2026-07-30
+lane: research
+tags: [robotics, active perception, metacognition]
+summary: "When forward range readings become spuriously permissive, the self-aware humanoid predicts perceptual failure, performs a reference sweep, and adapts faster than the matched generic policy."
+unlisted: true
+---
+
+A hidden obstacle is introduced while the forward range sensor begins reporting that space is more open than it really is. The corruption is correlated and superficially plausible; merely smoothing the readings does not identify it.
+
+<HumanoidExperiment scenario="sensor_corruption" />
+
+## Signature of self-awareness
+
+SA predicts a drop in the reliability of its own perceptual update and selects a **reference sweep**. The head motion is not the evidence by itself. The important causal sequence is
+
+$$
+\text{predicted sensor failure}
+\rightarrow \text{diagnostic head sweep}
+\rightarrow \text{reference observation}
+\rightarrow \text{revised map and policy}.
+$$
+
+Across 20 paired evaluations, SA improves utility by $+0.266$, with 95% interval $[+0.130,+0.409]$. When the same trained SA policy has its self-model causally disabled, it fails the representative run and repeatedly collides with the hidden crate.
+
+## Why this is the cleanest positive result
+
+The diagnostic action changes the identifiability of the failure. A normal observation can be explained either by open space or by a corrupted sensor. A reference sweep produces an intervention-conditioned observation that separates those hypotheses. The self-model is useful because it selects evidence about the machinery of inference itself.
+
+## What remains unresolved
+
+Both policies receive telemetry designed to expose sensor disagreement, and SA's selector knows the closed set of possible repairs. A harder test would remove the explicit fault channel, introduce novel corruption processes, charge for reference sensing, and learn the experiment-selection policy from chosen actions alone.
