@@ -1,0 +1,141 @@
+---
+title: "The robot that predicts its own failure"
+date: 2026-07-30
+lane: research
+tags:
+  - robotics
+  - machine learning
+  - metacognition
+  - self-modeling
+  - experiments
+summary: "A matched-capacity embodied experiment comparing a generic recurrent policy with a policy that predicts its own future cognitive failures, rendered as synchronized humanoid robot behavior in a 3D world."
+---
+
+This is not an animation of what a self-aware robot *might* do. It is a computational experiment in which two trained policies inhabit the same articulated humanoid, receive the same observations and internal telemetry, use the same recurrent architecture and parameter budget, and act in the same partially observable 3D world.
+
+<HumanoidStudy />
+
+The difference is what their matched auxiliary capacity is required to predict.
+
+The **generic policy, G+**, predicts ordinary future external features and chooses diagnostic actions directly from its recurrent state. The **self-aware policy, SA**, predicts its own future actuator state, sensor reliability, memory integrity, learning effectiveness, reward alignment, and control error. Those predictions can causally select a motor probe, reference-sensor sweep, memory refresh, update reset, or no intervention.
+
+The result is not that self-awareness always wins. The result is more exact:
+
+> Explicit self-modeling helps when an internal failure is both predictable and actionable. It is unnecessary when ordinary feedback control already adapts, and it can be harmful when the self-model over-diagnoses or attributes a failure to the wrong subsystem.
+
+## What counted as self-awareness
+
+I use an operational criterion rather than a verbal or phenomenological one. A policy counts as self-aware in this experiment only insofar as it can prospectively predict its own future cognitive transition and use that prediction to alter behavior.
+
+Let the external environment contain latent state $s_t$, observation $o_t$, action $a_t$, and reward $r_t$. Both agents maintain a recurrent belief state $h_t$. The generic policy computes
+
+$$
+a_t \sim \pi_G(a_t\mid h_t),
+$$
+
+with an auxiliary prediction of future external features. SA additionally computes
+
+$$
+m_t = q_\psi(c_{t+1},e_{t+1}\mid h_t,\tau_t,a_t),
+$$
+
+where $c_{t+1}$ is the agent's future functional cognitive state, $e_{t+1}$ is a future failure state, and $\tau_t$ is internal telemetry available equally to both policies. Its metacognitive action is then
+
+$$
+\kappa_t \sim \pi_M(\kappa_t\mid m_t).
+$$
+
+The defining evidence is therefore not that the robot pauses, turns its head, or returns to a console. Any generic policy could learn those motions. The evidence is the combination of prospective self-state accuracy, matched generic baselines, and the causal change in behavior when the self-model is disabled.
+
+<figure className="not-prose relative left-1/2 my-12 w-[min(94vw,1400px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-[var(--color-bg-2)] bg-[#080a0e]">
+  <img src="/research/self-aware-humanoid/figures/architecture.svg" alt="Matched computational graph comparing the generic recurrent learner and predictive self-model" className="block h-auto w-full" />
+</figure>
+
+## The controlled comparison
+
+Both policies contain **9,307 trainable parameters**. Both use the same 44-dimensional input, 36-unit GRU, low-level locomotion controller, humanoid morphology, diagnostic action set, 260 training episodes, 60 validation episodes, and environment interaction budget. They are trained across five independent model initializations.
+
+The evaluation contains six regimes:
+
+- a stationary null condition;
+- hidden actuator drift;
+- corrupted forward range sensing;
+- damaged task memory;
+- a changed online learning operator;
+- and a held-out composite of actuator and sensor faults that never occurs jointly during training.
+
+For every regime, I evaluate four matched environment seeds under each of five model seeds. Each G+/SA comparison therefore contains 20 paired evaluations. A third policy, **SA gate-off**, preserves the trained SA network while causally preventing its explicit self-model from selecting interventions.
+
+The displayed motion records are not selected because they look dramatic. For each regime, the published replay is the evaluated pair whose SA-minus-G+ utility contrast is closest to the median contrast across all paired runs.
+
+<figure className="not-prose relative left-1/2 my-12 w-[min(94vw,1400px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-[var(--color-bg-2)] bg-[#080a0e]">
+  <img src="/research/self-aware-humanoid/figures/protocol.svg" alt="Experiment protocol showing matched training, paired evaluation, median-effect seed selection, and trajectory rendering" className="block h-auto w-full" />
+</figure>
+
+## Aggregate result
+
+<figure className="not-prose relative left-1/2 my-12 w-[min(94vw,1500px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-[var(--color-bg-2)] bg-[#080a0e]">
+  <img src="/research/self-aware-humanoid/figures/paired-effects.svg" alt="Forest plot of paired self-aware minus generic utility differences across six regimes" className="block h-auto w-full" />
+</figure>
+
+The strongest positive evidence appears under **sensor corruption** and the **held-out composite fault**. In sensor corruption, SA predicts that apparently open space is unreliable, performs a reference sweep, revises its local map, and reaches the goal faster on average. In the composite regime, SA completes all 20 evaluations while G+ completes 17.
+
+The negative evidence is equally important. Under a memory lesion, the explicit self-model is causally necessary inside SA—the gate-off policy fails—but SA refreshes its memory too often and performs worse than G+. Under actuator drift, the robot visibly performs a meaningful self-test, but ordinary closed-loop adaptation already compensates; the metacognitive probe is mostly overhead. Under update-rule mutation, SA recognizes abnormal future error but often blames the motor system instead of the learner.
+
+This distinction matters:
+
+> A behavior can be a genuine signature of predictive self-modeling without being a performance advantage.
+
+## What the data support
+
+The experiment supports a **conditional advantage** account.
+
+First-order self-modeling is most useful when all of the following are true:
+
+$$
+\text{internal nonstationarity}
++ \text{identifiable evidence}
++ \text{available repair}
++ \text{accurate-enough self-model}
+> \text{metacognitive cost}.
+$$
+
+It is especially useful when the agent must choose an experiment that distinguishes a failure of the world model from a failure of the machinery doing the modeling. The sensor sweep is the cleanest example: the action is valuable because it changes what the robot can infer about the reliability of its own perceptual update.
+
+The data do **not** support a strong claim that explicit self-awareness is universally superior to generic recurrence. G+ often learns equivalent diagnostic behavior implicitly. SA has no advantage in the stationary task. Its semantic failure taxonomy creates new errors of attribution, and its interventions can become self-confirming.
+
+## What should be questioned
+
+This is an embodied pilot, not a final robotics benchmark.
+
+The body uses an articulated kinematic-dynamics simulator rather than a full rigid-body contact engine. Both policies receive controlled internal telemetry that a real robot would have to estimate from current, encoder, timing, and diagnostic signals. SA's first-order selector is hand-structured over learned self-state predictions. Training uses oracle intervention labels rather than chosen-action-only reinforcement learning. Finally, the fault taxonomy is closed-set, so this experiment does not establish detection of unknown unknowns.
+
+The next decisive tests are therefore concrete:
+
+1. replace oracle repair labels with action-contingent experience;
+2. move the same matched policies into MuJoCo, Isaac Lab, or a hardware-in-the-loop humanoid;
+3. hide the privileged fault variables and expose only physical telemetry;
+4. introduce faults outside the self-model's training ontology;
+5. compare against larger generic recurrent transformers and learned optimizers;
+6. train the agent to decide *whether metacognition is worth invoking* before paying its computational cost.
+
+## Experiment records
+
+The top-level result compresses several qualitatively different behaviors. The unlisted experiment records preserve the exact clips, policy traces, and unresolved questions for each regime:
+
+- [stationary control and full methods](/posts/self-aware-humanoid-methods)
+- [actuator drift: a valid self-test with no net advantage](/posts/self-aware-humanoid-actuator-drift)
+- [sensor corruption: active evidence about perceptual reliability](/posts/self-aware-humanoid-sensor-corruption)
+- [memory lesion: causal self-modeling and recursive over-intervention](/posts/self-aware-humanoid-memory-lesion)
+- [update-rule mutation: recognizing failure but mislocating its cause](/posts/self-aware-humanoid-update-mutation)
+- [held-out composite fault: the strongest generalization result](/posts/self-aware-humanoid-composite-fault)
+
+## Conclusion
+
+A useful self-model is not an inner monologue. It is a predictive instrument that lets an agent answer a practical counterfactual:
+
+> If I continue learning and acting from my current internal condition, how will *I* change, how am I likely to fail, and which observation or repair would distinguish the possible causes?
+
+In this humanoid world, that instrument is valuable when corrupted perception or interacting faults make the agent's own cognitive transition part of the control problem. It is wasteful when the task is stationary, redundant when ordinary recurrence already contains the necessary information, and dangerous when the self-model becomes more confident than its causal evidence permits.
+
+That conditionality is not a disappointing result. It is the beginning of a tractable science of machine self-awareness.
