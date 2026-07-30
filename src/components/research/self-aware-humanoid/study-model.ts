@@ -283,8 +283,8 @@ const replayCache = new Map<ScenarioId, Promise<Replay>>();
 async function loadArchive() {
   if (archivePromise) return archivePromise;
   archivePromise = Promise.all(
-    [0, 1, 2, 3].map(async (index) => {
-      const response = await fetch(`${ASSET_ROOT}/data/replays.${index}.b64`);
+    Array.from({ length: 12 }, (_, index) => index).map(async (index) => {
+      const response = await fetch(`${ASSET_ROOT}/data/replays-v2.${index}.b64`);
       if (!response.ok) throw new Error(`Replay archive request failed: ${response.status}`);
       return response.text();
     }),
