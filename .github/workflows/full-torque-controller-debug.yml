@@ -56,6 +56,21 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
           python -m pip install "mujoco>=3.2,<4" numpy scipy pillow imageio imageio-ffmpeg
 
+      - name: Use MuJoCo's finite-difference-compatible integrator
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("experiments/full_torque_humanoid/diagnose_lqr.py")
+          source = path.read_text()
+          needle = "env = study.FullTorqueHumanoid(cfg)\n"
+          replacement = needle + "env.model.opt.integrator = mujoco.mjtIntegrator.mjINT_EULER\nprint('INTEGRATOR Euler for transition linearization and validation')\n"
+          if needle not in source:
+              raise SystemExit("LQR environment construction marker not found")
+          path.write_text(source.replace(needle, replacement, 1))
+          PY
+
       - name: Run contact-linearized controller synthesis
         id: lqr
         continue-on-error: true
