@@ -62,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libosmesa6-dev libgl1-mesa-glx ffmpeg
+          sudo apt-get install -y --no-install-recommends libosmesa6-dev libgl1 ffmpeg
           python -m pip install --upgrade pip
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
           python -m pip install "mujoco>=3.2,<4" numpy pandas pillow imageio imageio-ffmpeg matplotlib
