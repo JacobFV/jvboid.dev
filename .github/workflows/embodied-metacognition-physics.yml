@@ -1,0 +1,47 @@
+name: embodied metacognition physics
+
+on:
+  push:
+    branches:
+      - agent/embodied-metacognition-study
+    paths:
+      - "experiments/embodied_metacognition_physics/**"
+      - ".github/workflows/embodied-metacognition-physics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: embodied-metacognition-physics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MUJOCO_GL: osmesa
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore physics experiment source
+        run: |
+          cat experiments/embodied_metacognition_physics/source.*.b64 > /tmp/embodied-physics-source.b64
+          base64 --decode /tmp/embodied-physics-source.b64 > /tmp/embodied-physics-source.tar.gz
+          echo "0b70ea5fd791a55633191f9f453ca29c0b0a6f0d859c7a59d4dfbf1339852cec  /tmp/embodied-physics-source.tar.gz" | sha256sum --check --strict
+          tar -xzf /tmp/embodied-physics-source.tar.gz -C experiments
+          python -m py_compile experiments/embodied_metacognition_physics/*.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install MuJoCo runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libosmesa6 libgl1-mesa-glx ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install "mujoco==3.10.0" numpy torch pandas pillow imageio imageio-ffmpeg matplotlib
+      - name: Validate rigid-body model and one evaluated behavior
+        working-directory: experiments/embodied_metacognition_physics
+        run: python smoke.py
