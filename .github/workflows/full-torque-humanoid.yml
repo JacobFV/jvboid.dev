@@ -65,13 +65,18 @@ jobs:
           sudo apt-get install -y --no-install-recommends libosmesa6-dev libgl1 ffmpeg
           python -m pip install --upgrade pip
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
-          python -m pip install "mujoco>=3.2,<4" numpy pandas pillow imageio imageio-ffmpeg matplotlib
+          python -m pip install "mujoco>=3.2,<4" numpy scipy pandas pillow imageio imageio-ffmpeg matplotlib
 
-      - name: Diagnose standing and reaching dynamics
+      - name: Synthesize and validate whole-body torque feedback
         shell: bash
         run: |
           set -euo pipefail
-          python experiments/full_torque_humanoid/diagnose_expert.py
+          python experiments/full_torque_humanoid/diagnose_lqr.py
+
+      - name: Diagnose the original controller for comparison
+        if: failure()
+        shell: bash
+        run: python experiments/full_torque_humanoid/diagnose_expert.py
 
       - name: Validate the physical morphology and expert demonstrations
         shell: bash
