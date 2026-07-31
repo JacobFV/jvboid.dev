@@ -7,6 +7,12 @@ on:
     paths:
       - "experiments/embodied_metacognition_physics/**"
       - ".github/workflows/embodied-metacognition-physics.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "experiments/embodied_metacognition_physics/**"
+      - ".github/workflows/embodied-metacognition-physics.yml"
   workflow_dispatch:
 
 permissions:
