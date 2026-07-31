@@ -7,6 +7,12 @@ on:
     paths:
       - "experiments/full_torque_humanoid/**"
       - ".github/workflows/full-torque-humanoid.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "experiments/full_torque_humanoid/**"
+      - ".github/workflows/full-torque-humanoid.yml"
   workflow_dispatch:
 
 permissions:
@@ -94,6 +100,7 @@ jobs:
           retention-days: 90
 
       - name: Publish every exported artifact on the study branch
+        if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
