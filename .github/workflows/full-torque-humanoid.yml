@@ -42,11 +42,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat experiments/full_torque_humanoid/source.000.b64 \
-              experiments/full_torque_humanoid/source.001.b64 > /tmp/full_control_study.py.gz.b64
+          echo "e6ca04a09f15cb950bec357095c65c61f9043decead3d427a8b4ea71b54df50f  experiments/full_torque_humanoid/archive.00.b64" | sha256sum --check --strict
+          echo "438074a38768069a51d6c6e3ac7736c3751f6c7120f3582fb496057d41598c35  experiments/full_torque_humanoid/archive.01.b64" | sha256sum --check --strict
+          echo "19ee9a847fe798844e0832d1e13cecb37d09b1c9c804a7b554bb6d05828fe568  experiments/full_torque_humanoid/archive.02.b64" | sha256sum --check --strict
+          echo "d901bfc85b9e940c58a3bceb3a0863fee5881401d799dd0b2109c1700f712474  experiments/full_torque_humanoid/archive.03.b64" | sha256sum --check --strict
+          echo "65d15d2b46d7769835cbddb1c97e2e0382352984a4489f409623ef80d2a9ec13  experiments/full_torque_humanoid/archive.04.b64" | sha256sum --check --strict
+          echo "491ca922a4553d1de938a874d6ae82ea78257d7897f363fe5dcc5ca9746db565  experiments/full_torque_humanoid/archive.05.b64" | sha256sum --check --strict
+          cat experiments/full_torque_humanoid/archive.*.b64 > /tmp/full_control_study.py.gz.b64
+          echo "343e815df8ce34aedec956633d7197044d34da787bbaf230bf7d8db1929a0a5f  /tmp/full_control_study.py.gz.b64" | sha256sum --check --strict
           base64 --decode /tmp/full_control_study.py.gz.b64 > /tmp/full_control_study.py.gz
-          echo "49e165d5cb1a3ed5379cac91e00b26079db0c4947667f767eec029211e29a575  /tmp/full_control_study.py.gz" | sha256sum --check --strict
+          echo "d2ba591eb42e0b3fc5cd78d8e6b948919de2edb382cdf9c34d6246178e802f74  /tmp/full_control_study.py.gz" | sha256sum --check --strict
+          gzip --test /tmp/full_control_study.py.gz
           gzip --decompress --stdout /tmp/full_control_study.py.gz > experiments/full_torque_humanoid/full_control_study.py
+          echo "14afaf598c347cf2fee03499fb048d38ce03b77e6d8a7c915aa61cb708041291  experiments/full_torque_humanoid/full_control_study.py" | sha256sum --check --strict
           python -m py_compile experiments/full_torque_humanoid/full_control_study.py
 
       - name: Install rigid-body simulation and learning runtime
