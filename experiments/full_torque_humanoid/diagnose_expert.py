@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import math
+import sys
 from pathlib import Path
 
 import mujoco
@@ -11,6 +12,7 @@ SOURCE = Path(__file__).with_name("full_control_study.py")
 spec = importlib.util.spec_from_file_location("study", SOURCE)
 assert spec and spec.loader
 study = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = study
 spec.loader.exec_module(study)
 
 
