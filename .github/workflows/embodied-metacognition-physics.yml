@@ -38,6 +38,7 @@ jobs:
           base64 --decode /tmp/embodied-physics-source.b64 > /tmp/embodied-physics-source.tar.gz
           echo "0b70ea5fd791a55633191f9f453ca29c0b0a6f0d859c7a59d4dfbf1339852cec  /tmp/embodied-physics-source.tar.gz" | sha256sum --check --strict
           tar -xzf /tmp/embodied-physics-source.tar.gz -C experiments
+          sed -i -E 's/ shininess="[^"]*"//g' experiments/embodied_metacognition_physics/model.py
           python -m py_compile experiments/embodied_metacognition_physics/*.py
       - uses: actions/setup-python@v5
         with:
