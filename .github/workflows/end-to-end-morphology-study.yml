@@ -1,0 +1,47 @@
+name: end-to-end morphology self-model study
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/end-to-end-morphology-study.yml"
+      - "experiments/end_to_end_morphology/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  runtime-bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Download the exact local-development runtime wheels
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/morphology-runtime-wheels
+          python -m pip download \
+            --dest /tmp/morphology-runtime-wheels \
+            "mujoco>=3.2,<4" \
+            "etils[epath]" \
+            glfw \
+            pyopengl
+          python -m pip install --no-index --find-links /tmp/morphology-runtime-wheels \
+            "mujoco>=3.2,<4" "etils[epath]" glfw pyopengl
+          python - <<'PY'
+          import mujoco
+          print("MUJOCO_VERSION", mujoco.__version__)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: morphology-runtime-wheels-cp313
+          path: /tmp/morphology-runtime-wheels
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
