@@ -17,7 +17,7 @@ jobs:
           ref: main
           fetch-depth: 0
       - name: create exact main bundle
-        run: git bundle create repository.bundle refs/remotes/origin/main:refs/heads/main
+        run: git bundle create repository.bundle main
       - uses: actions/upload-artifact@v4
         with:
           name: merged-main-repository-bundle
