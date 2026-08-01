@@ -55,6 +55,40 @@ const posts = defineCollection({
     .transform((d) => ({ ...d, kind: "post" as const })),
 });
 
+// Build-generated snapshots of every git revision that touched a current
+// post. `scripts/generate-post-revisions.mjs` writes these immediately before
+// Velite runs; they are build artifacts, never hand-authored content.
+const postRevisions = defineCollection({
+  name: "PostRevision",
+  pattern: "_generated/post-revisions/**/*.mdx",
+  schema: s.object({
+    slug: s.path(),
+    postId: s.string(),
+    sequence: s.number().int(),
+    commit: s.string(),
+    shortCommit: s.string(),
+    authoredAt: s.string(),
+    committedAt: s.string(),
+    authorName: s.string(),
+    authorEmail: s.string(),
+    committerName: s.string(),
+    committerEmail: s.string(),
+    subject: s.string(),
+    sourcePath: s.string(),
+    repositoryUrl: s.string(),
+    sourceBase64: s.string(),
+    title: s.string(),
+    publishedDate: s.isodate(),
+    summary: s.string(),
+    legacy: s.boolean(),
+    body: s.mdx({
+      copyLinkedFiles: false,
+      remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
+      rehypePlugins: [rehypeKatex],
+    }),
+  }),
+});
+
 const projects = defineCollection({
   name: "Project",
   pattern: "projects/**/*.mdx",
@@ -265,6 +299,7 @@ export default defineConfig({
   },
   collections: {
     posts,
+    postRevisions,
     projects,
     papers,
     readings,

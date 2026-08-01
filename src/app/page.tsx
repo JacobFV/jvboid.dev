@@ -12,6 +12,7 @@ import {
   type Node,
 } from "@/lib/graph";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
+import { getPostRevisionSummary } from "@/lib/post-revisions";
 
 const laneClass: Record<Lane, string> = {
   research: "text-[var(--color-lane-research)]",
@@ -387,16 +388,25 @@ function UpdateTimeline({ nodes }: { nodes: Node[] }) {
 }
 
 function RowLink({ node }: { node: Node }) {
+  const postedDate = fmtDate(node.date);
+  const { updatedDate } = getPostRevisionSummary(node.id);
   return (
     <Link
       href={nodeHref(node)}
-      className="group flex items-baseline gap-4 px-3 py-3 no-underline transition-colors"
+      className="group flex items-start gap-4 px-3 py-3 no-underline transition-colors"
     >
-      <time className="w-20 shrink-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-        {fmtDate(node.date)}
-      </time>
+      <span className="w-44 shrink-0 font-[family-name:var(--font-mono)] text-[10px] leading-4 text-[var(--color-ink-mute)] sm:text-xs">
+        <span className="block">
+          posted: <time dateTime={postedDate}>{postedDate}</time>
+        </span>
+        {updatedDate && (
+          <span className="block">
+            updated: <time dateTime={updatedDate}>{updatedDate}</time>
+          </span>
+        )}
+      </span>
       <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${laneBg[node.lane]}`} aria-hidden />
-      <span className="text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
+      <span className="pt-0.5 text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
         {node.title}
       </span>
     </Link>

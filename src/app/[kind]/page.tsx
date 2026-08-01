@@ -12,6 +12,7 @@ import {
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { CollectionTitle } from "@/components/chrome/CollectionTitle";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
+import { getPostRevisionSummary } from "@/lib/post-revisions";
 
 type Params = Promise<{ kind: string }>;
 
@@ -96,30 +97,56 @@ export default async function KindIndexPage({ params }: { params: Params }) {
         <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
       ) : (
         <ul className="grid gap-4">
-          {nodes.map((node) => (
-            <li key={node.id}>
-              <Link
-                href={nodeHref(node)}
-                className="block rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)]/45 p-5 no-underline transition-colors hover:border-[var(--color-ink-mute)] hover:bg-[var(--color-bg-1)]"
-              >
-                <div className="mb-2 flex flex-wrap items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-                  <time>{new Date(node.date).toISOString().slice(0, 10)}</time>
-                  {node.eventStatus && (
-                    <>
-                      <span>·</span>
-                      <span>{node.eventStatus}</span>
-                    </>
-                  )}
-                  <span>·</span>
-                  <span>{node.lane}</span>
-                </div>
-                <div className="text-lg text-[var(--color-ink)]">{node.title}</div>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-dim)]">
-                  {node.summary}
-                </p>
-              </Link>
-            </li>
-          ))}
+          {nodes.map((node) => {
+            const postedDate = new Date(node.date).toISOString().slice(0, 10);
+            const revisionSummary =
+              node.kind === "post" ? getPostRevisionSummary(node.id) : null;
+            return (
+              <li key={node.id}>
+                <Link
+                  href={nodeHref(node)}
+                  className="block rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)]/45 p-5 no-underline transition-colors hover:border-[var(--color-ink-mute)] hover:bg-[var(--color-bg-1)]"
+                >
+                  <div className="mb-2 flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                    {node.kind === "post" ? (
+                      <>
+                        <span>
+                          posted: <time dateTime={postedDate}>{postedDate}</time>
+                        </span>
+                        {revisionSummary?.updatedDate && (
+                          <>
+                            <span aria-hidden>·</span>
+                            <span>
+                              updated:{" "}
+                              <time dateTime={revisionSummary.updatedDate}>
+                                {revisionSummary.updatedDate}
+                              </time>
+                            </span>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <time dateTime={postedDate}>{postedDate}</time>
+                        {node.eventStatus && (
+                          <>
+                            <span>·</span>
+                            <span>{node.eventStatus}</span>
+                          </>
+                        )}
+                        <span>·</span>
+                        <span>{node.lane}</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="text-lg text-[var(--color-ink)]">{node.title}</div>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-dim)]">
+                    {node.summary}
+                  </p>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>
