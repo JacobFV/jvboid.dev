@@ -1,35 +1,26 @@
-name: publish full-history revision patch (temporary)
+name: export latest merged main history (temporary)
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
+  bundle:
     if: github.head_ref == 'agent/export-history-20260801'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: main
           fetch-depth: 0
-      - name: apply verified patch onto current main
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp .github/agent/full-history-dedupe.patch.xz.b64 /tmp/full-history.patch.xz.b64
-          echo '3ae4848acc4e9c07e3d37454c8025e54d1eb58a321e4eaa751563ce2c9653fc9  /tmp/full-history.patch.xz.b64' | sha256sum --check --strict
-          base64 --decode /tmp/full-history.patch.xz.b64 > /tmp/full-history.patch.xz
-          echo '3dbe5f2a3ffcf4fe4a280c438d7d2d3ae9fa842b930b90480a5c34013983aa58  /tmp/full-history.patch.xz' | sha256sum --check --strict
-          xz --decompress --stdout /tmp/full-history.patch.xz > /tmp/full-history.patch
-          echo 'd5c978b47da2674f710b2d63a9bc07585a10ac0a28c115eb76060e2ade0ad5c6  /tmp/full-history.patch' | sha256sum --check --strict
-          git fetch origin main
-          git switch --force-create agent/full-history-post-revisions origin/main
-          git apply --index /tmp/full-history.patch
-          git config user.name 'Jacob Valdez'
-          git config user.email '40343913+JacobFV@users.noreply.github.com'
-          git commit -m 'index post revisions across stacked histories'
-          git push --force origin HEAD:agent/full-history-post-revisions
+      - name: create exact main bundle
+        run: git bundle create repository.bundle main
+      - uses: actions/upload-artifact@v4
+        with:
+          name: latest-main-repository-bundle
+          path: repository.bundle
+          compression-level: 0
+          retention-days: 1
