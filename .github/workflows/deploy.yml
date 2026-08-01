@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -18,6 +20,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
+        env:
+          POST_REVISIONS_REQUIRE_FULL_HISTORY: "1"
       - run: pnpm build
+        env:
+          POST_REVISIONS_REQUIRE_FULL_HISTORY: "1"
       # Deployment step is intentionally absent until Phase 9 cutover.
       # Configure Cloudflare Pages or Vercel by adding the appropriate action here.
