@@ -29,6 +29,7 @@ jobs:
           git fetch origin main
           git switch --force-create agent/post-revision-history origin/main
           git apply --index /tmp/post-revisions.patch
+          git restore --source=origin/main --staged --worktree .github/workflows/deploy.yml
           git config user.name 'Jacob Valdez'
           git config user.email '40343913+JacobFV@users.noreply.github.com'
           git commit -m 'add public post revision history'
