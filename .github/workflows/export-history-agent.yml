@@ -20,8 +20,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp .github/agent/post-revisions.patch.xz.b64 /tmp/post-revisions.patch.xz.b64
-          base64 --decode /tmp/post-revisions.patch.xz.b64 | xz --decompress > /tmp/post-revisions.patch
+          cat .github/agent/post-revisions.patch.xz.b64.part-* > /tmp/post-revisions.patch.xz.b64
+          echo 'c15853403f3d4ef3db8758128bedd9c33cf33348659bae4cc0e128aa281df53c  /tmp/post-revisions.patch.xz.b64' | sha256sum --check --strict
+          base64 --decode /tmp/post-revisions.patch.xz.b64 > /tmp/post-revisions.patch.xz
+          echo '17bd4b1981abbcae55241c743726233ac4ab6ade9709067e66f31f886ddacf27  /tmp/post-revisions.patch.xz' | sha256sum --check --strict
+          xz --decompress --stdout /tmp/post-revisions.patch.xz > /tmp/post-revisions.patch
           echo '7ee29ddca9bb53c61ba1d903294a5bb54d6e5bb90faca9a7b68cdd320796bc89  /tmp/post-revisions.patch' | sha256sum --check --strict
           git fetch origin main
           git switch --force-create agent/post-revision-history origin/main
