@@ -1,26 +1,90 @@
-name: export latest merged main history (temporary)
+name: validate reconstructed stacked history (temporary)
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  bundle:
+  validate:
     if: github.head_ref == 'agent/export-history-20260801'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - name: create exact main bundle
-        run: git bundle create repository.bundle main
+      - name: reconstruct exact stacked history
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .github/agent/reconstruct-stacked-history.py.xz.b64 /tmp/reconstruct.py.xz.b64
+          echo '7168dd38d8d68992bf28c9f1a3d354c4a1ee65f3070cc856d96d3d0479e655b3  /tmp/reconstruct.py.xz.b64' | sha256sum --check --strict
+          base64 --decode /tmp/reconstruct.py.xz.b64 > /tmp/reconstruct.py.xz
+          echo '74da7483c50bdf111cacade7d506cc278ac6287c444a6e9c3a4a0832e8579593  /tmp/reconstruct.py.xz' | sha256sum --check --strict
+          xz --decompress --stdout /tmp/reconstruct.py.xz > /tmp/reconstruct.py
+          echo 'c575f648012a1352d9a50fa083eda2c1fec04600c3d34ee02405d57da138192b  /tmp/reconstruct.py' | sha256sum --check --strict
+          git fetch origin main
+          git switch --detach origin/main
+          test "$(git rev-parse HEAD)" = 'da83fabc9fc01fe3dd443462a9c4c76c92b6797c'
+          git remote add legacy https://github.com/JacobFV/jacobfv.github.io-old-2021-thru-2026-version.git
+          git fetch legacy main:refs/remotes/legacy/main
+          test "$(git rev-parse refs/remotes/legacy/main)" = 'effd56df3a502185e9214605fd7f588404b97a64'
+          python /tmp/reconstruct.py | tee stacked-reconstruction.log
+          test "$(git rev-parse refs/heads/stacked-canonical-v2)" = '7059ba39eb622369d82d521bdd1788193bd7b21a'
+          test "$(git rev-parse refs/heads/stacked-final-v2)" = 'f0b0bddf4baca5896b0829d0b9140d91589877dc'
+          git switch --detach refs/heads/stacked-final-v2
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: typecheck all historical revisions
+        run: pnpm typecheck
+        env:
+          POST_REVISIONS_REQUIRE_FULL_HISTORY: "1"
+          POST_REVISION_REPOSITORY_URL: https://github.com/JacobFV/jvboid.dev-stacked-on-top-of-2021-thru-2026-version
+      - name: build all historical revisions
+        run: pnpm build
+        env:
+          POST_REVISIONS_REQUIRE_FULL_HISTORY: "1"
+          POST_REVISION_REPOSITORY_URL: https://github.com/JacobFV/jvboid.dev-stacked-on-top-of-2021-thru-2026-version
+      - name: assert revision manifest and bundle integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const manifest = require('./content/_generated/post-revisions/manifest.json');
+          const counts = Object.values(manifest.posts).map((post) => post.revisions.length);
+          const revisions = counts.reduce((sum, count) => sum + count, 0);
+          const updated = counts.filter((count) => count > 1).length;
+          if (revisions !== 246 || updated !== 54) {
+            throw new Error(`unexpected revision manifest: ${revisions} revisions, ${updated} updated posts`);
+          }
+          console.log(`verified ${revisions} revisions across ${counts.length} posts; ${updated} updated posts`);
+          NODE
+          mkdir -p stacked-validation
+          git bundle create stacked-validation/jvboid.dev-stacked.bundle refs/heads/stacked-final-v2
+          git bundle verify stacked-validation/jvboid.dev-stacked.bundle
+          sha256sum stacked-validation/jvboid.dev-stacked.bundle > stacked-validation/SHA256SUMS
+          cp stacked-history-audit-v2.txt stacked-reconstruction.log content/_generated/post-revisions/manifest.json stacked-validation/
+          git show -s --format=raw refs/heads/stacked-final-v2 > stacked-validation/final-commit.txt
+          git show -s --format=raw refs/heads/stacked-canonical-v2 > stacked-validation/canonical-commit.txt
+          du -h stacked-validation/jvboid.dev-stacked.bundle
+      - name: publish staging branch in source repository
+        continue-on-error: true
+        run: git push --force origin refs/heads/stacked-final-v2:refs/heads/agent/stacked-history-staging
       - uses: actions/upload-artifact@v4
         with:
-          name: latest-main-repository-bundle
-          path: repository.bundle
-          compression-level: 0
-          retention-days: 1
+          name: stacked-history-validation
+          path: |
+            stacked-validation/stacked-history-audit-v2.txt
+            stacked-validation/stacked-reconstruction.log
+            stacked-validation/manifest.json
+            stacked-validation/final-commit.txt
+            stacked-validation/canonical-commit.txt
+            stacked-validation/SHA256SUMS
+          retention-days: 7
