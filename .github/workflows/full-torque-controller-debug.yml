@@ -1,113 +1,43 @@
-name: full-torque controller diagnostics
+name: morphology runtime bootstrap
 
 on:
   push:
     branches:
-      - agent/full-torque-humanoid-self-model
+      - agent/end-to-end-morphology-self-model-study
     paths:
-      - "experiments/full_torque_humanoid/**"
-      - ".github/workflows/full-torque-controller-debug.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "experiments/full_torque_humanoid/**"
       - ".github/workflows/full-torque-controller-debug.yml"
   workflow_dispatch:
 
 jobs:
-  diagnose:
+  bootstrap:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
-    env:
-      MUJOCO_GL: osmesa
-      PYOPENGL_PLATFORM: osmesa
-      PYTHONUNBUFFERED: "1"
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-
-      - name: Restore exact inertial-complete source
+          python-version: "3.13"
+      - name: Download CPython 3.13 MuJoCo runtime wheels
         shell: bash
         run: |
           set -euo pipefail
-          echo "259a32900d130b67197ead6cfdaabe08c95d4e3701385bccb6de8b5ae4bad330  experiments/full_torque_humanoid/archive.00.b64" | sha256sum --check --strict
-          echo "9f1a2399695da29043801d5c7fe132e843212a5a252d7a1b9f0e1e8782d6d89e  experiments/full_torque_humanoid/archive.01.b64" | sha256sum --check --strict
-          echo "ac7f81bd717cc88fe2fb69b1960f883a22b62844d334b337734ad48024c41584  experiments/full_torque_humanoid/archive.02.b64" | sha256sum --check --strict
-          echo "bd1948be52694d97354189b556d8b17e2a08cd2c8a50ea0eba259571e1dcce4c  experiments/full_torque_humanoid/archive.03.b64" | sha256sum --check --strict
-          echo "72633965aa7af75a9554d427e3739e08a686172505f110f8cc32d6aa4d4feb58  experiments/full_torque_humanoid/archive.04.b64" | sha256sum --check --strict
-          echo "80c14aa67d9b166436c28214c16fb541785d9947a8436a231432a6b1d9c274e3  experiments/full_torque_humanoid/archive.05.b64" | sha256sum --check --strict
-          cat experiments/full_torque_humanoid/archive.*.b64 > /tmp/full_control_study.py.gz.b64
-          echo "42d6eaa1e4d0162deebcf9844d4de54ec8929c9fbe9e2d2f215d29f1cc0cc228  /tmp/full_control_study.py.gz.b64" | sha256sum --check --strict
-          base64 --decode /tmp/full_control_study.py.gz.b64 > /tmp/full_control_study.py.gz
-          echo "332937f291e3971241baff72285d832753e6b480516c77f778979e9418c81607  /tmp/full_control_study.py.gz" | sha256sum --check --strict
-          gzip --decompress --stdout /tmp/full_control_study.py.gz > experiments/full_torque_humanoid/full_control_study.py
-          echo "d35e874b14f2831423cbfab2f88d0428313e522cff5dd3e7914f4bf7bab3b549  experiments/full_torque_humanoid/full_control_study.py" | sha256sum --check --strict
-
-      - name: Install diagnostic runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libosmesa6-dev libgl1
-          python -m pip install --upgrade pip
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
-          python -m pip install "mujoco>=3.2,<4" numpy scipy pillow imageio imageio-ffmpeg
-
-      - name: Use MuJoCo's finite-difference-compatible integrator
-        shell: bash
-        run: |
-          set -euo pipefail
+          mkdir -p /tmp/morphology-runtime-wheels
+          python -m pip download \
+            --dest /tmp/morphology-runtime-wheels \
+            "mujoco>=3.2,<4" \
+            "etils[epath]" \
+            glfw \
+            pyopengl
+          python -m pip install --no-index --find-links /tmp/morphology-runtime-wheels \
+            "mujoco>=3.2,<4" "etils[epath]" glfw pyopengl
           python - <<'PY'
-          from pathlib import Path
-          path = Path("experiments/full_torque_humanoid/diagnose_lqr.py")
-          source = path.read_text()
-          needle = "env = study.FullTorqueHumanoid(cfg)\n"
-          replacement = needle + "env.model.opt.integrator = mujoco.mjtIntegrator.mjINT_EULER\nprint('INTEGRATOR Euler for transition linearization and validation')\n"
-          if needle not in source:
-              raise SystemExit("LQR environment construction marker not found")
-          path.write_text(source.replace(needle, replacement, 1))
+          import mujoco
+          print("MUJOCO_VERSION", mujoco.__version__)
           PY
-
-      - name: Run contact-linearized controller synthesis
-        id: lqr
-        continue-on-error: true
-        shell: bash
-        run: |
-          set +e
-          python experiments/full_torque_humanoid/diagnose_lqr.py 2>&1 | tee /tmp/lqr-last-run.log
-          code=${PIPESTATUS[0]}
-          echo "$code" > /tmp/lqr-last-run.exit
-          exit "$code"
-
-      - name: Run original-controller comparison
-        if: always()
-        shell: bash
-        run: |
-          set +e
-          python experiments/full_torque_humanoid/diagnose_expert.py 2>&1 | tee /tmp/original-controller-last-run.log
-          echo "${PIPESTATUS[0]}" > /tmp/original-controller-last-run.exit
-          exit 0
-
-      - name: Upload complete controller diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: full-torque-controller-diagnostics
-          path: |
-            /tmp/lqr-last-run.log
-            /tmp/lqr-last-run.exit
-            /tmp/original-controller-last-run.log
-            /tmp/original-controller-last-run.exit
-            experiments/full_torque_humanoid/diagnose_lqr.py
-            experiments/full_torque_humanoid/diagnose_expert.py
-            experiments/full_torque_humanoid/full_control_study.py
+          name: morphology-runtime-wheels-cp313
+          path: /tmp/morphology-runtime-wheels
           if-no-files-found: error
-          retention-days: 30
-
-      - name: Preserve synthesis failure after exporting diagnostics
-        if: steps.lqr.outcome == 'failure'
-        shell: bash
-        run: exit 1
+          compression-level: 0
+          retention-days: 7
