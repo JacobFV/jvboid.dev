@@ -191,6 +191,7 @@ function buildPostLookup(posts) {
 function listHistoricalPostPaths() {
   const output = git([
     "log",
+    "--full-history",
     "--format=",
     "--name-only",
     "--diff-filter=ACDMRT",
@@ -250,16 +251,76 @@ function mapHistoricalPaths(paths, lookup) {
 }
 
 function commitsForPath(path) {
-  const output = gitMaybe([
-    "log",
-    "--follow",
-    "--format=%H",
-    "--diff-filter=ACMRT",
-    "HEAD",
-    "--",
-    path,
+  const histories = [
+    gitMaybe([
+      "log",
+      "--full-history",
+      "--format=%H",
+      "--diff-filter=ACMRT",
+      "HEAD",
+      "--",
+      path,
+    ]),
+    gitMaybe([
+      "log",
+      "--follow",
+      "--format=%H",
+      "--diff-filter=ACMRT",
+      "HEAD",
+      "--",
+      path,
+    ]),
+  ];
+
+  return [
+    ...new Set(
+      histories
+        .filter(Boolean)
+        .flatMap((output) => output.split("\n").map((line) => line.trim()).filter(Boolean)),
+    ),
+  ];
+}
+
+function firstParentCommitSet() {
+  const output = gitMaybe(["rev-list", "--first-parent", "HEAD"]);
+  return new Set(output ? output.split("\n").map((line) => line.trim()).filter(Boolean) : []);
+}
+
+function revisionIdentity(revision) {
+  return JSON.stringify([
+    revision.sourcePath,
+    revision.source,
+    revision.authorName,
+    revision.authorEmail,
+    revision.authoredAt,
+    revision.committerName,
+    revision.committerEmail,
+    revision.committedAt,
+    revision.message,
   ]);
-  return output ? output.split("\n").map((line) => line.trim()).filter(Boolean) : [];
+}
+
+function preferCanonicalFirstParentRevisions(revisions, firstParentCommits) {
+  const groups = new Map();
+
+  for (const revision of revisions) {
+    const identity = revisionIdentity(revision);
+    const group = groups.get(identity) ?? [];
+    group.push(revision);
+    groups.set(identity, group);
+  }
+
+  const mirroredCommits = new Set();
+  for (const group of groups.values()) {
+    const canonical = group.filter((revision) => firstParentCommits.has(revision.commit));
+    if (canonical.length === 0 || canonical.length === group.length) continue;
+
+    for (const revision of group) {
+      if (!firstParentCommits.has(revision.commit)) mirroredCommits.add(revision.commit);
+    }
+  }
+
+  return revisions.filter((revision) => !mirroredCommits.has(revision.commit));
 }
 
 function commitMetadata(commit) {
@@ -420,6 +481,7 @@ function generatedRevisionSource(revision) {
 
 function collectRevisions(posts, mappedPaths) {
   const repoUrl = repositoryUrl();
+  const firstParentCommits = firstParentCommitSet();
   const metadataCache = new Map();
   const revisionsByPost = new Map();
 
@@ -471,9 +533,14 @@ function collectRevisions(posts, mappedPaths) {
       return time || left.commit.localeCompare(right.commit);
     });
 
+    const canonicalRevisions = preferCanonicalFirstParentRevisions(
+      revisions,
+      firstParentCommits,
+    );
+
     revisionsByPost.set(
       post.slug,
-      revisions.map((revision, sequence) => ({ ...revision, sequence })),
+      canonicalRevisions.map((revision, sequence) => ({ ...revision, sequence })),
     );
   }
 
