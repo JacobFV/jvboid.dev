@@ -9,6 +9,7 @@ next-env.d.ts
 
 # velite
 .velite
+content/_generated/post-revisions/
 
 # build
 dist

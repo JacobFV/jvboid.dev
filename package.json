@@ -4,16 +4,16 @@
   "private": true,
   "description": "Jacob Valdez's site — a navigable graph of projects, writing, and visions.",
   "scripts": {
-    "predev": "tsx scripts/generate-image-placeholders.ts && velite build",
+    "predev": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build",
     "dev": "next dev",
-    "prebuild": "tsx scripts/generate-image-placeholders.ts && velite build",
+    "prebuild": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsx scripts/generate-image-placeholders.ts && velite build && tsc --noEmit",
+    "typecheck": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsc --noEmit",
     "images": "tsx scripts/generate-image-placeholders.ts",
     "sync:assets": "tsx scripts/sync-assets.ts",
-    "validate": "tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/validate-edges.ts",
+    "validate": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/validate-edges.ts",
     "format": "prettier --write ."
   },
   "dependencies": {
