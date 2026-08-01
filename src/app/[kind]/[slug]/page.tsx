@@ -1,8 +1,10 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import { getGraph, KIND_PREFIX, nodeHref } from "@/lib/graph";
 import { MDXContent } from "@/lib/mdx";
+import { getPostRevisions } from "@/lib/post-revisions";
 import { Hero } from "@/components/reader/Hero";
 import { LocalGraph } from "@/components/reader/LocalGraph";
+import { PostRevisionExperience } from "@/components/reader/PostRevisionExperience";
 import { VisionRoomGate } from "@/components/three/VisionRoomGate";
 import { panelsFor } from "@/data/scenes";
 
@@ -39,15 +41,28 @@ export default async function NodePage({ params }: { params: Params }) {
   // Vision nodes with a registered sceneId open into the 3D room. The
   // article body stays in the DOM as the skip-to-text fallback.
   const panels = node.kind === "vision" && node.sceneId ? panelsFor(node.sceneId) : null;
+  const postRevisions = node.kind === "post" ? getPostRevisions(node.id) : [];
 
   const article = (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <article>
-        <Hero node={node} />
-
-        <div className="prose-mdx">
-          <MDXContent code={node.body} />
-        </div>
+        {node.kind === "post" ? (
+          <PostRevisionExperience
+            postId={node.id}
+            postedDate={new Date(node.date).toISOString().slice(0, 10)}
+            currentTitle={node.title}
+            currentSummary={node.summary}
+            currentBody={node.body}
+            revisions={postRevisions}
+          />
+        ) : (
+          <>
+            <Hero node={node} />
+            <div className="prose-mdx">
+              <MDXContent code={node.body} />
+            </div>
+          </>
+        )}
 
         <LocalGraph focusId={node.id} />
       </article>
