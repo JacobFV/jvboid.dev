@@ -1,36 +1,26 @@
-name: publish post revision feature branch (temporary)
+name: export merged main history (temporary)
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
+  bundle:
     if: github.head_ref == 'agent/export-history-20260801'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: main
           fetch-depth: 0
-      - name: apply reviewed patch onto current main
-        shell: bash
-        run: |
-          set -euo pipefail
-          cat .github/agent/post-revisions.patch.xz.b64.part-* > /tmp/post-revisions.patch.xz.b64
-          echo 'c15853403f3d4ef3db8758128bedd9c33cf33348659bae4cc0e128aa281df53c  /tmp/post-revisions.patch.xz.b64' | sha256sum --check --strict
-          base64 --decode /tmp/post-revisions.patch.xz.b64 > /tmp/post-revisions.patch.xz
-          echo '17bd4b1981abbcae55241c743726233ac4ab6ade9709067e66f31f886ddacf27  /tmp/post-revisions.patch.xz' | sha256sum --check --strict
-          xz --decompress --stdout /tmp/post-revisions.patch.xz > /tmp/post-revisions.patch
-          echo '7ee29ddca9bb53c61ba1d903294a5bb54d6e5bb90faca9a7b68cdd320796bc89  /tmp/post-revisions.patch' | sha256sum --check --strict
-          git fetch origin main
-          git switch --force-create agent/post-revision-history origin/main
-          git apply --index /tmp/post-revisions.patch
-          git restore --source=origin/main --staged --worktree .github/workflows/deploy.yml
-          git config user.name 'Jacob Valdez'
-          git config user.email '40343913+JacobFV@users.noreply.github.com'
-          git commit -m 'add public post revision history'
-          git push --force origin HEAD:agent/post-revision-history
+      - name: create exact main bundle
+        run: git bundle create repository.bundle refs/remotes/origin/main:refs/heads/main
+      - uses: actions/upload-artifact@v4
+        with:
+          name: merged-main-repository-bundle
+          path: repository.bundle
+          compression-level: 0
+          retention-days: 1
