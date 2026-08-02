@@ -36,12 +36,14 @@ jobs:
             git -C "$repo" rev-parse HEAD > "/tmp/unitree-policy-assets/${repo}-commit.txt"
           done
 
-          mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym
+          mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym/deploy
           rsync -a unitree_rl_gym/deploy/ /tmp/unitree-policy-assets/unitree_rl_gym/deploy/
           if [ -d unitree_rl_gym/resources/robots/g1_description ]; then
+            mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/g1_description
             rsync -a unitree_rl_gym/resources/robots/g1_description/ /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/g1_description/
           fi
           if [ -d unitree_rl_gym/resources/robots/go2_description ]; then
+            mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/go2_description
             rsync -a unitree_rl_gym/resources/robots/go2_description/ /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/go2_description/
           fi
 
@@ -54,6 +56,7 @@ jobs:
           cd /tmp/unitree-src/unitree_mujoco
           for robot in go2 g1; do
             if [ -d "unitree_robots/$robot" ]; then
+              mkdir -p "/tmp/unitree-policy-assets/unitree_mujoco/unitree_robots/$robot"
               rsync -a "unitree_robots/$robot/" "/tmp/unitree-policy-assets/unitree_mujoco/unitree_robots/$robot/"
             fi
           done
