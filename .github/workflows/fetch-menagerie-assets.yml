@@ -6,6 +6,11 @@ on:
       - agent/end-to-end-morphology-self-model-study
     paths:
       - ".github/workflows/fetch-menagerie-assets.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fetch-menagerie-assets.yml"
   workflow_dispatch:
 
 jobs:
