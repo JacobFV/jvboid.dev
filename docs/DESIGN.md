@@ -38,6 +38,37 @@ Self-host all three via `next/font`. No CDN fonts.
 
 8px base. Container max 1280px on the document view; constellation and timeline are full-bleed.
 
+## Backdrop
+
+One fixed frame behind every page (`.atmosphere`, mounted once in
+`app/layout.tsx`), holding a stack of planes. A plane's **depth**
+`d ∈ (0, 1]` — 0 infinitely far, 1 right in front of the camera — is the
+only thing that varies between planes; parallax speed, blur, opacity,
+drift amplitude, stacking order and render resolution are all functions
+of it, defined once in `lib/atmosphere-depth.ts`.
+
+Two systems interleave in that one stack:
+
+- **Gas** (`components/chrome/Atmosphere.tsx`) — speck fields, cloud
+  blobs, lane-colour streaks. CSS gradients, generated from a fixed seed
+  so SSR and client markup match. Soft, slow, tiled; each plane wraps its
+  scroll offset modulo its tile height, so parallax never runs out of sky.
+- **Fluid** (`components/chrome/FluidField.tsx`) — tracer particles in a
+  2D incompressible flow: velocity is the curl of a sinusoidal
+  streamfunction (divergence-free by construction) plus Lamb–Oseen
+  vortices that advect each other. Canvas, three planes.
+
+Sharpness is resolution, not blur: deep fluid planes rasterize at ~0.35×
+and upscale to a smear, the front plane rasterizes at full device
+resolution and draws hairlines. So the backdrop gets *sharper* as it
+comes forward, against gas that gets softer — that contrast is the depth
+cue. Dark mode blends `screen`, light mode `multiply` (with a gain, since
+ink on paper needs more of it than light on night sky).
+
+Budget: phones and ≤4-core machines drop the middle fluid plane and
+lower tracer density. Reduced-motion gets a single static frame of
+streamlines and no parallax at all.
+
 ## Motion
 
 Three primitives, used everywhere:
@@ -114,6 +145,6 @@ Off by default. Optional ambient pad in `/loop` and the vision room only. A sing
 ## What we don't do
 
 - Skeuomorphic anything.
-- Parallax on regular pages — only inside `/loop` chapters where it earns its keep.
+- Parallax on *content* — the backdrop parallaxes site-wide (see above), but nothing carrying text or a target does. Foreground scrub effects stay inside `/loop` chapters.
 - Auto-playing video.
 - Decorative illustrations. Every visual element either _is_ content or guides attention to content.

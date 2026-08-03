@@ -1,17 +1,28 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { FluidField } from "@/components/chrome/FluidField";
+import {
+  blurOf,
+  driftOf,
+  opacityOf,
+  parallaxOf,
+  zIndexOf,
+} from "@/lib/atmosphere-depth";
 
 // The page backdrop: a procedurally generated stack of parallax layers.
 //
 // Every layer sits at a depth d ∈ (0, 1] — 0 is infinitely far, 1 is
-// right in front of the camera — and *everything* else about the layer
-// is a function of that depth:
+// right in front of the camera — and everything else about the layer is
+// a function of that depth (see lib/atmosphere-depth.ts): parallax
+// speed, blur, opacity, drift amplitude, stacking order.
 //
-//   parallax(d)  how far it slides per pixel of page scroll
-//   blur(d)      focus falls off toward the viewer (focal plane is the
-//                far starfield, so foreground haze goes soft)
-//   opacity(d)   near layers are thinner so they never fight the text
+// This file owns the *gas*: speck fields, cloud blobs, colour streaks —
+// soft, slow, painted with CSS gradients. Interleaved into the same
+// depth stack are the fluid tracer planes from FluidField.tsx, which own
+// the *sharp*: particles advected by a 2D incompressible flow, rendered
+// at a resolution that rises with depth so the frontmost plane is
+// hairline-crisp against all that softness.
 //
 // The container stays `position: fixed` (so it always covers the
 // viewport with no giant repainting element), but its layers translate
@@ -24,17 +35,6 @@ import { useEffect, useRef } from "react";
 // field is stable across navigations.
 
 const SEED = 0x5eed_1a2b;
-
-// --- depth → everything --------------------------------------------------
-
-/** px moved per px of scroll. Far layers barely budge, near layers slide. */
-const parallaxOf = (d: number) => 0.02 + 0.55 * Math.pow(d, 1.4);
-/** Focus is at infinity: sharpness falls off quadratically toward the viewer. */
-const blurOf = (d: number) => 74 * d * d;
-/** Foreground layers thin out so they stay behind the reading experience. */
-const opacityOf = (d: number) => 1 - 0.4 * d;
-/** Drift amplitude also grows with nearness (same reason parallax does). */
-const driftOf = (d: number) => 16 + 48 * d;
 
 /** How far a non-tiling layer (the horizon) may travel before it settles. */
 const HORIZON_TRAVEL = 240;
@@ -129,7 +129,9 @@ const SPEC: Layer[] = [
   { key: "clouds-far", depth: 0.42, tile: 760, background: blobs(4, 22, 38), backgroundSize: "1040px 760px" },
   { key: "streaks", depth: 0.55, tile: 900, background: streaks(), backgroundSize: "1200px 900px" },
   { key: "clouds-mid", depth: 0.7, tile: 660, background: blobs(4, 26, 44), backgroundSize: "900px 660px" },
-  { key: "clouds-near", depth: 1, tile: 540, background: blobs(3, 34, 54), backgroundSize: "760px 540px" },
+  // Depth 1 is left to the front fluid plane, so the sharpest thing on
+  // screen is filaments rather than haze.
+  { key: "clouds-near", depth: 0.85, tile: 540, background: blobs(3, 34, 54), backgroundSize: "760px 540px" },
 ];
 
 // Drift params (Lissajous, like Planetoids) derived from the same stream.
@@ -207,7 +209,7 @@ export function Atmosphere() {
             left: -(l.ax + DRIFT_MARGIN),
             right: -(l.ax + DRIFT_MARGIN),
             opacity: l.opacity,
-            zIndex: i,
+            zIndex: zIndexOf(l.depth),
           }}
         >
           <div
@@ -223,6 +225,9 @@ export function Atmosphere() {
           />
         </div>
       ))}
+      {/* Sharp planes — tracers in an incompressible flow, interleaved
+          into the same depth stack by z-index. */}
+      <FluidField />
     </div>
   );
 }

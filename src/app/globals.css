@@ -45,6 +45,8 @@
   --atmo-speck: #ffffff;
   --atmo-speck-2: #bccdff;
   --atmo-speck-opacity: 1;
+  /* Ink alpha multiplier for the fluid tracer planes. */
+  --atmo-fluid-gain: 1;
 }
 
 :root[data-theme="light"] {
@@ -66,7 +68,9 @@
   /* Daylight: specks become faint dust motes rather than stars. */
   --atmo-speck: #334155;
   --atmo-speck-2: #4b5f7a;
-  --atmo-speck-opacity: 0.3;
+  --atmo-speck-opacity: 0.22;
+  /* Multiply over paper needs more ink than screen over night sky. */
+  --atmo-fluid-gain: 1.8;
 }
 
 html {
@@ -209,6 +213,22 @@ a:hover {
   position: absolute;
   inset: 0;
   background-repeat: repeat;
+}
+
+/* Fluid tracer planes (components/chrome/FluidField.tsx). The canvas is
+   viewport-sized in CSS px; its backing store is deliberately coarser on
+   deep planes and full device resolution on the front one, which is what
+   makes the near filaments read sharp against the soft gas. Blending
+   makes the filaments light up the dark sky and stain the light one. */
+.atmo-fluid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+}
+:root[data-theme="light"] .atmo-fluid {
+  mix-blend-mode: multiply;
 }
 
 /* Speck (star / dust) layers. Dark reads as a starfield; light as faint
