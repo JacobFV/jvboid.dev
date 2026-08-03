@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Atmosphere } from "@/components/chrome/Atmosphere";
 import { SiteHeader } from "@/components/chrome/SiteHeader";
 import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
@@ -70,12 +71,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        {/* Fixed ambient backdrop — a starfield (dark) or blurred
-            earth/sea horizon (light) under soft blurred clouds + faint
-            color streaks. See `.atmosphere` in globals.css. */}
-        <div className="atmosphere" aria-hidden>
-          <div className="atmosphere-sky" />
-        </div>
+        {/* Ambient backdrop — a generated stack of depth planes
+            (starfield / horizon / clouds / streaks) that parallax-scroll
+            with the page. See components/chrome/Atmosphere.tsx. */}
+        <Atmosphere />
         <SiteHeader nodes={searchable} />
         {children}
         {/* Page-wide fullscreen image viewer; renders null until a
