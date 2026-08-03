@@ -1,0 +1,48 @@
+---
+title: RackSavant
+date: 2026-08-03
+resume_description: "social ai virtual try-on studio organized around mood, live fitting rooms, lookbooks, and body-preserving garment generation. react, cloudflare workers, durable objects, r2, gemini, expo, electron."
+lane: building
+tags: [work, ai, fashion, virtual-try-on, multimodal, social, cloudflare]
+summary: "An AI virtual try-on studio built for a friend's clothing store: browse by mood, preserve the wearer's body, try on garments, and react together in live fitting rooms."
+video: https://youtu.be/1W0tVyUM2kw
+links:
+  demo: https://racksavant-web.jacobfv123.workers.dev/
+  github: https://github.com/JacobFV/racksavant
+influences: []
+realizes: []
+critiques: []
+---
+
+## The problem
+
+I built RackSavant for a friend who runs a clothing store. The obvious version of virtual try-on is a transactional utility: upload a photo, choose a garment, and receive a modified image. That is useful, but it misses most of the actual decision. People rarely choose clothes as isolated SKUs; they choose how they want to feel, how they want to be perceived, and what they want to show friends before buying.
+
+## The product
+
+RackSavant is an AI try-on studio organized around **mood** rather than conventional catalog taxonomy. A user can explore garments through feelings such as soft, sharp, feral, regal, or dreamy; generate a body-preserving try-on; receive a concise mood read and color story; save looks into named lookbooks; and invite friends into live fitting rooms where reactions arrive in real time.
+
+The social layer is deliberate. Instead of reducing feedback to a generic like button, RackSavant uses expressive "hype" reactions and ephemeral fitting-room sessions that behave more like the group chat around getting dressed. The resulting artifact is not merely a generated PNG. It is a look situated inside a particular mood, audience, and moment.
+
+## Product constraints
+
+Two constraints are enforced directly in the generation prompts:
+
+1. **Never alter the body.** Face, body, pose, skin, and age remain unchanged; only the clothing changes.
+2. **Never appraise the body.** Generated copy discusses the garment and styling, never the person's measurements, size, or physical attractiveness.
+
+These constraints are part of the implementation rather than aspirational policy text. They shape both image generation and every downstream caption, mood read, and stylist response.
+
+## Architecture
+
+RackSavant is a full-stack TypeScript monorepo built with pnpm workspaces and Turborepo. The web client uses React, Vite, React Router, and TanStack Query. The backend runs on Cloudflare Workers with Hono, Durable Objects for coordinated real-time state, R2 for media, and Gemini for try-on generation and product voice. Shared schemas, prompts, API contracts, and streaming parsers live in a core package used across the system.
+
+The product also has Expo mobile and Electron desktop clients built against the same contract. The seed gallery contains 68 generated garment packshots across themed drops, while real store deployments can replace those assets with catalog photography. Garment media is served through a stable API surface so the gallery, try-on pipeline, and clients do not depend on how an individual asset was produced or stored.
+
+## Why it matters
+
+RackSavant became an experiment in treating fashion software as identity and coordination infrastructure rather than image transformation. The technical work spans multimodal generation, real-time collaboration, cross-platform product architecture, media storage, and prompt-level safety constraints, but the central design claim is simpler: trying on clothes is a social and affective decision, so the interface should model that decision instead of flattening it into search and checkout.
+
+Site: [racksavant-web.jacobfv123.workers.dev](https://racksavant-web.jacobfv123.workers.dev/)  
+Repo: [JacobFV/racksavant](https://github.com/JacobFV/racksavant)  
+Video: [RackSavant demo](https://youtu.be/1W0tVyUM2kw)
