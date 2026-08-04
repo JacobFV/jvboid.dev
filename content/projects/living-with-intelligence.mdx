@@ -1,0 +1,53 @@
+---
+title: Living with Intelligence
+date: 2026-08-03
+unlisted: true
+resume_description: "canonical text system and reading environment for the intelligist canon: immutable revisions, deterministic github mirroring, section-level audio, pdf editions. react, cloudflare workers, d1, durable objects, r2, queues."
+lane: building
+tags: [writing, canon, publishing, cloudflare, versioning, text]
+summary: "A living book: a reading environment where canonical texts carry revision history, marginalia, and provenance, and where the software refuses to become a dashboard."
+links:
+  demo: https://living-with-intelligence.jacobfv123.workers.dev/
+  github: https://github.com/JacobFV/living-with-intelligence
+influences: [the-shape-of-experience]
+realizes: []
+critiques: []
+---
+
+## The problem
+
+Writing that is meant to be revised in public needs somewhere to live that is neither a static site nor a wiki. A static site loses the history that makes revision legible. A wiki keeps the history but dissolves authorship, and its interface is a dashboard: navigation, recent changes, activity, and somewhere behind all of it, the text.
+
+The failure mode I wanted to avoid is the one every content platform drifts into — the reading surface becomes a card in a feed of tools.
+
+## The product
+
+Living with Intelligence is a reading environment first. The centre pane is the text. The left pane answers "what can I read, and where am I inside it?" — the library, the current text's outline, and its revision history. The right pane holds what the reader adds rather than what the text is: marginalia and discussion. Viewing the canonical markdown is a property of the whole reader, so it is a toggle in the application header rather than a control inside the page.
+
+On a wide viewport the panes dock. On a narrow one they become mutually exclusive overlay drawers, because two of them open at once would bury the prose between them.
+
+## Content model
+
+D1 is the operational source of truth. A published revision is append-only and carries a complete source snapshot plus per-section snapshots; the document record points at its current revision, and older revisions are never rewritten. Publishing compares the editor's base revision against the current one and rejects a stale write with a conflict rather than a silent overwrite.
+
+Restoring an earlier wording republishes identical bytes as a _new forward_ revision. That sounds obvious, but it is the reason the schema constrains `(document_id, revision_number)` and deliberately does not constrain `(document_id, content_hash)` — a uniqueness constraint on content makes revert structurally impossible, which is the kind of thing you only discover by writing the test.
+
+Every published revision is mirrored to a GitHub repository through the Git Data API as a deterministic tree: the source, a metadata document, an addressable copy under the revision id, and a regenerated index, committed together. The mirror is an audit and export layer, not a second writable database; changes made in the repository are never silently imported back.
+
+## Architecture
+
+A pnpm/Turborepo TypeScript monorepo on Cloudflare: a React and Vite reader, a Hono Worker serving both the API and the static assets, D1 for relational state, R2 for bytes, Durable Objects for websocket rooms and live document presence, and Queues for retryable work. Shared schemas, markdown sectioning, password hashing, and permission logic live in a core package used by both runtimes.
+
+Two implementation details were more interesting than expected. Passwords use chained PBKDF2-HMAC-SHA256 rounds because the Workers runtime caps a single PBKDF2 call at 100,000 iterations; the total work factor is unchanged and the round split is a pure function of the recorded iteration count, so a stored hash still verifies anywhere. And the CSRF token is derived as `sha256("csrf." + session token + pepper)` rather than generated independently — because it is a function of the httpOnly session token and a server-side secret, an attacker who can write cookies but cannot read the session still cannot produce a token that validates.
+
+## Text as data
+
+The canon is authored as typed modules and compiled into deterministic seed SQL, so the repository is fully usable before any Cloudflare account exists. Imported manuscripts run through the same pipeline: the importer pulls a pinned upstream commit, strips the MDX authoring scaffolding that is editorial rather than prose, and emits ordinary seed modules with their lineage recorded.
+
+That generator ran into a constraint worth writing down: D1 rejects any single SQL statement over roughly 100 KB, and a manuscript chapter is much larger. Long text columns are written as one insert carrying the first chunk followed by appends guarded on the exact byte length the column must have beforehand, which keeps replaying the seed a no-op instead of a duplication.
+
+## Why it matters
+
+The claim underneath the interface is that a text worth revising in public deserves infrastructure that treats revision as part of the work rather than as metadata about it. History stays visible, provenance is addressable, supplementary media stays outside the canonical source, and nothing is protected from revision by being called sacred.
+
+Site: [living-with-intelligence.jacobfv123.workers.dev](https://living-with-intelligence.jacobfv123.workers.dev/)
