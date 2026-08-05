@@ -1,0 +1,68 @@
+---
+title: RL Lab
+date: 2026-08-04
+lane: building
+tags: [robotics, reinforcement-learning, evolution, simulation, physics, offline]
+summary: "A client-side multi-agent robotics lab: exact polygon physics, bodies and minds configured independently, and policies that are hill-climbed or neuroevolved — entirely in the browser, entirely offline."
+resume_description: "client-side 2d multi-agent robotics testbed; exact polygon sat physics, n-segment caterpillar bodies, laplace-coefficient action space, neural/scripted/llm policies, neuroevolution + per-agent (1+1)-es learning, 84-check self-test suite, dependency-free apng renderer. typescript, react, vite, electron, node."
+hero:
+  src: /assets/media/rl-lab/contact-sheet.png
+  alt: "Contact sheet of sixteen RL Lab trials — every body preset in the obstacle course, every environment, and a neuroevolution search"
+  fit: contain
+links:
+  github: https://github.com/JacobFV/rl-lab
+influences: [eggroll-trainer, limboid]
+---
+
+- A **testbed for control algorithms**: minds and bodies are configured separately, bound by participants, and dropped into a top-down 2D arena with **exact** polygon collision
+- Policies are neural networks and algorithmic controllers that run **fully offline** — no API key, no network, no telemetry; hosted LLMs are an option, never a dependency
+- One engine ships three ways — browser app, Electron desktop, headless CLI — and every experiment is a single portable JSON file
+
+![RL Lab contact sheet](/assets/media/rl-lab/contact-sheet.png)
+
+## Problem
+
+Most RL testbeds make you accept the whole stack to use any of it: a server, a Python environment, a physics engine whose collision is a convex approximation, and an environment API where the agent and its body are the same object. That last conflation is the expensive one. If a "robot" is a mind welded to a morphology, you can't ask the question that matters most in embodied learning — *does this policy transfer to a different body?* — without rewriting the environment.
+
+I also wanted something that runs where the reader is. A robotics testbed that requires a GPU box and an API key is a paper, not a lab.
+
+## Solution
+
+RL Lab splits the document into **agents** (model, weights, hyperparameters, policy, learning, memory), **robots** (chassis, appendages, tools, sensors, eyes, channels), and **participants** — the binding of one agent to one robot on one team. The same mind drives a hexapod in one binding and a rover in another; the same chassis takes three different models in the same run.
+
+There are two top-level documents, deliberately not variants of each other. A **run** is one arena simulated once. A **search** owns a population, breeds, and produces generations — its results have a different shape, so it is a different document, and its *evaluations* happen to be runs. The schema is the interface: the inspector has no tabs, just a tree with the same shape as the document, so a parameter is always found inside the thing it configures.
+
+## How
+
+- **Language / runtime:** TypeScript throughout. `@rl-lab/core` (physics, robots, agents, evolution, learning, schema), a React + Vite web app, an Electron shell, and a Node CLI — one npm workspace.
+- **Collision, with no narrow-phase approximation.** Arbitrary outlines, including deliberately concave ones, are ear-clip triangulated and merged back into the fewest convex pieces (Hertel–Mehlhorn) at load; the union is identical to the input. Then exact polygon-vs-polygon SAT with reference/incident edge clipping for two-point manifolds, solved by sequential impulses with warm starting. Revolute joints with motors and limits, a point-friction constraint for feet, a uniform-grid broadphase, raycasting for lidar.
+- **The action space is a transfer function, not a torque.** Each channel owns a second-order Laplace filter $H(s) = (b_0 + b_1 s + b_2 s^2)/(1 + a_1 s + a_2 s^2)$ driven by $u(t) = \sin(2\pi f t + \phi)$, and the joint command is `bias + gain·H(s)u`. The policy's outputs *are* those nine numbers per channel, so it shapes the dynamics of its own gait. Realized as a discrete biquad via the bilinear transform, with an explicit stability projection — an agent cannot request a divergent pole.
+- **Bodies as configuration.** Every robot is an n-segment caterpillar, each segment carrying n legs or n wheels; a rover is 1 segment with 4 wheels. Wheels use a friction ellipse (one grip budget shared between thrust and resisting slide — which is exactly what lets a skid-steer robot scrub through a turn); legs grip through a solver-level ground constraint so traction propagates up the hip into the chassis; limbless segments get anisotropic friction, the snake-scale model without which undulation produces no net travel.
+- **Two sensing feeds, and the difference is the point.** A cheap always-on lidar ring that sees everywhere and resolves nothing, versus steerable **eyes** — a densely sampled cone with `foveation` warping rays toward the axis and `saccade` deciding where gaze jumps next. Gaze integrates every physics step so a saccade is a visible sweep, but the cone re-casts only at `refreshHz`.
+- **Search over dotted paths.** A gene is a path into the base run with `*` addressing every array element — `robots.*.body.segment.appendage.motorTorque`, `agents.*.policy.decisionHz` — so anything numeric anywhere is searchable without special-casing. Tournament selection, blend crossover, per-gene Gaussian mutation, elites carried over. Naming weight sets under `evolve weights` turns the same machinery into **neuroevolution** rather than a hyperparameter sweep.
+- **Learning that accumulates.** Each agent can learn at the end of *every* run and stores what it learned in its memory inside the saved document. `hill-climb` is a (1+1)-ES over whatever you allow it to touch — Laplace coefficients, sampling hyperparameters, the policy loop, or a neural policy's whole weight vector. `reflect` shows a model agent a summary of the run it just finished and keeps the one lesson it writes. The authored document is never overwritten: the run uses a copy with learned values applied, and only memory is written back.
+- **Interactive scenery wired by signals.** Buildings expand into wall pieces, doorway gaps, recursive partitions, driven door leaves, furniture and switches. A button drives a named boolean, a door listens on one, a zone drives one while occupied — typing the same name in both places is the whole logic layer, and it's enough for airlocks, keycards and pressure puzzles.
+- **Rendering with no dependencies.** A ~400-line scanline rasterizer with 2× supersampling and a 3×5 bitmap font, writing PNG/APNG through Node's built-in zlib. No ffmpeg, no codec, no native module.
+
+## Tests
+
+`rl-lab test` runs **84 behavioural checks** in a few seconds — build a world, run it, assert the thing that should be true is true — grouped so `--filter physics` narrows to one area: geometry, laplace, bodies, physics, controllers, tools, scoring, network, encoding, paths, evolution, learning, sensing, interaction, serialization, environment, storage, render, integration.
+
+They earn their keep. The suite caught joints being walked far past their stops because the limit was only solved at the velocity level — adding a positional correction halved the worst overshoot *and* made legged bodies walk roughly twice as far. It also caught dense scatter rules silently delivering a third of the items asked for. Rendering caught two more by eye: a montage cell painting over its neighbours because the rasterizer had no clip rectangle, and framing clamped to the field, so a robot that walked out of an open sandbox left an empty pitch on screen.
+
+## Results
+
+- **Twenty-two trials, one command.** `rl-lab video --demo` builds and runs every body preset in the obstacle course, every environment, and a neuroevolution search from scratch, then writes a clip each plus a grid advancing on one clock — the contact sheet above is that command's output, unretouched. Clips that finish early hold their last frame and dim, so it stays obvious which are still running. Frames after the first store only the bounding box of what changed, which is most of why the whole animated montage lands under 4 MB with no codec involved.
+
+![All twenty-two RL Lab trials advancing on one clock](/assets/media/rl-lab/combined.png)
+
+- **Determinism is total on the offline path.** One seeded RNG forks per participant and per subsystem, so spawn jitter, scenery scatter, exploration noise and the genetic operators all reproduce exactly. Entity ids are part of that: the same *document* reproduces exactly, while re-deriving a fresh document from the same recipe does not.
+- **A search can't lose.** Individual 0 of generation 0 is always the unmodified baseline, so a search never comes out worse than the configuration you authored.
+- **4 Hz LLM control against 120 Hz physics** is feasible because decisions are asynchronous — the robot keeps executing its current forcing functions while a request is in flight.
+- The camera frames the robots rather than the pitch, scaled to how big they actually are, because a 0.7 m rover on a 32 m pitch is three pixels wide.
+
+## Lessons
+
+The design decision I'd defend hardest is refusing to make `search` a run with a flag set — the moment two things produce differently shaped results, sharing one document type buys you nothing and costs you every conditional downstream. The one I'd revisit is joint limits: they're solved *before* the foot anchors and the contacts, so they're soft, and a hard-driven gait pushes through (worst measured overshoot 0.57 rad, on the centipede whose twelve legs all torque one chain). A hard stop needs the limit solved jointly with the other constraints rather than after them, which is a solver rewrite, not a tuning pass. I'd also move evolutionary subtrials off the UI thread — they currently share one frame budget across live cells, so a large population runs slower per cell rather than dropping frames.
+
+Repo: [JacobFV/rl-lab](https://github.com/JacobFV/rl-lab)
