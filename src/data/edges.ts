@@ -62,12 +62,6 @@ export const manualEdges: ManualEdge[] = [
     note: "Limboid is the company shell around the focus-statement vision.",
   },
   {
-    source: "limboid-founder",
-    target: "limboid",
-    kind: "realization",
-    weight: 0.8,
-  },
-  {
     source: "why-arent-pneumatic-hydraulic-aritificial-muscle-actuated-humanoid-robots-more-common",
     target: "limboid",
     kind: "influence",
