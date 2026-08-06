@@ -1,0 +1,69 @@
+---
+title: jterm
+date: 2026-08-06
+lane: building
+tags: [terminal, tauri, rust, developer-tools, desktop]
+summary: "A tabbed terminal with tmux-style splits where a pane can also be a notepad, a browser, or a viewer — and where the command you typed but never ran survives a crash."
+resume_description: "cross-platform tabbed terminal with tmux-style splits, crash-durable unsubmitted-prompt recovery, and panes that can be code editors, browsers, or image/video/stl viewers. rust, tauri, typescript, react, xterm.js, codemirror, three.js."
+hero:
+  src: "/assets/img/projects/jterm-panes.png"
+  alt: "jterm with four panes in one tab — a Rust file with syntax highlighting, an image viewer, an STL mesh, and a live shell"
+  fit: contain
+icon:
+  src: "/assets/img/projects/jterm-icon.svg"
+  alt: "jterm icon — a lowercase j whose tittle is a terminal block cursor"
+links:
+  github: https://github.com/JacobFV/jterm
+  site: https://jacobfv.github.io/jterm/
+influences: []
+realizes: []
+critiques: []
+---
+
+- The half-typed command at every prompt is **mirrored from keystrokes and written to disk continuously**, then typed back at the next prompt — never with a newline, so nothing runs on your behalf
+- tmux-style **splits, zoom, directional focus and drag-to-rearrange**, built so that moving a pane never restarts the shell inside it
+- A tab is not only a terminal: **a code editor that saves, a web pane, and viewers for images, video, audio and STL meshes**, chosen from the file you opened
+- Ships signed-by-nobody installers for **macOS (both architectures), Windows, and Linux on x86_64 and arm64** from one tag push
+
+![jterm with four panes in one tab](/assets/img/projects/jterm-panes.png)
+
+## Problem
+
+You are composing a long `rsync`, or a `git commit -m` with a message you actually thought about, and the machine dies. Every terminal I have used loses that line. Scrollback is sometimes recoverable; the thing you had not run yet never is.
+
+It is not obvious why this should be hard, and the reason is worth stating: **the line at a shell prompt does not belong to the terminal.** Readline holds it in the child process's memory. A terminal emulator only ever sees the echoed characters go past. There is no API to ask a shell what is currently typed, so a terminal that wants to save your unsubmitted command has to reconstruct it from the other side — from the keystrokes on their way in.
+
+## Solution
+
+Mirror the line. Every editing key readline understands is applied to a local copy: insertion, backspace, `Ctrl-A`/`Ctrl-E`, `Ctrl-U`/`Ctrl-K`/`Ctrl-W`, word motions, arrow keys, bracketed paste. `Enter` clears it, because the line is now the shell's problem.
+
+Where the mirror cannot follow, it says so rather than guessing. Tab completion and history recall rewrite the line inside the shell with no corresponding keystrokes, so both mark the draft untrusted. And the restored text is **never** replayed with a newline attached, so even a wrong guess can only ever put characters on screen for you to look at — it can never run anything.
+
+## How
+
+- **Stack:** Rust + Tauri v2 behind TypeScript/React. `portable-pty` for pseudoterminals, xterm.js for the terminal, CodeMirror 6 for the editor, three.js for meshes. ~4,500 lines across both halves.
+- **Two files, deliberately different durability.** The session snapshot — tabs, layout, editor buffers, and the unsubmitted line at each prompt — is written into a temporary file that is `fsync`'d and then renamed over the old one, so a crash mid-write leaves the *previous* complete snapshot rather than half of the new one. Scrollback is append-only and merely buffered: losing half a second of it costs nothing, and paying an `fsync` per chunk of `cargo build` output would make the terminal slow. Writes are debounced 200 ms with a 1 s ceiling, because without the ceiling a fast typist never stops being "still typing" and the file never gets written — exactly the user with the most to lose.
+- **Panes are rendered from a flat list, not from the split tree.** The layout is a binary tree, but rendering it directly would be a serious bug: moving a pane would move its component in the React tree, React would unmount and remount it, and a live shell would be destroyed every time someone dragged a pane. Instead the tree is asked for rectangles and the panes are drawn from a stable, unchanging list. Rearranging is then a style recalculation, and the process behind the pane never notices.
+- **Backgrounded panes keep their size.** Inactive tabs are hidden with `visibility`, never `display: none` — a `display: none` pane measures 0×0, which would tell every backgrounded shell its window is one column wide and make it re-wrap everything it has printed.
+- **UTF-8 does not respect read boundaries.** A `read` from the pty can end mid-character; decoding each chunk independently turns that into a permanent `U+FFFD` in your output. The reader carries the incomplete tail across reads and replaces only genuinely invalid bytes.
+- **Working directory restore rides on OSC 7**, the sequence shells already emit to announce where they are, with `/proc` as a Linux-only shortcut. It is the one mechanism that works the same on all three platforms.
+
+## Results
+
+Verified end to end rather than by inspection: `SIGKILL` the process mid-sentence, relaunch, and the three split shells come back with their scrollback and the unsubmitted `git commit -m 'half-written thought'` sitting at the prompt. I also downloaded the shipped arm64 `.deb` from the release and ran *that*, rather than trusting a dev build.
+
+102 tests — 91 in TypeScript over the split geometry, the keystroke mirror, the OSC parser, the URL bar and the STL reader; 11 in Rust over the incremental UTF-8 decoder, atomic snapshot writes and scrollback trimming. Clippy clean at `-D warnings`.
+
+Three bugs the tests and the screenshots caught that reading would not have:
+
+- The draft replayed **before** the shell had printed its prompt, so the tty buffered it and echoed it raw, and the prompt landed on top. The fix was realising the trigger is not "time passed" but "the shell went quiet *after having said something*" — three shells starting at once after a restore are slow enough that the difference matters.
+- `@import` of xterm's stylesheet sat below the `@tailwind` directives, so PostCSS silently dropped it and every glyph in the terminal was invisible while the cursor rendered fine.
+- The pane-kind menu was rendering correctly and was invisible, clipped by the tab strip's `overflow-x-auto` — a scroll container clips on both axes.
+
+## Lessons
+
+The expensive discovery was that **Tauri cannot position a child webview on Linux.** Browser panes were built as real embedded webviews first, which is the right implementation and works on macOS and Windows. On Linux `tauri-runtime-wry` only ever puts webviews in a `GtkBox`, so wry's `set_bounds` is a literal no-op — the webview is created, loads the page, and then cannot be placed anywhere. It shipped as an iframe instead, with a visible offer to open anything that refuses framing in a real browser. Shipping a feature that works on two platforms out of three, when the third is the one you develop on, is worse than shipping one that works everywhere.
+
+The other one was mine to notice and I nearly didn't: the first release built Linux for x86_64 only, and the machine I wrote it on is arm64. The binary refused to start with a missing dynamic linker. Cross-compiling was the wrong fix — Tauri's Linux bundling shells out to tools that expect to be running on the target — so the matrix gained a native arm64 runner.
+
+Repo: [JacobFV/jterm](https://github.com/JacobFV/jterm) · Downloads: [jacobfv.github.io/jterm](https://jacobfv.github.io/jterm/)
