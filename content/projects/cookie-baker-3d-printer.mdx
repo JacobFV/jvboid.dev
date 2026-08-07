@@ -14,61 +14,45 @@ links:
   demo: "https://jacobfvaldez.weebly.com/engineering.html#cookiebaker_3d_printer"
 ---
 
-- Learned mechanical engineering basics
-- Intended to make a 3D printer, but extruder never added
-- Re-attempted project in October 2014 with design modifications
-- [3D animation of the design rotating around](https://www.youtube.com/watch?v=6MvlUK8JUYY)
+- A programmable 12"×12" XY gantry, built at 13 as an attempted 3D printer
+- The motion platform worked; the extruder was never added, so it never printed anything
+- Re-attempted in October 2014 with design modifications
+- Its name was later handed down to the [Cookie Cutter CNC](/projects/cookie-cutter-cnc), the 36"×36" sheet-metal machine I built in its honor
 
-## Outcomes
+## Problem
 
-- 36"×36" sheet metal CNC (without cutting tool) with server and client control systems
-- Became significantly more fluent in C#
-- Developed .svg parser and toolpath scheduler with local optimization
-- Learned elementary electrical engineering
-- Engineered basic Arduino CNC controller
-- Wrote serial client featuring optimized protocol
+I wanted a 3D printer and could not buy one. In 2013 a hobby printer
+still cost more than everything I owned, so the obvious move was to
+build one — starting, sensibly enough, with the part that moves.
 
-## The Problem
+## Solution
 
-<div className="row justify-content-sm-center">
-    <div className="col-sm-8 mt-3 mt-md-0">
-        This project started with the objective of making a 2&times;2 plasma cutter. You see, until then, I had been painstakingly hacksawing all my sheet metal, and I probabbly broke 3 or more cutting blades each day in the process. It seemed like a no-brainer then to automate this process... or so I thought.
-    </div>
-    <div className="col-sm-4 mt-3 mt-md-0">
-        <img className="img-fluid rounded z-depth-1" src="/img/migrated/cc_problem.jpg" alt="The hacksawing problem" title="The hacksawing problem"/>
-    </div>
-</div>
+A programmable 12"×12" two-axis gantry: a threadscrew XY table driven by
+stepper motors under Arduino control, sized so a print bed and an
+extruder could sit on top of it later. It reached the point where it
+would trace a commanded path across its working area.
 
-I quickly began deciding objectives. PDFs started piling up on material science, electrical engineering, mechanotronics, programming, and gcode. For the first month, I spent much of my time in school taking notes, formulating designs, and drafting parts. It's so easy to get tempted to plan out every millimeter of a machine.
+![The Cookie Baker 3D printer build](/img/migrated/cookie_baker.jpg)
 
-Finally, I settled on an _acceptable_ design and began construction. At this point, there were only a few weeks of school left, and I wanted to share my work with my peers so I intensified my activity: no more basketball, programming through class and lunch, staying in the garage much of the evening. (I would've made more balanced decisions now) At this point, I began actually learning about machanical and electrical engineering, arduino programming, C#, SVG processing, matrix transformations, and of course, failure.
+## Results
 
-<div className="row">
-    <div className="col-sm mt-3 mt-md-0">
-        <img className="img-fluid rounded z-depth-1" src="/img/migrated/cc_0.jpg" alt="CookieCutter mechanotronics" title="CookieCutter mechanotronics"/>
-    </div>
-    <div className="col-sm mt-3 mt-md-0">
-        <img className="img-fluid rounded z-depth-1" src="/img/migrated/cc_2.jpg" alt="CookieCutter electronics" title="CookieCutter electronics"/>
-    </div>
-    <div className="col-sm mt-3 mt-md-0">
-        <img className="img-fluid rounded z-depth-1" src="/img/migrated/cc_1.jpg" alt="CookieCutter mechanotronics" title="CookieCutter mechanotronics"/>
-    </div>
-</div>
-<div className="caption">
-    CookieCutter in development
-</div>
+The gantry moved. The extruder never got built, so the Cookie Baker
+never baked anything — it ended its life as a 2D plotter that had been
+designed for a third axis it never grew. I revisited the design in
+October 2014 with modifications, and made a
+[3D animation of it rotating](https://www.youtube.com/watch?v=6MvlUK8JUYY)
+to show the mechanism.
 
-It's hard to maintain a crazy level of involvement for long without losing some enthusiasm, and when the roadblocks came, I was ready to move on to another more exciting project. One of the bigest setbacks was the day before I was scheduled present the machine to my class. I was showing the electro-discharge cutting head to some of my teachers and school principle. It had worked before on aluminum foil, but this time I was using a homebuilt transformer to carry higher current. Because of a miscalculation however, the moment I turned on the switch, it shorted half of the classroom I was in and also a neighboring lab. Needless to say, that was a very embarassing moment. Summer break was just around the corner anyway so from then on, I gave up on making a working machine and just focused on giving a good presentation.
+## Lessons
 
-In honor of an attempted 3D printer, the Cookie Baker, I named this machine the Cookie Cutter. This system has all the bare-bones you would expect from a sheet metal cutting CNC except for an actual working cutting head. It uses CookieWare to read SVG files, an Arduino Mega with CookieWare Client to buffer serial input and make appropriate movements, and a threadscrew XY table. Check out the CookieCutter's Github repos for [server](https://github.com/JacobFV/CookieControl) and [client](https://github.com/JacobFV/Arduino-CookieControl) code.
+This was where I learned that the interesting part of a machine is
+rarely the part you start with. Motion platforms are tractable —
+steppers, leadscrews, a controller loop. The extruder, with its
+thermal control and filament feed, was the actual project, and I had
+budgeted my attention as though it were an accessory.
 
-<div className="row">
-    <img className="img-fluid rounded z-depth-1" src="/img/migrated/cc_3.jpg" alt="Final CookieCutter" title="Final CookieCutter"/>
-    <div className="col-sm mt-3 mt-md-0">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/dyWwv9mZEvk?start=61" title="YouTube video player" frameBorder="0" className="z-depth-1 rounded" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-    </div>
-    <img className="img-fluid rounded z-depth-1" src="/img/migrated/cookie_control.png" alt="Cookie Control" title="Cookie Control"/>
-</div>
-<div className="caption">
-    Final CookieCutter (left), mock product-release video (center), and CookieControl (right)
-</div>
+Two years later I built the [Cookie Cutter CNC](/projects/cookie-cutter-cnc)
+— a 36"×36" sheet-metal CNC with a full C# toolpath stack — and named it
+in honor of this one. That machine is where the software, electronics,
+and the electro-discharge cutting head story live; the Cookie Baker is
+just the gantry that came first.

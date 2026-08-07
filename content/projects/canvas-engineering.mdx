@@ -1,50 +1,226 @@
 ---
 title: canvas-engineering
 date: 2026-04-05
-resume_description: "a type system for multimodal latent dynamics that turns frozen video diffusion backbones into structured world-modeling substrates via declared latent regions and looped attention. python, diffusion transformers, world models, research."
+resume_description: "a compiler that lowers a typed schema of latent regions, connectivity, and update clocks into attention masks on a stock diffusion transformer, turning declared structure into a legible causal graph inside reverse diffusion. python, diffusion transformers, world models, pydantic, neurosymbolic, research."
 lane: building
-tags: []
-summary: "A type system for multimodal latent dynamics that turns video diffusion models into structured world-modeling substrates."
-hero: 
-  src: https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/canvas_layouts_combined.png
-  alt: canvas-engineering
+tags: [world-models, video-diffusion, neurosymbolic, type-systems, attention, robotics]
+summary: "A compiler for declared causal macrostructure: you write the latent layout, connectivity, and update clocks as a typed schema, and it lowers them into attention masks on a stock diffusion transformer."
+hero:
+  src: /assets/img/canvas-engineering/code_to_canvas.png
+  alt: "A CanvasLayout and CanvasTopology declaration compiled into a laid-out canvas with information-flow arrows"
 threadImages:
-  - src: https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/canvas_layouts_combined.png
-    alt: Canvas engineering layouts
-  - src: https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/canvas_type_system.png
-    alt: Canvas engineering type system
-  - src: https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/topology_constructors.png
-    alt: Canvas topology constructors
-  - src: https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/looped_attention.png
-    alt: Looped attention diagram
-links: 
-  github: https://github.com/JacobFV/canvas-engineering
+  - src: /assets/img/canvas-engineering/code_to_canvas.png
+    alt: Schema declaration compiled into a laid-out canvas
+  - src: /assets/img/canvas-engineering/attention_mask.png
+    alt: Block permission matrix and the compiled attention mask
+  - src: /assets/img/canvas-engineering/real_vs_neural.png
+    alt: Four robots around a shared task, and the same causal structure on the canvas
+  - src: /assets/img/canvas-engineering/fig_icu_allocation.png
+    alt: ICU ward schema, its causal graph, and the compiled 199-region canvas
+  - src: /assets/img/canvas-engineering/stagger_icu_nurse.png
+    alt: A declared nurse-action to patient-state edge across three frames
+  - src: /assets/img/canvas-engineering/connectivity_matrix.png
+    alt: A cortical connectivity matrix rendered as a canvas topology
+  - src: /assets/img/canvas-engineering/brain_results.png
+    alt: Cortical dynamics prediction and virtual-EEG decoding results
+  - src: /assets/img/canvas-engineering/results_chart.png
+    alt: Action loss by looped-attention configuration
+  - src: /assets/img/canvas-engineering/page1.png
+    alt: First page of the Canvas Engineering technical report
+links:
+  github: https://github.com/commandAGI/canvas-engineering
+  docs: https://commandagi.github.io/canvas-engineering
+  article: https://commandagi.com/research/canvas-engineering
 ---
-- Declares latent regions, temporal frequencies, connectivity, and loss roles as a schema instead of leaving them implicit
-- Introduces looped attention, where frozen video backbones can be upgraded with lightweight recurrent compute
-- Frames multimodal diffusion as typed latent computation rather than flat token processing
 
+- Declares latent regions, update clocks, connectivity, and loss roles as a typed schema, then compiles them into attention masks on a frozen pretrained backbone
+- Absent edges become exact marginal independence — a hard prohibition in the mask, not a penalty the model can learn to violate
+- 26 experiments and 236 training runs on CogVideoX-2B, plus a 23-region cortical model that matches a dense baseline with 19.6% of the connections
 
-## Overview
+## Problem
 
-`canvas-engineering` is the clearest expression on this site of a recurring idea in my work: models get easier to steer when their internal spaces are given structure instead of being treated as undifferentiated tensors.
+Modern world models denoise a flat bag of tokens. Everything can attend
+to everything, so whatever structure the model ends up using it has to
+discover on its own — and once discovered, it lives in weights you
+cannot read. If you want to know whether a policy's action channel can
+influence its own observation history, or whether two agents in a fleet
+are actually coordinating through the channel you intended, there is
+nothing to point at. You probe, you ablate, you guess.
 
-The core move is simple. Instead of asking a diffusion transformer to discover on its own which latent positions should represent vision, action, reward, proprioception, or thought, you declare that layout directly. The layout becomes the schema, the topology becomes the compute graph, and the resulting model behaves more like a typed program than a bag of embeddings.
+That is a bad deal, because in most domains worth modeling the causal
+macrostructure is not the hard part. A nurse's actions obviously affect
+a patient's next-step physiology, and visual cortex obviously feeds the
+ventral stream rather than the other way around. Making the model
+rediscover that from data spends capacity and gives back nothing
+legible.
 
-That view matters because it makes multimodal world models compositional. Different regions can run at different temporal frequencies, participate in different losses, and connect through different attention operations, while still living on the same spatiotemporal canvas.
+## Solution
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/canvas_layouts_combined.png" alt="Canvas engineering layouts" width="100%"/>
-</p>
+Canvas engineering is prompt engineering for reverse-diffusion latent
+dynamics: you declare the structure up front and a compiler makes it
+exact. You lay out named regions on the diffusion canvas, declare which
+regions are permitted to influence which others, how often each updates,
+and what role each plays in the loss. The compiler lowers all of that
+into attention masks, loss weights, and frame mappings on a stock
+pretrained diffusion transformer.
 
-## Looped attention
+![A CanvasLayout and CanvasTopology declaration on the left; the compiler wiring it into a laid-out canvas with information-flow arrows on the right](/assets/img/canvas-engineering/code_to_canvas.png)
 
-The second idea in the project is `looped attention`: reusing transformer blocks across multiple learned iterations. In the current writeup, that is framed less as "reasoning depth" and more as a weight-sharing regularizer that makes frozen backbones substantially more parameter-efficient. That pairing is what makes the project interesting to me: one part is about giving latent space semantics, and the other is about making the compute over that space cheaper and more reusable.
+The division of labor is precise, and it is the whole idea. You fix
+whether an edge exists, its direction, and its temporal extent.
+Gradients determine what flows along each edge and everything that
+happens inside a region. Symbolic is macro, neural stays micro — and
+there is no interface between the two layers to cross, because the
+symbolic layer literally *is* the attention mask. If there is no path
+between two regions, their independence is exact by construction. You
+can prove a region cannot influence another by reading the graph.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/JacobFV/canvas-engineering/main/assets/looped_attention.png" alt="Looped attention diagram" width="80%"/>
-</p>
+![Left: a 3×3 block matrix of which regions may attend to which, showing action → visual on and visual → action off. Right: the real compiled attention mask over 186 allocated positions](/assets/img/canvas-engineering/attention_mask.png)
 
-The published docs at [jacobfv.github.io/canvas-engineering](https://jacobfv.github.io/canvas-engineering/) also make clear that this is meant to be a real design language, not just a one-off research note. The library has concepts for `RegionSpec`, `CanvasTopology`, semantic types, carriers, clocks, and executable examples spanning control, agentic computer use, and brain-computer-interface settings.
+Familiar architectures fall out as special cases. A standard Markovian
+diffusion policy is a two-node canvas — observation → action, and
+observation + action → next observation. Multi-agent coordination is
+more involved but no less clean: each agent self-attends over its own
+observations and actions, and agents coordinate only through the
+cross-edges you declared. The topology *is* the coordination protocol,
+written as data.
 
-Repo: [JacobFV/canvas-engineering](https://github.com/JacobFV/canvas-engineering)
+![Left: four robots around a shared task in the real world, with vision cones and motion arrows. Right: the same causal structure compiled onto the canvas as per-agent observation and action regions coordinating through a shared dispatch region](/assets/img/canvas-engineering/real_vs_neural.png)
+
+## How
+
+Allocating latent territory by hand doesn't scale past a toy, so I made
+the library a compiler for typed schema declarations. You write the
+causal structure as an ordinary Python object — nested typed
+dataclasses with fields, loss weights, and update clocks — and
+`compile_schema()` flattens it into regions and an attention mask.
+
+- **Language / runtime:** Python, PyTorch; schemas are nested typed
+  dataclasses/pydantic models
+- **Core API:** `compile_schema()` lowers a schema into a
+  `CanvasLayout` + `CanvasTopology`; `CanvasModel.from_pretrained()`
+  attaches the compiled mask to a stock backbone
+- **Backbone / data:** CogVideoX-2B over BridgeData V2 for the
+  manipulation experiments; Meta's TRIBE v2 brain encoder for the
+  cortical model
+- **License / install:** Apache-2.0, `pip install canvas-engineering`,
+  with runnable examples for cartpole, vehicle fleets, the hospital
+  model, and brain connectivity
+
+```python
+from canvas_engineering import compile_schema, CanvasModel
+
+# Declare the causal macrostructure; the compiler lays it out.
+canvas = compile_schema(MySchema)          # regions + attention mask
+model = CanvasModel.from_pretrained("cogvideox-2b", canvas=canvas)
+
+model.fit(dataset)                          # gradients learn the weights
+state = model.rollout(obs)                  # you fixed the wiring
+```
+
+To stress the compiler, I described the large-scale structure of a
+hospital ICU ward: six patients with organ-level physiology, four
+nurses with fatigue dynamics, insurance and staffing pressure, and
+family units. One `compile_schema()` call allocated and packed **199
+regions and 1,077 connections** onto the canvas — `heart_rate` updating
+every frame, `creatinine` every 24, each at its own declared clock.
+
+![Three panels: the compositional schema of an ICU ward; the causal graph it denotes with a declared sepsis pathway; and the compiled canvas of 199 regions and 1,077 connections](/assets/img/canvas-engineering/fig_icu_allocation.png)
+
+![A three-frame canvas showing a declared nurse-action to patient-state edge across time](/assets/img/canvas-engineering/stagger_icu_nurse.png)
+
+Every region and every edge is a decision you can read back, which
+points at a deeper property: the schema parallels C struct semantics.
+Region bounds are struct offsets, the topology is a calling convention,
+and a serialized schema is an ABI. The latent tensor becomes *pointable*
+— you can name exactly which positions are `nurses[1]` and read them
+out. Two models sharing a schema can then exchange latent state
+directly, with no tokenization or re-encoding round-trip. That's a yawn
+when the diffusion is just torch on a GPU, and it gets serious the
+moment you have to repurpose silicon optimized for cat-video generation
+to do real work.
+
+## Results
+
+I ran 26 experiments and 236 training runs on CogVideoX-2B over
+BridgeData V2 — a small record, and one I would rather report plainly
+than dress up. The headline is a study of **looped attention**:
+iterating frozen diffusion-transformer blocks with learned iteration
+embeddings. A frozen 3-loop configuration with 350K trainable
+parameters beat every unfrozen condition at 11.7M: a **1.73× parameter
+efficiency at p < 0.001**, with loop representations converging to fixed
+points.
+
+| Configuration | Trainable params | Action loss (lower is better) |
+| --- | --- | --- |
+| Frozen, 3 loops | 350K | **0.073** |
+| Unfrozen | 11.7M | 0.088 |
+| Half-frozen | 3.7M | 0.107 |
+
+![Bar chart of action loss by configuration: frozen 350K 3-loop at 0.073, unfrozen 11.7M at 0.088, half-frozen 3.7M at 0.107](/assets/img/canvas-engineering/results_chart.png)
+
+Two other measurements keep the story straight. Flat co-residence of
+modalities — putting every modality in the same tensor with no declared
+topology — degraded joint prediction by **19% (p < 0.0001)**; sharing a
+tensor is not structure. And canvas design turns out to be forgiving:
+loss was nearly insensitive to exactly how tokens were allocated
+(α = 0.011). You have to get the graph right, not the pixel budget.
+
+The cortical model is the part I find hardest to look away from. Many
+neuroscientists have long argued that the cortex's functional
+connectivity reflects the causal structure of its environment, and the
+split is familiar — large-scale connectivity is largely specified by the
+connectome and effectively fixed, while micro-weights are tuned by
+plasticity over a lifetime. Fixed topology, learned weights. Look
+closely and a cortical connectivity matrix and a canvas attention mask
+are the same object: source × destination, block-diagonal within a
+network, sparse specific cross-network edges, each cell carrying its own
+operator type.
+
+![A cortical connectivity matrix rendered as a canvas topology: 23 Destrieux regions, source × destination, block-diagonal within each functional network with sparse specific cross-network edges](/assets/img/canvas-engineering/connectivity_matrix.png)
+
+So I wired 23 Destrieux regions over 42 known pathways — the
+default-mode loop, the ventral visual stream, A1 → Wernicke → Broca, and
+prefrontal → premotor → motor — and trained on cortical predictions from
+Meta's TRIBE v2 brain encoder. The declared-topology canvas saturates at
+**R² = 0.825**, matching a fully dense model at R² = 0.826 with **19.6%
+of the connections** and roughly **5× faster training**. Topology here
+is a convergence prior, not a capacity advantage. On virtual-EEG
+decoding, the canvas decoder hits 69% against an SVM's 59% and 25%
+chance.
+
+![Two bar charts: cortical dynamics prediction at R²=0.825 with 19.6% wiring matching a dense model at R²=0.826; and virtual-EEG decoding at 69% canvas vs 59% SVM vs 25% chance](/assets/img/canvas-engineering/brain_results.png)
+
+Two scope notes I hold to: the ICU and air-traffic designs are
+architectural demonstrations, not validated clinical or operational
+systems; and the cortical model predicts a brain encoder's *outputs*,
+not directly measured neural activity. Biology is never as simple as any
+one model of it — this is a connection worth drawing, not a claim that
+the cortex is a diffusion transformer.
+
+## Lessons
+
+The linchpin I did not get to test is representation stability.
+Schema-mediated latent exchange, transfer-distance calibration, and
+plug-and-play modalities all assume that identical declared structure
+induces predictably aligned geometry across seeds and backbones.
+Plausible, and unproven — and everything that makes the ABI framing
+exciting rests on it.
+
+The other honest calibration is about looping. At this scale, its
+benefit is weight-sharing regularization; there is no detectable
+iterative reasoning in the results, and reading them as reasoning depth
+would be reading a 2B-parameter experiment as though it were a
+frontier-scale one. What is still open, and what I would go after next:
+a decisive ablation of declared versus flat topology on binding;
+whether declared structure keeps paying off as data and parameters scale
+past 2B; and learned topology — proposing and pruning edges under a
+sparsity prior, with the declared schema as the prior rather than the
+final word.
+
+The full derivation, the worked designs (manipulation, fleets, air
+traffic, the ICU, cortex), and the complete experimental archive are in
+the technical report: [Canvas Engineering: Declared Causal
+Macrostructure for Reverse-Diffusion Latent
+Dynamics](/papers/canvas-engineering-paper), also published as a
+[CommandAGI research article](https://commandagi.com/research/canvas-engineering).
