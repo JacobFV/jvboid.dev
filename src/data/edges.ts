@@ -142,12 +142,6 @@ export const manualEdges: ManualEdge[] = [
   },
   // is-there-no-balm-in-gilead → meaning-is-measured-in-bits lives in
   // the post's frontmatter (where the prose justifies it).
-  {
-    source: "aligning-the-spiritual-evolution-of-ai",
-    target: "moral-emergent-from-meaning-selection",
-    kind: "influence",
-    weight: 0.55,
-  },
 
   // ---- Master plan arc ------------------------------------------------
   {
