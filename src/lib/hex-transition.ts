@@ -38,7 +38,8 @@ const EASE = "cubic-bezier(0.5, 0.05, 0.25, 1)";
 // smallest. It unwinds to 1× over the same 600ms.
 const ZOOM = 1.35;
 const THUMB_NAME = "hexnav-thumb";
-// Pointy-top hexagon: half-width / circumradius.
+// Flat-top hexagon: apothem / circumradius. The circumradius runs out to
+// the side vertices, the apothem up to the flat top edge.
 const HEX_APOTHEM = 0.8660254;
 
 type ViewTransition = { finished: Promise<void> };
@@ -46,17 +47,17 @@ type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void | Promise<void>) => ViewTransition;
 };
 
-// A pointy-top hexagon centered on (cx, cy), in px, vertices listed from
-// the top point clockwise. Every clip-path in the keyframes uses this
+// A flat-top hexagon centered on (cx, cy), in px, vertices listed from
+// the left point clockwise. Every clip-path in the keyframes uses this
 // same point order so the browser can interpolate them.
 function hexClip(cx: number, cy: number, r: number): string {
-  const x = HEX_APOTHEM * r;
-  const y = r / 2;
+  const x = r / 2;
+  const y = HEX_APOTHEM * r;
   const pt = (px: number, py: number) => `${px.toFixed(2)}px ${py.toFixed(2)}px`;
-  return `polygon(${pt(cx, cy - r)}, ${pt(cx + x, cy - y)}, ${pt(cx + x, cy + y)}, ${pt(
-    cx,
-    cy + r,
-  )}, ${pt(cx - x, cy + y)}, ${pt(cx - x, cy - y)})`;
+  return `polygon(${pt(cx - r, cy)}, ${pt(cx - x, cy - y)}, ${pt(cx + x, cy - y)}, ${pt(
+    cx + r,
+    cy,
+  )}, ${pt(cx + x, cy + y)}, ${pt(cx - x, cy + y)})`;
 }
 
 // Resolves once the router has committed the new route — the App Router
@@ -181,8 +182,8 @@ export function hexExpandNavigate({
 
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
-  // Pointy-top hexagon: the circumradius is half the height.
-  const r0 = rect.height / 2;
+  // Flat-top hexagon: the circumradius is half the width.
+  const r0 = rect.width / 2;
   // Grow until the hexagon's *flat* sides clear the farthest viewport
   // corner, with a little slack for the easing overshoot.
   const far = Math.hypot(

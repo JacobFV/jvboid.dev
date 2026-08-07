@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { AskInput } from "@/components/chrome/AskInput";
-import { PfpReveal } from "@/components/chrome/PfpReveal";
+import { type HeroSocial, type HeroSocialGroup } from "@/components/chrome/HeroHex";
+import { CoverGallery } from "@/components/chrome/CoverGallery";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
 import { UpdateDock } from "@/components/chrome/UpdateDock";
 import {
@@ -29,14 +29,94 @@ const laneBg: Record<Lane, string> = {
 };
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
-const socialLinks = [
-  { label: "email", href: "mailto:jacob@humanrobots.ai" },
-  { label: "text/call", href: "tel:+19724606353" },
-  { label: "x", href: "https://twitter.com/jvboid" },
-  { label: "github", href: "https://github.com/JacobFV" },
-  { label: "instagram", href: "https://www.instagram.com/jvboid/" },
-  { label: "art", href: "https://jvboid.art" },
-  { label: "anonymous feedback", href: "https://www.admonymous.co/jvboid" },
+// Contact row inside the hero hexagon, in the order it reads. Kept to the
+// accounts worth interrupting someone for — the long tail lives in
+// `moreSocialGroups`, behind the row's `> more` toggle.
+const socialLinks: HeroSocial[] = [
+  { label: "email", href: "mailto:jacob@humanrobots.ai", glyph: "email" },
+  { label: "text/call", href: "tel:+19724606353", glyph: "phone" },
+  { label: "x", href: "https://twitter.com/jvboid", glyph: "x" },
+  { label: "github", href: "https://github.com/JacobFV", glyph: "github" },
+  { label: "instagram", href: "https://www.instagram.com/jvboid/", glyph: "instagram" },
+  {
+    label: "youtube",
+    href: "https://www.youtube.com/channel/UCs5sasWz1dlbrvBo7tBincg",
+    glyph: "youtube",
+  },
+  { label: "hugging face", href: "https://huggingface.co/jacob-valdez", glyph: "huggingface" },
+  { label: "art", href: "https://jvboid.art", glyph: "art" },
+  {
+    label: "anonymous feedback",
+    href: "https://www.admonymous.co/jvboid",
+    glyph: "feedback",
+  },
+];
+
+// Everything else, carried over from the old jacobfv.github.io
+// `_data/social.yml`. Grouped by what someone would be looking for
+// rather than by platform type, so the drawer reads as a directory.
+const moreSocialGroups: HeroSocialGroup[] = [
+  {
+    title: "Code & Q&A",
+    items: [
+      { label: "gitlab", href: "https://gitlab.com/jacobfv123", glyph: "gitlab" },
+      {
+        label: "stack overflow",
+        href: "https://stackoverflow.com/users/14971315",
+        glyph: "stackoverflow",
+      },
+      {
+        label: "stack exchange",
+        href: "https://stackexchange.com/users/14971315",
+        glyph: "stackexchange",
+      },
+      { label: "quora", href: "https://www.quora.com/profile/Jacob-Valdez-127", glyph: "quora" },
+    ],
+  },
+  {
+    title: "Writing & video",
+    items: [
+      { label: "substack", href: "https://jacobvaldez.substack.com", glyph: "substack" },
+      { label: "medium", href: "https://medium.com/@jacobfv123", glyph: "medium" },
+      { label: "tiktok", href: "https://www.tiktok.com/@jvboid", glyph: "tiktok" },
+    ],
+  },
+  {
+    title: "Making",
+    items: [
+      {
+        label: "thingiverse",
+        href: "https://www.thingiverse.com/jacobfv123/designs",
+        glyph: "thingiverse",
+      },
+      {
+        label: "onshape",
+        href: "https://cad.onshape.com/documents?nodeId=64df5b4326f1f07cfd2980e3&resourceType=resourceuserowner",
+        glyph: "onshape",
+      },
+    ],
+  },
+  {
+    title: "Art & sound",
+    items: [
+      {
+        label: "soundcloud",
+        href: "https://soundcloud.com/jacob-valdez-946056620",
+        glyph: "soundcloud",
+      },
+      { label: "deviantart", href: "https://www.deviantart.com/jvboid", glyph: "deviantart" },
+      { label: "unsplash", href: "https://unsplash.com/@jvboid", glyph: "unsplash" },
+      { label: "are.na", href: "https://www.are.na/jacob-valdez/channels", glyph: "arena" },
+      { label: "cosmos", href: "https://www.cosmos.so/jvboid", glyph: "cosmos" },
+    ],
+  },
+  {
+    title: "Elsewhere",
+    items: [
+      { label: "f6s", href: "https://www.f6s.com/member/jacob-valdez", glyph: "f6s" },
+      { label: "junk email", href: "mailto:jacobspam0123456789@gmail.com", glyph: "junk" },
+    ],
+  },
 ];
 
 // Featured projects: a few pinned load-bearing ones, then by recency. Cap at 6.
@@ -95,69 +175,46 @@ export default function HomePage() {
   return (
     <>
       <main className="mx-auto max-w-5xl px-6 pt-24 pb-32">
-        {/* ---- Hero ---- */}
-        <section className="mb-32 flex flex-col items-center text-center">
-          <div className="relative isolate grid h-[200px] w-[200px] place-items-center">
-            <PfpReveal />
-          </div>
-          <div className="relative flex w-full flex-col items-center">
-            <h1
-              className="mt-6 font-[family-name:var(--font-display)] text-5xl tracking-tight text-[var(--color-ink)] sm:text-6xl"
-              style={{ fontVariationSettings: '"opsz" 144' }}
-            >
-              Jacob Valdez
-            </h1>
-
-            <AskInput />
-
-            <div className="mt-4 flex max-w-2xl flex-wrap justify-center gap-x-3 gap-y-2 font-[family-name:var(--font-mono)] text-xs">
-              {socialLinks.map((link) => (
+        {/* ---- Hero + projects ---- */}
+        {/* The hero is a 4× tile of the projects comb, not a block above
+            it, so the tiles pack against its edges. That is also why this
+            section has no list/grid picker: the hero only exists in the
+            honeycomb. */}
+        <ProjectsBrowser
+          id="projects"
+          projects={projectItems}
+          hero={{
+            name: "Jacob Valdez",
+            pfp: { src: "/img/prof_pic.jpg", alt: "Jacob Valdez" },
+            socials: socialLinks,
+            moreSocials: moreSocialGroups,
+            bio: (
+              <>
+                Currently working on{" "}
                 <a
-                  key={link.href}
-                  href={link.href}
-                  target={link.href.startsWith("http") ? "_blank" : undefined}
-                  rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-                  className="text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline"
+                  href="https://commandagi.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
                 >
-                  {link.label}
+                  CommandAGI
                 </a>
-              ))}
-            </div>
-
-            {/* The nav pills that used to sit here (timeline / blog /
-                resume / projects) are all reachable from the sticky
-                header, so they were duplicated chrome between the reader
-                and the one thing on this page worth reading. */}
-
-            <p className="mt-10 max-w-2xl text-left text-lg leading-[1.65] text-[var(--color-ink-dim)]">
-              Currently working on{" "}
-              <a
-                href="https://commandagi.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-              >
-                CommandAGI
-              </a>
-              . Most recently API/Integration Architect
-              at{" "}
-              <a
-                href="https://agi.app"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-              >
-                AGI, Inc.
-              </a>
-              , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
-              agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science
-              from UT Arlington. I love science and engineering and people
-            </p>
-          </div>
-        </section>
-
-        {/* ---- All projects ---- */}
-        <ProjectsBrowser id="projects" projects={projectItems} />
+                . Most recently API/Integration Architect at{" "}
+                <a
+                  href="https://agi.app"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+                >
+                  AGI, Inc.
+                </a>
+                , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
+                agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer
+                Science from UT Arlington. I love science and engineering and people
+              </>
+            ),
+          }}
+        />
 
         {/* ---- Updates ---- */}
         {recentUpdates.length > 0 && (
@@ -269,15 +326,18 @@ function ReadingCoverRail({ nodes }: { nodes: Node[] }) {
   return <CoverRail nodes={nodes} variant="reading" />;
 }
 
+// A shelf, not a scrollbar: covers are dragged past a fixed vanishing
+// point, tilting out of the page as they approach either edge. Geometry
+// lives in CoverGallery; this only sets the spacing it works over.
 function CoverRail({ nodes, variant }: { nodes: Node[]; variant: "reading" | "paper" }) {
   return (
-    <ul className="-mx-2 flex gap-4 overflow-x-auto px-2 pb-3 [scrollbar-width:thin]">
+    <CoverGallery className="-mx-6 flex gap-5 px-8 py-6">
       {nodes.map((node) => (
         <li key={node.id} className="shrink-0">
           <CoverCard node={node} variant={variant} />
         </li>
       ))}
-    </ul>
+    </CoverGallery>
   );
 }
 

@@ -15,9 +15,20 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { HeroHex, HeroStack, HERO_SIZE, type HeroContent } from "@/components/chrome/HeroHex";
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane } from "@/lib/graph-types";
-import { HEX_RATIO, packHoneycomb, type HexCell, type HexSize } from "@/lib/hex-layout";
+import {
+  HEX_CLIP,
+  HEX_RATIO,
+  hexColumnsFor,
+  hexPushOut,
+  hexSeparation,
+  hexWidthForColumns,
+  packHoneycomb,
+  type HexCell,
+  type HexSize,
+} from "@/lib/hex-layout";
 import { hexExpandNavigate, isPlainClick } from "@/lib/hex-transition";
 
 export type ProjectItem = {
@@ -32,25 +43,38 @@ export type ProjectItem = {
   icon?: { src: string; alt: string; fit?: "cover" | "contain" };
   video?: string;
   threadImages?: { src: string; alt: string }[];
+  // Thumbnail mosaic layout: `cols` cells across and down, `tint` the
+  // mean colour of the images in it, which fills the seams and any cell
+  // the project has no image for. Set by src/lib/project-items.ts.
+  mosaic?: { cols: number; tint?: string };
   orbitEmbed?: string;
   links?: Record<string, string | undefined>;
   // Honeycomb tile size, in multiples of the base hexagon. Defaults to 1.
   size?: HexSize;
 };
 
+// What the packer lays out: the hero is a tile like any other, it just
+// renders copy instead of app-icon art.
+type HeroItem = { kind: "hero"; id: "__hero" };
+type CombItem = HeroItem | ProjectItem;
+const HERO_ITEM: HeroItem = { kind: "hero", id: "__hero" };
+const combId = (item: CombItem) => item.id;
+const combSize = (item: CombItem): HexSize => (item.kind === "hero" ? HERO_SIZE : (item.size ?? 1));
+
 type View = "list" | "grid";
 const PROJECT_VIEW_STORAGE_KEY = "jacobfv:projects:view";
 
 // ---- Hexagon geometry -------------------------------------------------
-// Pointy-top hexagons, packed in offset rows by `packHoneycomb`
-// (src/lib/hex-layout.ts), which also owns HEX_RATIO. HEX_GAP is the
-// "slight margin" — it is added to the cell pitch, not to the hexagons,
-// so the packing stays a true honeycomb.
+// Flat-top hexagons — diagonals down the sides — packed into interlocking
+// columns by `packHoneycomb` (src/lib/hex-layout.ts), which also owns
+// HEX_RATIO and the clip. HEX_GAP is the "slight margin": it is carried by
+// the collision shape, not the drawn one, so the packing stays a true
+// honeycomb.
 const HEX_GAP = 10;
 const HEX_TARGET_W = 168;
-const HEX_CLIP = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
-// List-view icons are hexagons too, at a fixed size.
-const LIST_HEX_H = 88;
+// List-view icons are hexagons too, at a fixed size. Flat-top, so the
+// fixed dimension is the width and the height follows.
+const LIST_HEX_W = 104;
 
 const laneBg: Record<Lane, string> = {
   research: "bg-[var(--color-lane-research)]",
@@ -220,9 +244,24 @@ function ProjectGlyph({ className }: { className?: string }) {
   );
 }
 
-function ThreadImageGrid({ images }: { images: { src: string; alt: string }[] }) {
+function ThreadImageGrid({
+  images,
+  cols,
+  tint,
+}: {
+  images: { src: string; alt: string }[];
+  cols: number;
+  tint?: string;
+}) {
   return (
-    <span className="grid h-full w-full grid-cols-2 grid-rows-2 gap-px bg-[var(--color-bg-2)]">
+    <span
+      className="grid h-full w-full gap-px"
+      style={{
+        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        gridTemplateRows: `repeat(${cols}, minmax(0, 1fr))`,
+        background: tint ?? "var(--color-bg-2)",
+      }}
+    >
       {images.map((img) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -268,7 +307,13 @@ function IconFace({
   }
 
   if (preferThread && project.threadImages && project.threadImages.length >= 2) {
-    return <ThreadImageGrid images={project.threadImages} />;
+    return (
+      <ThreadImageGrid
+        images={project.threadImages}
+        cols={project.mosaic?.cols ?? 2}
+        tint={project.mosaic?.tint}
+      />
+    );
   }
 
   if (project.hero) {
@@ -328,17 +373,50 @@ function useHexNav(href: string) {
   );
 }
 
-export function ProjectsBrowser({ id, projects }: { id?: string; projects: ProjectItem[] }) {
+export function ProjectsBrowser({
+  id,
+  projects,
+  hero,
+}: {
+  id?: string;
+  projects: ProjectItem[];
+  // The landing hero, as a tile of the same comb. Given one, this section
+  // drops the list/grid picker: the hero only exists in the honeycomb, so
+  // a text list would have nowhere to put it.
+  hero?: HeroContent;
+}) {
   const [view, setView] = useState<View>("grid");
+  // The hexagon needs a wide comb before its interior can hold the bio at
+  // a readable size, so below `lg` the hero stacks above the comb instead
+  // and drops out of the packing. Matching Tailwind's breakpoint exactly
+  // keeps the two from ever both showing.
+  const [packHero, setPackHero] = useState(true);
 
   useEffect(() => {
     setView(readStoredValue(PROJECT_VIEW_STORAGE_KEY, "grid", isView));
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 64rem)");
+    const sync = () => setPackHero(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
   }, []);
 
   const pickView = useCallback((next: View) => {
     writeStoredValue(PROJECT_VIEW_STORAGE_KEY, next);
     setView(next);
   }, []);
+
+  if (hero) {
+    return (
+      <section id={id} className="mt-6 scroll-mt-20">
+        {!packHero && <HeroStack {...hero} />}
+        <ProjectHoneycomb projects={projects} hero={packHero ? hero : undefined} />
+      </section>
+    );
+  }
 
   return (
     <section id={id} className="mt-6 scroll-mt-20">
@@ -440,8 +518,8 @@ function ProjectRow({ project }: { project: ProjectItem }) {
           data-hex-face
           className="relative mt-1 block shrink-0 overflow-hidden bg-[var(--color-bg-1)] transition-transform duration-200 ease-out group-hover:scale-[1.04]"
           style={{
-            width: LIST_HEX_H / HEX_RATIO,
-            height: LIST_HEX_H,
+            width: LIST_HEX_W,
+            height: LIST_HEX_W * HEX_RATIO,
             clipPath: HEX_CLIP,
             filter: "drop-shadow(0 1px 3px color-mix(in srgb, var(--color-ink) 18%, transparent))",
           }}
@@ -472,23 +550,66 @@ function ProjectRow({ project }: { project: ProjectItem }) {
   );
 }
 
+// Caption type tracks the tile, but only linearly up to 2×. Past that a
+// literal 4× caption is a headline shouting out of the comb, so the extra
+// sizes get half the growth — big tiles read as bigger *artwork*, not
+// bigger words.
+const captionScale = (size: HexSize) => (size <= 2 ? size : 2 + (size - 2) / 2);
+
 // One hexagon. The label lives *inside* the hexagon (a honeycomb has no
-// room between cells for a caption) in the band between 25% and 75%
-// height, where the shape is still full width. Caption type scales with
-// the tile; below 1× there is no room for it at all.
-function HexTile({ cell }: { cell: HexCell<ProjectItem> }) {
+// room between cells for a caption). Flat-top, so the bottom edge is only
+// half the tile's width and the caption has to sit up off it and keep
+// generous side padding to stay inside the diagonals.
+function HexTile({
+  cell,
+  offset,
+  popped,
+  onPoint,
+}: {
+  cell: HexCell<ProjectItem>;
+  // Shove from whichever neighbor is currently hovered, if any — or, on
+  // the hovered tile itself, the room a fixed neighbor refused to give it.
+  offset?: { x: number; y: number };
+  popped?: boolean;
+  onPoint: (id: string | null) => void;
+}) {
   const { item: project, size, left, top, width, height } = cell;
   const href = nodeHref(project);
   const onClick = useHexNav(href);
+  const type = captionScale(size);
+  const nudge = offset ?? { x: 0, y: 0 };
+  // A sub-1× tile is half a caption wide, so scaling type with it would
+  // land under 6px. Half tiles get a floor instead, and pay for it by
+  // dropping the meta row and sitting higher up the hexagon, where the
+  // diagonals have not yet closed in on the text.
+  const mini = size < 1;
 
   return (
     <Link
       href={href}
       onClick={onClick}
       title={project.title}
+      onPointerEnter={() => onPoint(project.id)}
+      onPointerLeave={() => onPoint(null)}
+      // Keyboard focus jostles too, so the comb reacts the same either way.
+      onFocus={() => onPoint(project.id)}
+      onBlur={() => onPoint(null)}
       // z-index so a hovered hexagon lifts above the row nested under it.
       className="group absolute z-0 block no-underline hover:z-10"
-      style={{ left, top, width, height }}
+      style={{
+        left,
+        top,
+        width,
+        height,
+        transform: `translate3d(${nudge.x.toFixed(2)}px, ${nudge.y.toFixed(2)}px, 0)`,
+        // Neighbors settle slower than they shove, so the comb springs
+        // back gently. The popped tile's own slide instead runs on the
+        // pop's clock — it is the contact response to that growth, and
+        // lagging it would let the tile lap into the hero on the way out.
+        transition: popped
+          ? "transform 200ms cubic-bezier(0, 0, 0.2, 1)"
+          : "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+      }}
     >
       <span
         data-hex-face
@@ -500,48 +621,160 @@ function HexTile({ cell }: { cell: HexCell<ProjectItem> }) {
       >
         <IconFace project={project} preferIcon preferThread />
 
-        {size >= 1 && (
-          <>
-            {/* Caption scrim — keeps the title legible over any artwork. */}
+        {/* Caption scrim — keeps the title legible over any artwork. The
+            mini caption sits higher, so its scrim has to reach higher too. */}
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute inset-x-0 bottom-0 ${mini ? "h-full" : "h-[62%]"}`}
+          style={{
+            background: mini
+              ? "linear-gradient(to top, color-mix(in srgb, var(--color-bg-0) 92%, transparent) 40%, color-mix(in srgb, var(--color-bg-0) 55%, transparent) 74%, transparent 96%)"
+              : "linear-gradient(to top, color-mix(in srgb, var(--color-bg-0) 94%, transparent) 26%, color-mix(in srgb, var(--color-bg-0) 60%, transparent) 58%, transparent 92%)",
+          }}
+        />
+        <span
+          className={`pointer-events-none absolute inset-x-0 flex flex-col items-center gap-0.5 text-center ${
+            mini ? "bottom-[20%] px-[12%]" : "bottom-[14%] px-[19%]"
+          }`}
+        >
+          <span
+            className="line-clamp-2 leading-tight text-[var(--color-ink)] group-hover:text-[var(--color-accent)]"
+            style={{ fontSize: mini ? 9 : 11 * type }}
+          >
+            {project.title}
+          </span>
+          {!mini && (
             <span
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%]"
-              style={{
-                background:
-                  "linear-gradient(to top, color-mix(in srgb, var(--color-bg-0) 94%, transparent) 26%, color-mix(in srgb, var(--color-bg-0) 60%, transparent) 58%, transparent 92%)",
-              }}
-            />
-            <span className="pointer-events-none absolute inset-x-0 bottom-[16%] flex flex-col items-center gap-0.5 px-[13%] text-center">
-              <span
-                className="line-clamp-2 leading-tight text-[var(--color-ink)] group-hover:text-[var(--color-accent)]"
-                style={{ fontSize: 11 * size }}
-              >
-                {project.title}
-              </span>
-              <span
-                className="flex items-center justify-center gap-1 font-[family-name:var(--font-mono)] leading-none tracking-wider text-[var(--color-ink-mute)] uppercase"
-                style={{ fontSize: 9 * size }}
-              >
-                <TileIcon kind={tileIconKey(project)} px={11 * size} />
-                <span>{fmtYear(project.date)}</span>
-              </span>
+              className="flex items-center justify-center gap-1 font-[family-name:var(--font-mono)] leading-none tracking-wider text-[var(--color-ink-mute)] uppercase"
+              style={{ fontSize: 9 * type }}
+            >
+              <TileIcon kind={tileIconKey(project)} px={11 * type} />
+              <span>{fmtYear(project.date)}</span>
             </span>
-          </>
-        )}
+          )}
+        </span>
       </span>
     </Link>
   );
 }
 
+// ---- Hover jostle -----------------------------------------------------
+// When a tile pops on hover its neighbors give way, the way a pressed
+// hexagon would shove the comb around it. Between tiles this is *staged*,
+// not simulated: the pop is 5% of an apothem (~4px), which HEX_GAP
+// swallows whole, so an honest collision response would move nothing at
+// all. The shove is the exaggeration that makes the pop read as physical.
+//
+// The hero is the exception, and there the contact is real. It never
+// moves — it holds the page's copy, and text that slides when a neighbor
+// is hovered reads as a bug rather than as weight — so a tile that grows
+// or is shoved against it takes the whole displacement itself, and slides
+// along the edge it is resting on.
+const JOSTLE_PUSH = 7;
+// How far the ripple carries, in 1× hexagon widths. Wide enough that the
+// second ring drifts a pixel or two behind the first.
+const JOSTLE_RANGE = 2.2;
+// Must match the hover scale on the tile face below: what the popped
+// hexagon actually asks its neighbors for.
+const JOSTLE_POP = 1.05;
+
+type Offset = { x: number; y: number };
+
+function jostleOffsets(
+  cells: HexCell<CombItem>[],
+  hoveredId: string | null,
+  unitWidth: number,
+  // Off under prefers-reduced-motion. The contact response below still
+  // runs: the pop is a CSS hover transform that reduced motion does not
+  // switch off, so the hexagon it grows into still has to be answered.
+  shove: boolean,
+): Map<string, Offset> {
+  const out = new Map<string, Offset>();
+  const source = hoveredId && cells.find((c) => combId(c.item) === hoveredId);
+  if (!source) return out;
+
+  const cx = source.left + source.width / 2;
+  const cy = source.top + source.height / 2;
+  // Flat-top, so the apothem — the radius `hexSeparation` is measured in —
+  // is half the height.
+  const apothem = source.height / 2;
+  const range = JOSTLE_RANGE * unitWidth;
+
+  for (const cell of shove ? cells : []) {
+    if (cell.item.kind === "hero") continue;
+    if (combId(cell.item) === hoveredId) continue;
+    const dx = cell.left + cell.width / 2 - cx;
+    const dy = cell.top + cell.height / 2 - cy;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1e-6) continue;
+    // Gap between the two flat sides — 0 for tiles actually in contact.
+    const clearance = hexSeparation(dx, dy) - (apothem + cell.height / 2);
+    if (clearance > range) continue;
+    const fade = (1 - clearance / range) ** 2;
+    // Small tiles are lighter, so they give way further.
+    const mass = Math.min(1.8, Math.max(0.6, Math.sqrt(apothem / (cell.height / 2))));
+    // Everything is shoved radially outward, so two tiles only close on
+    // each other by the *difference* of their pushes. Capping any single
+    // push below HEX_GAP therefore keeps the comb from ever self-overlapping.
+    const push = Math.min(JOSTLE_PUSH * fade * mass, HEX_GAP * 0.9);
+    out.set(combId(cell.item), { x: (dx * push) / dist, y: (dy * push) / dist });
+  }
+
+  // Now settle everything against the fixed bodies. The hovered tile is in
+  // here too: it is the one that grew, so if it was resting on the hero it
+  // is the one that has to give way.
+  const fixed = cells.filter((c) => c.item.kind === "hero");
+  if (fixed.length === 0) return out;
+
+  for (const cell of cells) {
+    if (cell.item.kind === "hero") continue;
+    const id = combId(cell.item);
+    const shoved = out.get(id) ?? { x: 0, y: 0 };
+    // At rest a seated tile is exactly its two apothems plus HEX_GAP from
+    // its neighbor, so a tile that has not grown or moved owes nothing and
+    // this resolves to no push at all.
+    const owed = (id === hoveredId ? JOSTLE_POP : 1) * (cell.height / 2) + HEX_GAP;
+    let { x, y } = shoved;
+    for (const block of fixed) {
+      const relief = hexPushOut(
+        cell.left + cell.width / 2 + x - (block.left + block.width / 2),
+        cell.top + cell.height / 2 + y - (block.top + block.height / 2),
+        block.height / 2 + owed,
+      );
+      if (relief) {
+        x += relief.x;
+        y += relief.y;
+      }
+    }
+    if (x !== shoved.x || y !== shoved.y) out.set(id, { x, y });
+  }
+  return out;
+}
+
 // The honeycomb. Order is editorial — it comes from the server
 // (`byProjectRank`) and stays put. Column count is measured rather than
-// set by breakpoints so the 1× hexagons always divide the available width
-// exactly; `packHoneycomb` then walks the lattice in that order. With
-// every project at 1× that reproduces the classic alternating N / N−1
-// rows, nested half a cell in.
-function ProjectHoneycomb({ projects }: { projects: ProjectItem[] }) {
+// set by breakpoints so the tiles always divide the available width
+// exactly; `packHoneycomb` then seats each one against its neighbors.
+// With every project at 1× that reproduces the textbook flat-top comb:
+// interlocking columns, each offset half a row from the last.
+//
+// The hero, when there is one, is simply the first item: a 4× tile in the
+// same packing, dropped bottom-left like everything else. That is what
+// makes the projects hug it — they are not laid out around a reserved
+// hole, they fall against its edges because nothing else is free.
+function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: HeroContent }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [still, setStill] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setStill(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
 
   useLayoutEffect(() => {
     const el = wrapRef.current;
@@ -556,26 +789,55 @@ function ProjectHoneycomb({ projects }: { projects: ProjectItem[] }) {
   // width, so the markup — and the project links in it — are identical
   // on both sides. The real width lands in a layout effect, before paint.
   const measured = width || 960;
-  const cols = Math.max(3, Math.min(6, Math.round(measured / HEX_TARGET_W)));
-  const hexW = (measured - (cols - 1) * HEX_GAP) / cols;
+  // Flat-top columns interlock, so a column costs three quarters of a tile
+  // — `hexColumnsFor` accounts for that, and its inverse gives the width
+  // that makes those columns divide the container exactly.
+  const cols = Math.max(3, Math.min(8, hexColumnsFor(measured, HEX_TARGET_W, HEX_GAP)));
+  const hexW = hexWidthForColumns(measured, cols, HEX_GAP);
+
+  const items: CombItem[] = useMemo(
+    () => (hero ? [HERO_ITEM, ...projects] : projects),
+    [hero, projects],
+  );
 
   const layout = useMemo(
     () =>
       packHoneycomb({
-        items: projects,
-        sizeOf: (project) => project.size ?? 1,
+        items,
+        sizeOf: combSize,
         containerWidth: measured,
         unitWidth: hexW,
         gap: HEX_GAP,
       }),
-    [projects, measured, hexW],
+    [items, measured, hexW],
+  );
+
+  const offsets = useMemo(
+    () => jostleOffsets(layout.cells, hovered, hexW, !still),
+    [layout.cells, hovered, hexW, still],
   );
 
   return (
     <div ref={wrapRef} className="relative w-full" style={{ height: layout.height }}>
-      {layout.cells.map((cell) => (
-        <HexTile key={cell.item.id} cell={cell} />
-      ))}
+      {layout.cells.map((cell) =>
+        cell.item.kind === "hero" ? (
+          <div
+            key="hero"
+            className="absolute"
+            style={{ left: cell.left, top: cell.top, width: cell.width, height: cell.height }}
+          >
+            {hero && <HeroHex {...hero} />}
+          </div>
+        ) : (
+          <HexTile
+            key={cell.item.id}
+            cell={cell as HexCell<ProjectItem>}
+            offset={offsets.get(cell.item.id)}
+            popped={hovered === cell.item.id}
+            onPoint={setHovered}
+          />
+        ),
+      )}
     </div>
   );
 }

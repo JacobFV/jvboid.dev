@@ -32,7 +32,13 @@ declare global {
 // Submit morphs between phone (empty → CallSheet) and arrow-up
 // (has text → TextSheet which gates the reveal of phone/email with the
 // same captcha CallSheet uses).
-export function AskInput() {
+export function AskInput({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   const [value, setValue] = useState("");
   const [callOpen, setCallOpen] = useState(false);
   const [textOpen, setTextOpen] = useState(false);
@@ -108,7 +114,12 @@ export function AskInput() {
 
   return (
     <>
-      <div className="mt-8 flex w-full max-w-xl items-center gap-1 rounded-full bg-[var(--color-bg-1)] py-2 pr-2 pl-5 shadow-[var(--shadow-soft),var(--ring-soft)] focus-within:shadow-[var(--shadow-soft),inset_0_0_0_1px_var(--color-accent)]">
+      {/* Spacing is the caller's — this bar sits under the name on the
+          stacked hero and inside the hexagon on the packed one. */}
+      <div
+        style={style}
+        className={`mx-auto flex w-full max-w-xl items-center gap-1 rounded-full bg-[var(--color-bg-1)] py-2 pr-2 pl-5 shadow-[var(--shadow-soft),var(--ring-soft)] focus-within:shadow-[var(--shadow-soft),inset_0_0_0_1px_var(--color-accent)] ${className ?? ""}`}
+      >
         <input
           type="text"
           value={value}

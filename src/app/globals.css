@@ -100,6 +100,98 @@ body {
   color: var(--color-bg-0);
 }
 
+/* ---- Auto-hiding rail scrollbar (ScrollRail.tsx, CoverGallery.tsx) ----
+   Horizontal rails keep their scrollbar invisible at rest and fade it in
+   while the rail is actually being scrolled; the rail component flips
+   `data-scrolling` and clears it a beat after motion stops. Chrome wants
+   the webkit pseudo-elements, Firefox reads `scrollbar-color` (which it
+   does not transition, so there it snaps rather than fades). */
+.rail-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 220ms ease;
+}
+.rail-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-color: transparent;
+  background-clip: content-box;
+  transition: background-color 220ms ease;
+}
+.rail-scroll[data-scrolling="true"] {
+  scrollbar-color: color-mix(in srgb, var(--color-ink) 30%, transparent) transparent;
+}
+.rail-scroll[data-scrolling="true"]::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+}
+
+/* ---- Cover shelf (components/chrome/CoverGallery.tsx) ----
+   The rail itself is the 3D viewport: perspective lives here so each
+   cover (a direct <li> child) rotates in the same vanishing point. The
+   per-cover transforms are written from JS on every scroll frame, so
+   nothing here animates — this is the stage, not the choreography.
+   `scroll-behavior` must stay instant: the drag handler writes
+   `scrollLeft` directly and smooth scrolling would fight it. */
+.cover-gallery {
+  perspective: 1100px;
+  perspective-origin: 50% 45%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Covers dissolve rather than getting guillotined at the rail edge. */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 3rem,
+    #000 calc(100% - 3rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 3rem,
+    #000 calc(100% - 3rem),
+    transparent 100%
+  );
+}
+.cover-gallery[data-dragging="true"] {
+  cursor: grabbing;
+}
+.cover-gallery > li {
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* ---- Hexagon walls (components/chrome/HexFit.tsx) ----
+   Two contentless floats per shaped block. HexFit measures where the
+   block sits inside the hexagon and writes the size and the polygons;
+   everything here is plumbing. With the custom properties unset — on the
+   server, and before the first measurement — both floats are 0×0 and the
+   text wraps in the ordinary rectangle. */
+.hex-wall {
+  width: var(--hex-wall-w, 0px);
+  height: var(--hex-wall-h, 0px);
+  shape-margin: 0.5em;
+  pointer-events: none;
+}
+.hex-wall-l {
+  float: left;
+  shape-outside: var(--hex-wall-left, none);
+}
+.hex-wall-r {
+  float: right;
+  shape-outside: var(--hex-wall-right, none);
+}
+
 a {
   color: inherit;
   text-decoration-color: var(--color-ink-mute);
