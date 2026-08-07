@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 
+import { compile } from "@mdx-js/mdx";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkParse from "remark-parse";
+import { unified } from "unified";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "..");
@@ -395,6 +400,123 @@ function escapeMdxText(value) {
   return value.replace(/[<>]/g, (character) => (character === "<" ? "&lt;" : "&gt;"));
 }
 
+const VOID_HTML_TAGS = [
+  "area", "base", "br", "col", "embed", "hr", "img",
+  "input", "link", "meta", "param", "source", "track", "wbr",
+];
+
+// Fenced code is the one place MDX leaves alone entirely, so every rewrite
+// below has to step around it. Split a document into alternating prose and
+// fenced-code runs; rejoining with "\n" reproduces the original bytes.
+function splitFencedCode(text) {
+  const parts = [];
+  let buffer = [];
+  let fence = null;
+
+  const flush = (code) => {
+    if (buffer.length === 0) return;
+    parts.push({ code, value: buffer.join("\n") });
+    buffer = [];
+  };
+
+  for (const line of text.split("\n")) {
+    const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+
+    if (fence) {
+      buffer.push(line);
+      const closes =
+        marker && marker[1][0] === fence[0] && marker[1].length >= fence.length &&
+        /^ {0,3}(`{3,}|~{3,})\s*$/.test(line);
+      if (closes) {
+        flush(true);
+        fence = null;
+      }
+      continue;
+    }
+
+    if (marker) {
+      flush(false);
+      fence = marker[1];
+    }
+    buffer.push(line);
+  }
+
+  // An unterminated fence swallows the rest of the document, exactly as the
+  // markdown parser would read it.
+  flush(fence != null);
+  return parts;
+}
+
+function mapProse(text, transform) {
+  return splitFencedCode(text)
+    .map((part) => (part.code ? part.value : transform(part.value)))
+    .join("\n");
+}
+
+// Attributes have to be consumed quote-aware: `content="0; URL=https://…"` holds
+// an `=` that is part of the value, and quoting it again would break the tag.
+const TAG_ATTRIBUTE = /\s+([a-zA-Z_:][\w.:-]*)(?:\s*=\s*("[^"]*"|'[^']*'|\{[^}]*\}|[^\s"'>]+))?/g;
+
+function quoteBareAttributes(tag) {
+  const name = /^<\/?[a-zA-Z][\w.:-]*/.exec(tag);
+  if (!name) return tag;
+
+  const rest = tag.slice(name[0].length);
+  const close = rest.search(/\/?>$/);
+  if (close < 0) return tag;
+
+  const attributes = rest.slice(0, close).replace(TAG_ATTRIBUTE, (match, key, value) => {
+    if (value === undefined || /^["'{]/.test(value)) return match;
+    return ` ${key}="${value}"`;
+  });
+
+  return `${name[0]}${attributes}${rest.slice(close)}`;
+}
+
+// MDX turns off indented code blocks, so a four-space-indented ASCII diagram
+// becomes a paragraph and its `<` characters become broken JSX. Re-fence the
+// blocks that are unambiguously code: preceded by a blank line, following a
+// flush-left paragraph rather than a list item that owns the indentation.
+function fenceIndentedCode(prose) {
+  const lines = prose.split("\n");
+  const output = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const startsBlock =
+      /^ {4,}\S/.test(lines[index]) &&
+      index > 0 &&
+      lines[index - 1].trim() === "";
+
+    if (!startsBlock) {
+      output.push(lines[index]);
+      continue;
+    }
+
+    let previous = index - 2;
+    while (previous >= 0 && lines[previous].trim() === "") previous -= 1;
+    const owner = previous >= 0 ? lines[previous] : "";
+    if (/^\s/.test(owner) || /^\s*([-*+]|\d+[.)])\s/.test(owner)) {
+      output.push(lines[index]);
+      continue;
+    }
+
+    let end = index;
+    for (let scan = index; scan < lines.length; scan += 1) {
+      if (/^ {4,}\S/.test(lines[scan])) end = scan;
+      else if (lines[scan].trim() !== "") break;
+    }
+
+    const block = lines.slice(index, end + 1);
+    const indent = Math.min(
+      ...block.filter((line) => line.trim()).map((line) => /^ */.exec(line)[0].length),
+    );
+    output.push("```text", ...block.map((line) => line.slice(indent)), "```");
+    index = end;
+  }
+
+  return output.join("\n");
+}
+
 function sanitizeLegacyBody(body) {
   let result = body.replace(/\r\n/g, "\n");
 
@@ -438,16 +560,162 @@ function sanitizeLegacyBody(body) {
   result = result.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
   result = result.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, "");
 
+  // MDX has no HTML comments — `<!--` is a parse error, and escaping it would
+  // publish drafts the author had hidden. Matched over the whole body rather
+  // than per prose run, because these often comment out a fenced code block.
+  result = result.replace(/<!--[\s\S]*?-->/g, "");
+
   // React/MDX accepts className, not class. Inline HTML style strings are not
   // valid JSX objects, so omit them rather than making old posts unbuildable.
   result = result.replace(/\sclass=(['"])(.*?)\1/gi, (_match, quote, value) => {
     return ` className=${quote}${value}${quote}`;
   });
   result = result.replace(/\sstyle=(['"])(.*?)\1/gi, "");
-  result = result.replace(/<(br|hr)(\s*?)>/gi, "<$1$2 />");
-  result = result.replace(/<img\b([^>]*?)(?<!\/)\s*>/gi, "<img$1 />");
+  // HTML lets void elements stand unclosed; JSX requires every tag to close,
+  // and one bare `<source>` is enough to take the whole revision down.
+  result = result.replace(
+    new RegExp(`<(${VOID_HTML_TAGS.join("|")})\\b([^<>]*?)(?<!/)\\s*>`, "gi"),
+    (_match, tag, attributes) => `<${tag}${attributes} />`,
+  );
+
+  // The remaining rewrites are all things kramdown accepted and MDX rejects.
+  // Each one exists so the construct still renders; anything not handled here
+  // survives only as escaped text (see repairMdxBody).
+  result = mapProse(result, (prose) => {
+    let value = prose;
+
+    // MathJax's `\[ ... \]` / `\( ... \)` delimiters mean nothing to
+    // remark-math, which leaves the LaTeX braces to MDX's expression parser.
+    value = value.replace(/^([ \t]*)\\[[\]]([ \t]*)$/gm, (_match, before) => `${before}$$`);
+    value = value.replace(/\\\(([\s\S]*?)\\\)/g, (_match, math) => `$${math.trim()}$`);
+    value = value.replace(/\\\[([\s\S]*?)\\\]/g, (_match, math) => `$$${math.trim()}$$`);
+
+    // JSX requires quoted attribute values; HTML did not (`width=50%`).
+    value = value.replace(/<[a-zA-Z][^<>]*>/g, quoteBareAttributes);
+
+    return fenceIndentedCode(value);
+  });
+
+  // `<TODO>` and `<modify a lot>` are valid JSX names, so MDX parses them
+  // happily and only blows up at render, when no such component exists. Nothing
+  // in a Jekyll-era post was ever a component, so neutralise them up front.
+  result = escapeMdxSyntax(result, { text: false, html: "unknown" });
 
   return result.trim() || "_this revision contained no post body._";
+}
+
+// Velite compiles revision bodies with these two plugins in front of the MDX
+// parser; the rest of the pipeline (rehype-katex, the local remark plugins)
+// runs after parsing and cannot change whether a body is syntactically valid.
+const MDX_COMPILE_OPTIONS = { remarkPlugins: [remarkGfm, remarkMath] };
+
+const MDX_ESCAPES = new Map([
+  ["<", "&lt;"],
+  ["{", "&#123;"],
+  ["}", "&#125;"],
+]);
+
+const UNRENDERABLE_NOTICE =
+  "> This revision's source could not be rendered. Use the diff or the commit link to read the original.";
+
+async function mdxParseError(body) {
+  try {
+    await compile(body, MDX_COMPILE_OPTIONS);
+    return null;
+  } catch (error) {
+    return error;
+  }
+}
+
+function walkMdast(node, visitor) {
+  visitor(node);
+  for (const child of node.children ?? []) walkMdast(child, visitor);
+}
+
+// Elements a browser knows. Anything else spelled like a tag in old drafts —
+// `<modify a lot>`, `<TODO: ...>` — was an author's annotation, never markup.
+const KNOWN_HTML_TAGS = new Set([
+  "a", "abbr", "address", "area", "article", "aside", "audio", "b", "base", "bdi", "bdo",
+  "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col",
+  "colgroup", "data", "datalist", "dd", "del", "details", "dfn", "dialog", "div", "dl", "dt",
+  "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "h1", "h2", "h3",
+  "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "img", "input",
+  "ins", "kbd", "label", "legend", "li", "link", "main", "map", "mark", "menu", "meta", "meter",
+  "nav", "noscript", "object", "ol", "optgroup", "option", "output", "p", "param", "picture",
+  "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "script", "section", "select",
+  "small", "source", "span", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td",
+  "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", "u", "ul",
+  "var", "video", "wbr",
+  // SVG, which old diagrams inline directly.
+  "circle", "defs", "desc", "ellipse", "g", "line", "linearGradient", "marker", "mask", "path",
+  "pattern", "polygon", "polyline", "radialGradient", "rect", "stop", "svg", "text", "tspan",
+  "use",
+]);
+
+function escapeSyntax(text) {
+  return text.replace(/[<{}]/g, (character) => MDX_ESCAPES.get(character));
+}
+
+// Neutralise only the tags a browser would not recognise, so a stray annotation
+// does not cost the revision its real figures and embeds.
+function escapeUnknownTags(html) {
+  return html.replace(/<\/?([a-zA-Z][\w.:-]*)/g, (match, tag) =>
+    KNOWN_HTML_TAGS.has(tag.toLowerCase()) ? match : `&lt;${match.slice(1)}`,
+  );
+}
+
+// Markdown's own tokenizer is the authority on which `<` opens a real tag and
+// which is only prose, and on which braces belong to math or code — exactly the
+// distinctions MDX gets wrong on kramdown-era source. Parse the body as plain
+// markdown and rewrite only what markdown itself calls literal text, leaving
+// math, code, and well-formed HTML byte-identical.
+//
+// `html` widens that to the markup, for bodies whose tags are unbalanced or
+// invented: "unknown" escapes the invented ones, "all" gives up on markup
+// entirely. Each is a rung on the ladder in repairMdxBody.
+function escapeMdxSyntax(body, { text = true, html = "none" } = {}) {
+  const tree = unified().use(remarkParse).use(remarkGfm).use(remarkMath).parse(body);
+  const edits = [];
+
+  walkMdast(tree, (node) => {
+    if (!node.position) return;
+    const { start, end } = node.position;
+    if (typeof start.offset !== "number" || typeof end.offset !== "number") return;
+
+    if (text && node.type === "text") edits.push([start.offset, end.offset, escapeSyntax]);
+    else if (node.type === "html" && html === "all") edits.push([start.offset, end.offset, escapeSyntax]);
+    else if (node.type === "html" && html === "unknown") edits.push([start.offset, end.offset, escapeUnknownTags]);
+  });
+
+  // Rewrite back to front so earlier offsets stay valid as the text grows.
+  edits.sort((left, right) => right[0] - left[0]);
+
+  let result = body;
+  for (const [start, end, rewrite] of edits) {
+    result = `${result.slice(0, start)}${rewrite(body.slice(start, end))}${result.slice(end)}`;
+  }
+  return result;
+}
+
+// Velite reports an unparsable body as a build issue and then drops the entry,
+// which silently deletes a revision from the reader. Historical bodies are
+// whatever the author committed years ago, in whatever dialect the site used at
+// the time, so prove each one compiles here and give up one rung at a time.
+const MDX_REPAIR_LADDER = [
+  { html: "none" },
+  { html: "unknown" },
+  { html: "all" },
+];
+
+async function repairMdxBody(body) {
+  if (!(await mdxParseError(body))) return { body, level: 0 };
+
+  for (const [index, options] of MDX_REPAIR_LADDER.entries()) {
+    const candidate = escapeMdxSyntax(body, options);
+    if (!(await mdxParseError(candidate))) return { body: candidate, level: index + 1 };
+  }
+
+  return { body: UNRENDERABLE_NOTICE, level: MDX_REPAIR_LADDER.length + 1 };
 }
 
 function yamlString(value) {
@@ -585,7 +853,36 @@ function writeRevisions(posts, revisionsByPost, unmatchedPaths) {
   return revisionCount;
 }
 
-function main() {
+// One label per rung of MDX_REPAIR_LADDER, offset by the untouched level 0.
+const REPAIR_LABELS = [
+  null,
+  "escaped prose that MDX reads as markup",
+  "escaped invented tags",
+  "escaped all inline HTML",
+  "could not be rendered",
+];
+
+async function repairRevisionBodies(revisionsByPost) {
+  const levels = REPAIR_LABELS.map(() => 0);
+
+  for (const revisions of revisionsByPost.values()) {
+    for (const revision of revisions) {
+      const { body, level } = await repairMdxBody(revision.renderBody);
+      revision.renderBody = body;
+      levels[level] += 1;
+      // Levels past the first drop content the author wrote, so name them.
+      if (level >= 2) {
+        console.log(
+          `  ${revision.postId} ${revision.commit.slice(0, 7)}: ${REPAIR_LABELS[level]}`,
+        );
+      }
+    }
+  }
+
+  return levels;
+}
+
+async function main() {
   assertGitRepository();
   if (isShallowRepository() && process.env.POST_REVISIONS_REQUIRE_FULL_HISTORY === "1") {
     throw new Error(
@@ -597,6 +894,7 @@ function main() {
   const historicalPaths = listHistoricalPostPaths();
   const { mapped, unmatched } = mapHistoricalPaths(historicalPaths, lookup);
   const revisionsByPost = collectRevisions(posts, mapped);
+  const repairLevels = await repairRevisionBodies(revisionsByPost);
   const revisionCount = writeRevisions(posts, revisionsByPost, unmatched);
 
   const updatedPosts = [...revisionsByPost.values()].filter((revisions) => revisions.length > 1).length;
@@ -606,9 +904,17 @@ function main() {
   console.log(
     `generated ${revisionCount} revisions for ${posts.length} posts; ${updatedPosts} posts have updates${shallowNotice}`,
   );
+  const repaired = repairLevels.slice(1).reduce((total, count) => total + count, 0);
+  if (repaired > 0) {
+    const detail = repairLevels
+      .map((count, level) => (level > 0 && count > 0 ? `${count} ${REPAIR_LABELS[level]}` : null))
+      .filter(Boolean)
+      .join("; ");
+    console.log(`made ${repaired} revisions MDX-parsable (${detail})`);
+  }
   if (unmatched.length > 0) {
     console.log(`left ${unmatched.length} historical post paths unmatched; see ${relative(REPO_ROOT, MANIFEST_PATH)}`);
   }
 }
 
-main();
+await main();
