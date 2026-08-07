@@ -62,12 +62,13 @@ resume_description: "..."
 # → "Jun 2024"; "season" → "Summer 2024"; "year" → "2024" (only the year is
 # known). See formatResumeDate() in src/lib/resume-data.ts.
 datePrecision: year # optional
-# `fit` is optional and defaults to "cover" (crop to fill the frame).
-# Use "contain" to letterbox the whole image with transparent padding —
-# right for logos, wordmarks, and diagrams that must not be cropped.
+# CARD ART ONLY — see "Project media" below. `fit` is optional and
+# defaults to "cover" (crop to fill the frame). Use "contain" to
+# letterbox the whole image with transparent padding — right for logos,
+# wordmarks, and diagrams that must not be cropped.
 hero: { src: /img/projects/computatrum.png, alt: "...", fit: cover }
-# Optional. YouTube / Vimeo / self-hosted demo. Renders as a 16:9
-# embed at the top of the project page.
+# Optional. YouTube / Vimeo / self-hosted demo. Used to shape the card on
+# /projects; it is NOT embedded on the project page.
 video: https://www.youtube.com/watch?v=...
 links:
   github: https://github.com/...
@@ -80,6 +81,31 @@ realizes: [vision-agent-os]
 For the body, follow the six-section template in
 [PORTFOLIO_PRINCIPLES.md](./PORTFOLIO_PRINCIPLES.md#project-page-body-template):
 Problem · Solution · How · Tests · Results · Lessons.
+
+#### Project media
+
+**Nothing is hoisted above a project page from frontmatter.** `hero`,
+`video`, `pdf`, and `links.demo` feed the `/projects` cards, the home
+constellation, search, and the resume — the project page renders only
+the title block and the link pills.
+
+If a project page should show an image, a deck, a clip, or a live app,
+the body places it, at the point in the argument where it belongs:
+
+| What | In the body |
+| --- | --- |
+| Image | `![alt](/assets/...)` |
+| Deck / poster / paper | `<Pdf src="..." title="..." caption="..." />` |
+| YouTube / Vimeo / `.mp4` | `<Video url="..." title="..." poster="..." caption="..." />` |
+| Deployed app | `<LiveDemo url="..." title="..." caption="..." />` |
+
+This is deliberate. Auto-hoisting put the same slot at the top of every
+project whether or not the article already showed that artifact, so decks
+and demo videos routinely appeared twice — and a body that opened with
+its own screenshot got that screenshot twice in a row. Before adding one
+of these, read the body and check the artifact is not already there.
+A `hero` that is only a video thumbnail, an icon, or a PDF cover render
+belongs on the card and nowhere else.
 
 ### paper
 

@@ -53,6 +53,8 @@ hand-stitched pipeline.
 - **Credit and budget:** a `RewardAgent` distributes a `reward`-typed variable downstream;
   a compute-energy estimator gives the executor a per-step ceiling agents have to respect.
 
+![The Multi-Agent Network architecture — a shared salina workspace of typed, owner-namespaced variables, with specialized agents (BERT, GPT, ViT, WaveNet, gym/dataset interfaces) on one side and self-organising common agents on the other, closed by the reward and compute-energy channels](/assets/img/projects/the-multi-agent-network-diagram.svg)
+
 The architecture diagram above traces a single timestep — specialized agents on the
 left read and write task-specific variables, common agents on the right self-organise
 against the same workspace, and the reward / energy channels close the loop back

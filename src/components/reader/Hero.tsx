@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { nodeHref, type Node } from "@/lib/graph";
-import { InviteCursor } from "./InviteCursor";
-import { ProgressiveImage } from "./ProgressiveImage";
 
 const fmt = (iso?: string) => (iso ? new Date(iso).toISOString().slice(0, 10) : null);
-const projectVisualFrame =
-  "relative w-full overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-ink)_24%,transparent)] bg-[var(--color-bg-1)] shadow-none transition-shadow duration-200 hover:shadow-[0_14px_34px_color-mix(in_srgb,var(--color-ink)_14%,transparent)]";
 
 // Polymorphic hero. The shared `view-transition-name` lets the browser
 // FLIP-morph the constellation card into this block on navigation.
@@ -70,185 +66,31 @@ function KindMeta({ node }: { node: Node }) {
   }
 }
 
+// Projects render only their metadata pills here. Media embeds are NOT
+// hoisted from frontmatter — `hero`, `pdf`, `video` and `links.demo`
+// exist for cards, search and the constellation, and a body that wants
+// to show one places <Pdf>/<Video>/<LiveDemo>/an image itself, at the
+// point in the argument where it belongs. Auto-hoisting meant every
+// project opened with the same slot whether or not the article already
+// showed that artifact, which just duplicated it.
 function ProjectMeta({ node }: { node: Node }) {
-  const hasLinks = node.links && Object.keys(node.links).length > 0;
-  const liveUrl = node.orbitEmbed ?? node.links?.demo;
-  if (!hasLinks && !node.pdf && !node.video && !liveUrl && !node.hero) return null;
+  const links = node.links ? Object.entries(node.links).filter(([, v]) => Boolean(v)) : [];
+  if (links.length === 0) return null;
   return (
-    <div className="mt-5 flex flex-col gap-5">
-      {/* Prefer project PDFs when there is a deck/poster/paper attached:
-          they are the artifact itself, not just a supporting image.
-          Explicit videos come next so presentation/demo reels can be the
-          primary asset even when a separate live URL also exists. */}
-      {node.pdf ? (
-        <ProjectPdfEmbed node={node} />
-      ) : node.video ? (
-        <ProjectVideo url={node.video} title={node.title} />
-      ) : liveUrl ? (
-        <ProjectLiveEmbed url={liveUrl} title={node.title} />
-      ) : node.hero ? (
-        <ProjectHeroImage node={node} />
-      ) : null}
-      {hasLinks && (
-        <div className="flex flex-wrap gap-3 font-[family-name:var(--font-mono)] text-xs">
-          {Object.entries(node.links!).map(([k, v]) =>
-            v ? (
-              <a
-                key={k}
-                href={v}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-[var(--color-bg-1)] px-3 py-1 text-[var(--color-ink-dim)] no-underline hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-              >
-                {k} ↗
-              </a>
-            ) : null,
-          )}
-        </div>
-      )}
+    <div className="mt-5 flex flex-wrap gap-3 font-[family-name:var(--font-mono)] text-xs">
+      {links.map(([k, v]) => (
+        <a
+          key={k}
+          href={v}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-full bg-[var(--color-bg-1)] px-3 py-1 text-[var(--color-ink-dim)] no-underline hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
+        >
+          {k} ↗
+        </a>
+      ))}
     </div>
   );
-}
-
-function ProjectPdfEmbed({ node }: { node: Node }) {
-  if (!node.pdf) return null;
-  return (
-    <div className={projectVisualFrame}>
-      <iframe
-        src={`${node.pdf}#view=FitH`}
-        title={`${node.title} — PDF`}
-        loading="lazy"
-        className="h-[72vh] min-h-[520px] w-full"
-        style={{ border: 0 }}
-      />
-      <LiveOpenButton url={node.pdf} label="open PDF ↗" />
-    </div>
-  );
-}
-
-function ProjectLiveEmbed({ url, title }: { url: string; title: string }) {
-  return (
-    <div
-      className={projectVisualFrame}
-      style={{ aspectRatio: "16 / 10" }}
-    >
-      <iframe
-        src={url}
-        title={`${title} — live demo`}
-        loading="lazy"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        className="absolute inset-0 h-full w-full"
-        style={{ border: 0 }}
-      />
-      <LiveOpenButton url={url} label="try it out ↗" />
-    </div>
-  );
-}
-
-function ProjectHeroImage({ node }: { node: Node }) {
-  const demo = node.links?.demo;
-  if (!node.hero) return null;
-  // "contain" letterboxes the whole image against the frame background —
-  // padding keeps logos/diagrams clear of the rounded border.
-  const contain = node.hero.fit === "contain";
-  return (
-    <div className={projectVisualFrame}>
-      <ProgressiveImage
-        src={node.hero.src}
-        alt={node.hero.alt}
-        className={
-          contain
-            ? "max-h-[420px] w-full bg-[var(--color-bg-1)] object-contain p-6"
-            : "max-h-[420px] w-full object-cover"
-        }
-      />
-      {demo && <LiveOpenButton url={demo} center label="try it out ↗" />}
-    </div>
-  );
-}
-
-function LiveOpenButton({
-  url,
-  center = false,
-  label,
-}: {
-  url: string;
-  center?: boolean;
-  label: string;
-}) {
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className={`embed-cta absolute z-10 rounded-full bg-[var(--color-accent)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs text-white no-underline shadow-[var(--shadow-soft)] transition-opacity hover:opacity-90 ${
-        center ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" : "right-3 top-3"
-      }`}
-    >
-      {label}
-      <InviteCursor />
-    </a>
-  );
-}
-
-// Embed a YouTube or Vimeo URL as a 16:9 iframe. For other hosts, fall
-// back to a plain link — saves us a brittle URL-shape catalogue.
-function ProjectVideo({ url, title }: { url: string; title: string }) {
-  const embed = toEmbedUrl(url);
-  if (!embed) {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        className="rounded-full bg-[var(--color-bg-1)] px-3 py-1 text-[var(--color-ink-dim)] no-underline hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-      >
-        watch demo ↗
-      </a>
-    );
-  }
-  return (
-    <div className={projectVisualFrame} style={{ aspectRatio: "16 / 9" }}>
-      <iframe
-        src={embed}
-        title={`${title} — demo video`}
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        className="absolute inset-0 h-full w-full"
-        style={{ border: 0 }}
-      />
-    </div>
-  );
-}
-
-function toEmbedUrl(raw: string): string | null {
-  try {
-    const u = new URL(raw);
-    // youtu.be/<id>
-    if (u.hostname === "youtu.be") {
-      return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
-    }
-    // youtube.com/watch?v=<id> | /embed/<id> | /shorts/<id>
-    if (u.hostname === "youtube.com" || u.hostname === "www.youtube.com") {
-      const v = u.searchParams.get("v");
-      if (v) return `https://www.youtube.com/embed/${v}`;
-      const m = u.pathname.match(/^\/(embed|shorts)\/([^/]+)/);
-      if (m) return `https://www.youtube.com/embed/${m[2]}`;
-    }
-    // vimeo.com/<id>
-    if (u.hostname === "vimeo.com" || u.hostname === "www.vimeo.com") {
-      const m = u.pathname.match(/^\/(\d+)/);
-      if (m) return `https://player.vimeo.com/video/${m[1]}`;
-    }
-    // Already an embed URL
-    if (u.pathname.includes("/embed/") || u.hostname === "player.vimeo.com") {
-      return raw;
-    }
-    return null;
-  } catch {
-    return null;
-  }
 }
 
 function PaperMeta({ node }: { node: Node }) {

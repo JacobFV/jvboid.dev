@@ -26,6 +26,8 @@ Bonk is an Electron desktop pet for staying aligned with your own goals. A small
 
 The pitch is deliberately gentle: not a harsh alarm, not a surveillance dashboard, and not a productivity scorecard. It is a lightweight companion that remembers what you said you wanted to do and notices when your attention is sliding away from it.
 
+![The Bonk desktop pet sitting in its transparent window alongside the goals and coach-chat surface](/assets/img/projects/bonk.png)
+
 ## How It Works
 
 The app has two surfaces:
@@ -34,6 +36,12 @@ The app has two surfaces:
 - A transparent desktop pet window that stays visible while you work.
 
 The repo describes the current behavior as polling the active window once per second. If a distracting app or site remains active for about 15 seconds, and the cooldown has passed, Bonk runs a 1.2 second animation, briefly swaps from the idle doge image to the bonk image, plays a beep, and adds a concise nudge to the chat.
+
+<Video
+  url="https://www.youtube.com/watch?v=E6majVNvS5s"
+  title="Bonk"
+  caption="Hackathon demo: drifting into a distracting window, then the bonk animation and nudge firing."
+/>
 
 AI support is optional. The settings UI can store OpenAI or Anthropic keys locally through Electron storage, and the coach can use those providers for small supportive messages and proactive check-ins. Without that, the core loop still works as a local desktop pet and distraction detector.
 

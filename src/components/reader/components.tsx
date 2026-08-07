@@ -6,6 +6,7 @@ import { ScreenshotRow } from "./ScreenshotRow";
 import { ScreenshotTimeline } from "./ScreenshotTimeline";
 import { PresentationSlides } from "./PresentationSlides";
 import { XPost } from "./XPost";
+import { Pdf, Video, LiveDemo } from "./Embeds";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
 // inherit Fraunces / Inter / JetBrains Mono and the dark-first palette
@@ -198,4 +199,9 @@ export const readerComponents: MDXComponents = {
   ScreenshotTimeline,
   PresentationSlides,
   XPost,
+  // Media embeds. Bodies place these themselves — nothing is hoisted
+  // above the article from frontmatter.
+  Pdf,
+  Video,
+  LiveDemo,
 };

@@ -34,6 +34,13 @@ fieldratchet makes that loop executable and self-improving. It parses a KiCad sc
 - **Independent validator:** a 2.5D damped-wave EMI voxel solver that progressively refines from 4 mm full-board down to **10 µm** inside hotspots of interest (added a region-of-interest window to the solver for the µm-scale zoom).
 - **Optional accel:** a Mojo/MAX GPU custom-op kernel mirrors the Kuramoto dynamics 1:1 for large seed batches (CPU TypeScript path is the shipping default).
 
+<Video
+  url="/assets/media/fieldratchet/demo.mp4"
+  poster="/assets/media/fieldratchet/hero.png"
+  title="fieldratchet pipeline walkthrough"
+  caption="Rendered with Remotion from real engine output plus an Electron capture: layers → coupled-oscillator core → multi-scale EMI → live run → benchmark."
+/>
+
 ## Tests
 No unit suite — the *objective is the test*. Promotion is gated on the canonical score, so regressions can't be promoted by construction. A CLI `bench` pits the oscillator substrate against a simulated-annealing baseline across every example board, and the EMI validator runs as an independent second opinion (refinement-stability + hotspot ranking) that can veto a promotion the geometric score would have accepted.
 
