@@ -1,4 +1,5 @@
 import type { Node } from "@/lib/graph-types";
+import type { HexSize } from "@/lib/hex-layout";
 import type { ProjectItem } from "@/components/chrome/ProjectsBrowser";
 
 const imageSrcPattern = /src:\s*["']([^"']+\.(?:avif|gif|heic|jpe?g|png|svg|webp))["']/gi;
@@ -37,6 +38,12 @@ const featuredProjectOrder = [
   "sale",
   "labatron",
 ] as const;
+
+// Honeycomb tile size per project, in multiples of the base hexagon.
+// Anything not listed here is 1×; the packer (src/lib/hex-layout.ts)
+// fits 0.5× and 2× tiles into the same lattice. Empty for now — every
+// project is the same size.
+const projectHexSize: Record<string, HexSize> = {};
 
 const featuredProjectRank = new Map<string, number>(
   featuredProjectOrder.map((id, index) => [id, index]),
@@ -107,7 +114,6 @@ export function projectItemsFromNodes(projects: Node[]): ProjectItem[] {
     kind: "project",
     title: n.title,
     summary: n.summary,
-    body: n.body,
     date: n.date,
     lane: n.lane,
     tags: n.tags,
@@ -117,6 +123,6 @@ export function projectItemsFromNodes(projects: Node[]): ProjectItem[] {
     threadImages: projectThreadImages(n),
     orbitEmbed: n.orbitEmbed,
     links: n.links,
-    quickView: Boolean(n.body),
+    size: projectHexSize[n.id] ?? 1,
   }));
 }

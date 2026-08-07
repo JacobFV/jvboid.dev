@@ -206,42 +206,6 @@ a:hover {
   }
 }
 
-/* ---- Project quick-view modal ---- */
-@keyframes quickview-backdrop-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes quickview-zoom-in {
-  /* Panel grows in from a slightly smaller scale with a gentle overshoot
-     so a clicked project "zooms" into the modal. Reduced-motion users
-     get the near-instant duration from the media query below. */
-  from {
-    opacity: 0;
-    transform: scale(0.88);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes tile-lift-in {
-  /* A long-pressed project tile pops free of the grid: it has charged
-     down to ~0.85 during the hold, so the lifted overlay springs up
-     from there past 1 with a gentle overshoot for a tactile "grab". */
-  from {
-    transform: scale(0.85);
-  }
-  to {
-    transform: scale(1.09);
-  }
-}
-
 /* Card → document shared-element morph. The browser View Transitions
    API picks up matching `view-transition-name` on the constellation card
    and the detail hero. Tuned to the design's spring feel (~360ms) with a

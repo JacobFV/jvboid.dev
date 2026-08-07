@@ -73,9 +73,8 @@ export default function HomePage() {
   const allProjects = withAdjacentProjects(
     listedNodes.filter((n) => n.kind === "project").sort(byProjectRank),
   );
-  // Lite shape for the client-side ProjectsBrowser. `quickView` marks
-  // projects with enough visual material (hero / video / live embed) to
-  // be worth a zoom-in modal; the rest just link to their page.
+  // Lite shape for the client-side ProjectsBrowser — icon art and meta
+  // only. Every tile links straight to the project page.
   const projectItems: ProjectItem[] = projectItemsFromNodes(allProjects);
   const recentPosts = listedNodes
     .filter((n) => n.kind === "post")
