@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
-import { Atmosphere } from "@/components/chrome/Atmosphere";
+import { Bioluminescence } from "@/components/chrome/Bioluminescence";
 import { SiteHeader } from "@/components/chrome/SiteHeader";
 import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
@@ -71,10 +71,12 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        {/* Ambient backdrop — a generated stack of depth planes
-            (starfield / horizon / clouds / streaks) that parallax-scroll
-            with the page. See components/chrome/Atmosphere.tsx. */}
-        <Atmosphere />
+        {/* Backdrop: a bioluminescent mesh generated in document space
+            and confined to the page gutters, so it never lands behind
+            body copy. Replaces the old parallax depth stack, which put
+            tinted moving texture across the full viewport — including
+            the reading column. See components/chrome/Bioluminescence.tsx. */}
+        <Bioluminescence />
         <SiteHeader nodes={searchable} />
         {children}
         {/* Page-wide fullscreen image viewer; renders null until a

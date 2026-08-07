@@ -41,12 +41,6 @@
 :root,
 :root[data-theme="dark"] {
   color-scheme: dark;
-  /* Speck (starfield) paint for the atmosphere layers — see below. */
-  --atmo-speck: #ffffff;
-  --atmo-speck-2: #bccdff;
-  --atmo-speck-opacity: 1;
-  /* Ink alpha multiplier for the fluid tracer planes. */
-  --atmo-fluid-gain: 1;
 }
 
 :root[data-theme="light"] {
@@ -65,26 +59,16 @@
   --color-lane-personal: #a87a1e;
   --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.06);
   --ring-soft: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
-  /* Daylight: specks become faint dust motes rather than stars. */
-  --atmo-speck: #334155;
-  --atmo-speck-2: #4b5f7a;
-  --atmo-speck-opacity: 0.22;
-  /* Multiply over paper needs more ink than screen over night sky. */
-  --atmo-fluid-gain: 1.8;
 }
 
 html {
-  /* Base canvas color — also covers the overscroll/rubber-band area and
-     prevents a flash before the atmosphere layer paints. */
+  /* Base canvas color — also covers the overscroll/rubber-band area. */
   background: var(--color-bg-0);
 }
 
 body {
-  /* No background on purpose. The fixed `.atmosphere` layer is the
-     page's visible backdrop; an opaque body would paint over it (a
-     negative-z-index layer renders before in-flow block backgrounds).
-     Keeping body transparent lets the atmosphere show through
-     everywhere content isn't. */
+  /* Inherits the flat page color from `html` — nothing paints behind
+     content any more, so there is no backdrop to let through. */
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: 17px;
@@ -96,6 +80,19 @@ body {
      `clip` avoids creating a scroll container, so the sticky site
      header keeps working. */
   overflow-x: clip;
+}
+
+/* Bioluminescent margin mesh (components/chrome/Bioluminescence.tsx).
+   Fixed and viewport-sized; the component holds document-space
+   coordinates and folds scroll into its draw transform. Pinned behind
+   content the same way the old atmosphere was — `html` paints the base
+   colour, this sits above it, page content sits above that. */
+.biolume {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  pointer-events: none;
 }
 
 ::selection {
@@ -174,94 +171,6 @@ a:hover {
 .prose-mdx hr {
   border: 0;
   border-top: 1px solid var(--color-bg-2);
-}
-
-/* ---- Ambient background ---- */
-/* The page's actual backdrop: a fixed, full-viewport frame mounted once
-   in app/layout.tsx and pinned behind every page (z-index:-1). `body` is
-   intentionally transparent (see above) so this shows through everywhere
-   content isn't — section gaps, page margins, negative space around
-   cards.
-
-   The frame stays fixed (it never needs to be taller than the viewport),
-   but the layers *inside* it scroll: components/chrome/Atmosphere.tsx
-   generates a depth-sorted stack where parallax speed, blur, opacity and
-   drift are all functions of each layer's depth, and translates them on
-   scroll. Tiled layers wrap modulo their tile height, so the parallax
-   never runs out of sky. Geometry lives there; only theme-dependent
-   paint lives here. */
-.atmosphere {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--color-bg-0);
-}
-
-/* One depth plane. JS owns `transform`; layout/extent come from inline
-   styles computed off the layer's tile height and drift amplitude. */
-.atmo-layer {
-  position: absolute;
-  top: 0;
-  will-change: transform;
-}
-
-/* The painted surface. Kept separate from .atmo-layer so the blur is
-   rasterized once and the parent is a pure compositor transform. */
-.atmo-fill {
-  position: absolute;
-  inset: 0;
-  background-repeat: repeat;
-}
-
-/* Fluid tracer planes (components/chrome/FluidField.tsx). The canvas is
-   viewport-sized in CSS px; its backing store is deliberately coarser on
-   deep planes and full device resolution on the front one, which is what
-   makes the near filaments read sharp against the soft gas. Blending
-   makes the filaments light up the dark sky and stain the light one. */
-.atmo-fluid {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  mix-blend-mode: screen;
-}
-:root[data-theme="light"] .atmo-fluid {
-  mix-blend-mode: multiply;
-}
-
-/* Speck (star / dust) layers. Dark reads as a starfield; light as faint
-   motes, dialled well back so they stay subliminal on paper-white. */
-.atmo-specks {
-  opacity: var(--atmo-speck-opacity);
-}
-
-@keyframes atmo-twinkle {
-  from {
-    opacity: calc(var(--atmo-speck-opacity, 1) * 0.55);
-  }
-  to {
-    opacity: var(--atmo-speck-opacity, 1);
-  }
-}
-
-/* Light-only horizon plane — a blurred earth/sea glow low in the
-   viewport: hazy sky band, sea-teal horizon, earthy fringe below it.
-   Dark mode leaves this plane empty; the starfield carries that depth. */
-:root[data-theme="light"] .atmo-horizon {
-  background-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 46%,
-    color-mix(in srgb, #8bb6da 42%, transparent) 58%,
-    color-mix(in srgb, #aac8cb 46%, transparent) 67%,
-    color-mix(in srgb, #93b08f 40%, transparent) 78%,
-    color-mix(in srgb, #b3a07c 30%, transparent) 90%,
-    transparent 100%
-  );
-  background-repeat: no-repeat;
-  filter: blur(46px);
 }
 
 /* ---- PfpReveal animations ---- */
