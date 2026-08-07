@@ -93,21 +93,21 @@ export default async function KindIndexPage({ params }: { params: Params }) {
         <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>
       </header>
 
+      {/* No cards. An index is a list of things to read, so it is set as
+          text: mono meta line, title, summary. Spacing and type weight do
+          the separating that borders used to do. */}
       {nodes.length === 0 ? (
         <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
       ) : (
-        <ul className="grid gap-4">
+        <ul className="flex flex-col gap-10">
           {nodes.map((node) => {
             const postedDate = new Date(node.date).toISOString().slice(0, 10);
             const revisionSummary =
               node.kind === "post" ? getPostRevisionSummary(node.id) : null;
             return (
               <li key={node.id}>
-                <Link
-                  href={nodeHref(node)}
-                  className="block rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)]/45 p-5 no-underline transition-colors hover:border-[var(--color-ink-mute)] hover:bg-[var(--color-bg-1)]"
-                >
-                  <div className="mb-2 flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                <Link href={nodeHref(node)} className="group block no-underline">
+                  <div className="flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
                     {node.kind === "post" ? (
                       <>
                         <span>
@@ -139,8 +139,10 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                       </>
                     )}
                   </div>
-                  <div className="text-lg text-[var(--color-ink)]">{node.title}</div>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink-dim)]">
+                  <h2 className="mt-1.5 text-xl leading-snug text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
+                    {node.title}
+                  </h2>
+                  <p className="mt-1.5 max-w-[64ch] leading-relaxed text-[var(--color-ink-dim)]">
                     {node.summary}
                   </p>
                 </Link>
