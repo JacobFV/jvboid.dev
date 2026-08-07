@@ -124,32 +124,10 @@ export default function HomePage() {
               ))}
             </div>
 
-            <div className="mt-5 flex flex-wrap justify-center gap-2 font-[family-name:var(--font-mono)] text-xs">
-              <Link
-                href="/t"
-                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-              >
-                timeline
-              </Link>
-              <Link
-                href="/posts"
-                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-              >
-                blog
-              </Link>
-              <Link
-                href="/resume"
-                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-              >
-                resume
-              </Link>
-              <Link
-                href="/projects"
-                className="rounded-full bg-[var(--color-bg-1)] px-4 py-1.5 text-[var(--color-ink-dim)] no-underline shadow-[var(--ring-soft)] hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
-              >
-                projects
-              </Link>
-            </div>
+            {/* The nav pills that used to sit here (timeline / blog /
+                resume / projects) are all reachable from the sticky
+                header, so they were duplicated chrome between the reader
+                and the one thing on this page worth reading. */}
 
             <p className="mt-10 max-w-2xl text-left text-lg leading-[1.65] text-[var(--color-ink-dim)]">
               Currently working on{" "}
