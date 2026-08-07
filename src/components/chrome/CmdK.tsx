@@ -230,7 +230,7 @@ export function CmdK({ nodes }: Props) {
               />
               <ActionItem label="Browse projects" onSelect={() => go("/projects")} />
               <ActionItem label="Browse events" onSelect={() => go("/events")} />
-              <ActionItem label="Switch to timeline" onSelect={() => go("/t")} />
+              {/* "Switch to timeline" removed — /t is unlisted for now. */}
               <ActionItem
                 label="Open latest update"
                 onSelect={() => {

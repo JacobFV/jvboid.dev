@@ -12,7 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: prefix === "projects" || prefix === "posts" ? 0.8 : 0.6,
       changeFrequency: "weekly" as const,
     })),
-    { url: `${BASE}/t`, priority: 0.7, changeFrequency: "weekly" as const },
+    // `/t` (timeline) is unlisted for now: no nav entry, no command-menu
+    // action, noindex on the route itself. It stays reachable by URL.
     { url: `${BASE}/resume`, priority: 0.5, changeFrequency: "monthly" as const },
   ];
 
