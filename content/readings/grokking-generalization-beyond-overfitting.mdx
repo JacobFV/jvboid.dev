@@ -1,0 +1,33 @@
+---
+title: "Grokking: Generalization Beyond Overfitting"
+date: 2026-08-07
+lane: research
+tags: [generalization, overfitting, training-dynamics, interpretability]
+summary: The paper where validation accuracy jumps from chance to perfect long after the training loss flatlined — generalization as a delayed phase change.
+hero:
+  src: /assets/img/readings/grokking-generalization-beyond-overfitting.png
+  alt: "First page of Grokking: Generalization Beyond Overfitting on Small Algorithmic Datasets"
+authors: [Alethea Power, Yuri Burda, Harri Edwards, Igor Babuschkin, Vedant Misra]
+workType: paper
+tier: S
+status: finished
+source: arXiv:2201.02177
+url: https://arxiv.org/abs/2201.02177
+influences: [generalization-fast-and-slow, on-the-measure-of-intelligence, what-is-intelligence]
+realizes: []
+critiques: []
+---
+
+Full title: *Grokking: Generalization Beyond Overfitting on Small Algorithmic
+Datasets*. The figure does the arguing — training accuracy saturates near 10³
+steps, validation sits at chance for two more orders of magnitude, and then
+snaps to 100%.
+
+What makes it a favorite is not the phenomenon but what the phenomenon costs
+you. Early stopping on validation loss, the most standard practice there is,
+would have killed every one of these runs long before the interesting thing
+happened. The training curve was not a proxy for the thing being learned; the
+network was still reorganizing under a flat loss.
+
+Small algorithmic datasets are a cheap testbed for exactly this — a single GPU,
+a clean ground truth, and a generalization event you can watch arrive.
