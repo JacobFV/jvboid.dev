@@ -27,6 +27,13 @@ editing this repo.
   + `nodeHref`. `src/lib/graph.ts` holds `getGraph()` and pulls in
   `node:fs`. Client components import from `graph-types`. Don't merge
   them — webpack will fail the build.
+- **Projects own their own media.** Nothing is hoisted above a project
+  page from frontmatter — `hero`, `video`, `pdf`, and `links.demo` are
+  card art and metadata. A project page shows an image, deck, clip, or
+  live app only because its MDX body places one (`![]()`, `<Pdf>`,
+  `<Video>`, `<LiveDemo>`). Read the body first: the artifact is often
+  already there, and adding it again just repeats it. See
+  [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#project-media).
 - **Canonical URLs.** Every node lives at `/{kind-plural}/{slug}`. Use
   `nodeHref(node)` to compute links. Bare kind paths such as `/projects`
   are collection pages; old flat `/{slug}` routes should 404.
@@ -36,10 +43,18 @@ editing this repo.
 ## Quick sanity checks before committing
 
 ```bash
-pnpm exec tsc --noEmit         # types
-pnpm dev                       # spot-check the page you changed
+pnpm exec tsc --noEmit         # types — cheap, run this freely
 ```
 
-If a change touches a visual route or interactive component, open the page
-in a browser — TypeScript can't catch z-stack regressions or animation
-jank.
+**Don't start `pnpm dev` or `pnpm build` unless asked.** Several agents
+work in this repo at once, so a build competes for the dev port and for
+CPU, and `predev` rewrites shared generated output (`.velite/`,
+`content/_generated/`) underneath whoever else is running — a half-written
+`.velite/postRevisions.json` takes down every other dev server with a JSON
+parse error. Type-check instead, and describe what should be spot-checked
+visually rather than spinning up a server to look yourself.
+
+If a change touches a visual route or interactive component it does still
+need eyes in a browser — TypeScript can't catch z-stack regressions or
+animation jank. Ask the user to look, or use the dev server they already
+have running; don't launch a second one.
