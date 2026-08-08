@@ -213,22 +213,35 @@ a:hover {
 
    Only the tokens move. Every component keeps reading `--color-accent` and
    friends, so the header, the prose map and the local graph all retune
-   without knowing this page exists. */
+   without knowing this page exists.
+
+   The page is dark whatever the site is set to. jterm is a black-and-gold
+   application; a white version of this page would be a picture of somewhere
+   else. `data-theme` is forced to dark alongside the page theme — in the
+   pre-paint script on a first load, in the component on a client-side
+   navigation — and is put back on the way out. The forced value is never
+   written to storage, so it cannot leak into the rest of the site. The theme
+   toggle is hidden here rather than left visibly inert. */
 :root[data-page-theme="jterm"] {
   --color-bg-0: #000000;
   --color-bg-1: #08080a;
   --color-bg-2: #1c1c20;
+  --color-ink: #f2f2f0;
+  --color-ink-dim: #a3a3a8;
+  --color-ink-mute: #6a6a70;
   --color-accent: #f2cd6b;
+  /* jterm's second gold, for the things that mark rather than say: section
+     numbers, the eyebrow over the title. */
+  --jterm-gold-dim: #8a713a;
+  /* jterm's button ink — near-black with the gold's warmth in it, so a filled
+     button does not look like a hole punched in the page. */
+  --jterm-on-gold: #14100a;
+  color-scheme: dark;
 }
 
-/* Light mode keeps its light surfaces — a page that goes black under a
-   reader who asked for white is a bug, not a homage. It takes the gold
-   instead, darkened to something that passes on paper-white. */
-:root[data-theme="light"][data-page-theme="jterm"] {
-  --color-bg-0: #fafaf8;
-  --color-bg-1: #f1f1ee;
-  --color-bg-2: #e3e3df;
-  --color-accent: #8a713a;
+/* A control that cannot do anything is worse than no control. */
+:root[data-page-theme] [data-theme-toggle] {
+  display: none;
 }
 
 /* One backdrop at a time. The sitewide bioluminescent mesh and the fractal
@@ -296,21 +309,124 @@ a:hover {
   opacity: 0.1;
 }
 
-/* Ink on white needs far less of it to register, and body copy has to win. */
-:root[data-theme="light"] .jterm-fractal[data-layer="noise"] {
-  opacity: 0.07;
-}
-:root[data-theme="light"] .jterm-fractal[data-layer="mid"] {
-  opacity: 0.12;
-}
-:root[data-theme="light"] .jterm-fractal[data-layer="read"] {
-  opacity: 0.07;
-}
-
 @media (max-width: 640px) {
   .jterm-fractal[data-layer="read"] {
     font-size: 20px;
   }
+}
+
+/* ---- jterm: the furniture -----------------------------------------------
+   Retuning the tokens above gets the colour right and leaves the *shapes*
+   belonging to the rest of the site — pill buttons, soft 8px corners, a
+   rounded menu. jterm has none of those: it is hairlines and 3px corners
+   throughout, and the corners are most of why it reads as an application
+   rather than a web page. So the world squares everything off.
+
+   Everything here is scoped under the page theme and changes no behaviour;
+   the `data-node-meta`, `data-node-link` and `data-theme-toggle` hooks in
+   Hero.tsx and SiteHeader.tsx exist so these selectors have somewhere stable
+   to attach instead of chaining utility classes that will move. */
+
+:root[data-page-theme="jterm"] header button,
+:root[data-page-theme="jterm"] header [role="menu"],
+:root[data-page-theme="jterm"] header [role="menu"] a,
+:root[data-page-theme="jterm"] .prose-mdx pre,
+:root[data-page-theme="jterm"] .prose-mdx code,
+:root[data-page-theme="jterm"] .reader-image {
+  border-radius: 3px;
+}
+
+/* The header sits on the field rather than over a flat plate, so its docked
+   hairline needs to be the one jterm uses. */
+:root[data-page-theme="jterm"] header [role="menu"] {
+  border-color: var(--color-bg-2);
+  background: var(--color-bg-1);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* The date · kind line above the title, dressed as jterm's eyebrow. */
+:root[data-page-theme="jterm"] [data-node-meta] {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--jterm-gold-dim);
+}
+
+/* Repo / site links, dressed as jterm's download button: a hairline plate at
+   rest, filling with gold on hover and lifting the way that button does. */
+:root[data-page-theme="jterm"] [data-node-link] {
+  border-radius: 3px;
+  border: 1px solid var(--color-bg-2);
+  background: var(--color-bg-1);
+  color: var(--color-ink-dim);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0.85rem;
+  transition:
+    transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1),
+    background 0.14s,
+    border-color 0.14s,
+    color 0.14s,
+    box-shadow 0.14s;
+}
+:root[data-page-theme="jterm"] [data-node-link]:hover {
+  transform: translateY(-2px);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--jterm-on-gold);
+  box-shadow: 0 10px 34px -12px rgba(242, 205, 107, 0.75);
+}
+:root[data-page-theme="jterm"] [data-node-link]:active {
+  transform: translateY(0);
+}
+
+/* Numbered sections, the way the download page numbers its own. A counter
+   rather than anything in the MDX, so the body stays a body and would read
+   the same anywhere else. */
+:root[data-page-theme="jterm"] .prose-mdx {
+  counter-reset: jterm-section;
+}
+:root[data-page-theme="jterm"] .prose-mdx h2 {
+  counter-increment: jterm-section;
+}
+:root[data-page-theme="jterm"] .prose-mdx h2::before {
+  content: counter(jterm-section, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--jterm-gold-dim);
+}
+
+/* Inline code as jterm draws it: a plate with a hairline, not a tinted
+   highlight. */
+:root[data-page-theme="jterm"] .prose-mdx code {
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-bg-2);
+}
+:root[data-page-theme="jterm"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Links carry the gold rather than waiting for a hover — on black the muted
+   underline the rest of the site uses all but disappears. */
+:root[data-page-theme="jterm"] .prose-mdx a {
+  color: var(--color-accent);
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+:root[data-page-theme="jterm"] .prose-mdx a:hover {
+  text-decoration-color: var(--color-accent);
+}
+
+/* Screenshots get jterm's own frame — the images are dark and edge-to-edge
+   and would otherwise dissolve into the field behind them. */
+:root[data-page-theme="jterm"] .prose-mdx .reader-image {
+  border: 1px solid var(--color-bg-2);
+  background: var(--color-bg-1);
+  padding: 6px;
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.95);
 }
 
 /* Hide the loop right rail on narrow screens — the chapter measure is

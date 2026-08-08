@@ -14,13 +14,20 @@ import { useEffect, useRef } from "react";
  * It does two jobs, which are one intent:
  *
  *   - draws the field, fixed behind the article;
- *   - flips `data-page-theme="jterm"` on `<html>` while mounted, which is what
- *     `globals.css` hangs the black-and-gold palette off. Doing it from the
- *     component rather than the route keeps the house rule intact: the body
- *     places its own media, and nothing is hoisted from frontmatter.
+ *   - holds `data-page-theme="jterm"` and `data-theme="dark"` on `<html>` while
+ *     mounted. The first is what `globals.css` hangs the black-and-gold palette
+ *     off; the second is why the page is dark whatever the reader has the site
+ *     set to. jterm is a black-and-gold application and a white version of this
+ *     page would be a picture of somewhere else.
  *
- * Both are undone on unmount, so a client-side navigation away from this page
- * takes the whole treatment with it.
+ * On a first load the pre-paint script in `app/layout.tsx` has already set both
+ * — anywhere later is a frame too late and the reader watches the page change
+ * its mind. This effect is what covers a *client-side* navigation into the
+ * page, where no script runs, and it is idempotent so the two never fight.
+ *
+ * On the way out the world is dismantled: the page theme goes, and `data-theme`
+ * returns to whatever the reader actually chose. The forced dark is never
+ * written to storage, so it cannot leak into the rest of the site.
  *
  * The characters are real characters — one text assignment per layer per
  * frame, which is far cheaper than touching thousands of nodes and keeps the
@@ -183,13 +190,32 @@ function draw(layer: Layer, time: number) {
   layer.el.textContent = out;
 }
 
+/**
+ * The reader's actual choice, read the same way `app/layout.tsx` reads it.
+ *
+ * Deliberately not "whatever `data-theme` said a moment ago" — on a first load
+ * that is already `dark`, because the boot script forced it, and restoring
+ * *that* on the way out would make one visit to this page silently convert the
+ * whole site to dark.
+ */
+function storedTheme(): "light" | "dark" {
+  try {
+    let t = localStorage.getItem("jacobfv:theme") || localStorage.getItem("theme");
+    if (t && t.charAt(0) === '"') t = JSON.parse(t) as string;
+    if (t === "light" || t === "dark") return t;
+  } catch {
+    /* private mode / disabled storage — fall through to the default */
+  }
+  return "light";
+}
+
 export function JtermAtmosphere() {
   const fieldRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
-    const previous = root.getAttribute("data-page-theme");
     root.setAttribute("data-page-theme", "jterm");
+    root.setAttribute("data-theme", "dark");
 
     const host = fieldRef.current;
     let raf = 0;
@@ -257,8 +283,8 @@ export function JtermAtmosphere() {
       clearTimeout(resizeTimer);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
-      if (previous === null) root.removeAttribute("data-page-theme");
-      else root.setAttribute("data-page-theme", previous);
+      root.removeAttribute("data-page-theme");
+      root.setAttribute("data-theme", storedTheme());
     };
   }, []);
 

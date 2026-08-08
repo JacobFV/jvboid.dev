@@ -265,9 +265,13 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
             <IconButton label="Search (⌘K)" onClick={openSearch}>
               <SearchIcon />
             </IconButton>
+            {/* `data-theme-toggle` lets a page that forces its own theme hide
+                this rather than leave a control that visibly does nothing —
+                see `data-page-theme` in globals.css. */}
             <IconButton
               label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               onClick={toggleTheme}
+              data-theme-toggle
             >
               <span style={{ fontSize: 15, lineHeight: 1 }}>{themeGlyph}</span>
             </IconButton>
@@ -328,6 +332,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
             </button>
             <button
               type="button"
+              data-theme-toggle
               onClick={toggleTheme}
               tabIndex={menuOpen ? undefined : -1}
               className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)]"
@@ -358,11 +363,12 @@ function IconButton({
   label,
   onClick,
   children,
+  ...rest
 }: {
   label: string;
   onClick: () => void;
   children: React.ReactNode;
-}) {
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
@@ -370,6 +376,7 @@ function IconButton({
       aria-label={label}
       title={label}
       className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-ink-dim)] hover:bg-[var(--color-bg-1)] hover:text-[var(--color-accent)]"
+      {...rest}
     >
       {children}
     </button>

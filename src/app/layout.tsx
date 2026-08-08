@@ -8,12 +8,33 @@ import "./globals.css";
 
 // Pre-paint script: reads the stored theme (or system pref) and sets
 // data-theme on <html> before React hydrates, preventing a flash.
+//
+// It also handles "world" pages — the handful of routes that take the whole
+// window over with a palette of their own and force a theme with it (see
+// `data-page-theme` in globals.css). Those have to be decided here for the
+// same reason the stored theme does: anywhere later is a frame too late, and
+// the reader watches the page change its mind. The stored preference is read
+// but not written, so leaving the world restores whatever they actually chose.
+//
+// On a client-side navigation this script does not run again — the component
+// that owns the world sets and clears the same two attributes on mount and
+// unmount, which is what covers that path.
 const themeBootScript = `
 (function(){
+  var WORLDS = { '/projects/jterm': { id: 'jterm', theme: 'dark' } };
   try {
     var t = localStorage.getItem('jacobfv:theme') || localStorage.getItem('theme');
     if (t && t.charAt(0) === '"') t = JSON.parse(t);
     if (t !== 'light' && t !== 'dark') t = 'light';
+    var p = location.pathname;
+    if (p.length > 1 && p.charAt(p.length - 1) === '/') p = p.slice(0, -1);
+    // hasOwnProperty, not a bare lookup: '/constructor' and friends would
+    // otherwise resolve off Object.prototype and hand us a truthy non-world.
+    var w = Object.prototype.hasOwnProperty.call(WORLDS, p) ? WORLDS[p] : null;
+    if (w) {
+      document.documentElement.setAttribute('data-page-theme', w.id);
+      t = w.theme;
+    }
     document.documentElement.setAttribute('data-theme', t);
   } catch (e) {
     document.documentElement.setAttribute('data-theme', 'light');

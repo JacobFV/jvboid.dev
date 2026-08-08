@@ -22,7 +22,14 @@ export function Hero({ node }: { node: Node }) {
       }}
       className="mb-10 border-b border-[var(--color-bg-2)]/60 pb-8"
     >
-      <div className="mb-3 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+      {/* `data-node-meta` and `data-node-link` below are styling joints, not
+          behaviour. A page-scoped theme (see globals.css, data-page-theme)
+          needs somewhere stable to attach; chaining Tailwind classes in a
+          selector would break the next time this markup is touched. */}
+      <div
+        data-node-meta
+        className="mb-3 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]"
+      >
         <time>{range}</time>
         <span>·</span>
         <span>{node.kind}</span>
@@ -81,6 +88,7 @@ function ProjectMeta({ node }: { node: Node }) {
       {links.map(([k, v]) => (
         <a
           key={k}
+          data-node-link
           href={v}
           target="_blank"
           rel="noreferrer"
