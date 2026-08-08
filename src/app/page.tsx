@@ -2,15 +2,7 @@ import Link from "next/link";
 import { type HeroSocial, type HeroSocialGroup } from "@/components/chrome/HeroHex";
 import { CoverGallery } from "@/components/chrome/CoverGallery";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
-import { UpdateDock } from "@/components/chrome/UpdateDock";
-import {
-  getGraph,
-  getLatestUpdate,
-  isListedNode,
-  nodeHref,
-  type Lane,
-  type Node,
-} from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref, type Lane, type Node } from "@/lib/graph";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
 
@@ -166,114 +158,93 @@ export default function HomePage() {
     .filter((n) => n.kind === "reading")
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 8);
-  const recentUpdates = listedNodes
-    .filter((n) => n.kind === "update")
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
-  const latestUpdate = getLatestUpdate(listedNodes);
 
   return (
-    <>
-      <main className="mx-auto max-w-5xl px-6 pt-24 pb-32">
-        {/* ---- Hero + projects ---- */}
-        {/* The hero is a 4× tile of the projects comb, not a block above
+    <main className="mx-auto max-w-5xl px-6 pt-24 pb-32">
+      {/* ---- Hero + projects ---- */}
+      {/* The hero is a 4× tile of the projects comb, not a block above
             it, so the tiles pack against its edges. That is also why this
             section has no list/grid picker: the hero only exists in the
             honeycomb. */}
-        <ProjectsBrowser
-          id="projects"
-          projects={projectItems}
-          hero={{
-            name: "Jacob Valdez",
-            pfp: { src: "/img/prof_pic.jpg", alt: "Jacob Valdez" },
-            socials: socialLinks,
-            moreSocials: moreSocialGroups,
-            bio: (
-              <>
-                Currently working on{" "}
-                <a
-                  href="https://commandagi.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-                >
-                  CommandAGI
-                </a>
-                . Most recently API/Integration Architect at{" "}
-                <a
-                  href="https://agi.app"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-                >
-                  AGI, Inc.
-                </a>
-                , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
-                agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer
-                Science from UT Arlington. I love science and engineering and people
-              </>
-            ),
-          }}
-        />
+      <ProjectsBrowser
+        id="projects"
+        projects={projectItems}
+        hero={{
+          name: "Jacob Valdez",
+          pfp: { src: "/img/prof_pic.jpg", alt: "Jacob Valdez" },
+          socials: socialLinks,
+          moreSocials: moreSocialGroups,
+          bio: (
+            <>
+              Currently working on{" "}
+              <a
+                href="https://commandagi.com"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+              >
+                CommandAGI
+              </a>
+              . Most recently API/Integration Architect at{" "}
+              <a
+                href="https://agi.app"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+              >
+                AGI, Inc.
+              </a>
+              , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
+              agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science
+              from UT Arlington. I love science and engineering and people
+            </>
+          ),
+        }}
+      />
 
-        {/* ---- Updates ---- */}
-        {recentUpdates.length > 0 && (
-          <Section title="Updates" link={{ href: "/updates", label: "all updates →" }}>
-            <UpdateTimeline nodes={recentUpdates} />
-          </Section>
-        )}
+      {/* ---- Recent posts ---- */}
+      <Section
+        id="posts"
+        eyebrow="Writing"
+        title="Recent posts"
+        link={{ href: "/posts", label: "all posts →" }}
+      >
+        <ul className="flex flex-col">
+          {recentPosts.map((n) => (
+            <li key={n.id}>
+              <RowLink node={n} />
+            </li>
+          ))}
+        </ul>
+      </Section>
 
-        {/* ---- Recent posts ---- */}
+      {/* ---- Papers ---- */}
+      {recentPapers.length > 0 && (
         <Section
-          id="posts"
-          eyebrow="Writing"
-          title="Recent posts"
-          link={{ href: "/posts", label: "all posts →" }}
+          eyebrow="Research"
+          title="Papers & notes"
+          link={{ href: "/papers", label: "all papers →" }}
         >
-          <ul className="flex flex-col">
-            {recentPosts.map((n) => (
-              <li key={n.id}>
-                <RowLink node={n} />
-              </li>
-            ))}
-          </ul>
+          <CoverRail nodes={recentPapers} variant="paper" />
         </Section>
-
-        {/* ---- Papers ---- */}
-        {recentPapers.length > 0 && (
-          <Section
-            eyebrow="Research"
-            title="Papers & notes"
-            link={{ href: "/papers", label: "all papers →" }}
-          >
-            <CoverRail nodes={recentPapers} variant="paper" />
-          </Section>
-        )}
-
-        {/* ---- Readings ---- */}
-        {recentReadings.length > 0 && (
-          <Section
-            eyebrow="Reading"
-            title="Favorites"
-            link={{ href: "/readings", label: "all readings →" }}
-          >
-            <ReadingCoverRail nodes={recentReadings} />
-          </Section>
-        )}
-
-        {/* ---- Footer ---- */}
-        <footer className="mt-32 border-t border-[var(--color-bg-2)]/50 pt-8 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-          <p className="opacity-45">Copyright Jacob Valdez.</p>
-        </footer>
-      </main>
-      {latestUpdate && (
-        <UpdateDock
-          id={latestUpdate.id}
-          title={latestUpdate.title}
-          summary={latestUpdate.summary}
-          date={fmtDate(latestUpdate.date)}
-        />
       )}
-    </>
+
+      {/* ---- Readings ---- */}
+      {recentReadings.length > 0 && (
+        <Section
+          eyebrow="Reading"
+          title="Favorites"
+          link={{ href: "/readings", label: "all readings →" }}
+        >
+          <ReadingCoverRail nodes={recentReadings} />
+        </Section>
+      )}
+
+      {/* ---- Footer ---- */}
+      <footer className="mt-32 border-t border-[var(--color-bg-2)]/50 pt-8 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+        <p className="opacity-45">Copyright Jacob Valdez.</p>
+      </footer>
+    </main>
   );
 }
 
@@ -379,47 +350,6 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
         {node.title}
       </div>
     </Link>
-  );
-}
-
-// Updates rendered as a vertical timeline: a continuous grey rail
-// threads through a neutral-grey dot on each row (no lane color here —
-// updates are chronological, not categorical).
-function UpdateTimeline({ nodes }: { nodes: Node[] }) {
-  return (
-    <ul className="flex flex-col">
-      {nodes.map((n, i) => {
-        const first = i === 0;
-        const last = i === nodes.length - 1;
-        return (
-          <li key={n.id} className="relative">
-            <Link
-              href={nodeHref(n)}
-              className="group flex items-baseline gap-4 py-3 pr-3 pl-9 no-underline transition-colors"
-            >
-              <time className="w-20 shrink-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-                {fmtDate(n.date)}
-              </time>
-              <span className="text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
-                {n.title}
-              </span>
-            </Link>
-            {/* Rail + dot, painted after the Link in DOM order. The rail
-                is clipped to start/end at the dot on the first/last
-                row. */}
-            <span
-              aria-hidden
-              className="absolute left-3 w-px -translate-x-1/2 bg-[var(--color-bg-2)]"
-              style={{ top: first ? "50%" : 0, bottom: last ? "50%" : 0 }}
-            />
-            <span
-              aria-hidden
-              className="absolute top-1/2 left-3 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-ink-mute)] ring-4 ring-[var(--color-bg-0)]"
-            />
-          </li>
-        );
-      })}
-    </ul>
   );
 }
 

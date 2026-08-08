@@ -230,17 +230,9 @@ export function CmdK({ nodes }: Props) {
               />
               <ActionItem label="Browse projects" onSelect={() => go("/projects")} />
               <ActionItem label="Browse events" onSelect={() => go("/events")} />
-              {/* "Switch to timeline" removed — /t is unlisted for now. */}
-              <ActionItem
-                label="Open latest update"
-                onSelect={() => {
-                  const recent = [...nodes]
-                    .filter((n) => n.kind === "update")
-                    .sort((a, b) => (a.date < b.date ? 1 : -1))[0];
-                  if (recent) go(nodeHref(recent));
-                  else go("/updates");
-                }}
-              />
+              {/* "Switch to timeline" removed — /t is unlisted for now.
+                  "Open latest update" removed — the update stream is
+                  delisted site-wide. */}
             </Command.Group>
           </Command.List>
         </Command>

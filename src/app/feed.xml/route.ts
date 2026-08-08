@@ -17,9 +17,7 @@ const rfc822 = (iso: string) => new Date(iso).toUTCString();
 export function GET() {
   const { nodes } = getGraph();
   const items = nodes
-    .filter(
-      (n) => n.kind === "post" || n.kind === "paper" || n.kind === "reading" || n.kind === "update",
-    )
+    .filter((n) => n.kind === "post" || n.kind === "paper" || n.kind === "reading")
     .filter(isListedNode)
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 50);
@@ -43,7 +41,7 @@ export function GET() {
   <channel>
     <title>Jacob Valdez</title>
     <link>${BASE}/</link>
-    <description>Posts, papers, readings, and updates from jacobfv.com.</description>
+    <description>Posts, papers, and readings from jacobfv.com.</description>
     <language>en</language>
     <atom:link href="${BASE}/feed.xml" rel="self" type="application/rss+xml" />
     <lastBuildDate>${rfc822(new Date().toISOString())}</lastBuildDate>${itemsXml}

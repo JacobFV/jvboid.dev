@@ -285,9 +285,18 @@ Rules:
 - Don't duplicate frontmatter relationships here.
 - Add `note` whenever the edge isn't self-explanatory — it shows on hover.
 
-## Latest update
+## Updates are delisted
 
-Update listings sort `content/updates/*.mdx` nodes by `date`, newest first.
+`update` nodes are unlisted site-wide — `DELISTED_KINDS` in
+`src/lib/graph.ts` sets `unlisted` on every node of the kind, so they drop
+out of the home page, the kind indexes, search, the RSS feed, the sitemap,
+and the local graph without touching the MDX. Individual pages and the
+`/updates` archive still resolve by URL (the archive is `noindex` and
+lists nodes without the `isListedNode` filter, since none of them pass
+it), so old links keep working; nothing on the site points at them.
+
+Don't add new update nodes expecting them to show up somewhere. Write a
+post, or put the news in the relevant project page.
 
 ## Lanes
 

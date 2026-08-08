@@ -171,10 +171,9 @@ Rules:
 
 ## Latest Update Dock
 
-- Bottom-left, fixed, 300px × auto. Frosted-glass panel.
-- Three lines max: label/date, title, compact summary.
-- Click opens the newest `update` node.
-- Hides on `/loop` reading mode and during 3D scenes.
+Removed. The update stream is delisted site-wide, so there is no dock,
+no home-page timeline, and no command-menu action for it. See
+[CONTENT_MODEL.md](CONTENT_MODEL.md#updates-are-delisted).
 
 ## Iconography
 

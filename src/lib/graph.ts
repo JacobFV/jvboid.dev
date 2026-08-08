@@ -46,6 +46,12 @@ function resolveOrbitFsAsset(id: string): string | undefined {
 
 const slugBase = (p: string) => p.split("/").pop() ?? p;
 
+// Kinds that are delisted wholesale: their pages still resolve by URL,
+// but they are kept out of the nav, the home page, the command menu, the
+// feed, the sitemap, and every listing — the same treatment `/t` gets.
+// The update stream lives here; see CLAUDE.md.
+const DELISTED_KINDS = new Set<NodeKind>(["update"]);
+
 type RawCollectionItem = {
   slug: string;
   title: string;
@@ -80,7 +86,7 @@ const toNode =
       lane: raw.lane,
       tags: raw.tags ?? [],
       summary: raw.summary,
-      unlisted: raw.unlisted ?? false,
+      unlisted: raw.unlisted ?? DELISTED_KINDS.has(kind),
       redirect: raw.redirect,
       body: raw.body,
       hero: raw.hero,
@@ -199,10 +205,4 @@ export function getGraph(): Graph {
     neighbors: (id) => adjacency.get(id) ?? [],
   };
   return cached;
-}
-
-export function getLatestUpdate(nodes = getGraph().nodes): Node | null {
-  return (
-    nodes.filter((n) => n.kind === "update").sort((a, b) => (a.date < b.date ? 1 : -1))[0] ?? null
-  );
 }

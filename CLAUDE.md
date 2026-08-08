@@ -20,6 +20,12 @@ editing this repo.
 - **No `/list` or standalone `/graph` page.** Broad browsing should happen
   through dedicated kind indexes like `/projects`, `/posts`, and
   `/readings`. Graph context belongs at the bottom of content pages.
+- **The update stream is delisted.** `update` nodes are unlisted
+  site-wide via `DELISTED_KINDS` in `src/lib/graph.ts` — no home-page
+  section, no dock, no nav entry, no feed/sitemap/search presence. The
+  `/updates` archive and the individual pages still resolve by URL so old
+  links don't break. Don't re-surface them; see
+  [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#updates-are-delisted).
 - **Contact details live in env, never in code.** `CONTACT_PHONE` and
   `CONTACT_EMAIL` go through `revealContact()` server action behind a
   math captcha. Don't hard-code or expose them in client bundles.

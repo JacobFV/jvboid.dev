@@ -7,11 +7,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const { nodes } = getGraph();
 
   const staticRoutes = [
-    ...Object.values(KIND_PREFIX).map((prefix) => ({
-      url: `${BASE}/${prefix}`,
-      priority: prefix === "projects" || prefix === "posts" ? 0.8 : 0.6,
-      changeFrequency: "weekly" as const,
-    })),
+    // `/updates` is delisted along with the update nodes themselves: the
+    // archive stays reachable by URL, but it is not advertised here.
+    ...Object.values(KIND_PREFIX)
+      .filter((prefix) => prefix !== KIND_PREFIX.update)
+      .map((prefix) => ({
+        url: `${BASE}/${prefix}`,
+        priority: prefix === "projects" || prefix === "posts" ? 0.8 : 0.6,
+        changeFrequency: "weekly" as const,
+      })),
     // `/t` (timeline) is unlisted for now: no nav entry, no command-menu
     // action, noindex on the route itself. It stays reachable by URL.
     { url: `${BASE}/resume`, priority: 0.5, changeFrequency: "monthly" as const },

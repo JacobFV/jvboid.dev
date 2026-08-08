@@ -13,6 +13,12 @@ import { useEffect, useRef } from "react";
  * platform so momentum scrolling and rubber-banding stay native. Either
  * way the geometry is driven off `scrollLeft`, so keyboard focus, wheel,
  * and scrollbar dragging all move the shelf too.
+ *
+ * The ends are elastic rather than hard: past the first or last cover the
+ * rail keeps following the pointer through a stiffening rubber band
+ * (`pull`), and lets go into a spring on release. A flick that runs out
+ * of rail hands its leftover momentum to the same band, so it bounces
+ * instead of stopping dead.
  */
 
 /** rotateY at the very edge of the rail. */
@@ -33,6 +39,16 @@ const FRICTION = 0.94;
 const MIN_VELOCITY = 0.05;
 /** Pointer travel that turns a click into a drag. */
 const DRAG_SLOP = 6;
+/** How far past either end the rail can be stretched. */
+const MAX_PULL = 110;
+/** Spring pulling the stretch back to zero, per frame. */
+const PULL_STIFFNESS = 0.16;
+/** Velocity retained per frame — under 1 so the bounce settles. */
+const PULL_DAMPING = 0.76;
+/** Share of a flick's leftover momentum that becomes stretch. */
+const PULL_TRANSFER = 0.55;
+/** Below this (px) the spring is considered home. */
+const PULL_EPSILON = 0.2;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
@@ -51,6 +67,13 @@ export function CoverGallery({
 
     const flat = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // How far the rail is stretched past an end, in px. Positive means
+    // pulled past the first cover (content shifted right), negative past
+    // the last. The scroller itself stays clamped; the stretch is carried
+    // by the cards' own transforms, so the rail's edge mask holds still.
+    let pull = 0;
+    let pullV = 0;
+
     // ---- geometry ----
     const layout = () => {
       const half = el.clientWidth / 2;
@@ -63,17 +86,17 @@ export function CoverGallery({
       for (const child of Array.from(el.children)) {
         const card = child as HTMLElement;
         if (flat) {
-          card.style.transform = "";
+          card.style.transform = pull ? `translateX(${pull}px)` : "";
           card.style.opacity = "";
           continue;
         }
-        const mid = card.offsetLeft - el.scrollLeft + card.offsetWidth / 2;
+        const mid = card.offsetLeft - el.scrollLeft + pull + card.offsetWidth / 2;
         const t = clamp((mid - half) / half, -1, 1);
         const a = Math.abs(t);
         // Ease the middle flat so only the shoulders of the rail bend.
         const bend = Math.sign(t) * Math.pow(a, 1.2);
         const z = LIFT - DEPTH * Math.pow(a, 1.5);
-        card.style.transform = `translateX(${-bend * SQUEEZE}px) translateZ(${z}px) rotateY(${bend * MAX_TILT}deg)`;
+        card.style.transform = `translateX(${pull - bend * SQUEEZE}px) translateZ(${z}px) rotateY(${bend * MAX_TILT}deg)`;
         card.style.opacity = `${1 - (1 - MIN_OPACITY) * Math.pow(a, 1.8)}`;
         // Nearer covers paint over the ones folding away behind them.
         card.style.zIndex = `${100 - Math.round(a * 100)}`;
@@ -114,11 +137,48 @@ export function CoverGallery({
       glide = 0;
     };
 
+    const maxScroll = () => Math.max(0, el.scrollWidth - el.clientWidth);
+
+    // The band stiffens as it stretches: the first pixels of overscroll
+    // track the pointer almost 1:1, the last barely move at all.
+    const stretch = (by: number) => {
+      const give = 1 - Math.min(1, Math.abs(pull) / MAX_PULL);
+      pull = clamp(pull + by * give, -MAX_PULL, MAX_PULL);
+    };
+
+    // Release the band: a damped spring back to zero, with a little
+    // overshoot so the end reads as elastic rather than merely soft.
+    const settle = () => {
+      pullV = (pullV - PULL_STIFFNESS * pull) * PULL_DAMPING;
+      // Momentum heading further out still meets the stiffening band, so a
+      // hard flick eases into the stop instead of hitting the clamp.
+      if (pull === 0 || Math.sign(pullV) === Math.sign(pull)) stretch(pullV);
+      else pull = clamp(pull + pullV, -MAX_PULL, MAX_PULL);
+      if (Math.abs(pull) < PULL_EPSILON && Math.abs(pullV) < PULL_EPSILON) {
+        pull = 0;
+        pullV = 0;
+        glide = 0;
+        layout();
+        return;
+      }
+      layout();
+      glide = requestAnimationFrame(settle);
+    };
+
+    const releasePull = (momentum = 0) => {
+      pullV = momentum;
+      if (pull === 0 && pullV === 0) return;
+      stopGlide();
+      glide = requestAnimationFrame(settle);
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       // Touch keeps the platform's own scrolling — it is better than
       // anything we would reimplement here.
       if (e.pointerType === "touch" || e.button !== 0) return;
       stopGlide();
+      // Grabbing mid-bounce catches the band where it is, at rest.
+      pullV = 0;
       dragging = true;
       pointer = e.pointerId;
       lastX = e.clientX;
@@ -133,11 +193,34 @@ export function CoverGallery({
       const dx = e.clientX - lastX;
       lastX = e.clientX;
       travel += Math.abs(dx);
-      el.scrollLeft -= dx;
-      // Smooth the velocity so a jittery last frame does not decide the flick.
-      velocity = velocity * 0.7 + dx * 0.3;
       if (travel > DRAG_SLOP) suppressClick = true;
       e.preventDefault();
+      // Smooth the velocity so a jittery last frame does not decide the flick.
+      velocity = velocity * 0.7 + dx * 0.3;
+
+      let remaining = dx;
+      // Dragging back toward the middle pays off the stretch first, 1:1,
+      // before the rail starts scrolling again — otherwise the band would
+      // stay stretched while the covers slide under it.
+      if (pull !== 0 && Math.sign(remaining) !== Math.sign(pull)) {
+        const paid = Math.sign(remaining) * Math.min(Math.abs(remaining), Math.abs(pull));
+        pull += paid;
+        remaining -= paid;
+      }
+      if (remaining !== 0 && pull === 0) {
+        // Compare against the *wanted* scroll position, not the one the
+        // browser reports back — scrollLeft is rounded, and the rounding
+        // error would read as a stretch in the middle of the rail.
+        const max = maxScroll();
+        const want = el.scrollLeft - remaining;
+        el.scrollLeft = clamp(want, 0, max);
+        remaining = want < 0 ? -want : want > max ? max - want : 0;
+      }
+      // Whatever travel the rail could not absorb goes into the band.
+      if (remaining !== 0) {
+        stretch(remaining);
+        layout();
+      }
     };
 
     const endDrag = (e: PointerEvent) => {
@@ -146,14 +229,31 @@ export function CoverGallery({
       pointer = -1;
       delete el.dataset.dragging;
       if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
-      if (Math.abs(velocity) < MIN_VELOCITY) return;
+      // Let go of the band: either the flick carries on from here, or the
+      // spring takes over immediately.
+      if (Math.abs(velocity) < MIN_VELOCITY) {
+        releasePull();
+        return;
+      }
+      if (pull !== 0) {
+        releasePull(velocity);
+        return;
+      }
 
-      const max = el.scrollWidth - el.clientWidth;
       const tick = () => {
-        el.scrollLeft -= velocity;
+        const max = maxScroll();
+        const want = el.scrollLeft - velocity;
+        el.scrollLeft = clamp(want, 0, max);
+        // Momentum the rail could not spend — it ran into an end, so the
+        // band takes the rest and bounces.
+        const leftover = want < 0 ? -want : want > max ? max - want : 0;
+        if (leftover !== 0) {
+          glide = 0;
+          releasePull(leftover * PULL_TRANSFER);
+          return;
+        }
         velocity *= FRICTION;
-        const stuck = el.scrollLeft <= 0 || el.scrollLeft >= max - 0.5;
-        glide = Math.abs(velocity) < MIN_VELOCITY || stuck ? 0 : requestAnimationFrame(tick);
+        glide = Math.abs(velocity) < MIN_VELOCITY ? 0 : requestAnimationFrame(tick);
       };
       glide = requestAnimationFrame(tick);
     };
