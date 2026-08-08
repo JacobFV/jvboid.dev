@@ -1,6 +1,5 @@
 import {
   Box,
-  Images,
   LayoutGrid,
   Mail,
   MailX,
@@ -26,10 +25,10 @@ import {
 // of ink. Brand paths are drawn edge-to-edge in their box while lucide
 // insets a little, so the brands render a hair smaller to match.
 
-// Four of these have no Simple Icons entry at all (Onshape, Are.na,
-// Cosmos, F6S), so they fall through to a lucide glyph chosen for what
-// the service *is* rather than for its logo — a CAD box, a grid of
-// channels, a stack of images, a rocket.
+// Three of these have no Simple Icons entry at all (Onshape, Are.na,
+// F6S), so they fall through to a lucide glyph chosen for what the
+// service *is* rather than for its logo — a CAD box, a grid of channels,
+// a rocket.
 export type SocialGlyphName =
   | "email"
   | "junk"
@@ -55,7 +54,6 @@ export type SocialGlyphName =
   | "unsplash"
   | "deviantart"
   | "arena"
-  | "cosmos"
   | "f6s";
 
 // Simple Icons (CC0) 24×24 paths.
@@ -101,7 +99,6 @@ const LUCIDE_GLYPHS = {
   link: Link2,
   onshape: Box,
   arena: LayoutGrid,
-  cosmos: Images,
   f6s: Rocket,
 } as const;
 

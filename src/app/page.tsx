@@ -107,7 +107,6 @@ const moreSocialGroups: HeroSocialGroup[] = [
       { label: "deviantart", href: "https://www.deviantart.com/jvboid", glyph: "deviantart" },
       { label: "unsplash", href: "https://unsplash.com/@jvboid", glyph: "unsplash" },
       { label: "are.na", href: "https://www.are.na/jacob-valdez/channels", glyph: "arena" },
-      { label: "cosmos", href: "https://www.cosmos.so/jvboid", glyph: "cosmos" },
     ],
   },
   {
