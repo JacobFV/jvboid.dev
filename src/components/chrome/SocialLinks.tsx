@@ -62,12 +62,15 @@ export function SocialLinks({
 
   return (
     <Row
-      className={[
-        "text-center leading-[2.1]",
-        hex ? "" : "mx-auto max-w-2xl",
-        className ?? "",
-      ].join(" ")}
-      style={style}
+      className={["text-center", hex ? "" : "mx-auto max-w-2xl", className ?? ""].join(" ")}
+      style={{
+        // The air between wrapped link lines is padding like any other,
+        // so it rides HexFit's first lever: 2.1 at rest, tightening to
+        // ~1.55 when the column is out of room. Expanded, this row is
+        // most of the height problem, which makes it most of the answer.
+        lineHeight: hex ? "calc(1.45 + var(--hex-squeeze, 1) * 0.65)" : 2.1,
+        ...style,
+      }}
     >
       {socials.map((social) => (
         <SocialLink key={social.href} social={social} className={item} />

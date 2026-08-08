@@ -45,8 +45,25 @@ const INSET = 0.94;
 /** Enough to settle in practice; a hard cap so a reflow cannot spin. */
 const PASSES = 5;
 
-/** Sweeps allowed per hexagon size — see `settle`. */
-const BUDGET = 40;
+/** Consecutive non-converging settles before giving up — see `settle`. */
+const STALL_LIMIT = 12;
+
+// Every number written from here is quantized first. Measurements feed
+// back into the layout that produced them, so writing them at full
+// precision means the last decimal jitters forever, `changed` never goes
+// false, and the sweep never converges. Quantizing to a step coarser
+// than the jitter — but finer than anything an eye can catch — is what
+// makes the fixpoint an actual fixpoint.
+const quantize = (v: number, step: number) => Math.round(v / step) * step;
+
+/** ~0.25% of the frame: a pixel or so at the sizes the hero renders at. */
+const W_STEP = 0.0025;
+
+/** Polygon vertices, as a fraction of the float's own box. */
+const SHAPE_STEP = 0.005;
+
+/** Compression factors — two percent of full size. */
+const SCALE_STEP = 0.02;
 
 /** Below this the taper is not worth a float. */
 const MIN_TAPER_PX = 1.5;
@@ -58,7 +75,7 @@ const VPAD = 0.02;
 const MIN_SQUEEZE = 0.15;
 
 /** And how small the portrait may get once the gaps are spent. */
-const MIN_PFP = 0.5;
+const MIN_PFP = 0.45;
 
 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -80,6 +97,11 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
  * height by the factors currently applied, so the two are solved for
  * directly rather than crept toward. That matters in both directions: it
  * relaxes straight back to full size when the row collapses again.
+ *
+ * `fixed` is not perfectly fixed — the link row's line spacing rides
+ * `--hex-squeeze` too, so compressing shortens it a little beyond what
+ * the model predicts. That only ever leaves the solve conservative, and
+ * the next pass measures the real number.
  */
 function fitHeight(
   el: HTMLElement,
@@ -115,8 +137,8 @@ function fitHeight(
     }
   }
 
-  write(el, "--hex-squeeze", nextSqueeze.toFixed(3));
-  write(el, "--hex-pfp", nextPfp.toFixed(3));
+  write(el, "--hex-squeeze", quantize(nextSqueeze, SCALE_STEP).toFixed(2));
+  write(el, "--hex-pfp", quantize(nextPfp, SCALE_STEP).toFixed(2));
 }
 
 export function HexFit({
@@ -156,7 +178,8 @@ export function HexFit({
         if (node.dataset.hexShape === undefined) {
           const y0 = (r.top - box.top) / box.height;
           const y1 = (r.bottom - box.top) / box.height;
-          write(node, "max-width", pct(INSET * Math.min(usableWidth(y0), usableWidth(y1))));
+          const w = INSET * Math.min(usableWidth(y0), usableWidth(y1));
+          write(node, "max-width", pct(quantize(w, W_STEP)));
           continue;
         }
 
@@ -183,7 +206,7 @@ export function HexFit({
         // the float that does the closing.
         const wall = INSET * (uMax - uMin) * 0.5 * box.width;
 
-        write(node, "max-width", pct(INSET * uMax));
+        write(node, "max-width", pct(quantize(INSET * uMax, W_STEP)));
 
         if (span <= 0 || wall < MIN_TAPER_PX) {
           write(node, "--hex-wall-w", "0px");
@@ -202,14 +225,15 @@ export function HexFit({
         const insetAt = (t: number) =>
           (INSET * (uMax - usableWidth(y0 + t * span)) * 0.5 * box.width) / wall;
 
-        const left = stops.map((t) => `${pct(insetAt(t))} ${pct(t)}`);
-        const right = stops.map((t) => `${pct(1 - insetAt(t))} ${pct(t)}`);
+        const at = (t: number) => quantize(insetAt(t), SHAPE_STEP);
+        const left = stops.map((t) => `${pct(at(t))} ${pct(quantize(t, SHAPE_STEP))}`);
+        const right = stops.map((t) => `${pct(1 - at(t))} ${pct(quantize(t, SHAPE_STEP))}`);
 
-        write(node, "--hex-wall-w", `${wall.toFixed(1)}px`);
+        write(node, "--hex-wall-w", `${Math.round(wall)}px`);
         // The floats have to be as tall as the content they shape, and
         // that height is only known once it has wrapped — which is why
         // this sweep runs to a fixpoint rather than once.
-        write(node, "--hex-wall-h", `${b.height.toFixed(1)}px`);
+        write(node, "--hex-wall-h", `${Math.round(b.height)}px`);
         // Each polygon runs down the profile, then back up the outside
         // edge of the float, enclosing everything the hexagon excludes.
         write(node, "--hex-wall-left", `polygon(${[...left, "0% 100%", "0% 0%"].join(",")})`);
@@ -219,26 +243,36 @@ export function HexFit({
     };
 
     // Shaping a block changes how its text wraps, which changes its
-    // height, which changes the shape — normally that converges in two or
-    // three passes. It is not guaranteed to: a block one word away from
-    // dropping a line can flip between two states forever, and since the
-    // observer below is watching for exactly those size changes, that
-    // would spin. So sweeps run on a budget, refilled only when the
-    // hexagon itself is resized — at worst the layout stops a pass or two
-    // short of perfect instead of pinning a core.
-    let budget = BUDGET;
+    // height, which changes the shape. Quantized writes make that
+    // converge — usually in two or three passes — but a block one word
+    // away from dropping a line could still flip between two states
+    // forever, and the observer below is watching for exactly those size
+    // changes, so it would spin.
+    //
+    // The guard is on *consecutive* failures to converge, not on a total
+    // budget: any settle that reaches a fixpoint clears the count. A
+    // total budget looks equivalent and is not — normal life (fonts
+    // swapping, images landing, the link row opening and closing) spends
+    // it, and once spent the layout is frozen for good.
+    let stalls = 0;
     let lastBox = "";
     const settle = () => {
       const { width, height } = el.getBoundingClientRect();
       const size = `${Math.round(width)}x${Math.round(height)}`;
+      // A resized hexagon is a new problem; give up only on the old one.
       if (size !== lastBox) {
         lastBox = size;
-        budget = BUDGET;
+        stalls = 0;
       }
-      for (let pass = 0; pass < PASSES && budget > 0; pass++) {
-        budget -= 1;
-        if (!sweep()) break;
+      if (stalls > STALL_LIMIT) return;
+      let converged = false;
+      for (let pass = 0; pass < PASSES; pass++) {
+        if (!sweep()) {
+          converged = true;
+          break;
+        }
       }
+      stalls = converged ? 0 : stalls + 1;
     };
 
     settle();
