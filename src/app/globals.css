@@ -203,6 +203,116 @@ a:hover {
   text-decoration-color: var(--color-accent);
 }
 
+/* ---- Page-scoped dressing: jterm (reader/JtermAtmosphere.tsx) ----------
+   jterm's own download page is black-and-gold with a field of ASCII Julia
+   sets behind it. Its project page borrows both, so the write-up and the
+   thing it documents read as one artifact. The component sets
+   `data-page-theme="jterm"` on <html> while it is mounted and clears it on
+   unmount, so this is genuinely one page's treatment and not a second
+   sitewide theme.
+
+   Only the tokens move. Every component keeps reading `--color-accent` and
+   friends, so the header, the prose map and the local graph all retune
+   without knowing this page exists. */
+:root[data-page-theme="jterm"] {
+  --color-bg-0: #000000;
+  --color-bg-1: #08080a;
+  --color-bg-2: #1c1c20;
+  --color-accent: #f2cd6b;
+}
+
+/* Light mode keeps its light surfaces — a page that goes black under a
+   reader who asked for white is a bug, not a homage. It takes the gold
+   instead, darkened to something that passes on paper-white. */
+:root[data-theme="light"][data-page-theme="jterm"] {
+  --color-bg-0: #fafaf8;
+  --color-bg-1: #f1f1ee;
+  --color-bg-2: #e3e3df;
+  --color-accent: #8a713a;
+}
+
+/* One backdrop at a time. The sitewide bioluminescent mesh and the fractal
+   field are both ambient texture in the gutters; together they are mud. */
+:root[data-page-theme="jterm"] .biolume {
+  display: none;
+}
+
+/* The field itself. Pinned exactly like `.biolume` — `html` paints the base
+   colour, this sits above it, page content sits above that. Masked once for
+   the field as a whole, so the three layers fade together instead of each
+   cutting off at its own edge. */
+.jterm-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: radial-gradient(
+    135% 100% at 62% 26%,
+    #000 0%,
+    #000 42%,
+    transparent 86%
+  );
+  mask-image: radial-gradient(
+    135% 100% at 62% 26%,
+    #000 0%,
+    #000 42%,
+    transparent 86%
+  );
+}
+
+.jterm-fractal {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  white-space: pre;
+  color: var(--color-accent);
+  overflow: hidden;
+  will-change: contents;
+}
+
+/* The fine layer is below the size at which a character is a character, so
+   it reads as film grain; the coarse one is unmistakably typed. The middle
+   sits where you can just make the glyphs out, which is where it stops
+   looking like a texture and starts looking drawn. */
+.jterm-fractal[data-layer="noise"] {
+  font-size: 7px;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  opacity: 0.11;
+}
+.jterm-fractal[data-layer="mid"] {
+  font-size: 13px;
+  line-height: 1.06;
+  letter-spacing: 0.07em;
+  opacity: 0.2;
+}
+.jterm-fractal[data-layer="read"] {
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: 0.16em;
+  opacity: 0.1;
+}
+
+/* Ink on white needs far less of it to register, and body copy has to win. */
+:root[data-theme="light"] .jterm-fractal[data-layer="noise"] {
+  opacity: 0.07;
+}
+:root[data-theme="light"] .jterm-fractal[data-layer="mid"] {
+  opacity: 0.12;
+}
+:root[data-theme="light"] .jterm-fractal[data-layer="read"] {
+  opacity: 0.07;
+}
+
+@media (max-width: 640px) {
+  .jterm-fractal[data-layer="read"] {
+    font-size: 20px;
+  }
+}
+
 /* Hide the loop right rail on narrow screens — the chapter measure is
    the priority there. */
 @media (max-width: 1100px) {

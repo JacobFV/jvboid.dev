@@ -20,12 +20,15 @@ realizes: []
 critiques: []
 ---
 
+<JtermAtmosphere />
+
 - The half-typed command at every prompt is **mirrored from keystrokes and written to disk continuously**, then typed back at the next prompt — never with a newline, so nothing runs on your behalf
 - tmux-style **splits, zoom, directional focus and drag-to-rearrange**, built so that moving a pane never restarts the shell inside it
 - A tab is not only a terminal: **a code editor that saves, a web pane, and viewers for images, video, audio and STL meshes**, chosen from the file you opened
+- Any pane can **become something else** — a pane's kind icon opens a menu that replaces it, or moves another open tab into that slot as an even trade
 - Ships signed-by-nobody installers for **macOS (both architectures), Windows, and Linux on x86_64 and arm64** from one tag push
 
-![jterm with four panes in one tab](/assets/img/projects/jterm-panes.png)
+![jterm with four panes in one tab: a Rust file with syntax highlighting, an STL mesh, an image viewer and a live shell](/assets/img/projects/jterm-panes.png)
 
 ## Problem
 
@@ -41,18 +44,20 @@ Where the mirror cannot follow, it says so rather than guessing. Tab completion 
 
 ## How
 
-- **Stack:** Rust + Tauri v2 behind TypeScript/React. `portable-pty` for pseudoterminals, xterm.js for the terminal, CodeMirror 6 for the editor, three.js for meshes. ~4,500 lines across both halves.
+- **Stack:** Rust + Tauri v2 behind TypeScript/React. `portable-pty` for pseudoterminals, xterm.js for the terminal, CodeMirror 6 for the editor, three.js for meshes. ~11,000 lines across both halves.
 - **Two files, deliberately different durability.** The session snapshot — tabs, layout, editor buffers, and the unsubmitted line at each prompt — is written into a temporary file that is `fsync`'d and then renamed over the old one, so a crash mid-write leaves the *previous* complete snapshot rather than half of the new one. Scrollback is append-only and merely buffered: losing half a second of it costs nothing, and paying an `fsync` per chunk of `cargo build` output would make the terminal slow. Writes are debounced 200 ms with a 1 s ceiling, because without the ceiling a fast typist never stops being "still typing" and the file never gets written — exactly the user with the most to lose.
 - **Panes are rendered from a flat list, not from the split tree.** The layout is a binary tree, but rendering it directly would be a serious bug: moving a pane would move its component in the React tree, React would unmount and remount it, and a live shell would be destroyed every time someone dragged a pane. Instead the tree is asked for rectangles and the panes are drawn from a stable, unchanging list. Rearranging is then a style recalculation, and the process behind the pane never notices.
 - **Backgrounded panes keep their size.** Inactive tabs are hidden with `visibility`, never `display: none` — a `display: none` pane measures 0×0, which would tell every backgrounded shell its window is one column wide and make it re-wrap everything it has printed.
 - **UTF-8 does not respect read boundaries.** A `read` from the pty can end mid-character; decoding each chunk independently turns that into a permanent `U+FFFD` in your output. The reader carries the incomplete tail across reads and replaces only genuinely invalid bytes.
 - **Working directory restore rides on OSC 7**, the sequence shells already emit to announce where they are, with `/proc` as a Linux-only shortcut. It is the one mechanism that works the same on all three platforms.
+- **Preferences are a second window, and a second file.** Settings open beside the terminal rather than over it, because nearly everything in there — font, line height, cursor, theme — is a thing you judge by looking at the result, and a modal is exactly the shape that covers it up. They also live outside the session snapshot: that file is *this machine, this moment* and is rewritten several times a second, while your preferences are what you would copy to a new machine. There is no reason for the two to be able to fail together.
+- **A pane can be traded for another kind in place.** The replacement is minted with a *new* id, because ids are how everything outside the reducer finds a pane's belongings — its pty, its scrollback file, its unsubmitted line — and reusing one would hand a fresh editor the previous shell's log. Pulling an open tab into a pane is the one move that destroys nothing: the tab's layout takes the slot, and the pane it displaced leaves as a tab of its own.
 
 ## Results
 
 Verified end to end rather than by inspection: `SIGKILL` the process mid-sentence, relaunch, and the three split shells come back with their scrollback and the unsubmitted `git commit -m 'half-written thought'` sitting at the prompt. I also downloaded the shipped arm64 `.deb` from the release and ran *that*, rather than trusting a dev build.
 
-102 tests — 91 in TypeScript over the split geometry, the keystroke mirror, the OSC parser, the URL bar and the STL reader; 11 in Rust over the incremental UTF-8 decoder, atomic snapshot writes and scrollback trimming. Clippy clean at `-D warnings`.
+155 tests — 139 in TypeScript over the split geometry, the keystroke mirror, the OSC parser, the URL bar, the STL reader, the shortcut table and the preferences decoder; 16 in Rust over the incremental UTF-8 decoder, atomic snapshot writes and scrollback trimming. Clippy clean at `-D warnings`.
 
 Three bugs the tests and the screenshots caught that reading would not have:
 
