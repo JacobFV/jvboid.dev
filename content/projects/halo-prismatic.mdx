@@ -1,0 +1,94 @@
+---
+title: Halo Prismatic
+date: 2026-08-09
+resume_description: "browser demo of refractive glass ui — svg displacement filters with per-channel index of refraction over a live cloud-field canvas. react, vite, css, canvas, github pages."
+lane: building
+tags: [personal, ui, graphics]
+summary: "A mock workspace whose glass panels actually refract: three displacement passes at three indices of refraction, so every pane leaves a real chromatic fringe."
+hero:
+  src: /assets/img/projects/halo-prismatic-hero.jpg
+  alt: "The Halo marketing home — a huge sans headline over panes of glass, with a yellow-green cloud field showing through them and a hex dot texture feathering in from the viewport edge"
+links:
+  github: https://github.com/JacobFV/halo-prismatic
+  demo: https://jacobfv.github.io/halo-prismatic/
+---
+
+## Problem
+
+Every "glassmorphism" UI on the web is the same three declarations —
+`backdrop-filter: blur()`, a translucent white fill, a 1px light border — and none of
+them are glass. Blur is what frosted plastic does. The thing that actually reads as glass
+is *refraction*: light bending as it enters a denser medium, bending by a different amount
+per wavelength, and leaving a colour fringe wherever the bend is steep. I wanted to know
+whether a browser could do the real optics rather than a picture of them.
+
+## Solution
+
+Halo is a mock full-stack workspace — marketing pages, a dashboard, projects, tasks,
+inbox, settings — used as a test rig for one material. Every pane runs its own backdrop
+through an SVG displacement filter three times, at three indices of refraction, and keeps
+red from the weakest pass, green from the middle, and blue from the strongest. That is
+dispersion. The fringe you see at the rim of a panel is the fringe a slab of glass would
+leave there, not a gradient anyone painted.
+
+<LiveDemo
+  url="https://jacobfv.github.io/halo-prismatic/"
+  title="Halo Prismatic"
+  caption="The demo running here — move the cursor to stir the cloud field, and watch the dot texture bend as it passes under a pane's rim."
+/>
+
+## How
+
+- **Language / runtime:** React 19, Vite 8, plain CSS. No UI framework, no CSS-in-JS, no state library — a `useReducer`-shaped store in context and `localStorage`.
+- **The lens:** an SVG `feImage` displacement map — two linear gradients, one per axis, screened together — feeding three `feDisplacementMap` passes at scale ×0.82 / ×1.0 / ×1.22, isolated to one channel each by `feColorMatrix` and recombined with `feBlend`. The whole thing is referenced from CSS as `backdrop-filter: url(#halo-lens)`.
+- **The map is a bevel:** mid-grey across the middle of a pane, because a flat slab bends nothing, ramping to the extremes over a band at each edge. The ramp is eased rather than linear, because a bevel is a curve — the surface normal turns slowly while the glass is still flat and quickly as it rolls over.
+- **The offsets point inward,** so a pane only ever samples from inside its own box. Nothing reaches outside the filter region, so there is no transparent bite taken out of the border, and the band reads as the magnified sliver you see through the thick part of a lens.
+- **Four scale variants,** because displacement past the band's width in pixels folds the mapping back on itself and the rim mirrors. A 48px mock toolbar and a 720px hero cannot carry the same bevel.
+- **The ground:** a canvas hex dot lattice (three equally strong axes, so it reads as grain rather than as ruling) that feathers against the viewport edge by dot *size* rather than opacity — a mask can only grey out a 1px dot; shrinking it is what actually reads as thinning. It is deliberately the highest-frequency layer in the background, because refraction is invisible without something to bend.
+- **Behind that:** a 150-particle cloud field on a low-res dye buffer, advected by a time-varying curl-ish flow, with the pointer applying tangential torque and lateral shear. Each route owns a hue band, and the interface accent crossfades with it via registered `@property` colours.
+- **Deploy:** GitHub Actions → GitHub Pages, `base: "./"` and hash routing so the same build works from a domain root or a project subpath.
+
+![The workspace, standing directly on the field — no container, no rounded slab, with the hex dot ground feathering in from the viewport edges](/assets/img/projects/halo-prismatic-workspace.jpg)
+
+## Tests
+
+There is no unit suite — it is a rendering demo, and the property under test is "does this
+look like glass," which no assertion captures. What it has instead is a screenshot
+harness: a ~40-line Chrome DevTools Protocol client that boots headless Chrome, seeds
+`localStorage` to skip the mock auth, sets device metrics, and captures any route at any
+viewport. Every claim below was checked against a real render rather than reasoned about.
+
+The one thing I *could* isolate, I did: a standalone page that puts a pane over a hard
+black-and-white checkerboard next to an identical pane with plain `blur()`. The
+displacement pane shows a compressed, rainbow-fringed rim; the blur pane shows nothing.
+That test is what proved `backdrop-filter: url()` resolves an SVG filter at all before any
+of it was wired into the app.
+
+## Results
+
+It works, and it is cheap — the filter is a handful of primitives on the compositor, and
+the dot ground is painted once per resize. The effect is legible at the rim of every pane:
+dots compress and split as they pass under the bevel, and the colour fringe tracks the
+route's palette because it is fringing whatever is actually behind the pane.
+
+![Detail: the nav bar's rim over the dot band — the lattice outside the pane is even, and inside it compresses and dims toward the edge](/assets/img/projects/halo-prismatic-refraction.jpg)
+
+Two structural changes fell out of the material rather than the layout. The dashboard lost
+its container entirely — it used to sit inside an opaque rounded slab, which was the one
+part of the design that never touched the field. And `isolation: isolate` had to come off
+the app tree: an isolated stacking context is a *backdrop root*, and a backdrop root
+leaves every pane inside it with an empty backdrop and therefore nothing to refract.
+
+## Lessons
+
+Blur is the enemy of refraction. The first version kept the old 16px `backdrop-filter`
+blur and the displacement was completely invisible — blur destroys exactly the
+high-frequency detail the bend is supposed to be moving. Dropping it to ~3px is what made
+the optics show up, and it is also what forced the dot ground into existence: over a smooth
+gradient, a physically perfect lens has nothing to prove.
+
+The other lesson is that "clear" costs contrast. A pane you can genuinely see through
+passes the background's brightness swings straight onto the copy, and this background swings
+from near-black to near-white as clouds move under it. The fix was not to go back to milk
+but to tint — a flat neutral darkening, the sunglasses layer, which holds the black point
+without touching how much of the scene comes through.

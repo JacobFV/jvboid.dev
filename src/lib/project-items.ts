@@ -75,6 +75,7 @@ const projectHexSize: Record<string, HexSize> = {
   theagentsuite: 0.5,
   "notion-vibestartup": 0.5,
   "belief-graph-orchestrator": 0.5,
+  "halo-prismatic": 0.5,
 };
 
 // Thumbnail mosaic density, in cells across the app-icon face. Default
