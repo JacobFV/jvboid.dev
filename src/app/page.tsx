@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { type HeroSocial, type HeroSocialGroup } from "@/components/chrome/HeroHex";
 import { CoverGallery } from "@/components/chrome/CoverGallery";
+import { HomeField } from "@/components/chrome/HomeField";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
 import { getGraph, isListedNode, nodeHref, type Lane, type Node } from "@/lib/graph";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
@@ -161,6 +162,12 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 pt-24 pb-32">
+      {/* Home only: a monochrome cloud field at 2%, behind everything
+          including the bioluminescent mesh. One channel and one hue-free
+          value swing, which is the term on which it is allowed inside the
+          content measure at all. See components/chrome/HomeField.tsx. */}
+      <HomeField />
+
       {/* ---- Hero + projects ---- */}
       {/* The hero is a 4× tile of the projects comb, not a block above
             it, so the tiles pack against its edges. That is also why this
@@ -239,11 +246,6 @@ export default function HomePage() {
           <ReadingCoverRail nodes={recentReadings} />
         </Section>
       )}
-
-      {/* ---- Footer ---- */}
-      <footer className="mt-32 border-t border-[var(--color-bg-2)]/50 pt-8 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-        <p className="opacity-45">Copyright Jacob Valdez.</p>
-      </footer>
     </main>
   );
 }

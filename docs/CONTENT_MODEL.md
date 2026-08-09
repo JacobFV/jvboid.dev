@@ -92,12 +92,12 @@ the title block and the link pills.
 If a project page should show an image, a deck, a clip, or a live app,
 the body places it, at the point in the argument where it belongs:
 
-| What | In the body |
-| --- | --- |
-| Image | `![alt](/assets/...)` |
-| Deck / poster / paper | `<Pdf src="..." title="..." caption="..." />` |
+| What                     | In the body                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| Image                    | `![alt](/assets/...)`                                        |
+| Deck / poster / paper    | `<Pdf src="..." title="..." caption="..." />`                |
 | YouTube / Vimeo / `.mp4` | `<Video url="..." title="..." poster="..." caption="..." />` |
-| Deployed app | `<LiveDemo url="..." title="..." caption="..." />` |
+| Deployed app             | `<LiveDemo url="..." title="..." caption="..." />`           |
 
 This is deliberate. Auto-hoisting put the same slot at the top of every
 project whether or not the article already showed that artifact, so decks
@@ -315,13 +315,21 @@ Any node, of any kind, may carry two optional shared fields:
 
 - `unlisted: true` — keep the node out of every listing (index, graph,
   timeline, feed, resume) while its page still renders at its URL.
-- `redirect: <node-id>` — the node has no page of its own; its route
-  permanently redirects (308) to the node with that id. A redirecting
-  node is automatically unlisted. Use it to fold one entity into
-  another without breaking old links.
+- `redirect: <target>` — the node has no page of its own; its route
+  sends the reader on. The target takes one of two forms, and they
+  behave differently on purpose:
 
-`redirect` is checked by `pnpm validate` — the target must be a real,
-different node.
+| Target      | Status        | Listed? | Use it for                                                                                                                                                                                                                                                                                               |
+| ----------- | ------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<node-id>` | 308 permanent | no      | Folding one entity into another without breaking old links. The card already exists on the target node, so listing the alias too would list the same thing twice.                                                                                                                                        |
+| `https://…` | 307 temporary | **yes** | A piece published elsewhere (Substack, someone else's site). This node is the only record of it here, so it stays in the listings and its card links out. Temporary because the whole point of keeping the URL is being able to repoint it if the piece ever comes home — and browsers cache a 308 hard. |
+
+Redirecting nodes of either sort stay out of `sitemap.xml`: every URL in
+a sitemap should serve a page rather than bounce.
+
+`pnpm validate` checks node-id targets — they must be a real, different
+node. It cannot check a URL target; whether the remote page still exists
+is not something a build-time script can know.
 
 ## Authoring rules
 

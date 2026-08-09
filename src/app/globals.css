@@ -95,6 +95,31 @@ body {
   pointer-events: none;
 }
 
+/* Home-page cloud field. Pinned like `.biolume`, and stretched from a
+   ~240x150 canvas — there is no detail in it to lose.
+
+   The canvas is always painted white; the light theme inverts it to
+   black and keeps the alpha. That is the entire theme handling, and it
+   is also the guarantee the backdrop rule needs: one channel, so the
+   field can only move value, never hue. See components/chrome/HomeField.tsx
+   and docs/DESIGN.md. */
+.home-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.022;
+}
+:root[data-theme="light"] .home-field {
+  filter: invert(1);
+  /* dark ink on a near-white ground reads weaker than the reverse at the
+     same alpha, so the light theme gets a little more of it */
+  opacity: 0.03;
+}
+
 ::selection {
   background: var(--color-accent);
   color: var(--color-bg-0);
@@ -261,18 +286,8 @@ a:hover {
   overflow: hidden;
   pointer-events: none;
   user-select: none;
-  -webkit-mask-image: radial-gradient(
-    135% 100% at 62% 26%,
-    #000 0%,
-    #000 42%,
-    transparent 86%
-  );
-  mask-image: radial-gradient(
-    135% 100% at 62% 26%,
-    #000 0%,
-    #000 42%,
-    transparent 86%
-  );
+  -webkit-mask-image: radial-gradient(135% 100% at 62% 26%, #000 0%, #000 42%, transparent 86%);
+  mask-image: radial-gradient(135% 100% at 62% 26%, #000 0%, #000 42%, transparent 86%);
 }
 
 .jterm-fractal {

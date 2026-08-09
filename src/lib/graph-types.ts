@@ -56,8 +56,10 @@ export type Node = {
   tags: string[];
   summary: string;
   unlisted: boolean;
-  // Redirect alias: when set, this node has no page of its own — its
-  // route permanently redirects to the node with this id.
+  // Redirect: when set, this node has no page of its own — its route
+  // sends the reader on. Either the id of another node here (an alias:
+  // a second URL for something that already has a page) or an absolute
+  // http(s) URL (a link-out: the piece itself lives somewhere else).
   redirect?: string;
   body: string;
   hero?: { src: string; alt: string; fit?: "cover" | "contain" };
@@ -133,7 +135,20 @@ export function nodeHref(node: { kind: NodeKind; id: string }): string {
   return `/${KIND_PREFIX[node.kind]}/${node.id}`;
 }
 
+/**
+ * True when `redirect` points off-site rather than at another node here.
+ * The two cases behave differently everywhere they are handled, so the
+ * test lives in one place: `/^https?:\/\//`.
+ */
+export function isExternalRedirect(redirect?: string): boolean {
+  return !!redirect && /^https?:\/\//i.test(redirect);
+}
+
 export function isListedNode(node: { unlisted?: boolean; redirect?: string }): boolean {
-  // A redirect alias has no content of its own — never list it.
-  return !node.unlisted && !node.redirect;
+  if (node.unlisted) return false;
+  // An internal alias is a second URL for something that already has a
+  // card — listing it would list the same thing twice. An external
+  // redirect is the opposite: the node is this site's only record of a
+  // piece published elsewhere, so it stays listed and its card links out.
+  return !node.redirect || isExternalRedirect(node.redirect);
 }

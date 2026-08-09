@@ -21,12 +21,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/resume`, priority: 0.5, changeFrequency: "monthly" as const },
   ];
 
-  const nodeRoutes = nodes.filter(isListedNode).map((n) => ({
-    url: `${BASE}${nodeHref(n)}`,
-    lastModified: n.endDate ?? n.date,
-    priority: 0.6,
-    changeFrequency: "yearly" as const,
-  }));
+  // `isListedNode` keeps external link-outs in the site's own listings —
+  // they are the only record here of a piece published elsewhere. A
+  // sitemap is a different promise, though: every URL in it should serve
+  // a page, not bounce. So redirects of either sort stay out.
+  const nodeRoutes = nodes
+    .filter((n) => isListedNode(n) && !n.redirect)
+    .map((n) => ({
+      url: `${BASE}${nodeHref(n)}`,
+      lastModified: n.endDate ?? n.date,
+      priority: 0.6,
+      changeFrequency: "yearly" as const,
+    }));
 
   return [...staticRoutes, ...nodeRoutes];
 }

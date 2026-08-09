@@ -17,9 +17,10 @@ const baseFields = {
   tags: s.array(s.string()).default([]),
   summary: s.string().max(400),
   unlisted: s.boolean().default(false),
-  // Redirect alias: when set, this node has no page of its own — its
-  // route permanently redirects to the node with this id. Works for any
-  // kind. Resolved in src/app/[kind]/[slug]/page.tsx.
+  // Redirect: when set, this node has no page of its own — its route
+  // sends the reader on. Either another node's id (308, unlisted) or an
+  // absolute http(s) URL (307, still listed — see CONTENT_MODEL.md).
+  // Works for any kind. Resolved in src/app/[kind]/[slug]/page.tsx.
   redirect: s.string().optional(),
   // `fit` controls how a hero whose aspect ratio differs from its frame
   // is placed: "cover" (default) crops to fill; "contain" letterboxes

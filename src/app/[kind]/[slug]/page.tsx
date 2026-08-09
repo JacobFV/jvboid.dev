@@ -1,5 +1,5 @@
-import { notFound, permanentRedirect } from "next/navigation";
-import { getGraph, KIND_PREFIX, nodeHref } from "@/lib/graph";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { getGraph, isExternalRedirect, KIND_PREFIX, nodeHref } from "@/lib/graph";
 import { MDXContent } from "@/lib/mdx";
 import { getPostRevisions } from "@/lib/post-revisions";
 import { Hero } from "@/components/reader/Hero";
@@ -30,9 +30,14 @@ export default async function NodePage({ params }: { params: Params }) {
   // real kind — keeps each node canonically reachable at exactly one URL.
   if (!node || KIND_PREFIX[node.kind] !== kind) notFound();
 
-  // Redirect alias: this node carries no page of its own, just a pointer
-  // to another entity (`redirect` frontmatter = target node id).
+  // This node carries no page of its own, just a pointer.
   if (node.redirect) {
+    // Off-site: the piece is published elsewhere and this is the stub
+    // that used to say so in prose. Temporary, not permanent — a 308 is
+    // cached hard by browsers, and the whole point of keeping the URL is
+    // being able to repoint it if the essay ever comes home.
+    if (isExternalRedirect(node.redirect)) redirect(node.redirect);
+    // On-site alias: `redirect` is another node's id.
     const target = graph.byId.get(node.redirect);
     if (!target) notFound(); // dangling redirect — fail loudly, don't render
     permanentRedirect(nodeHref(target));

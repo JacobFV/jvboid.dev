@@ -159,8 +159,14 @@ async function main() {
   const selfEdges = allEdges.filter((e) => e.source === e.target);
 
   // ---- Redirect aliases ----------------------------------------------
-  // A `redirect` must point at a real, different node.
-  const badRedirects = redirects.filter((r) => !ids.has(r.target) || r.target === r.source);
+  // An on-site `redirect` must point at a real, different node. An
+  // off-site one (absolute http(s) URL) is a link-out and has no target
+  // in this graph to check — its correctness is whether the remote page
+  // still exists, which is not something a build-time script can know.
+  const isExternal = (target: string) => /^https?:\/\//i.test(target);
+  const badRedirects = redirects.filter(
+    (r) => !isExternal(r.target) && (!ids.has(r.target) || r.target === r.source),
+  );
 
   // ---- Weight sanity (manualEdges only — frontmatter has no weight) -
   const badWeights = manual.filter((e) => {
@@ -240,11 +246,15 @@ async function main() {
     );
   } else if (badRedirects.length > 0) {
     console.log(
-      red(`✖ ${badRedirects.length} broken redirect alias${badRedirects.length === 1 ? "" : "es"}:`),
+      red(
+        `✖ ${badRedirects.length} broken redirect alias${badRedirects.length === 1 ? "" : "es"}:`,
+      ),
     );
     for (const r of badRedirects) {
       const why = r.target === r.source ? "points to itself" : "target node does not exist";
-      console.log(`  ${red(r.source)} ${dim("→")} ${r.target}  ${dim(`(${why}, from ${r.origin})`)}`);
+      console.log(
+        `  ${red(r.source)} ${dim("→")} ${r.target}  ${dim(`(${why}, from ${r.origin})`)}`,
+      );
     }
   }
 

@@ -70,7 +70,7 @@ alpha = exp(-(d / (band * 0.62))²) * encroach
 The falloff is normalised against the **band**, not the viewport — so it
 reaches ~0.07 at the band's inner limit rather than 0.4.
 
-On wide viewports the band *is* the gutter, so the mesh dies before the
+On wide viewports the band _is_ the gutter, so the mesh dies before the
 content column. Narrow viewports (phones, split windows, zoomed-in
 desktops) have no gutter at all, and the band falls back to a 74px
 minimum that is partly borrowed from the column. `encroach` pays for
@@ -89,11 +89,11 @@ patches that reach further inward and patches that are nearly empty.
 
 Three spatial scales are drawn, largest first:
 
-| scale | what | size |
-| --- | --- | --- |
-| membrane | bezier folds walking down the gutter, 3–5 near-parallel strands | ~400–700px |
-| filament | the network proper — sparse geometric graph, ≤3 curved edges per node | ~40–120px |
-| node | point plus a two-circle halo | ~1–4px |
+| scale    | what                                                                  | size       |
+| -------- | --------------------------------------------------------------------- | ---------- |
+| membrane | bezier folds walking down the gutter, 3–5 near-parallel strands       | ~400–700px |
+| filament | the network proper — sparse geometric graph, ≤3 curved edges per node | ~40–120px  |
+| node     | point plus a two-circle halo                                          | ~1–4px     |
 
 Geometry is seeded per 700px block (`mulberry32(chunkIndex)`), so block
 17 is always block 17 — resizing doesn't reshuffle the page, and only
@@ -107,7 +107,7 @@ additive blending over near-white erases itself.
 
 Motion is two superposed terms. Each node wanders independently
 (amplitude scaled to the band, periods of 40–160s), and on top of that a
-slow standing wave keyed to position moves neighbours *together*, so
+slow standing wave keyed to position moves neighbours _together_, so
 whole patches of mesh breathe instead of every point jittering alone.
 Membranes sway on their own long periods. The field should look
 noticeably different if you glance back a minute later, without ever
@@ -117,6 +117,25 @@ Excitation pulses travel along ~2% of edges at any moment. Redraw is
 capped at 25fps — everything moves slowly enough that nobody can tell,
 and it keeps the whole thing off the critical path. Reduced-motion gets
 one static frame of the topology.
+
+### The home-page cloud field
+
+One documented exception, on the home page only
+(`components/chrome/HomeField.tsx`, `.home-field`). It is a full-viewport
+animated field — exactly the shape of the thing that was deleted — and it
+is allowed because of what it gives up:
+
+- **Monochrome.** Painted white, inverted to black under the light theme,
+  alpha preserved. One channel, so it can move value and cannot move hue.
+  Hue drift under a reading column is what killed the old backdrop.
+- **2% peak opacity** (3% light). ~5/255 against `--color-bg-0`. Body-text
+  contrast moves from 19:1 to 18.5:1 — inside the noise, nowhere near the
+  4.5:1 floor.
+- **20fps, few px/s drift**, and a still image under
+  `prefers-reduced-motion`.
+
+If any of those three loosen, the exception stops being one and the field
+should go back in the gutters with everything else.
 
 ## Motion
 
@@ -193,6 +212,6 @@ Off by default. Optional ambient pad in `/loop` and the vision room only. A sing
 ## What we don't do
 
 - Skeuomorphic anything.
-- Parallax on *content* — the backdrop parallaxes site-wide (see above), but nothing carrying text or a target does. Foreground scrub effects stay inside `/loop` chapters.
+- Parallax on _content_ — the backdrop parallaxes site-wide (see above), but nothing carrying text or a target does. Foreground scrub effects stay inside `/loop` chapters.
 - Auto-playing video.
 - Decorative illustrations. Every visual element either _is_ content or guides attention to content.
