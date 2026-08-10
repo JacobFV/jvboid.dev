@@ -21,7 +21,14 @@ import "./globals.css";
 // unmount, which is what covers that path.
 const themeBootScript = `
 (function(){
-  var WORLDS = { '/projects/jterm': { id: 'jterm', theme: 'dark' } };
+  // A null theme means the world dresses the page but leaves the reader's own
+  // light/dark choice alone -- langcurriculum ships both and looks deliberate
+  // in either, so forcing one would misrepresent it. (No backticks in here:
+  // this whole script is a template literal.)
+  var WORLDS = {
+    '/projects/jterm': { id: 'jterm', theme: 'dark' },
+    '/projects/langcurriculum': { id: 'langcurriculum', theme: null }
+  };
   try {
     var t = localStorage.getItem('jacobfv:theme') || localStorage.getItem('theme');
     if (t && t.charAt(0) === '"') t = JSON.parse(t);
@@ -33,7 +40,7 @@ const themeBootScript = `
     var w = Object.prototype.hasOwnProperty.call(WORLDS, p) ? WORLDS[p] : null;
     if (w) {
       document.documentElement.setAttribute('data-page-theme', w.id);
-      t = w.theme;
+      if (w.theme) t = w.theme;
     }
     document.documentElement.setAttribute('data-theme', t);
   } catch (e) {

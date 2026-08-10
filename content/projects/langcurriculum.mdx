@@ -1,0 +1,84 @@
+---
+title: langcurriculum
+date: 2026-08-10
+lane: building
+tags: [evaluation, synthetic-data, symbolic-ai, nlp, python]
+summary: "180 lesson generators whose answers are computed rather than annotated — an unbounded supply of reasoning problems that can be asked in 411 languages, five modalities and eight answer formats, so you can measure whether a system learned the structure or just the surface."
+resume_description: "procedural curriculum generator for evaluating and training symbolic ai: 180 lesson generators with computed ground truth, 411 languages from a unification grammar, and five zero-dependency renderings (raster, dictation, formant-synthesized audio, animation, drawn scenes). python, sqlite, unification grammar, dsp."
+hero:
+  src: "/assets/img/projects/langcurriculum-graph.svg"
+  alt: "The progressive curriculum drawn as a directed acyclic graph — seven columns of lesson nodes, 83 wide at the roots and narrowing to 3, with 249 prerequisite edges curving between them"
+  fit: contain
+links:
+  github: https://github.com/JacobFV/formal-language-cirriculum
+  site: https://jacobfv.github.io/formal-language-cirriculum/
+influences: []
+realizes: []
+critiques: []
+---
+
+<LangCurriculumAtmosphere />
+
+- **180 lesson generators**, not a dataset — an episode is a pure function of a seed, so an evaluation set did not exist until you asked for it and cannot have been trained on
+- The answer is **computed from the construction**, never annotated: the generator invents the grammar, the ontology, the causal graph or the proof calculus, then reads the answer off its own work
+- Every score carries a **floor** measured on the same episodes, so "what does knowing nothing get?" is a number rather than an intuition
+- One episode can be asked in **411 languages**, five renderings and eight answer formats — and because those are all the *same string*, a system that answers one and not another has learned the surface
+- **Zero runtime dependencies.** The rasterizer, the animation encoder and the speech synthesizer are all written out, because a dependency would make the corpus a function of somebody else's version
+
+![The progressive curriculum as a layered graph: seven columns of lessons, 83 nodes wide at the roots and 3 at the far end, with derived prerequisite edges between them](/assets/img/projects/langcurriculum-graph.svg)
+
+## Problem
+
+Every claim about a model's reasoning runs into the same two objections, and neither has a good answer.
+
+The first is contamination. A benchmark is a fixed set of questions, it gets published, and thereafter nobody can tell whether a score reflects ability or recall. You can hold data back, but held-back data is still data — it exists, it leaks, and the argument about whether it leaked is unfalsifiable.
+
+The second is subtler and matters more. Suppose a system answers correctly. **Did it learn the problem, or the way the problem was written down?** A benchmark presents each question exactly one way, so the two are perfectly confounded, and no amount of accuracy separates them.
+
+## Solution
+
+Make the questions a *program* rather than a corpus, and make the presentation a separate axis from the problem.
+
+A lesson is a generator: hand it a seed and it builds a world — a grammar, an ontology, a causal graph — and computes the answer by reading its own construction. There is no labeller to disagree with, and no held-out set to argue about, because the world did not exist until it was asked for. Two different seeds are two different worlds; a million seeds are a million.
+
+The presentation is then peeled off entirely. The same episode can be rendered in any of 411 languages, in five media, in eight different answer formats — and every one of those carries an identical underlying string. That is what makes the confound measurable instead of invisible: render one problem five ways, and ask whether the answers agree. A system that internalized the structure is invariant. One that learned a surface is not, and it shows.
+
+## How
+
+**Lessons are flat; ordering is an opinion.** A lesson has no number and no section — it does not know where it sits. Sequence and prerequisites belong to `Curriculum` objects, directed acyclic graphs over the same lessons, of which several ship and disagree with each other. Only one has edges, and they are *derived*: X comes before Y when Y is at least as demanding on every declared difficulty axis and strictly more on one. Hand-writing 169 prerequisites would have been inventing structure nobody measured; a derived relation is auditable and wrong in ways someone can point at.
+
+That graph pays for itself immediately. For any node, everything upstream is a training set and the node itself is held out — so the DAG is a generator of **97 compositional-generalization tests**, with disjointness by construction rather than by sampling.
+
+**Difficulty is a dial, not a switch.** 177 of the 179 working lessons take a difficulty in `[0, 1]` that scales whatever actually makes *that* lesson harder: proof length, recursion depth, the number of rival theories to eliminate, the width of a game to solve. The two that refuse say so honestly — one has exactly one object per compass direction, which is the whole reason each direction denotes uniquely.
+
+**Everything is rendered from scratch.** The raster surface draws with a bundled 5×7 bitmap font through a scanline fill; the animation is APNG, chosen because it is PNG chunks rather than a codec and therefore byte-exact where an `.mp4` drifts between encoder builds; the audio is letter-to-sound rules feeding three formant resonators, the way speech was made before anything was trained. It sounds like 1980, and that is the right trade — what a dictation must preserve is *which words were said*.
+
+![The same episode rasterized with the bundled 5x7 bitmap font: nine objects listed with colours, shapes and coordinates, then the question and its answer options](/assets/img/projects/langcurriculum-raster.png)
+
+One surface is deliberately *not* a re-presentation of the text. `scene` reads the episode's structure and draws it — the picture is of the scene, not of the sentence describing it — with the question beside it in words. That is visual question answering, and it is kept separate in the code, because a transcode inherits the lesson's floor and a native drawing does not.
+
+![The same episode drawn natively: nine coloured shapes on a labelled grid at the coordinates the episode gives them](/assets/img/projects/langcurriculum-scene.png)
+
+## Tests
+
+**4,026 tests**, and the ones that matter are not unit tests.
+
+Every lesson has to pass an admission test before its data may be exported: it generates without exception, the same seed gives the same episode, and a constant guesser scores near chance rather than near one. That last check exists because two generator bugs in this codebase's history produced *fake competence* — object-id order correlated with the answer, and referring expressions that did not uniquely refer — and both would have looked like a model solving something.
+
+Since replies went open-form this matters more, not less. Nothing grades the output any more, so a lesson whose answer has quietly stopped matching its observation does not show up as a bad score. It shows up as a corpus that teaches the wrong thing, forever. Verification is a gate on export, not a report.
+
+The strongest test in the repo is a negative one. Adding difficulty knobs to 177 lessons had to leave every un-scaled episode byte-identical, so a harness captured all 179 lessons' output first and refused any change that moved it. The proof it worked: regenerating the 125,300 committed sample records afterwards changed **one file**, the manifest.
+
+## Results
+
+180 lessons, 179 of them generating, every one verified to have a beatable floor. 411 languages from a unification grammar with induced morphology, of which 64 are published. Six renderings, 8 answer formats, 44 topical tags, 5 curricula.
+
+Three real bugs were found by instruments rather than by reading. A vocabulary harvest was swallowing a `TypeError` inside an `except Exception` and silently dropping four lessons, so their section headings would have rendered in English in every language. The published language extract was missing 163 of the 989 translatable keys, because the probe that built it rendered *one* language and assumed the key set was universal — a case-marking language never looks up a preposition, so probing Finnish alone never asked for "at", and Spanish shipped with an English "at" in the middle of a Spanish sentence. And a hand-written pack turned out not to be self-sufficient: it falls back to the database under an ISO code the extract had never been told to copy.
+
+## Lessons
+
+**Measure the boundary; do not declare it.** Every coverage question here was answered by instrumenting the thing and rendering real episodes — which characters the font actually needs, which lessons a renderer can actually draw, which keys the grammar actually asks for. The one place that was declared rather than measured is the one place that was wrong for its entire existence, and it was wrong in the most expensive direction: silently, in production, in 57 languages.
+
+**A corpus is allowed to have a boundary. It is not allowed to have a silent one.** The dictation surface only has English rules; it now says so, and refuses to claim a Spanish episode was read correctly. CJK cannot be drawn by a 5×7 font and is reported missing rather than rendered as boxes. Stating a limit costs a line of code and is the difference between a resource and a liability.
+
+**Put the version in the key.** A cached rendering addressed without the renderer that made it goes stale the moment the renderer changes, and nothing notices. That exact failure had already happened once here — a published site drifted from its own source for three commits — which is why the cache key names the renderer and the episode key does not.

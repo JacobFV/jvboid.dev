@@ -264,8 +264,10 @@ a:hover {
   color-scheme: dark;
 }
 
-/* A control that cannot do anything is worse than no control. */
-:root[data-page-theme] [data-theme-toggle] {
+/* A control that cannot do anything is worse than no control -- but only
+   where it genuinely cannot. This is scoped to the worlds that force a theme;
+   a world that respects the reader's choice must leave them the switch. */
+:root[data-page-theme="jterm"] [data-theme-toggle] {
   display: none;
 }
 
@@ -785,4 +787,172 @@ a:hover {
     opacity: 0;
     transform: scale(2.2);
   }
+}
+
+/* ---- Page-scoped dressing: langcurriculum (reader/LangCurriculumAtmosphere)
+   The site this documents is an instrument panel — hairline rules, right
+   angles everywhere, monospaced labels in small caps, every quantity stated
+   and in the same place on every page. The project page borrows that so the
+   write-up and the thing it documents read as one artifact.
+
+   **No theme is forced, and that is the difference from jterm.** jterm is a
+   black-and-gold application, so a white version of its page would be a
+   picture of somewhere else. langcurriculum ships light and dark and looks
+   deliberate in both, so pinning one here would misrepresent it just as
+   surely. Only tokens and furniture move; the reader keeps their theme.
+
+   As with jterm, only tokens change — every component keeps reading
+   `--color-accent` and retunes without knowing this page exists. */
+:root[data-page-theme="langcurriculum"] {
+  --color-bg-0: #ffffff;
+  --color-bg-1: #fbfbfc;
+  --color-bg-2: #d8d8dc;
+  --color-ink: #0a0a0a;
+  --color-ink-dim: #55555c;
+  --color-ink-mute: #8e8e96;
+  --color-accent: #0d33ff;
+  /* the label ink: mono eyebrows, section bands, spec keys */
+  --lc-label: #8e8e96;
+  --lc-grid: #eeeef1;
+  --lc-on-accent: #ffffff;
+}
+:root[data-page-theme="langcurriculum"][data-theme="dark"] {
+  --color-bg-0: #08080a;
+  --color-bg-1: #0c0c0f;
+  --color-bg-2: #26262c;
+  --color-ink: #ededf0;
+  --color-ink-dim: #9a9aa4;
+  --color-ink-mute: #63636d;
+  --color-accent: #7590ff;
+  --lc-label: #63636d;
+  --lc-grid: #141418;
+  --lc-on-accent: #08080a;
+}
+
+/* One backdrop at a time: the sitewide mesh and the graph field are both
+   ambient texture in the gutters, and together they are mud. */
+:root[data-page-theme="langcurriculum"] .biolume {
+  display: none;
+}
+
+/* The field. Pinned exactly like `.biolume` — `html` paints the base colour,
+   this sits above it, page content above that. Masked so the graph fades out
+   under the text rather than stopping at a hard edge. */
+.lc-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 18%, #000 0%, #000 46%, transparent 88%);
+  mask-image: radial-gradient(120% 90% at 50% 18%, #000 0%, #000 46%, transparent 88%);
+}
+.lc-graph {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- langcurriculum: the furniture ---------------------------------------
+   Retuning the tokens gets the colour right and leaves the shapes belonging
+   to the rest of the site: pill buttons, soft 8px corners, a rounded menu.
+   langcurriculum has none of those — its own stylesheet opens with
+   `border-radius: 0 !important` and means it. So the world squares
+   everything off, which is most of why the site reads as an instrument
+   rather than a page. */
+:root[data-page-theme="langcurriculum"] header button,
+:root[data-page-theme="langcurriculum"] header [role="menu"],
+:root[data-page-theme="langcurriculum"] header [role="menu"] a,
+:root[data-page-theme="langcurriculum"] .prose-mdx pre,
+:root[data-page-theme="langcurriculum"] .prose-mdx code,
+:root[data-page-theme="langcurriculum"] [data-node-link],
+:root[data-page-theme="langcurriculum"] .reader-image {
+  border-radius: 0;
+}
+
+:root[data-page-theme="langcurriculum"] header [role="menu"] {
+  border-color: var(--color-bg-2);
+  background: var(--color-bg-1);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+/* The date · kind line above the title, dressed as one of the site's spec
+   keys: mono, small, wide-tracked, and quiet. */
+:root[data-page-theme="langcurriculum"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  color: var(--lc-label);
+}
+
+/* Repo / site links as the site draws a control: a square hairline plate that
+   inverts on hover. The invert is the site's own hover — `background: var(--fg);
+   color: var(--bg)` on every sidebar row — and it is the single most
+   recognisable thing about handling it. */
+:root[data-page-theme="langcurriculum"] [data-node-link] {
+  border: 1px solid var(--color-bg-2);
+  background: var(--color-bg-1);
+  color: var(--color-ink-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.42rem 0.9rem;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+:root[data-page-theme="langcurriculum"] [data-node-link]:hover {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-bg-0);
+}
+
+/* Section headings as the site's labelled bands: a hairline top and bottom, a
+   tinted plate, mono small caps, and an accent tick in the margin. A counter
+   rather than anything in the MDX, so the body stays a body and would read the
+   same anywhere else. */
+:root[data-page-theme="langcurriculum"] .prose-mdx h2 {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-ink-dim);
+  background: var(--lc-grid);
+  border-top: 1px solid var(--color-bg-2);
+  border-bottom: 1px solid var(--color-bg-2);
+  padding: 0.55rem 0.9rem;
+  margin-top: 2.4rem;
+}
+:root[data-page-theme="langcurriculum"] .prose-mdx h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-accent);
+}
+
+/* Inline code as a plate with a hairline, not a tinted highlight. */
+:root[data-page-theme="langcurriculum"] .prose-mdx code {
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-bg-2);
+  padding: 0.06em 0.34em;
+}
+:root[data-page-theme="langcurriculum"] .prose-mdx pre {
+  border: 1px solid var(--color-bg-2);
+  background: var(--color-bg-1);
+}
+:root[data-page-theme="langcurriculum"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Images are specimens here: a hairline frame, no shadow, no rounding. */
+:root[data-page-theme="langcurriculum"] .reader-image {
+  border: 1px solid var(--color-bg-2);
+  box-shadow: none;
 }

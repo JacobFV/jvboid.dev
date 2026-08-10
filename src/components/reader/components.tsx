@@ -7,6 +7,7 @@ import { ScreenshotTimeline } from "./ScreenshotTimeline";
 import { PresentationSlides } from "./PresentationSlides";
 import { XPost } from "./XPost";
 import { JtermAtmosphere } from "./JtermAtmosphere";
+import { LangCurriculumAtmosphere } from "./LangCurriculumAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
@@ -208,4 +209,5 @@ export const readerComponents: MDXComponents = {
   // Page-scoped dressing. Placed by a body, like everything else here —
   // see reader/JtermAtmosphere.tsx.
   JtermAtmosphere,
+  LangCurriculumAtmosphere,
 };
