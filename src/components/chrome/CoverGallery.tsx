@@ -184,8 +184,17 @@ export function CoverGallery({
       lastX = e.clientX;
       travel = 0;
       velocity = 0;
-      el.setPointerCapture(e.pointerId);
+      // A fresh press is a fresh verdict on whether this ends in a click.
+      suppressClick = false;
       el.dataset.dragging = "true";
+      // Deliberately no setPointerCapture: capturing retargets the
+      // compatibility `click` to the rail, so a plain press on a cover
+      // would never reach the cover's own link and nothing would open.
+      // The move/up listeners live on the window instead, which catches
+      // the pointer just as well without touching click routing.
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", endDrag);
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -228,7 +237,9 @@ export function CoverGallery({
       dragging = false;
       pointer = -1;
       delete el.dataset.dragging;
-      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", endDrag);
+      window.removeEventListener("pointercancel", endDrag);
       // Let go of the band: either the flick carries on from here, or the
       // spring takes over immediately.
       if (Math.abs(velocity) < MIN_VELOCITY) {
@@ -270,9 +281,6 @@ export function CoverGallery({
 
     el.addEventListener("scroll", onScroll, { passive: true });
     el.addEventListener("pointerdown", onPointerDown);
-    el.addEventListener("pointermove", onPointerMove);
-    el.addEventListener("pointerup", endDrag);
-    el.addEventListener("pointercancel", endDrag);
     el.addEventListener("click", onClickCapture, true);
     el.addEventListener("dragstart", onDragStart);
 
@@ -285,9 +293,9 @@ export function CoverGallery({
     return () => {
       el.removeEventListener("scroll", onScroll);
       el.removeEventListener("pointerdown", onPointerDown);
-      el.removeEventListener("pointermove", onPointerMove);
-      el.removeEventListener("pointerup", endDrag);
-      el.removeEventListener("pointercancel", endDrag);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", endDrag);
+      window.removeEventListener("pointercancel", endDrag);
       el.removeEventListener("click", onClickCapture, true);
       el.removeEventListener("dragstart", onDragStart);
       ro.disconnect();
