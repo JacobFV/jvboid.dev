@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useWorld } from "./atmosphere";
 
 /**
  * The jterm project page, dressed as jterm.
@@ -11,23 +12,14 @@ import { useEffect, useRef } from "react";
  * project page and the thing it documents read as one artifact rather than as
  * a write-up about something that lives elsewhere.
  *
- * It does two jobs, which are one intent:
- *
- *   - draws the field, fixed behind the article;
- *   - holds `data-page-theme="jterm"` and `data-theme="dark"` on `<html>` while
- *     mounted. The first is what `globals.css` hangs the black-and-gold palette
- *     off; the second is why the page is dark whatever the reader has the site
- *     set to. jterm is a black-and-gold application and a white version of this
- *     page would be a picture of somewhere else.
- *
- * On a first load the pre-paint script in `app/layout.tsx` has already set both
- * — anywhere later is a frame too late and the reader watches the page change
- * its mind. This effect is what covers a *client-side* navigation into the
- * page, where no script runs, and it is idempotent so the two never fight.
- *
- * On the way out the world is dismantled: the page theme goes, and `data-theme`
- * returns to whatever the reader actually chose. The forced dark is never
- * written to storage, so it cannot leak into the rest of the site.
+ * This component draws the field; `useWorld` — shared with every other world,
+ * see reader/atmosphere.ts — holds `data-page-theme="jterm"` and the forced
+ * `data-theme="dark"` on `<html>` while the page is mounted and puts both back
+ * on the way out. jterm is a black-and-gold application, and a white version of
+ * this page would be a picture of somewhere else. It is the only world here
+ * that insists on a theme at all — everything else the site documents ships
+ * light and dark and would be misrepresented by pinning one. Route table and
+ * the reasoning per world: lib/worlds.ts.
  *
  * The characters are real characters — one text assignment per layer per
  * frame, which is far cheaper than touching thousands of nodes and keeps the
@@ -190,33 +182,13 @@ function draw(layer: Layer, time: number) {
   layer.el.textContent = out;
 }
 
-/**
- * The reader's actual choice, read the same way `app/layout.tsx` reads it.
- *
- * Deliberately not "whatever `data-theme` said a moment ago" — on a first load
- * that is already `dark`, because the boot script forced it, and restoring
- * *that* on the way out would make one visit to this page silently convert the
- * whole site to dark.
- */
-function storedTheme(): "light" | "dark" {
-  try {
-    let t = localStorage.getItem("jacobfv:theme") || localStorage.getItem("theme");
-    if (t && t.charAt(0) === '"') t = JSON.parse(t) as string;
-    if (t === "light" || t === "dark") return t;
-  } catch {
-    /* private mode / disabled storage — fall through to the default */
-  }
-  return "light";
-}
-
 export function JtermAtmosphere() {
   const fieldRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute("data-page-theme", "jterm");
-    root.setAttribute("data-theme", "dark");
+  // The page is dark whatever the site is set to, and goes back on the way out.
+  useWorld("jterm", "dark");
 
+  useEffect(() => {
     const host = fieldRef.current;
     let raf = 0;
     let last = 0;
@@ -283,8 +255,8 @@ export function JtermAtmosphere() {
       clearTimeout(resizeTimer);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
-      root.removeAttribute("data-page-theme");
-      root.setAttribute("data-theme", storedTheme());
+      // Dismantling the world itself — page theme off, reader's own theme back
+      // — is `useWorld`'s job now; see reader/atmosphere.ts.
     };
   }, []);
 

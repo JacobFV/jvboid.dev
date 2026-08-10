@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useCanvasField, rng, token, useWorld } from "./atmosphere";
 
 /**
  * The langcurriculum project page, dressed as langcurriculum.
@@ -11,11 +12,19 @@ import { useEffect, useRef } from "react";
  * project page borrows that, so the write-up and the thing it documents read as
  * one artifact rather than as an article about something living elsewhere.
  *
- * Behind the article is the curriculum's own dependency graph — layers of nodes
- * with edges between them, and a slow pulse travelling left to right along
- * those edges the way a prerequisite reaches what it enables. It is the shape
- * the project is *about*, which is a better backdrop than a texture chosen for
- * looking nice.
+ * Behind the article is the curriculum's own dependency graph, and it does two
+ * things a still picture of a graph cannot:
+ *
+ *   - **Packets travel it.** A lesson generator is only reachable once its
+ *     prerequisites are, so signal moves left to right along the edges and each
+ *     node flares as it is reached. The first version faded whole edges in and
+ *     out at ~1/35 Hz between alpha 0.05 and 0.18, which is a still image with
+ *     extra steps — nothing in it was ever visibly in motion.
+ *   - **Scrolling walks it.** The graph is drawn about twice the width of the
+ *     window and pans with scroll depth, so reading down the article moves you
+ *     through the curriculum from the wide root layers into the narrow ones.
+ *     That is the shape the project is *about*, which beats a texture chosen
+ *     for looking nice.
  *
  * **This world does not force a theme, and that is the difference from jterm.**
  * jterm is a black-and-gold application, so a white version of its page would be
@@ -23,37 +32,31 @@ import { useEffect, useRef } from "react";
  * deliberate in both — its stylesheet carries a full `prefers-color-scheme`
  * palette — so forcing one here would misrepresent it just as surely. The
  * reader keeps whatever they chose; only the furniture changes.
- *
- * Because no theme is forced, there is nothing for the pre-paint script in
- * `app/layout.tsx` to do beyond setting `data-page-theme` for a first load, and
- * nothing to put back on the way out except the attribute itself.
  */
 
-/** Columns of the drawn graph, and how many nodes stand in each. Loosely the
+/** Columns of the drawn graph and how many nodes stand in each. Loosely the
  *  real shape of the `progressive` curriculum: very wide at the roots, and
- *  narrowing hard as the axes stack up. */
-const LAYERS = [9, 6, 4, 3, 2];
+ *  narrowing hard as the axes stack up. More columns than fit the window, on
+ *  purpose — the ones off the right edge are what scrolling reveals. */
+const LAYERS = [11, 9, 7, 6, 4, 3, 2, 1];
 
-const FPS = 30;
+/** How much wider than the viewport the graph is drawn. The pan travels the
+ *  difference over the whole article. */
+const OVERSCAN = 2.15;
 
-type Node = { x: number; y: number; layer: number };
+/** Seconds for a packet to cross one layer gap. */
+const HOP = 2.6;
 
-/** A tiny deterministic generator, so the field is the same field after a
- *  resize instead of a new one every time the window moves. */
-function rng(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 0x100000000;
-  };
-}
+type GNode = { x: number; y: number; layer: number };
+type GEdge = { a: number; b: number; phase: number };
 
-function build(w: number, h: number): { nodes: Node[]; edges: [number, number][] } {
+function build(w: number, h: number) {
   const random = rng(0x5eed);
-  const nodes: Node[] = [];
+  const nodes: GNode[] = [];
   const perLayer: number[][] = [];
-  const padX = w * 0.08;
-  const span = w - padX * 2;
+  const width = w * OVERSCAN;
+  const padX = width * 0.04;
+  const span = width - padX * 2;
 
   LAYERS.forEach((count, layer) => {
     const idx: number[] = [];
@@ -61,139 +64,138 @@ function build(w: number, h: number): { nodes: Node[]; edges: [number, number][]
     for (let i = 0; i < count; i += 1) {
       const t = (i + 0.5) / count;
       // jitter, but deterministic jitter: a perfect lattice reads as wallpaper
-      const y = h * (0.08 + 0.84 * t) + (random() - 0.5) * (h * 0.05);
+      const y = h * (0.06 + 0.88 * t) + (random() - 0.5) * (h * 0.05);
       idx.push(nodes.length);
-      nodes.push({ x: x + (random() - 0.5) * (span * 0.03), y, layer });
+      nodes.push({ x: x + (random() - 0.5) * (span * 0.02), y, layer });
     }
     perLayer.push(idx);
   });
 
-  const edges: [number, number][] = [];
+  const edges: GEdge[] = [];
   for (let layer = 0; layer < perLayer.length - 1; layer += 1) {
     for (const from of perLayer[layer]) {
       const targets = perLayer[layer + 1];
       const fan = 1 + Math.floor(random() * 2);
       for (let k = 0; k < fan; k += 1) {
-        edges.push([from, targets[Math.floor(random() * targets.length)]]);
+        // Each edge carries its packet on its own offset, so the field is a
+        // steady traffic of signal rather than one synchronised wavefront
+        // marching across the window like a screensaver.
+        edges.push({ a: from, b: targets[Math.floor(random() * targets.length)], phase: random() });
       }
     }
   }
-  return { nodes, edges };
+  return { nodes, edges, width };
+}
+
+/** Cubic Bézier with both control points on the midline — the same curve the
+ *  edge is stroked with, so the packet rides the wire instead of near it. */
+function along(from: GNode, to: GNode, u: number) {
+  const mid = (from.x + to.x) / 2;
+  const v = 1 - u;
+  const b0 = v * v * v;
+  const b1 = 3 * v * v * u;
+  const b2 = 3 * v * u * u;
+  const b3 = u * u * u;
+  return {
+    x: b0 * from.x + b1 * mid + b2 * mid + b3 * to.x,
+    y: b0 * from.y + b1 * from.y + b2 * to.y + b3 * to.y,
+  };
 }
 
 export function LangCurriculumAtmosphere() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  useWorld("langcurriculum");
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute("data-page-theme", "langcurriculum");
+  // Refs, not locals: the painter closures are refreshed on every render, and
+  // plain `let`s would hand the running field a freshly emptied graph the next
+  // time this component re-rendered for any reason at all.
+  const graphRef = useRef({ nodes: [] as GNode[], edges: [] as GEdge[], width: 0 });
+  const inkRef = useRef("#0d33ff");
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d") ?? null;
-    let raf = 0;
-    let last = 0;
-    let t = 0;
-    let running = true;
-    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
-    let graph = { nodes: [] as Node[], edges: [] as [number, number][] };
-    let ink = "#0d33ff";
+  const canvasRef = useCanvasField({
+    fps: 30,
+    measure({ w, h }) {
+      graphRef.current = build(w, h);
+      inkRef.current = token("--color-accent", inkRef.current);
+    },
+    draw({ ctx, w, h, t, scroll }) {
+      const graph = graphRef.current;
+      const ink = inkRef.current;
+      if (!graph.nodes.length) return;
 
-    const measure = () => {
-      if (!canvas || !ctx) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      canvas.width = Math.max(1, Math.round(w * dpr));
-      canvas.height = Math.max(1, Math.round(h * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      graph = build(w, h);
-      // read the accent from the cascade, so the field retunes with the theme
-      // instead of carrying a colour of its own
-      const accent = getComputedStyle(root).getPropertyValue("--color-accent").trim();
-      if (accent) ink = accent;
-    };
-
-    const draw = (time: number) => {
-      if (!canvas || !ctx) return;
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      ctx.clearRect(0, 0, w, h);
+      // Reading down the article walks the curriculum: the pan travels from the
+      // root layers to the terminal ones over the length of the page.
+      const pan = -(graph.width - w) * scroll;
+      ctx.save();
+      ctx.translate(pan, 0);
       ctx.strokeStyle = ink;
       ctx.fillStyle = ink;
       ctx.lineWidth = 1;
 
-      for (const [a, b] of graph.edges) {
+      // The wires, at a flat resting weight. They are structure, not event —
+      // it is the packets that carry the motion.
+      ctx.globalAlpha = 0.09;
+      ctx.beginPath();
+      for (const { a, b } of graph.edges) {
         const from = graph.nodes[a];
         const to = graph.nodes[b];
-        // the pulse: a band of brightness sweeping left to right, so an edge
-        // lights when the signal reaches the column it leaves
-        const phase = (from.x / Math.max(1, w) - time * 0.06) % 1;
-        const lit = Math.max(0, 1 - Math.abs(((phase + 1) % 1) - 0.5) * 4);
-        ctx.globalAlpha = 0.05 + lit * 0.13;
         const mid = (from.x + to.x) / 2;
-        ctx.beginPath();
         ctx.moveTo(from.x, from.y);
         ctx.bezierCurveTo(mid, from.y, mid, to.y, to.x, to.y);
+      }
+      ctx.stroke();
+
+      // Packets, and the short bright wake each drags behind it.
+      const arrivals = new Map<number, number>();
+      for (const { a, b, phase } of graph.edges) {
+        const from = graph.nodes[a];
+        const to = graph.nodes[b];
+        // Start the run at the layer the edge leaves, so signal really does
+        // propagate outward from the roots instead of every column firing at
+        // once. Packets off-screen cost a modulo and nothing else.
+        const u = ((t / HOP - from.layer + phase) % 1 + 1) % 1;
+        if (to.x + pan < -40 || from.x + pan > w + 40) continue;
+
+        const head = along(from, to, u);
+        const tail = along(from, to, Math.max(0, u - 0.16));
+        const grad = ctx.createLinearGradient(tail.x, tail.y, head.x, head.y);
+        grad.addColorStop(0, "transparent");
+        grad.addColorStop(1, ink);
+        ctx.strokeStyle = grad;
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(tail.x, tail.y);
+        ctx.lineTo(head.x, head.y);
         ctx.stroke();
+
+        ctx.globalAlpha = 0.85;
+        ctx.fillRect(head.x - 1.6, head.y - 1.6, 3.2, 3.2);
+
+        // Remember the strongest arrival at each node this frame, so a node fed
+        // by six edges flares once rather than being drawn six times over.
+        if (u > 0.9) arrivals.set(b, Math.max(arrivals.get(b) ?? 0, (u - 0.9) / 0.1));
       }
 
-      for (const node of graph.nodes) {
-        ctx.globalAlpha = 0.16;
-        ctx.fillRect(node.x - 3, node.y - 3, 6, 6);      // square, like everything else
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < graph.nodes.length; i += 1) {
+        const node = graph.nodes[i];
+        if (node.x + pan < -20 || node.x + pan > w + 20) continue;
+        const lit = arrivals.get(i) ?? 0;
+
+        ctx.globalAlpha = 0.18 + lit * 0.55;
+        ctx.fillRect(node.x - 3, node.y - 3, 6, 6); // square, like everything else
+        if (lit > 0) {
+          // The flare: a ring opening out of the node as the packet lands.
+          ctx.globalAlpha = (1 - lit) * 0.45;
+          ctx.strokeRect(node.x - 3 - lit * 9, node.y - 3 - lit * 9, 6 + lit * 18, 6 + lit * 18);
+        }
       }
+
       ctx.globalAlpha = 1;
-    };
-
-    const frame = (time: number) => {
-      raf = requestAnimationFrame(frame);
-      if (time - last < 1000 / FPS) return;
-      last = time;
-      t += 0.016;
-      draw(t);
-    };
-
-    const start = () => {
-      if (!raf && running) raf = requestAnimationFrame(frame);
-    };
-    const stop = () => {
-      cancelAnimationFrame(raf);
-      raf = 0;
-    };
-
-    const onVisibility = () => {
-      running = !document.hidden;
-      if (running) start();
-      else stop();
-    };
-
-    const onResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        measure();
-        draw(t);
-      }, 160);
-    };
-
-    measure();
-    draw(0);
-
-    // A still first frame is already drawn, so honouring the preference costs
-    // the reader the motion and none of the structure.
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduced) {
-      start();
-      document.addEventListener("visibilitychange", onVisibility);
-    }
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      stop();
-      clearTimeout(resizeTimer);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("resize", onResize);
-      root.removeAttribute("data-page-theme");
-    };
-  }, []);
+      ctx.restore();
+    },
+  });
 
   return (
     <div className="lc-field" aria-hidden="true">

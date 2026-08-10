@@ -4,31 +4,30 @@ import { Bioluminescence } from "@/components/chrome/Bioluminescence";
 import { SiteHeader } from "@/components/chrome/SiteHeader";
 import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
+import { WORLDS } from "@/lib/worlds";
 import "./globals.css";
 
 // Pre-paint script: reads the stored theme (or system pref) and sets
 // data-theme on <html> before React hydrates, preventing a flash.
 //
 // It also handles "world" pages — the handful of routes that take the whole
-// window over with a palette of their own and force a theme with it (see
-// `data-page-theme` in globals.css). Those have to be decided here for the
-// same reason the stored theme does: anywhere later is a frame too late, and
-// the reader watches the page change its mind. The stored preference is read
-// but not written, so leaving the world restores whatever they actually chose.
+// window over with a palette of their own, some of which force a theme with it
+// (see `data-page-theme` in globals.css, and lib/worlds.ts for the table).
+// Those have to be decided here for the same reason the stored theme does:
+// anywhere later is a frame too late, and the reader watches the page change
+// its mind. The stored preference is read but not written, so leaving the world
+// restores whatever they actually chose.
 //
 // On a client-side navigation this script does not run again — the component
 // that owns the world sets and clears the same two attributes on mount and
 // unmount, which is what covers that path.
+//
+// The table is interpolated as JSON rather than written out by hand. This whole
+// thing is a template literal, and a stray backtick inside one silently
+// truncates the string; JSON.stringify cannot produce one.
 const themeBootScript = `
 (function(){
-  // A null theme means the world dresses the page but leaves the reader's own
-  // light/dark choice alone -- langcurriculum ships both and looks deliberate
-  // in either, so forcing one would misrepresent it. (No backticks in here:
-  // this whole script is a template literal.)
-  var WORLDS = {
-    '/projects/jterm': { id: 'jterm', theme: 'dark' },
-    '/projects/langcurriculum': { id: 'langcurriculum', theme: null }
-  };
+  var WORLDS = ${JSON.stringify(WORLDS)};
   try {
     var t = localStorage.getItem('jacobfv:theme') || localStorage.getItem('theme');
     if (t && t.charAt(0) === '"') t = JSON.parse(t);
