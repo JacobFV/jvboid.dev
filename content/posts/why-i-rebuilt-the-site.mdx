@@ -3,7 +3,7 @@ title: Why I rebuilt the site
 date: 2026-04-22
 lane: writing
 tags: [meta, design]
-summary: The old site was a list of pages. The new one is a graph. Here's the difference.
+summary: Built for two readers — a person who should leave a little more creative than they arrived, and a machine that should be able to read the whole thing without guessing.
 influences: [reaching-for-the-intangible]
 realizes: [vision-navigable-mind]
 critiques: []
@@ -15,14 +15,53 @@ none of those things. The work is a small number of long arguments that keep
 recurring across projects, papers, and notes; the surface form (post vs
 project vs paper) is incidental.
 
-So the new site treats every artifact as a node in a graph, and the
-relationships between them — *this paper inspired that project, which
-critiqued that vision* — are the navigation. There are still pages. They are
-no longer the unit.
+So I rebuilt it for two readers who want almost opposite things.
 
-The single hardest design choice is the edges. Auto-deriving them from text
-similarity gives you correlation, not influence. The graph is only as good
-as the human work of curating it. I'm betting that work is small enough to
-do as a side-effect of writing.
+The first reader is a person. A person did not come here to retrieve a fact —
+they can get facts anywhere now, instantly, from a model that will summarize
+me better than I summarize myself. What a person can't get from a summary is
+the feeling of walking into somebody's head while the lights are still on.
+So the pages are built as places rather than documents. Some of them you walk
+into. Some of them behave a little strangely on purpose. There is more motion,
+color, and texture here than a portfolio strictly needs, and that excess is
+the point: it's evidence that a human made choices nobody asked them to make.
+
+I want a visitor to leave with the thing I most want to give away, which is
+not information. It's the reminder that they can make things too. Everyone
+carries around this creative capacity and most of the software we live inside
+is quietly designed to talk them out of using it — to make them a consumer of
+feeds, a picker from menus, a reader of other people's summaries. A site that
+is visibly hand-built, a little weird, and clearly *someone's*, is a small
+argument against that. If one person clicks through this and thinks *huh, I
+should build my own strange thing* — that's the whole return on the project.
+
+The second reader is a machine, and the machine is the reason the
+architecture looks the way it does. Increasingly, the first pass over
+anybody's work is done by a model — searching, indexing, retrieving, deciding
+whether there's a person here worth surfacing to whoever asked. A pile of
+prose in a theme is a bad substrate for that. So the rearchitecture was mostly
+in service of being legible to something that reads at scale:
+
+- Every artifact — post, project, paper, note, reading — is a **node** with
+  the same typed frontmatter, so the whole corpus parses uniformly.
+- Every node has one **canonical URL** at `/{kind}/{slug}`. No duplicates, no
+  aliases competing for the same content.
+- The relationships between artifacts are **explicit edges** —
+  `influences`, `realizes`, `critiques` — declared by hand rather than
+  inferred. *This paper inspired that project, which critiqued that vision.*
+- Those edges are the navigation for people and the structure for machines at
+  the same time. There are still pages. They are no longer the unit.
+
+That last point is the one I care about. An index of my writing tells a model
+what I've touched. A graph of what argues against what tells it how I think,
+which is the only thing worth indexing. Text similarity would give you
+correlation between documents; a curated edge gives you a claim about
+intellectual descent, and only a human can make that claim honestly.
+
+The two readers pull in different directions — the machine wants a clean
+schema, the person wants a room with something odd in the corner — and the
+bet of this rebuild is that they don't actually conflict. Structure underneath,
+texture on top. The graph is only as good as the human work of curating it,
+and I'm betting that work is small enough to do as a side-effect of writing.
 
 We'll see.
