@@ -956,3 +956,880 @@ a:hover {
   border: 1px solid var(--color-bg-2);
   box-shadow: none;
 }
+
+/* ===========================================================================
+   Worlds, continued. See src/lib/worlds.ts for the route table and
+   components/reader/atmosphere.ts for the two hooks every world shares.
+
+   The pattern below is the same one jterm and langcurriculum established, in
+   the same order every time, so a tenth world is a matter of filling in the
+   blanks rather than inventing a structure:
+
+     1. tokens        — light, then a dark override where the world has one
+     2. `.biolume`    — off; one backdrop at a time or the two are mud
+     3. the field     — pinned like `.biolume`, z-index -1, masked
+     4. the furniture — corners, controls, headings, code, images
+
+   Nothing here changes behaviour, and every selector attaches to a stable
+   `data-*` hook (`data-node-meta`, `data-node-link`, `data-theme-toggle`) put
+   there for the purpose, rather than to a chain of utility classes that will
+   move the next time that markup is touched.
+   ======================================================================== */
+
+
+/* ---- windows-web-next: Fluent (reader/FluentAtmosphere.tsx) --------------
+   Windows 11 in a browser tab, so the page wears Windows 11: the bloom
+   wallpaper behind it, and Fluent's controls on top. Fluent's signature is
+   not its colour — it is that every control is a *layer*, lit from above:
+   a slightly brighter fill, a hairline stroke that is darker along the
+   bottom edge only, and a 4px corner. That bottom-heavy stroke is the whole
+   trick, and it is why a Fluent button reads as a physical key.
+
+   No theme is forced: Windows 11 ships light and dark as equals, and the
+   simulator implements both. */
+:root[data-page-theme="fluent"] {
+  --color-bg-0: #f3f3f3;
+  --color-bg-1: #fbfbfb;
+  --color-bg-2: #e1e1e1;
+  --color-ink: #1b1b1b;
+  --color-ink-dim: #5d5d5d;
+  --color-ink-mute: #8a8a8a;
+  --color-accent: #0067c0;
+  /* Fluent's layered-control tokens. */
+  --fluent-fill: rgba(255, 255, 255, 0.7);
+  --fluent-stroke: rgba(0, 0, 0, 0.07);
+  --fluent-stroke-bottom: rgba(0, 0, 0, 0.16);
+  --fluent-card: rgba(255, 255, 255, 0.62);
+}
+:root[data-page-theme="fluent"][data-theme="dark"] {
+  --color-bg-0: #202020;
+  --color-bg-1: #272727;
+  --color-bg-2: #3b3b3b;
+  --color-ink: #f3f3f3;
+  --color-ink-dim: #c5c5c5;
+  --color-ink-mute: #8f8f8f;
+  --color-accent: #4cc2ff;
+  --fluent-fill: rgba(255, 255, 255, 0.06);
+  --fluent-stroke: rgba(255, 255, 255, 0.09);
+  /* Inverted: in dark mode Fluent lights the *top* edge instead, because the
+     light is still coming from above and the control is now darker than what
+     is behind it. */
+  --fluent-stroke-bottom: rgba(255, 255, 255, 0.02);
+  --fluent-stroke-top: rgba(255, 255, 255, 0.15);
+  --fluent-card: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-page-theme="fluent"] .biolume {
+  display: none;
+}
+
+.fluent-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* The bloom is brightest at its core, which is exactly where the reading
+     column lands. Damped there rather than cut out: a hole punched in the
+     middle of a radial wallpaper leaves petal tips floating in the corners
+     with nothing to belong to. A partially opaque mask stop dims instead of
+     erasing, so the flower stays whole and merely recedes under the text. */
+  -webkit-mask-image: radial-gradient(88% 68% at 50% 34%, rgba(0, 0, 0, 0.3) 0%, #000 66%, #000 100%);
+  mask-image: radial-gradient(88% 68% at 50% 34%, rgba(0, 0, 0, 0.3) 0%, #000 66%, #000 100%);
+}
+.fluent-bloom {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fluent's corner radius: 4px on controls, 8px on cards and surfaces. Windows
+   11 is rounded — squaring this off, as jterm and langcurriculum do, would be
+   the wrong OS entirely. */
+:root[data-page-theme="fluent"] header button,
+:root[data-page-theme="fluent"] [data-node-link] {
+  border-radius: 4px;
+}
+:root[data-page-theme="fluent"] header [role="menu"],
+:root[data-page-theme="fluent"] .prose-mdx pre,
+:root[data-page-theme="fluent"] .reader-image {
+  border-radius: 8px;
+}
+
+/* Mica: the material Windows 11 gives to surfaces that sit *on the desktop*
+   rather than floating over it — the wallpaper, desaturated and pushed far
+   back, showing through. A card, not a pane of glass. */
+:root[data-page-theme="fluent"] header [role="menu"],
+:root[data-page-theme="fluent"] .prose-mdx pre {
+  background: var(--fluent-card);
+  backdrop-filter: blur(48px) saturate(1.4);
+  -webkit-backdrop-filter: blur(48px) saturate(1.4);
+  border: 1px solid var(--fluent-stroke);
+  border-bottom-color: var(--fluent-stroke-bottom);
+}
+
+:root[data-page-theme="fluent"] [data-node-meta] {
+  color: var(--color-ink-mute);
+  letter-spacing: 0.01em;
+}
+
+/* Repo / demo links as Fluent buttons: layered fill, hairline stroke weighted
+   to the bottom edge, and a press that actually moves. */
+:root[data-page-theme="fluent"] [data-node-link] {
+  background: var(--fluent-fill);
+  border: 1px solid var(--fluent-stroke);
+  border-bottom-color: var(--fluent-stroke-bottom);
+  border-top-color: var(--fluent-stroke-top, var(--fluent-stroke));
+  color: var(--color-ink);
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-sans);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background 0.1s, border-color 0.1s;
+}
+:root[data-page-theme="fluent"] [data-node-link]:hover {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--fluent-fill));
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+:root[data-page-theme="fluent"] [data-node-link]:active {
+  transform: translateY(1px);
+}
+
+/* Section headings carry Windows 11's navigation selection indicator: a short
+   rounded accent bar in the left margin. It is the one piece of Fluent
+   iconography a reader will name without being prompted. */
+:root[data-page-theme="fluent"] .prose-mdx h2 {
+  position: relative;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding-left: 1rem;
+}
+:root[data-page-theme="fluent"] .prose-mdx h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.1em;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+
+:root[data-page-theme="fluent"] .prose-mdx code {
+  background: var(--fluent-fill);
+  border: 1px solid var(--fluent-stroke);
+  border-radius: 4px;
+}
+:root[data-page-theme="fluent"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Screenshots of a desktop, framed as a desktop window: Fluent's shadow is
+   soft, large and almost directly below, because its light source is high. */
+:root[data-page-theme="fluent"] .reader-image {
+  border: 1px solid var(--fluent-stroke);
+  box-shadow: 0 32px 64px -24px rgba(0, 0, 0, 0.4);
+}
+
+
+/* ---- macos-web-next: Aqua (reader/AquaAtmosphere.tsx) --------------------
+   The companion world, built to the same shape as Fluent above and disagreeing
+   with it about everything a desktop is made of: bigger corners, capsule
+   controls, a real drop shadow, translucency that blurs instead of layering,
+   and San Francisco's tight tracking at display sizes.
+
+   The best part of this world is the traffic lights on every screenshot. The
+   images on this page are literally windows, and three coloured dots in the
+   top-left is the single most recognisable object in the operating system. */
+:root[data-page-theme="aqua"] {
+  --color-bg-0: #ececee;
+  --color-bg-1: #f7f7f9;
+  --color-bg-2: #d9d9de;
+  --color-ink: #1d1d1f;
+  --color-ink-dim: #55555a;
+  --color-ink-mute: #8e8e93;
+  --color-accent: #0a84ff;
+  --aqua-vibrancy: rgba(255, 255, 255, 0.58);
+  --aqua-hairline: rgba(0, 0, 0, 0.1);
+  --aqua-shadow: rgba(0, 0, 0, 0.24);
+  --aqua-titlebar: rgba(246, 246, 248, 0.86);
+}
+:root[data-page-theme="aqua"][data-theme="dark"] {
+  --color-bg-0: #1c1c1e;
+  --color-bg-1: #2c2c2e;
+  --color-bg-2: #3a3a3c;
+  --color-ink: #f5f5f7;
+  --color-ink-dim: #c7c7cc;
+  --color-ink-mute: #8e8e93;
+  --color-accent: #0a84ff;
+  --aqua-vibrancy: rgba(58, 58, 60, 0.55);
+  --aqua-hairline: rgba(255, 255, 255, 0.12);
+  --aqua-shadow: rgba(0, 0, 0, 0.6);
+  --aqua-titlebar: rgba(48, 48, 51, 0.86);
+}
+
+:root[data-page-theme="aqua"] .biolume {
+  display: none;
+}
+
+.aqua-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* The ribbons are saturated end to end, so they are damped hard under the
+     reading column — but not to zero: they run the full width of the window
+     and cutting a hole in them would read as a smudge on the wallpaper. */
+  -webkit-mask-image: radial-gradient(76% 62% at 50% 42%, rgba(0, 0, 0, 0.22) 0%, #000 72%, #000 100%);
+  mask-image: radial-gradient(76% 62% at 50% 42%, rgba(0, 0, 0, 0.22) 0%, #000 72%, #000 100%);
+}
+.aqua-ribbons {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+:root[data-page-theme="aqua"] header button,
+:root[data-page-theme="aqua"] .prose-mdx code {
+  border-radius: 6px;
+}
+:root[data-page-theme="aqua"] header [role="menu"],
+:root[data-page-theme="aqua"] .prose-mdx pre {
+  border-radius: 10px;
+}
+/* Controls are capsules, and macOS means it — a "rounded rectangle" button is
+   how a web page imitating macOS gives itself away. */
+:root[data-page-theme="aqua"] [data-node-link] {
+  border-radius: 999px;
+}
+
+/* Vibrancy: blur what is behind and let its colour bleed through, which is
+   what separates macOS translucency from Windows' layered fills. */
+:root[data-page-theme="aqua"] header [role="menu"],
+:root[data-page-theme="aqua"] .prose-mdx pre {
+  background: var(--aqua-vibrancy);
+  backdrop-filter: blur(30px) saturate(1.8);
+  -webkit-backdrop-filter: blur(30px) saturate(1.8);
+  border: 1px solid var(--aqua-hairline);
+  box-shadow: 0 12px 40px -16px var(--aqua-shadow);
+}
+
+:root[data-page-theme="aqua"] [data-node-meta] {
+  color: var(--color-ink-mute);
+  letter-spacing: 0;
+}
+
+:root[data-page-theme="aqua"] [data-node-link] {
+  background: var(--aqua-vibrancy);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid var(--aqua-hairline);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  padding: 0.35rem 0.95rem;
+  box-shadow: 0 1px 2px var(--aqua-shadow);
+  transition: background 0.12s, transform 0.1s;
+}
+:root[data-page-theme="aqua"] [data-node-link]:hover {
+  background: var(--color-accent);
+  border-color: transparent;
+  color: #ffffff;
+}
+:root[data-page-theme="aqua"] [data-node-link]:active {
+  transform: scale(0.97);
+}
+
+/* SF at display sizes: heavy, and tracked *in* rather than out. Optical sizing
+   is most of what makes Apple's headings look like Apple's headings. */
+:root[data-page-theme="aqua"] .prose-mdx h2,
+:root[data-page-theme="aqua"] [data-page-title] {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+:root[data-page-theme="aqua"] .prose-mdx code {
+  background: var(--color-bg-1);
+  border: 1px solid var(--aqua-hairline);
+}
+:root[data-page-theme="aqua"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Every screenshot becomes a macOS window: 10px corners, the deep soft shadow
+   the compositor draws, and a titlebar strip carrying three traffic lights.
+   `.reader-image` is the <img> itself, so the strip is drawn as background
+   layers above the padding and the picture sits below it. */
+:root[data-page-theme="aqua"] .reader-image {
+  border-radius: 10px;
+  border: 1px solid var(--aqua-hairline);
+  padding: 28px 0 0 0;
+  background-color: var(--aqua-titlebar);
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(circle 6px at 16px 14px, #ff5f57 98%, transparent 100%),
+    radial-gradient(circle 6px at 36px 14px, #febc2e 98%, transparent 100%),
+    radial-gradient(circle 6px at 56px 14px, #28c840 98%, transparent 100%);
+  box-shadow: 0 40px 80px -30px var(--aqua-shadow), 0 2px 6px -2px var(--aqua-shadow);
+}
+
+
+/* ---- halo-prismatic: the lens (reader/HaloAtmosphere.tsx) ----------------
+   The one world here that is not an homage. Halo's claim is that a browser can
+   do real refraction rather than a picture of it, so this page does not borrow
+   a look — it runs the material. Every pane below is filtered through the same
+   three-index displacement chain the project ships, declared as an SVG filter
+   by the atmosphere component and referenced here as `backdrop-filter:
+   url(#halo-lens)`.
+
+   Two rules, both learned the hard way by the project and restated in its
+   write-up:
+
+     - **Keep the blur at ~3px.** Blur destroys exactly the high-frequency
+       detail displacement is supposed to be moving; at the 16px the rest of
+       the web uses, the optics are completely invisible.
+     - **Never put `isolation: isolate` on an ancestor of a pane.** An isolated
+       stacking context is a backdrop root, and a backdrop root leaves every
+       pane inside it with an empty backdrop and therefore nothing to refract.
+
+   Where `backdrop-filter: url()` is unsupported the panes degrade to the tint
+   and hairline below, which is ordinary glassmorphism — the exact thing the
+   article is arguing against, which is a little funny but not broken. */
+:root[data-page-theme="halo"] {
+  --color-bg-0: #f7f8f2;
+  --color-bg-1: #eef1e4;
+  --color-bg-2: #d5dbc2;
+  --color-ink: #171a12;
+  --color-ink-dim: #4d5442;
+  --color-ink-mute: #838b73;
+  --color-accent: #6f8f1f;
+  /* The sunglasses layer. A pane you can genuinely see through passes the
+     background's brightness swings straight onto the copy, and this ground
+     swings from near-black to near-white as the clouds move under it. The fix
+     is not to go back to milk but to tint: a flat neutral darkening that holds
+     the black point without changing how much of the scene comes through. */
+  --halo-tint: rgba(255, 255, 255, 0.14);
+  --halo-rim: rgba(255, 255, 255, 0.55);
+  --halo-edge: rgba(23, 26, 18, 0.14);
+}
+:root[data-page-theme="halo"][data-theme="dark"] {
+  --color-bg-0: #0b0d08;
+  --color-bg-1: #141810;
+  --color-bg-2: #2a3120;
+  --color-ink: #eef1e4;
+  --color-ink-dim: #b3bba2;
+  --color-ink-mute: #7d8770;
+  --color-accent: #b6d94a;
+  --halo-tint: rgba(8, 10, 6, 0.3);
+  --halo-rim: rgba(255, 255, 255, 0.16);
+  --halo-edge: rgba(0, 0, 0, 0.5);
+}
+
+:root[data-page-theme="halo"] .biolume {
+  display: none;
+}
+
+.halo-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Deliberately unmasked in the middle, unlike every other world here. The
+     dot lattice IS the thing the panes bend; masking it out from under the
+     reading column would leave the glass with nothing to prove. It is quiet
+     enough at this contrast to sit under body copy. */
+}
+.halo-ground {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The filter is a definition, not a picture. Zero-sized and out of flow. */
+.halo-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* The glass itself. `backdrop-filter` carries the lens *and* the small blur;
+   the tint and the two rims are what remains where the filter is unsupported. */
+:root[data-page-theme="halo"] [data-node-link],
+:root[data-page-theme="halo"] .prose-mdx pre,
+:root[data-page-theme="halo"] .prose-mdx blockquote,
+:root[data-page-theme="halo"] .reader-image {
+  /* Order matters, and getting it backwards silently costs the whole effect.
+     In Chromium `-webkit-backdrop-filter` is an alias for the standard
+     property, so whichever is declared last wins — put the webkit fallback
+     first and the lens survives there, while Safari (which has the alias but
+     not `url()` in it) drops the standard line as invalid and keeps the plain
+     blur. Reversed, every browser would get blur and none would refract. */
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: url(#halo-lens) blur(3px);
+  background: var(--halo-tint);
+  border: 1px solid var(--halo-edge);
+  /* The inner rim is the bright sliver you see through the thick part of a
+     lens; the outer shadow is the pane sitting off the ground. */
+  box-shadow:
+    inset 0 1px 0 var(--halo-rim),
+    inset 0 -1px 0 var(--halo-edge),
+    0 18px 44px -28px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-page-theme="halo"] [data-node-link] {
+  border-radius: 999px;
+  color: var(--color-ink);
+  padding: 0.4rem 1rem;
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.3, 1), background 0.14s;
+}
+:root[data-page-theme="halo"] [data-node-link]:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--color-accent) 22%, var(--halo-tint));
+}
+
+:root[data-page-theme="halo"] .prose-mdx pre,
+:root[data-page-theme="halo"] .prose-mdx blockquote {
+  border-radius: 14px;
+}
+:root[data-page-theme="halo"] .prose-mdx blockquote {
+  border-left: 1px solid var(--halo-edge);
+  padding: 0.9rem 1.2rem;
+  font-style: normal;
+}
+:root[data-page-theme="halo"] .prose-mdx code {
+  background: var(--halo-tint);
+  border: 1px solid var(--halo-edge);
+  border-radius: 5px;
+}
+:root[data-page-theme="halo"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Screenshots get a glass *frame* rather than a glass surface. The padding is
+   the pane; the picture paints opaquely over the middle of it, so what the
+   reader sees refracted is the band around the edge — which is precisely where
+   the fringe lives on a real one. */
+:root[data-page-theme="halo"] .reader-image {
+  border-radius: 18px;
+  padding: 10px;
+}
+
+/* Halo's headline face: very large, very tight, very plain. The demo's
+   marketing page is one enormous sans headline over the glass, and that
+   restraint is half of why the material reads at all. */
+:root[data-page-theme="halo"] .prose-mdx h2,
+:root[data-page-theme="halo"] [data-page-title] {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+:root[data-page-theme="halo"] [data-node-meta] {
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-mute);
+}
+
+
+/* ---- rl-lab: the meadow (reader/MeadowAtmosphere.tsx) --------------------
+   Every other world borrows a look the project already has somewhere else.
+   This one borrows a place: rl-lab turns legged and wheeled bodies loose in a
+   top-down arena to see how far they get, and an open field is where you would
+   actually put one.
+
+   So the furniture goes soft — generous corners, warm shadows, no hairlines,
+   nothing squared off. An instrument panel would be the wrong world entirely;
+   this is outdoors. */
+:root[data-page-theme="meadow"] {
+  --color-bg-0: #f6f8ef;
+  --color-bg-1: #ecf1e0;
+  --color-bg-2: #d3dfc0;
+  --color-ink: #1e2617;
+  --color-ink-dim: #4e5c40;
+  --color-ink-mute: #82906f;
+  --color-accent: #3f7d2f;
+  --meadow-warm: rgba(255, 246, 214, 0.6);
+  --meadow-shadow: rgba(46, 62, 32, 0.16);
+}
+:root[data-page-theme="meadow"][data-theme="dark"] {
+  /* The same field at dusk. Not a black page with green accents — the ground
+     keeps its warmth, which is what stops it reading as "dark mode" instead of
+     as evening. */
+  --color-bg-0: #0f1410;
+  --color-bg-1: #161d16;
+  --color-bg-2: #27321f;
+  --color-ink: #e8efdc;
+  --color-ink-dim: #adbc9c;
+  --color-ink-mute: #77876a;
+  --color-accent: #9ecb63;
+  --meadow-warm: rgba(255, 226, 150, 0.09);
+  --meadow-shadow: rgba(0, 0, 0, 0.5);
+}
+
+:root[data-page-theme="meadow"] .biolume {
+  display: none;
+}
+
+.meadow-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Ground belongs under your feet: the grass fades out entirely toward the
+     top, where there is only sky.
+     The second layer only *thins* it behind the reading column — it never
+     removes it. This is a field, and a field with a bald patch cut out of the
+     middle where the text happens to be is not one. Note the mask stop is a
+     translucent black rather than `transparent`, which is the difference
+     between dimming and erasing. */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.4) 34%, #000 58%, #000 100%),
+    radial-gradient(46% 44% at 50% 82%, rgba(0, 0, 0, 0.42) 0%, #000 78%, #000 100%);
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.4) 34%, #000 58%, #000 100%),
+    radial-gradient(46% 44% at 50% 82%, rgba(0, 0, 0, 0.42) 0%, #000 78%, #000 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.meadow-grass {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Daylight over the whole page, sitting above the base colour and below the
+   field. This is the sun, not a gradient — it is what keeps a page of green
+   from reading as cold. */
+:root[data-page-theme="meadow"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% -10%, var(--meadow-warm), transparent 70%);
+}
+
+/* Nothing outdoors has a 3px corner. */
+:root[data-page-theme="meadow"] header button,
+:root[data-page-theme="meadow"] .prose-mdx code {
+  border-radius: 8px;
+}
+:root[data-page-theme="meadow"] header [role="menu"],
+:root[data-page-theme="meadow"] .prose-mdx pre,
+:root[data-page-theme="meadow"] .reader-image {
+  border-radius: 16px;
+}
+:root[data-page-theme="meadow"] [data-node-link] {
+  border-radius: 999px;
+}
+
+:root[data-page-theme="meadow"] header [role="menu"],
+:root[data-page-theme="meadow"] .prose-mdx pre {
+  background: color-mix(in srgb, var(--color-bg-1) 88%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 0;
+  box-shadow: 0 18px 40px -22px var(--meadow-shadow);
+}
+
+:root[data-page-theme="meadow"] [data-node-meta] {
+  color: var(--color-ink-mute);
+  letter-spacing: 0.04em;
+}
+
+/* Controls as smooth river pebbles: no stroke, a soft ground shadow, and a
+   press that settles rather than clicks. */
+:root[data-page-theme="meadow"] [data-node-link] {
+  background: color-mix(in srgb, var(--color-bg-1) 92%, transparent);
+  border: 0;
+  color: var(--color-ink-dim);
+  padding: 0.4rem 1rem;
+  box-shadow: 0 6px 14px -8px var(--meadow-shadow);
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1), background 0.18s, color 0.18s;
+}
+:root[data-page-theme="meadow"] [data-node-link]:hover {
+  transform: translateY(-2px);
+  background: var(--color-accent);
+  color: var(--color-bg-0);
+}
+
+/* A sprout in the margin: two small leaves off a stem, drawn with borders.
+   Cheap, and it beats a bullet or a rule for a page about growing things. */
+:root[data-page-theme="meadow"] .prose-mdx h2 {
+  position: relative;
+  padding-left: 1.15rem;
+}
+:root[data-page-theme="meadow"] .prose-mdx h2::before {
+  content: "";
+  position: absolute;
+  left: 0.1rem;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translateY(-50%) rotate(-40deg);
+  border-radius: 0 100% 0 100%;
+  background: var(--color-accent);
+}
+
+:root[data-page-theme="meadow"] .prose-mdx code {
+  background: color-mix(in srgb, var(--color-bg-1) 90%, transparent);
+  border: 0;
+}
+:root[data-page-theme="meadow"] .prose-mdx pre code {
+  background: transparent;
+}
+
+:root[data-page-theme="meadow"] .reader-image {
+  border: 0;
+  box-shadow: 0 30px 60px -32px var(--meadow-shadow);
+}
+
+
+/* ---- the papers: academic (reader/AcademicAtmosphere.tsx) ----------------
+   Ink on paper, for `living-with-intelligence` — a project whose argument is
+   that a reading environment should be a reading environment and not a
+   dashboard. Making that case in the site's ordinary chrome would be arguing
+   against itself.
+
+   Almost all of this world is typography, which is the correct division: an
+   academic page is made of type, not of effects. The one structural move is
+   the title block, which is centred, because that is what a title block is.
+
+   Deliberately motionless — see the note in AcademicAtmosphere.tsx. Every
+   other world here animates because its subject does. Paper does not, and this
+   is the one page whose subject is the reading itself. */
+:root[data-page-theme="academic"] {
+  --color-bg-0: #fbf8f1;
+  --color-bg-1: #f4f0e4;
+  --color-bg-2: #ddd6c4;
+  --color-ink: #1c1913;
+  --color-ink-dim: #4a453a;
+  --color-ink-mute: #857e6d;
+  --color-accent: #7b2d26;
+  --academic-rule: rgba(28, 25, 19, 0.16);
+  --academic-laid: rgba(120, 105, 74, 0.05);
+}
+:root[data-page-theme="academic"][data-theme="dark"] {
+  /* The same page under a lamp. Warm, never neutral grey — a cold dark here
+     reads as a screen, which is the thing this world is arguing with. */
+  --color-bg-0: #16130e;
+  --color-bg-1: #1e1a14;
+  --color-bg-2: #322c22;
+  --color-ink: #ece5d6;
+  --color-ink-dim: #b8b0a0;
+  --color-ink-mute: #857e6d;
+  --color-accent: #d99a6c;
+  --academic-rule: rgba(236, 229, 214, 0.18);
+  --academic-laid: rgba(236, 229, 214, 0.028);
+}
+
+:root[data-page-theme="academic"] .biolume {
+  display: none;
+}
+
+.academic-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Laid and chain lines: the impression a paper mould leaves, and the reason
+   good paper is never quite flat. Fine lines close together one way, coarse
+   ones far apart across it. */
+.academic-laid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      var(--academic-laid) 0 1px,
+      transparent 1px 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      var(--academic-laid) 0 1px,
+      transparent 1px 27px
+    );
+}
+
+/* The leaf: the sheet's own edge, so the reading column sits on paper rather
+   than being painted straight onto the window. */
+.academic-leaf {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05), transparent 14%),
+    linear-gradient(270deg, rgba(0, 0, 0, 0.05), transparent 14%),
+    radial-gradient(120% 100% at 50% 0%, transparent 60%, rgba(0, 0, 0, 0.045));
+}
+
+/* --- academic: the type ---
+   The single biggest lever, and the reason this world barely needs a backdrop:
+   the body face becomes the serif. Fraunces at a low optical size is a text
+   face, not the display face it is everywhere else on the site. */
+:root[data-page-theme="academic"] .prose-mdx p,
+:root[data-page-theme="academic"] .prose-mdx li,
+:root[data-page-theme="academic"] .prose-mdx blockquote {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  /* Hyphenated, because justified text without hyphenation opens rivers. */
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* A measure set by the line rather than by the viewport. 66 characters is the
+   number the typographic literature keeps arriving at, and a page arguing for
+   careful reading should be set at it. */
+:root[data-page-theme="academic"] .prose-mdx {
+  max-width: 66ch;
+  counter-reset: academic-section;
+}
+
+/* Numbered sections and small caps, as a journal sets them. */
+:root[data-page-theme="academic"] .prose-mdx h2 {
+  counter-increment: academic-section;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 32;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-caps: small-caps;
+  letter-spacing: 0.04em;
+  margin-top: 2.8rem;
+}
+:root[data-page-theme="academic"] .prose-mdx h2::before {
+  content: counter(academic-section) ".\00a0\00a0";
+  color: var(--color-ink-mute);
+  font-variant-caps: normal;
+}
+:root[data-page-theme="academic"] .prose-mdx h3 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* The opening paragraph takes a drop cap.
+   `:first-of-type`, not `:first-child`: the body's first child is always the
+   atmosphere component's own (fixed, invisible) div, so `:first-child` would
+   match nothing at all and the drop cap would silently never appear. */
+:root[data-page-theme="academic"] .prose-mdx > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144;
+  font-size: 3.4em;
+  line-height: 0.82;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--color-accent);
+}
+
+/* The title block: centred, ruled top and bottom, with the authors and venue
+   beneath the title. This is the one piece of structure a reader recognises as
+   "a paper" before reading a word of it. */
+:root[data-page-theme="academic"] [data-page-title] {
+  font-variation-settings: "opsz" 144;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+:root[data-page-theme="academic"] [data-page-title] ~ p {
+  text-align: center;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 18;
+  font-style: italic;
+  margin-left: auto;
+  margin-right: auto;
+}
+:root[data-page-theme="academic"] [data-node-meta] {
+  justify-content: center;
+  font-family: var(--font-display);
+  font-variant-caps: small-caps;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-mute);
+}
+:root[data-page-theme="academic"] [data-node-meta] + * {
+  margin-top: 0.4rem;
+}
+:root[data-page-theme="academic"] header:has([data-page-title]) {
+  border-bottom: 1px solid var(--academic-rule);
+  border-top: 1px solid var(--academic-rule);
+  padding-top: 1.6rem;
+}
+
+/* Offprint links — PDF, repository, live draft — set as a running footnote
+   line rather than as buttons. A journal page has no buttons on it. */
+:root[data-page-theme="academic"] [data-node-link] {
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--academic-rule);
+  padding: 0 0 1px 0;
+  font-family: var(--font-display);
+  font-variant-caps: small-caps;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-dim);
+}
+:root[data-page-theme="academic"] [data-node-link]:hover {
+  background: transparent;
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+/* Block quotations are indented and set down a size, not barred. The vertical
+   rule is a web convention; print has never used it. */
+:root[data-page-theme="academic"] .prose-mdx blockquote {
+  border-left: 0;
+  margin-left: 2.2rem;
+  margin-right: 1.2rem;
+  padding-left: 0;
+  font-size: 0.97rem;
+  font-style: normal;
+  color: var(--color-ink-dim);
+}
+
+/* Figures are plates: ruled, captioned by their own alt text elsewhere, and
+   never rounded. */
+:root[data-page-theme="academic"] .reader-image {
+  border-radius: 0;
+  border: 1px solid var(--academic-rule);
+  box-shadow: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+:root[data-page-theme="academic"] .prose-mdx code,
+:root[data-page-theme="academic"] .prose-mdx pre {
+  border-radius: 0;
+  background: var(--color-bg-1);
+  border: 1px solid var(--academic-rule);
+}
+:root[data-page-theme="academic"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Justification is wrong on a narrow measure — the word spacing goes to
+   pieces well before the column gets to phone width. */
+@media (max-width: 640px) {
+  :root[data-page-theme="academic"] .prose-mdx p,
+  :root[data-page-theme="academic"] .prose-mdx li,
+  :root[data-page-theme="academic"] .prose-mdx blockquote {
+    text-align: left;
+  }
+}

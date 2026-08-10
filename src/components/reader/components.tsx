@@ -8,6 +8,11 @@ import { PresentationSlides } from "./PresentationSlides";
 import { XPost } from "./XPost";
 import { JtermAtmosphere } from "./JtermAtmosphere";
 import { LangCurriculumAtmosphere } from "./LangCurriculumAtmosphere";
+import { FluentAtmosphere } from "./FluentAtmosphere";
+import { AquaAtmosphere } from "./AquaAtmosphere";
+import { HaloAtmosphere } from "./HaloAtmosphere";
+import { MeadowAtmosphere } from "./MeadowAtmosphere";
+import { AcademicAtmosphere } from "./AcademicAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
@@ -206,8 +211,14 @@ export const readerComponents: MDXComponents = {
   Pdf,
   Video,
   LiveDemo,
-  // Page-scoped dressing. Placed by a body, like everything else here —
-  // see reader/JtermAtmosphere.tsx.
+  // Page-scoped dressing: the worlds. Placed by a body, like everything else
+  // here — nothing is hoisted from frontmatter. The route table lives in
+  // lib/worlds.ts and the shared hooks in reader/atmosphere.ts.
   JtermAtmosphere,
   LangCurriculumAtmosphere,
+  FluentAtmosphere,
+  AquaAtmosphere,
+  HaloAtmosphere,
+  MeadowAtmosphere,
+  AcademicAtmosphere,
 };
