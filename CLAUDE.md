@@ -43,6 +43,11 @@ editing this repo.
 - **Canonical URLs.** Every node lives at `/{kind-plural}/{slug}`. Use
   `nodeHref(node)` to compute links. Bare kind paths such as `/projects`
   are collection pages; old flat `/{slug}` routes should 404.
+- **Papers and readings link out.** Neither kind has a page here — a
+  cover or title opens the PDF/publisher page itself, and
+  `/papers/{id}` · `/readings/{id}` redirect there. Link them with
+  `nodeLinkHref(node)`, not `nodeHref(node)`. See
+  [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#paper).
 - **Auto-deploy.** Pushing to `main` triggers a Vercel build. There is
   no separate deploy step. Env vars are managed in the Vercel dashboard.
 

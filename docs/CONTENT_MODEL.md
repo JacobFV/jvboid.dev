@@ -109,6 +109,14 @@ belongs on the card and nowhere else.
 
 ### paper
 
+Papers and readings have no page of their own. The artifact *is* the
+PDF or the publisher's page, so every listing links straight at it and
+`/papers/{id}` · `/readings/{id}` redirect there. The destination is
+`pdf` for a paper and `url` for a reading (`nodeSourceHref()` in
+`src/lib/graph-types.ts`); a node with neither keeps its own page, so
+give one of them to anything you want reachable. Their MDX bodies are
+not rendered anywhere — put the writing in a `post` instead.
+
 ```yaml
 ---
 title: ...

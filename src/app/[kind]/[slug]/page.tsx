@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect, redirect } from "next/navigation";
-import { getGraph, isExternalRedirect, KIND_PREFIX, nodeHref } from "@/lib/graph";
+import { getGraph, isExternalRedirect, KIND_PREFIX, nodeHref, nodeSourceHref } from "@/lib/graph";
 import { MDXContent } from "@/lib/mdx";
 import { getPostRevisions } from "@/lib/post-revisions";
 import { Hero } from "@/components/reader/Hero";
@@ -42,6 +42,13 @@ export default async function NodePage({ params }: { params: Params }) {
     if (!target) notFound(); // dangling redirect — fail loudly, don't render
     permanentRedirect(nodeHref(target));
   }
+
+  // Papers and readings don't get a page of their own: the PDF or the
+  // publisher's page is the thing, and a stub about it is just a click
+  // in the way. Listings link straight at the source; this route still
+  // resolves so old links and graph edges land there too.
+  const source = nodeSourceHref(node);
+  if (source) redirect(source);
 
   // Vision nodes with a registered sceneId open into the 3D room. The
   // article body stays in the DOM as the skip-to-text fallback.

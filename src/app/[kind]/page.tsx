@@ -5,7 +5,7 @@ import {
   isListedNode,
   KIND_FROM_PREFIX,
   KIND_PREFIX,
-  nodeHref,
+  nodeLinkHref,
   type Node,
   type NodeKind,
 } from "@/lib/graph";
@@ -104,9 +104,17 @@ export default async function KindIndexPage({ params }: { params: Params }) {
             const postedDate = new Date(node.date).toISOString().slice(0, 10);
             const revisionSummary =
               node.kind === "post" ? getPostRevisionSummary(node.id) : null;
+            // Papers and readings have no page here — the title is a link
+            // to the artifact itself. See `nodeSourceHref`.
+            const href = nodeLinkHref(node);
+            const offsite = /^https?:/i.test(href);
             return (
               <li key={node.id}>
-                <Link href={nodeHref(node)} className="group block no-underline">
+                <Link
+                  href={href}
+                  {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
+                  className="group block no-underline"
+                >
                   <div className="flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
                     {node.kind === "post" ? (
                       <>

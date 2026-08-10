@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getGraph, isListedNode, KIND_PREFIX, nodeHref } from "@/lib/graph";
+import { getGraph, isListedNode, KIND_PREFIX, nodeHref, nodeSourceHref } from "@/lib/graph";
 
 const BASE = "https://jacobfv.com";
 
@@ -24,9 +24,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // `isListedNode` keeps external link-outs in the site's own listings —
   // they are the only record here of a piece published elsewhere. A
   // sitemap is a different promise, though: every URL in it should serve
-  // a page, not bounce. So redirects of either sort stay out.
+  // a page, not bounce. So redirects of either sort stay out, and so do
+  // papers and readings, whose routes bounce to the source.
   const nodeRoutes = nodes
-    .filter((n) => isListedNode(n) && !n.redirect)
+    .filter((n) => isListedNode(n) && !n.redirect && !nodeSourceHref(n))
     .map((n) => ({
       url: `${BASE}${nodeHref(n)}`,
       lastModified: n.endDate ?? n.date,

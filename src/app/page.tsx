@@ -3,7 +3,7 @@ import { type HeroSocial, type HeroSocialGroup } from "@/components/chrome/HeroH
 import { CoverGallery } from "@/components/chrome/CoverGallery";
 import { HomeField } from "@/components/chrome/HomeField";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
-import { getGraph, isListedNode, nodeHref, type Lane, type Node } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref, nodeLinkHref, type Lane, type Node } from "@/lib/graph";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
 
@@ -318,9 +318,15 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
   // download the PDF to /tmp and run:
   // `pdftoppm -png -f 1 -singlefile -r 160 /tmp/<slug>.pdf public/assets/img/{readings|papers}/<slug>`.
   // Then set `hero.src` in frontmatter to `/assets/img/{readings|papers}/<slug>.png`.
+  //
+  // A cover opens the thing it is a cover of — the PDF, the arXiv page,
+  // the publisher — not a page about it. See `nodeSourceHref`.
+  const href = nodeLinkHref(node);
+  const offsite = /^https?:/i.test(href);
   return (
-    <Link
-      href={nodeHref(node)}
+    <a
+      href={href}
+      {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
       title={node.title}
       aria-label={node.title}
       className="group block w-28 no-underline sm:w-32"
@@ -351,7 +357,7 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
       <div className="mt-2 line-clamp-2 min-h-[2.5rem] text-center text-xs leading-tight text-[var(--color-ink-dim)] underline-offset-4 group-hover:text-[var(--color-ink)] group-hover:underline">
         {node.title}
       </div>
-    </Link>
+    </a>
   );
 }
 

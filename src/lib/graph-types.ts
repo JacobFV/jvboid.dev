@@ -136,6 +136,42 @@ export function nodeHref(node: { kind: NodeKind; id: string }): string {
 }
 
 /**
+ * Where a paper or reading actually lives.
+ *
+ * Neither kind has a page of its own here: the artifact *is* the PDF or
+ * the publisher's page, and a stub that reprints the abstract only puts
+ * a click between the reader and the thing. So every surface that lists
+ * one — the home cover rails, `/papers`, `/readings`, the feed — links
+ * straight at the source, and `/{papers,readings}/{id}` bounces there
+ * too so old links and graph edges still land somewhere real.
+ *
+ * `undefined` when a node carries no source at all (a note that only
+ * ever existed here); those keep their own page.
+ */
+export function nodeSourceHref(node: {
+  kind: NodeKind;
+  pdf?: string;
+  url?: string;
+  redirect?: string;
+}): string | undefined {
+  if (node.kind !== "paper" && node.kind !== "reading") return undefined;
+  if (node.pdf) return node.pdf;
+  if (node.url) return node.url;
+  return isExternalRedirect(node.redirect) ? node.redirect : undefined;
+}
+
+/** The href a link to `node` should use: its source if it has one, else its page. */
+export function nodeLinkHref(node: {
+  kind: NodeKind;
+  id: string;
+  pdf?: string;
+  url?: string;
+  redirect?: string;
+}): string {
+  return nodeSourceHref(node) ?? nodeHref(node);
+}
+
+/**
  * True when `redirect` points off-site rather than at another node here.
  * The two cases behave differently everywhere they are handled, so the
  * test lives in one place: `/^https?:\/\//`.

@@ -1,6 +1,10 @@
-import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
+import { getGraph, isListedNode, nodeLinkHref } from "@/lib/graph";
 
 const BASE = "https://jacobfv.com";
+
+// Papers and readings link at their source, which is often already an
+// absolute URL; everything else is a path on this site.
+const absolute = (href: string) => (/^https?:/i.test(href) ? href : `${BASE}${href}`);
 
 const escape = (s: string) =>
   s
@@ -23,17 +27,18 @@ export function GET() {
     .slice(0, 50);
 
   const itemsXml = items
-    .map(
-      (n) => `
+    .map((n) => {
+      const link = escape(absolute(nodeLinkHref(n)));
+      return `
     <item>
       <title>${escape(n.title)}</title>
-      <link>${BASE}${nodeHref(n)}</link>
-      <guid isPermaLink="true">${BASE}${nodeHref(n)}</guid>
+      <link>${link}</link>
+      <guid isPermaLink="true">${link}</guid>
       <pubDate>${rfc822(n.date)}</pubDate>
       <description>${escape(n.summary)}</description>
       ${n.tags.map((t) => `<category>${escape(t)}</category>`).join("")}
-    </item>`,
-    )
+    </item>`;
+    })
     .join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8" ?>
