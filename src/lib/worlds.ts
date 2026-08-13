@@ -52,6 +52,11 @@ export const WORLDS: Record<string, World> = {
   "/projects/halo-prismatic": { id: "halo", theme: null },
   // An open field, which is where you would actually test the thing.
   "/projects/rl-lab": { id: "meadow", theme: null },
+  // The model's own drawing: 414 parcels and the connectome between them,
+  // hairlines on paper. No theme is forced — the site it documents defines
+  // every colour once on `:root` and once under `prefers-color-scheme`, with
+  // no toggle, so it means light and dark equally.
+  "/projects/sc-wbd": { id: "wbd", theme: null },
   // Ink on paper, for a reading environment built to hold texts like them.
   //
   // The obvious companions here would be `/papers/the-shape-of-experience` and

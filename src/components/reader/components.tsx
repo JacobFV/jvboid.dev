@@ -13,6 +13,7 @@ import { AquaAtmosphere } from "./AquaAtmosphere";
 import { HaloAtmosphere } from "./HaloAtmosphere";
 import { MeadowAtmosphere } from "./MeadowAtmosphere";
 import { AcademicAtmosphere } from "./AcademicAtmosphere";
+import { WbdAtmosphere } from "./WbdAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
@@ -221,4 +222,5 @@ export const readerComponents: MDXComponents = {
   HaloAtmosphere,
   MeadowAtmosphere,
   AcademicAtmosphere,
+  WbdAtmosphere,
 };

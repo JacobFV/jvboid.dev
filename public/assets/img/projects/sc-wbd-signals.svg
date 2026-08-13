@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 400" width="950" height="400"
+     role="img"
+     aria-label="Four kinds of signal around one brain. Going in — the world acting on the person — reaches the brain. Reading the brain measures it through a declared forward operator. Coming out is what the person does, measured outside the head. Background is the slow conditions enclosing all of it.">
+  <title>The four attachment kinds SC-WBD sorts a signal into</title>
+  <style>
+    /* Redrawn from the schematic on sc-wbd.pages.dev, standalone: the hues are
+       the canvas palette and constant, because they encode attachment kind
+       rather than lighting. The ink is fixed too — this file is served as an
+       image, so it cannot read the page's theme, and the world it sits in
+       gives every figure a paper plate to stand on. */
+    .box   { fill: none; stroke: #c8c8c3; stroke-width: 1; }
+    .box.strong { stroke: #55575c; }
+    .dash  { fill: none; stroke: #e3e3df; stroke-width: 1; stroke-dasharray: 4 5; }
+    .arrow { fill: none; stroke: currentColor; stroke-width: 1.2; }
+    .head  { fill: currentColor; stroke: none; }
+    text   { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #55575c; }
+    .title { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; fill: #17181a; }
+    .kind  { font-size: 13px; font-weight: 650; letter-spacing: 0.1em; }
+    .note  { font-size: 14px; }
+    .warm  { color: #c8874a; }
+    .cool  { color: #5b7fa6; }
+    text.warm  { fill: #c8874a; }
+    text.cool  { fill: #5b7fa6; }
+    text.faint { fill: #7d8085; }
+  </style>
+
+  <!-- context: the slow conditions everything else happens inside -->
+  <!-- The frame is wider than the site's own copy of this drawing. There the
+       schematic sits in a container with `overflow: visible` and the right
+       column's longest lines run past the box; served as a standalone image
+       there is nothing to run into, so the box is drawn where the type
+       actually ends. -->
+  <rect class="dash" x="6" y="6" width="938" height="388"/>
+  <text class="kind faint" x="26" y="358">BACKGROUND</text>
+  <text class="note" x="26" y="378">slow conditions that shape everything else · time of day, session, medication</text>
+
+  <!-- the object being modelled -->
+  <rect class="box strong" x="336" y="96" width="216" height="88"/>
+  <text class="title" x="444" y="132" text-anchor="middle">ONE PERSON’S BRAIN</text>
+  <text class="note" x="444" y="154" text-anchor="middle">414 regions, one shared state</text>
+
+  <!-- stimulus -->
+  <text class="kind warm" x="26" y="112">GOING IN</text>
+  <text class="note" x="26" y="132">the world acting on the person</text>
+  <text class="note" x="26" y="152">video, audio, speech,</text>
+  <text class="note" x="26" y="170">a magnetic pulse, ultrasound</text>
+  <path class="arrow warm" d="M232 140 H328"/>
+  <path class="head warm" d="M328 140 l-9 -4.5 v9 z"/>
+
+  <!-- observation -->
+  <path class="arrow cool" d="M560 140 H656"/>
+  <path class="head cool" d="M656 140 l-9 -4.5 v9 z"/>
+  <text class="kind cool" x="664" y="112">READING THE BRAIN</text>
+  <text class="note" x="664" y="132">an instrument measuring</text>
+  <text class="note" x="664" y="150">the brain itself</text>
+  <text class="note" x="664" y="172">EEG, MEG, fMRI</text>
+  <text class="note cool" x="664" y="196">through a declared forward operator</text>
+
+  <!-- boundary output -->
+  <path class="arrow warm" d="M444 192 V252 H656"/>
+  <path class="head warm" d="M656 252 l-9 -4.5 v9 z"/>
+  <text class="kind warm" x="664" y="240">COMING OUT</text>
+  <text class="note" x="664" y="260">what the person does,</text>
+  <text class="note" x="664" y="278">measured outside the head</text>
+  <text class="note" x="664" y="300">eye movements, typing, speech,</text>
+  <text class="note" x="664" y="318">heart rate, test answers</text>
+</svg>

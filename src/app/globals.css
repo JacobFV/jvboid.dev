@@ -1833,3 +1833,233 @@ a:hover {
     text-align: left;
   }
 }
+
+/* ---- sc-wbd: the model's own drawing (reader/WbdAtmosphere.tsx) -----------
+   SC-WBD's site is a research page that refuses to look like a launch: white
+   ground, hairlines, a serif for reading and a sans for scanning, and no
+   colour anywhere except a status colour attached to a measured result. That
+   last rule is the whole visual argument — on that site, colour means
+   something — and it is why this world spends almost nothing on hue. What it
+   spends is on rules, on type, and on the connectome turning behind the
+   article.
+
+   The page it documents publishes negative results as prominently as positive
+   ones, so the chips below are here to be used in both directions and are
+   drawn identically apart from their colour.
+
+   No theme is forced. The model's stylesheet defines every colour once on
+   `:root` and once under `prefers-color-scheme`, with no toggle and no stored
+   preference; it means light and dark equally, and pinning one would
+   misrepresent it. */
+:root[data-page-theme="wbd"] {
+  --color-bg-0: #ffffff;
+  --color-bg-1: #f7f7f5;
+  --color-bg-2: #e3e3df;
+  --color-ink: #17181a;
+  --color-ink-dim: #55575c;
+  --color-ink-mute: #7d8085;
+  /* The one warm accent, taken off the subcortical end of the parcel palette
+     and darkened until it holds 4.5:1 as link text. */
+  --color-accent: #a4611f;
+  --wbd-rule: #e3e3df;
+  --wbd-rule-strong: #c8c8c3;
+  /* Figures are transparent PNGs drawn in near-black ink, so they carry their
+     own sheet of paper rather than inheriting the ground. */
+  --wbd-paper: #ffffff;
+  --wbd-pass: #1a6b41;
+  --wbd-fail: #9e2620;
+  --wbd-unknown: #6c6f74;
+}
+:root[data-page-theme="wbd"][data-theme="dark"] {
+  --color-bg-0: #101215;
+  --color-bg-1: #171a1e;
+  --color-bg-2: #272b31;
+  --color-ink: #e5e7ea;
+  --color-ink-dim: #a6a9af;
+  --color-ink-mute: #7e8288;
+  --color-accent: #d99a5c;
+  --wbd-rule: #272b31;
+  --wbd-rule-strong: #3b4047;
+  /* Still paper. A figure drawn in black ink does not become a figure drawn in
+     white ink because the room got dark, and inverting one would be inventing
+     an image the project never published. */
+  --wbd-paper: #f4f4f1;
+  --wbd-pass: #5fbf8b;
+  --wbd-fail: #ee7f74;
+  --wbd-unknown: #9a9ea6;
+}
+
+/* One backdrop at a time. */
+:root[data-page-theme="wbd"] .biolume {
+  display: none;
+}
+
+/* The field. Pinned exactly like `.biolume` — `html` paints the base colour,
+   this sits above it, page content above that. Masked down the middle so the
+   head is at its faintest under the reading column and strongest in the
+   gutters, where there is nothing to compete with. */
+.wbd-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: radial-gradient(58% 62% at 50% 42%, rgba(0, 0, 0, 0.25) 0%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(58% 62% at 50% 42%, rgba(0, 0, 0, 0.25) 0%, #000 62%, transparent 100%);
+}
+.wbd-brain {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- sc-wbd: the type ---
+   The pairing is the site's, and it is the wrong way round from a journal on
+   purpose: headings sans, body serif. The serif is for reading and the sans is
+   for scanning, and what you scan on a page like this is the headings. Charter
+   is the model site's own text face; the fallbacks are the ones it names. */
+:root[data-page-theme="wbd"] .prose-mdx p,
+:root[data-page-theme="wbd"] .prose-mdx li,
+:root[data-page-theme="wbd"] .prose-mdx blockquote {
+  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia,
+    "Times New Roman", serif;
+  font-size: 1.0625rem;
+  line-height: 1.66;
+}
+
+/* Sections are ruled, not decorated: a hairline across the measure, a sans
+   heading under it, nothing else. This is most of why the site reads as a
+   report. */
+:root[data-page-theme="wbd"] .prose-mdx h2 {
+  font-family: var(--font-sans);
+  font-size: 1.28rem;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  border-top: 1px solid var(--wbd-rule-strong);
+  padding-top: 1.1rem;
+  margin-top: 3rem;
+  margin-bottom: 0.9rem;
+}
+:root[data-page-theme="wbd"] .prose-mdx h3 {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  font-size: 1.02rem;
+  letter-spacing: -0.005em;
+  color: var(--color-ink-dim);
+}
+
+/* The date · kind line: mono, small, wide-tracked — the site's provenance
+   type, which is the only place it uses a monospace at all. */
+:root[data-page-theme="wbd"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* Paper, repo and model links as the site draws its jump links: a hairline
+   plate with a 2px corner that warms on hover. Not the site's own pill, and
+   not langcurriculum's hard invert either. */
+:root[data-page-theme="wbd"] [data-node-link] {
+  border-radius: 2px;
+  border: 1px solid var(--wbd-rule-strong);
+  background: transparent;
+  color: var(--color-ink-dim);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 0.42rem 0.85rem;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+:root[data-page-theme="wbd"] [data-node-link]:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-bg-1);
+}
+
+/* Code as a plate with a hairline rather than a tinted highlight. */
+:root[data-page-theme="wbd"] .prose-mdx code,
+:root[data-page-theme="wbd"] .prose-mdx pre {
+  border-radius: 2px;
+  background: var(--color-bg-1);
+  border: 1px solid var(--wbd-rule);
+}
+:root[data-page-theme="wbd"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Figures are plates: ruled, square, unshadowed, and standing on their own
+   paper — every one of them is a transparent PNG drawn in near-black ink, so
+   without the sheet the dark theme would serve a rectangle of nothing. */
+:root[data-page-theme="wbd"] .reader-image {
+  border-radius: 0;
+  border: 1px solid var(--wbd-rule-strong);
+  box-shadow: none;
+  background: var(--wbd-paper);
+}
+
+/* Status chips, drawn the way the model card draws them: an outline in the
+   status colour, the word in the same colour, and no fill — so a chip is a
+   label rather than a badge, and a negative one is exactly as prominent as a
+   positive one. */
+:root[data-page-theme="wbd"] .wbd-chip {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0.12em 0.5em;
+  margin-right: 0.35em;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  color: var(--wbd-unknown);
+  vertical-align: 0.08em;
+}
+:root[data-page-theme="wbd"] .wbd-chip.pass {
+  color: var(--wbd-pass);
+}
+:root[data-page-theme="wbd"] .wbd-chip.fail {
+  color: var(--wbd-fail);
+}
+
+/* The figure row: measured quantities set large in a mono with tabular
+   figures, between two rules, with what each one counts underneath. Lifted
+   from the site because it is the only place either page states a number
+   without a sentence around it. */
+:root[data-page-theme="wbd"] .wbd-keyfig {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2.4rem;
+  margin: 2rem 0;
+  padding: 1.15rem 0;
+  border-top: 1px solid var(--wbd-rule-strong);
+  border-bottom: 1px solid var(--wbd-rule-strong);
+}
+:root[data-page-theme="wbd"] .wbd-keyfig > div {
+  flex: 1 1 8rem;
+}
+:root[data-page-theme="wbd"] .wbd-keyfig .n {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--color-ink);
+}
+:root[data-page-theme="wbd"] .wbd-keyfig .n.fail {
+  color: var(--wbd-fail);
+}
+:root[data-page-theme="wbd"] .wbd-keyfig .l {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--color-ink-mute);
+  margin-top: 0.4rem;
+}

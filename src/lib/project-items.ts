@@ -15,6 +15,7 @@ const initialProjectAdjacency = [
 ] as const;
 
 const featuredProjectOrder = [
+  "sc-wbd",
   "chem-0",
   "trash-sorter",
   "lunar-rover",
@@ -51,6 +52,10 @@ const featuredProjectOrder = [
 // out a good chunk of comb around it — so spend 3× and 4× on the one or
 // two projects that carry the page.
 const projectHexSize: Record<string, HexSize> = {
+  // The only 3× on the page. It is four public checkpoints, a paper and a site
+  // of its own, and its artwork — the connectome with the mark over it — is the
+  // one image here that is actually worth a tile this size.
+  "sc-wbd": 3,
   "cookie-baker-3d-printer": 2,
   "chem-0": 2,
   "canvas-engineering": 2,

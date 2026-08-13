@@ -1,0 +1,125 @@
+---
+title: SC-WBD
+date: 2026-08-05
+lane: research
+tags: [neuroscience, foundation-models, eeg, fmri, neurotechnology, python]
+summary: "One model of one person's brain over 414 regions, where EEG, fMRI, TMS, and behaviour each constrain only the part they can speak to. Four checkpoints are public; the current one is largely a negative result and is published as one."
+resume_description: "whole-brain dynamics foundation model over 414 regions fusing EEG, fMRI, stimulation and behaviour through declared forward operators, with four public checkpoints and a claim-gate release process. pytorch, python, mne, nibabel, e-field solvers."
+datePrecision: day
+hero:
+  src: "/assets/img/projects/sc-wbd-mark.png"
+  alt: "SC-WBD-004 at the centre of 414 brain regions at their real anatomical coordinates, over the strongest tracts of the connectome, with two columns naming what the model is for"
+  fit: contain
+pdf: /assets/pdf/sc-wbd.pdf
+threadImages:
+  - src: "/assets/img/projects/sc-wbd-mark.png"
+    alt: "The SC-WBD-004 mark: the 414-region connectome with the use cases around it"
+  - src: "/assets/img/projects/sc-wbd-connectome.png"
+    alt: "The anatomy prior in three views — sagittal, axial, coronal"
+  - src: "/assets/img/projects/sc-wbd-paper-first-page.png"
+    alt: "First page of the SC-WBD paper"
+  - src: "/assets/img/projects/sc-wbd-ablation.png"
+    alt: "Leave-one-source-out ablation, measured and simulated holdouts"
+links:
+  github: https://github.com/JacobFV/sc-wbd
+  site: https://sc-wbd.pages.dev
+  paper: /assets/pdf/sc-wbd.pdf
+influences: [brain-model]
+realizes: []
+critiques: []
+---
+
+<WbdAtmosphere />
+
+- **One model over 414 brain regions**, and four kinds of signal attached to it — a stimulus going in, an instrument reading the brain, a behaviour measured outside the head, and the slow conditions around all of it
+- Each signal **constrains only the part of the model it can speak to**, so a person measured one way still improves the shared model, and what was never measured stays unknown rather than filled in from someone else's anatomy
+- An observation must **declare the forward operator it was measured through**, or it is refused. Eye tracking is real evidence; it is not a reading of cortex, and the schema will not let it be entered as one
+- **Four checkpoints are public.** Two lose to their baselines, one beats every baseline by about 0.04 nats, and the current one does not reproduce that
+- Every claim is published with the measurement that would falsify it, including the ones that came back wrong
+
+![SC-WBD-004 at the centre of the 414 regions of one person's brain at their real coordinates, with the strongest white-matter tracts between them, and two columns naming what the model is for](/assets/img/projects/sc-wbd-mark.png)
+
+<div className="wbd-keyfig">
+  <div><span className="n">414</span><span className="l">regions modelled at once<br/>400 on the surface + 14 deep inside</span></div>
+  <div><span className="n">4</span><span className="l">kinds of signal it learns from<br/>each constraining only what it observes</span></div>
+  <div><span className="n">26.3M</span><span className="l">parameters in the current model<br/>weights, data and code all public</span></div>
+  <div><span className="n fail">0</span><span className="l">validated claims about brains<br/>all five claim gates could_not_run</span></div>
+</div>
+
+## Problem
+
+Every way of looking at a brain sees something different. Electrodes read it a thousand times a second and can barely say where the signal came from. An MRI scanner sees the whole brain, reads it once every two seconds, and reads blood flow rather than activity. A magnetic pulse or a beam of focused ultrasound goes the other way, pushing on the tissue instead of watching it. What a person looks at, or types, or says is not a brain measurement at all, and is still evidence about the brain that produced it.
+
+Almost nobody is measured every way. So results from each instrument never quite add up, and almost none of them are about any particular brain — they are about a group average that no device is ever worn by.
+
+## Solution
+
+Keep one shared model of one person's dynamics, and sort every signal by what it is entitled to constrain.
+
+![Four kinds of signal around one brain: going in, reading the brain, coming out, and the background conditions enclosing all of it](/assets/img/projects/sc-wbd-signals.svg)
+
+Four attachment kinds — `stimulus`, `observation`, `boundary_output`, `context` — and the distinction is enforced rather than documented. An `observation` must name the forward operator it is measured through or the compiler refuses it. Without that axis a button press could only be declared as a measurement of neural state, which is a different claim and a wrong one.
+
+That sorting is what makes partial data usable. A participant with EEG alone still trains the shared dynamics; their haemodynamics are marginalised rather than invented.
+
+## How
+
+The state is per region, and what each region carries counts for as much as how many regions there are. Summarising one of the 400 cortical parcels with a single number retains **32.1%** of the whitened EEG lead field; carrying its net dipole moment — three numbers instead of one — retains **83.4%**. Splitting the same parcels into eight times as many scalar pieces reaches 70.8% and costs 3,154 numbers against the moment's 1,200. Orientation is the largest single win available and the cheapest, so the state is built to carry it.
+
+![The 414-region anatomy prior in three views — sagittal, axial and coronal — each showing the parcels coloured by family over the strongest 900 edges of the measured connectome](/assets/img/projects/sc-wbd-connectome.png)
+
+The regions are 400 Schaefer cortical parcels and 14 Tian subcortical ones, at their real coordinates, wired by a measured connectome and carrying receptor density, intrinsic timescale, myelin and thickness. They are partitioned into nine families by a rule fixed before the test ran: ship the finest candidate partition in which *every* pair of families separates under a spin null. Yeo-7 separated 6 of 21 pairs and was rejected; what survived is a binary split over cortex plus seven subcortical families of two parcels each.
+
+Around that sit six generative dynamics backends — Wilson–Cowan, Jansen–Rit, reduced Wong–Wang, Stuart–Landau, Kuramoto, Linear–Gaussian — interchangeable by one config key, an E-field solver joined to the dynamics as an additive drive, and a typed compiler with eleven refusals that fail closed rather than warn.
+
+## Tests
+
+The release process is built around the assumption that the model is wrong and the report will not say so on its own.
+
+Claims are gated. Five gates cover the things a whole-brain model would need to be right about, and **all five currently return `could_not_run`** — which is published on the front page of the site as a zero, next to the parameter count. A gate that cannot run is not a gate that passed.
+
+Splits are participant-disjoint and verified, and the simulated corpus is kept strictly separate from the measured one: a simulator can never be evidence that the model learned anything about biology, and conflating the two would be the most basic error available here.
+
+The guards are mutation-tested. One of them exists because 88.7% of run 2's parameters silently received no gradient at all — the regional modules had been renamed, the permission cards still granted the old glob, and an unmatched glob is not an error but an empty permission set, which is a legal permission set. The loss fell, the run finished, and five audits passed over it.
+
+## Results
+
+Four checkpoints, published in the order they were measured.
+
+**scwbd-001-beta** <span className="wbd-chip fail">negative result</span> loses to copying the last observed sample forward.
+
+**scwbd-002-pilot** <span className="wbd-chip fail">negative result</span> loses to every baseline on both log score and squared error, for two mechanical reasons: five of six curriculum gates were named for the previous run's stages, and most of the model could not receive a gradient. The treatment arm — the family-indexed regional model that is the whole thesis — was a random initialisation taking part in the forward pass for 8,700 steps. So the run says nothing about whether structured regional state helps.
+
+**scwbd-003** <span className="wbd-chip pass">beats its baselines</span> <span className="wbd-chip fail">null fusion effect</span> is the first model here to beat its comparators: 1.986 nats against 2.024 for a VAR(4) and 2.025 for a 16th-order AR on 27 held-out participants, every paired participant-clustered interval excluding zero. The margin is about 0.04 nats — decisive at that sample size and small. It is a density result, not a better point forecast: on squared error the model is indistinguishable from both AR baselines. And no measured source earned its place under leave-one-out.
+
+**scwbd-004** <span className="wbd-chip fail">no fMRI claim</span> <span className="wbd-chip fail">posterior overconfident</span> <span className="wbd-chip fail">individualisation unsupported</span> is the current checkpoint, at [huggingface.co/jacob-valdez/scwbd-004](https://huggingface.co/jacob-valdez/scwbd-004). It is largely a negative result and is published as one. It does not reproduce 003's separation — against the 16th-order AR it scores `-0.0100 [-0.0480, +0.0144]`, an interval containing zero, on a holdout of 25 participants that is not the same 25 people 003 was scored on. Its value is three measurements 003 could not make, each of which needed an instrument built before it could return an answer, and each of which came back negative:
+
+- **The fMRI likelihood works and loses.** 003's BOLD path never integrated the Balloon–Windkessel ODE, so its haemodynamic parameters were inert. 004 integrates it, and the likelihood then degrades through training: `real_bold_nll` runs 1.99 → 36,472. The cause is measured rather than guessed — the only haemodynamic corpus is 5.39% of the source mixture and is outvoted 17.6 : 1, so the shared trunk converges on what the electrical sources want and the BOLD head reads that same state.
+- **The posterior reads its conditioning, and is not calibrated.** 003's returned the prior. A learning-rate repair fixed that and overshot: the standardised residual spread is 59.25 where calibrated is near 1.0. Uninformative-but-honest became partly-informative-and-overconfident. Neither supports inference.
+- **Individualisation is measured for the first time, and unsupported.** Every earlier run called it unmeasurable, which is a fact about a participant-disjoint split rather than about the model. 004 adds a session split over the 75 sleep-corpus participants recorded twice, holds the people fixed and scores the second night. The fitted person effect moves theta by 0.67% of the scale allocated for it, and 30 of the 75 scored participants carry an effect of exactly zero.
+
+The run's most interesting number came out of the ablation, which for the first time asks whether measured data helps *measured* prediction. Eleven arms, each retrained without one source family, scored on the same held-out participants the headline rests on.
+
+![Leave-one-source-out ablation: ten source families scored twice, on the measured holdout and on the simulated validation set. Two families are on the contributing side of zero on the measured holdout; the simulator is the largest contributor on simulated data and slightly negative on measured](/assets/img/projects/sc-wbd-ablation.png)
+
+Two of ten families earn their place. The 64-channel EEG corpus at **+0.0144** is fourteen times the next contributor and larger than the whole 0.0100 margin by which this model fails to separate from an AR(16) — so the forecast result is the majority source's, not fusion's. The fMRI corpus at +0.0010 is the surprise, and it cuts against a prediction written down before the run: its own likelihood diverged by a factor of 18,000 while its gradient was *helping* the shared state forecast measured EEG. A source can carry information into a representation and still fail to be predicted by it. The simulator reverses sign between the two scorings — +0.0366 on simulated data, −0.0034 on measured — so simulator pretraining is the largest single contributor to fitting the simulator and a mild liability for predicting real brains. Run 3's ablation, scored only against the simulator, reported the first half and could not have seen the second.
+
+One arm per family and no seed replication, so the signs and the ordering are the result. The individual deltas are not effect sizes and should not be quoted as any.
+
+<Pdf
+  src="/assets/pdf/sc-wbd.pdf"
+  title="Integrated Whole-Brain Modeling Across Modalities, Scales, and Dynamics for Individualized Neurotechnology"
+  caption="The paper. Model, data and code are public; the running statement of what each checkpoint measured is at sc-wbd.pages.dev."
+/>
+
+## Lessons
+
+**A plausible number is worse than an obviously broken one, because nobody looks again.** The fMRI likelihood climbed for 46% of a 25-hour run before anyone read it. It was not hidden; it was quiet.
+
+**Report the flattering half and the other half together, or the flattering half is a lie of composition.** 003 beat its baselines *and* returned a null fusion effect. Both are that run's. Publishing the first alone would have been the more impressive and less true page.
+
+**An unmatched glob is an empty permission set, not an error.** That is how 88.7% of a run's parameters went untrained while the loss fell. Every guard in the repository now has to be made to fail on purpose before it counts as a guard.
+
+**The artifact and the code that generates it are two objects.** Green tests on a report generator say nothing about bytes already published, and a routine republish nearly replaced the model card's headline figure with one describing a run that never happened.
+
+**Nothing here is a validated model of anyone's brain.** A better log score on 27 people is a better log score on 27 people. The programme is worth doing because the shape of the model is right, and saying so is not the same as saying it works yet.
