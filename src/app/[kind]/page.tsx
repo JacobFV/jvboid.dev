@@ -19,7 +19,7 @@ type Params = Promise<{ kind: string }>;
 const KIND_TITLE: Record<NodeKind, string> = {
   post: "Posts",
   project: "Projects",
-  paper: "Papers",
+  paper: "Writings",
   reading: "Readings",
   update: "Updates",
   skill: "Skills",
@@ -39,6 +39,10 @@ const KIND_DESCRIPTION: Record<NodeKind, string> = {
   event: "Conferences, talks, trips, launches, and other dated events.",
   vision: "Longer vision documents and application essays.",
 };
+
+// Writings and readings carry their title alone: the standfirst under the
+// heading read as a subheader, and the home page dropped its equivalents.
+const BARE_HEADER: ReadonlySet<NodeKind> = new Set<NodeKind>(["paper", "reading"]);
 
 export function generateStaticParams() {
   return Object.values(KIND_PREFIX).map((kind) => ({ kind }));
@@ -81,16 +85,20 @@ export default async function KindIndexPage({ params }: { params: Params }) {
     );
   }
 
+  const bare = BARE_HEADER.has(nodeKind);
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <header className="mb-12">
+      <header className={bare ? "mb-8" : "mb-12"}>
         <h1
           className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
           style={{ fontVariationSettings: '"opsz" 144' }}
         >
           {KIND_TITLE[nodeKind]}
         </h1>
-        <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>
+        {!bare && (
+          <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>
+        )}
       </header>
 
       {/* No cards. An index is a list of things to read, so it is set as

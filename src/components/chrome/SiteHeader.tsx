@@ -39,7 +39,7 @@ const NAV = [
 
 const MORE_NAV = [
   { label: "Readings", href: "/readings" },
-  { label: "Papers", href: "/papers" },
+  { label: "Writings", href: "/papers" },
   { label: "Resume", href: "/resume" },
 ];
 
@@ -47,7 +47,7 @@ const MORE_NAV = [
 const SECTION: Partial<Record<NodeKind, { label: string; href: string }>> = {
   project: { label: "Projects", href: "/projects" },
   post: { label: "Posts", href: "/posts" },
-  paper: { label: "Papers", href: "/papers" },
+  paper: { label: "Writings", href: "/papers" },
   reading: { label: "Readings", href: "/readings" },
   update: { label: "Updates", href: "/updates" },
   skill: { label: "Skills", href: "/skills" },

@@ -225,25 +225,21 @@ export default function HomePage() {
         </ul>
       </Section>
 
-      {/* ---- Papers ---- */}
-      {recentPapers.length > 0 && (
-        <Section
-          eyebrow="Research"
-          title="Papers & notes"
-          link={{ href: "/papers", label: "all papers →" }}
-        >
-          <CoverRail nodes={recentPapers} variant="paper" />
+      {/* ---- Readings ---- */}
+      {recentReadings.length > 0 && (
+        <Section title="Readings" link={{ href: "/readings", label: "all readings →" }}>
+          <ReadingCoverRail nodes={recentReadings} />
         </Section>
       )}
 
-      {/* ---- Readings ---- */}
-      {recentReadings.length > 0 && (
+      {/* ---- Papers ---- */}
+      {recentPapers.length > 0 && (
         <Section
-          eyebrow="Reading"
-          title="Favorites"
-          link={{ href: "/readings", label: "all readings →" }}
+          tight
+          title="Writings"
+          link={{ href: "/papers", label: "all writings →" }}
         >
-          <ReadingCoverRail nodes={recentReadings} />
+          <CoverRail nodes={recentPapers} variant="paper" />
         </Section>
       )}
     </main>
@@ -256,15 +252,18 @@ function Section({
   link,
   children,
   id,
+  tight,
 }: {
   eyebrow?: string;
   title: string;
   link?: { href: string; label: string };
   children: React.ReactNode;
   id?: string;
+  /** Pulls the section up close to the one above it. */
+  tight?: boolean;
 }) {
   return (
-    <section id={id} className="mt-24 scroll-mt-20">
+    <section id={id} className={`${tight ? "mt-12" : "mt-24"} scroll-mt-20`}>
       <div className="mb-8 flex items-baseline justify-between gap-6">
         <div>
           {eyebrow && <p className="text-xs text-[var(--color-ink-mute)]">{eyebrow}</p>}
