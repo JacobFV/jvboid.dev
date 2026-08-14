@@ -525,6 +525,7 @@ function ProjectRow({ project }: { project: ProjectItem }) {
           }}
         >
           <IconFace project={project} preferIcon preferThread />
+          <HexEdge />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -547,6 +548,35 @@ function ProjectRow({ project }: { project: ProjectItem }) {
         </span>
       </span>
     </Link>
+  );
+}
+
+// The hairline around a tile. A clip-path has no border, so the edge is
+// drawn as a polygon on top of the artwork — the same shape HEX_CLIP cuts,
+// in the same hairline colour the rest of the site frames things with
+// (HeroHex draws its own version of this around the hero).
+//
+// The stroke straddles the path, and the outer half is cut away by the
+// clip on the parent, so it is set to twice the line we want. Non-scaling,
+// so the line stays a hairline while a hovered tile scales up.
+function HexEdge() {
+  const h = 100 * HEX_RATIO;
+  return (
+    <svg
+      viewBox={`0 0 100 ${h}`}
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+      focusable="false"
+    >
+      <polygon
+        points={`25,0 75,0 100,${h / 2} 75,${h} 25,${h} 0,${h / 2}`}
+        fill="none"
+        stroke="var(--color-bg-2)"
+        strokeWidth={2}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
   );
 }
 
@@ -653,6 +683,8 @@ function HexTile({
             </span>
           )}
         </span>
+
+        <HexEdge />
       </span>
     </Link>
   );
