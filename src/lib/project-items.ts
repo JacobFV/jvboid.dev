@@ -212,10 +212,20 @@ export function withAdjacentProjects(projects: Node[]): Node[] {
   return ordered;
 }
 
+// The tile face prefers an explicit `icon` over the mosaic, which is right
+// when the icon is the whole story. The OS simulators aren't that: their story
+// is the desktop running, so they fold the app icon into a full mosaic
+// alongside screen recordings of it. Reading the icon back out of a completed
+// mosaic is the signal that the mosaic — not the icon alone — is the face.
+function iconIsAMosaicCell(n: Node, images: { src: string }[], cells: number): boolean {
+  return images.length === cells && images.some((img) => img.src === n.icon?.src);
+}
+
 export function projectItemsFromNodes(projects: Node[]): ProjectItem[] {
   return projects.map((n) => {
     const cols = projectMosaicCols[n.id] ?? 2;
-    const threadImages = centerHero(projectThreadImages(n, cols * cols), cols, n.hero?.src);
+    const cells = cols * cols;
+    const threadImages = centerHero(projectThreadImages(n, cells), cols, n.hero?.src);
     return {
       id: n.id,
       kind: "project" as const,
@@ -225,7 +235,7 @@ export function projectItemsFromNodes(projects: Node[]): ProjectItem[] {
       lane: n.lane,
       tags: n.tags,
       hero: n.hero,
-      icon: n.icon,
+      icon: iconIsAMosaicCell(n, threadImages, cells) ? undefined : n.icon,
       video: n.video,
       threadImages,
       mosaic: { cols, tint: mosaicTint(threadImages) },
