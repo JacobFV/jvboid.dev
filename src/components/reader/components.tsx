@@ -14,6 +14,13 @@ import { HaloAtmosphere } from "./HaloAtmosphere";
 import { MeadowAtmosphere } from "./MeadowAtmosphere";
 import { AcademicAtmosphere } from "./AcademicAtmosphere";
 import { WbdAtmosphere } from "./WbdAtmosphere";
+import { ShellAtmosphere } from "./ShellAtmosphere";
+import { CanvasAtmosphere } from "./CanvasAtmosphere";
+import { MonographAtmosphere } from "./MonographAtmosphere";
+import { ReticleAtmosphere } from "./ReticleAtmosphere";
+import { EditorialAtmosphere } from "./EditorialAtmosphere";
+import { TensorAtmosphere } from "./TensorAtmosphere";
+import { CinemaAtmosphere } from "./CinemaAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
@@ -223,4 +230,11 @@ export const readerComponents: MDXComponents = {
   MeadowAtmosphere,
   AcademicAtmosphere,
   WbdAtmosphere,
+  ShellAtmosphere,
+  CanvasAtmosphere,
+  MonographAtmosphere,
+  ReticleAtmosphere,
+  EditorialAtmosphere,
+  TensorAtmosphere,
+  CinemaAtmosphere,
 };

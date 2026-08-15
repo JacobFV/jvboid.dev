@@ -2063,3 +2063,1080 @@ a:hover {
   color: var(--color-ink-mute);
   margin-top: 0.4rem;
 }
+
+
+/* ---- browser-os: the shell (reader/ShellAtmosphere.tsx) ------------------
+   The third desktop page, and the one with no operating system to borrow
+   from — that absence is the project. `browser-os` is the window manager,
+   the virtual filesystem and the app lifecycle *before* any chrome is
+   layered on, so the world is deliberately the least dressed of the three:
+   6px corners, one hairline, no Mica and no vibrancy.
+
+   The rule worth reading is the last one. Aqua paints three traffic lights
+   on every screenshot because macOS does. Here the same titlebar strip
+   appears with the same three dots left grey, because the strip is what the
+   shell ships and the colour is what an OS adds on top of it. Put the two
+   pages side by side and that single difference says what the project is.
+
+   No theme is forced: the shell is chrome-agnostic and ships both. */
+:root[data-page-theme="shell"] {
+  --color-bg-0: #f4f3fb;
+  --color-bg-1: #fbfaff;
+  --color-bg-2: #e2e0f2;
+  --color-ink: #1c1a2e;
+  --color-ink-dim: #4f4b70;
+  --color-ink-mute: #8481a3;
+  /* The icon's gradient, both ends of it. */
+  --color-accent: #5b6ede;
+  --shell-far: #764ba2;
+  --shell-pane: rgba(255, 255, 255, 0.66);
+  --shell-hairline: rgba(28, 26, 46, 0.14);
+  --shell-chrome: rgba(28, 26, 46, 0.26);
+}
+:root[data-page-theme="shell"][data-theme="dark"] {
+  --color-bg-0: #14131f;
+  --color-bg-1: #1c1a2c;
+  --color-bg-2: #2b2842;
+  --color-ink: #e9e7f6;
+  --color-ink-dim: #b3aed3;
+  --color-ink-mute: #7d789e;
+  --color-accent: #8b9bf0;
+  --shell-far: #a074cc;
+  --shell-pane: rgba(20, 19, 31, 0.55);
+  --shell-hairline: rgba(233, 231, 246, 0.14);
+  --shell-chrome: rgba(233, 231, 246, 0.3);
+}
+
+:root[data-page-theme="shell"] .biolume {
+  display: none;
+}
+
+.shell-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* The panes are hard-edged rectangles, which is exactly the wrong thing to
+     have running under body copy — damped hardest right under the column and
+     let back up in the gutters, where the stack is legible. */
+  -webkit-mask-image: radial-gradient(66% 60% at 50% 40%, rgba(0, 0, 0, 0.16) 0%, #000 70%, #000 100%);
+  mask-image: radial-gradient(66% 60% at 50% 40%, rgba(0, 0, 0, 0.16) 0%, #000 70%, #000 100%);
+}
+.shell-desktop {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* One corner radius for everything, because the shell has one. Neither
+   Fluent's 4/8 split nor Aqua's capsules — those are opinions an OS holds. */
+:root[data-page-theme="shell"] header button,
+:root[data-page-theme="shell"] [data-node-link],
+:root[data-page-theme="shell"] .prose-mdx code,
+:root[data-page-theme="shell"] header [role="menu"],
+:root[data-page-theme="shell"] .prose-mdx pre {
+  border-radius: 6px;
+}
+
+:root[data-page-theme="shell"] header [role="menu"],
+:root[data-page-theme="shell"] .prose-mdx pre {
+  background: var(--shell-pane);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--shell-hairline);
+}
+
+:root[data-page-theme="shell"] [data-node-meta] {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-mute);
+}
+
+:root[data-page-theme="shell"] [data-node-link] {
+  background: var(--shell-pane);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--shell-hairline);
+  color: var(--color-ink-dim);
+  font-family: var(--font-sans);
+  padding: 0.4rem 0.9rem;
+  transition: border-color 0.12s, color 0.12s;
+}
+:root[data-page-theme="shell"] [data-node-link]:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+:root[data-page-theme="shell"] .prose-mdx h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+:root[data-page-theme="shell"] .prose-mdx code {
+  background: var(--color-bg-1);
+  border: 1px solid var(--shell-hairline);
+}
+:root[data-page-theme="shell"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Every screenshot is a window in the shell's own chrome: the titlebar strip
+   and three dots, *unpainted*. The colour in those dots is the one thing
+   this project deliberately does not ship. */
+:root[data-page-theme="shell"] .reader-image {
+  border-radius: 8px;
+  border: 1px solid var(--shell-hairline);
+  padding: 22px 0 0 0;
+  background-color: var(--color-bg-1);
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(circle 3px at 12px 11px, var(--shell-chrome) 98%, transparent 100%),
+    radial-gradient(circle 3px at 23px 11px, var(--shell-chrome) 98%, transparent 100%),
+    radial-gradient(circle 3px at 34px 11px, var(--shell-chrome) 98%, transparent 100%);
+  box-shadow: 0 24px 60px -28px rgba(28, 26, 46, 0.5);
+}
+
+
+/* ---- canvas-engineering: the canvas (reader/CanvasAtmosphere.tsx) --------
+   This project draws every one of its figures in the same language — flat
+   colour blocks shelf-packed onto a grid, a near-black hairline around each,
+   diagonal hatching on the regions the compiler inserted rather than the
+   author, and light grey field showing through the positions nobody claimed.
+   The world is that language applied to the page: square corners everywhere,
+   a legend swatch on every heading, and figures standing on their own paper.
+
+   Round corners would be the wrong idea here, not merely the wrong taste. A
+   region is an interval of latent positions with exact bounds; the whole
+   argument is that you can point at where it starts and stops.
+
+   No theme is forced. The figures are ink-on-white PNGs and get their own
+   sheet in either theme, for the reason the sc-wbd world states. */
+:root[data-page-theme="canvas"] {
+  --color-bg-0: #f2f2f0;
+  --color-bg-1: #fafaf9;
+  --color-bg-2: #dedede;
+  --color-ink: #1c1e21;
+  --color-ink-dim: #4d5157;
+  --color-ink-mute: #7b8087;
+  /* The legend's own blue — patients[0..5], the biggest block on the canvas —
+     darkened until it holds 4.5:1 as link text. */
+  --color-accent: #2f6fae;
+  --canvas-rule: #25272b;
+  --canvas-hairline: #cfcfcd;
+  --canvas-paper: #ffffff;
+  --canvas-patients: #4a90d9;
+  --canvas-nurses: #7fb069;
+  --canvas-families: #c46a94;
+  --canvas-bureau: #e0a33d;
+}
+:root[data-page-theme="canvas"][data-theme="dark"] {
+  --color-bg-0: #16181b;
+  --color-bg-1: #1d2024;
+  --color-bg-2: #2b2f34;
+  --color-ink: #e4e6ea;
+  --color-ink-dim: #a8adb5;
+  --color-ink-mute: #7d838b;
+  --color-accent: #71b3ea;
+  --canvas-rule: #c9ccd2;
+  --canvas-hairline: #333941;
+  /* Still paper — the figures are drawn in black ink and inverting one would
+     be publishing an image the project never made. */
+  --canvas-paper: #f7f7f5;
+  --canvas-patients: #4a90d9;
+  --canvas-nurses: #7fb069;
+  --canvas-families: #c46a94;
+  --canvas-bureau: #e0a33d;
+}
+
+:root[data-page-theme="canvas"] .biolume {
+  display: none;
+}
+
+.canvas-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Hard-edged blocks under body copy are unreadable, so the packing is cut
+     back to almost nothing under the column and left whole at the margins. */
+  -webkit-mask-image: radial-gradient(64% 58% at 50% 42%, rgba(0, 0, 0, 0.1) 0%, #000 68%, #000 100%);
+  mask-image: radial-gradient(64% 58% at 50% 42%, rgba(0, 0, 0, 0.1) 0%, #000 68%, #000 100%);
+}
+.canvas-packing {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Nothing on this page is rounded. */
+:root[data-page-theme="canvas"] header button,
+:root[data-page-theme="canvas"] header [role="menu"],
+:root[data-page-theme="canvas"] [data-node-link],
+:root[data-page-theme="canvas"] .prose-mdx code,
+:root[data-page-theme="canvas"] .prose-mdx pre,
+:root[data-page-theme="canvas"] .reader-image {
+  border-radius: 0;
+}
+
+:root[data-page-theme="canvas"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* Repo / docs / article links as blocks: a hard outline, mono label, and a
+   fill on hover rather than a glow. */
+:root[data-page-theme="canvas"] [data-node-link] {
+  border: 1px solid var(--canvas-rule);
+  background: transparent;
+  color: var(--color-ink-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0.8rem;
+  transition: background 0.1s, color 0.1s;
+}
+:root[data-page-theme="canvas"] [data-node-link]:hover {
+  background: var(--canvas-rule);
+  color: var(--color-bg-0);
+}
+
+/* The report labels every figure, axis and legend in a sans and reserves the
+   mono for code. The page title follows. */
+:root[data-page-theme="canvas"] [data-page-title] {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+/* Headings carry a legend swatch — the same solid block, in the same blue,
+   that every figure on the page puts next to `patients[0..5]`. Square, so it
+   is a swatch and not a bullet. */
+:root[data-page-theme="canvas"] .prose-mdx h2 {
+  position: relative;
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  padding-left: 1.15rem;
+}
+:root[data-page-theme="canvas"] .prose-mdx h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.72em;
+  height: 0.72em;
+  background: var(--canvas-patients);
+  border: 1px solid var(--canvas-rule);
+}
+
+:root[data-page-theme="canvas"] .prose-mdx code,
+:root[data-page-theme="canvas"] .prose-mdx pre {
+  background: var(--color-bg-1);
+  border: 1px solid var(--canvas-hairline);
+}
+:root[data-page-theme="canvas"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Figures as plates: ruled in the same near-black hairline the blocks carry,
+   square, unshadowed, on their own sheet. */
+:root[data-page-theme="canvas"] .reader-image {
+  border: 1px solid var(--canvas-rule);
+  box-shadow: none;
+  background: var(--canvas-paper);
+}
+
+/* The results table set as a data table rather than prose: mono figures,
+   tabular, ruled top and bottom like every table in the report. */
+:root[data-page-theme="canvas"] .prose-mdx td {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-page-theme="canvas"] .prose-mdx td:first-child {
+  font-family: var(--font-sans);
+  font-variant-numeric: normal;
+}
+
+
+/* ---- yt2ctx: the Reference Monograph (reader/MonographAtmosphere.tsx) ----
+   yt2ctx's app is set as a monograph and the type is the whole design: warm
+   paper, a high-contrast serif at display size, one vermilion accent, and
+   mono labels in caps tracked wide for anything that is a label rather than
+   a sentence. Rules divide the page into a print grid; there are no cards,
+   no shadows and no radii anywhere on it.
+
+   So this world spends nearly everything on type and rules, and the canvas
+   only runs the pipeline — sampled frames, scored, a few selected — out in
+   the gutters where it cannot compete with the reading.
+
+   No theme is forced. The app is a light, paper-coloured interface; the dark
+   half here is the same ink relationship on a darker sheet rather than an
+   invention, so a reader in dark mode is not handed a cream rectangle. */
+:root[data-page-theme="monograph"] {
+  --color-bg-0: #e9e3d9;
+  --color-bg-1: #f0ebe2;
+  --color-bg-2: #d8d0c2;
+  --color-ink: #3a3733;
+  --color-ink-dim: #6a655d;
+  --color-ink-mute: #948d81;
+  --color-accent: #b4442f;
+  --monograph-rule: #b8b0a1;
+  --monograph-rule-soft: #d3ccbe;
+  --monograph-red: #c0503c;
+}
+:root[data-page-theme="monograph"][data-theme="dark"] {
+  --color-bg-0: #1a1815;
+  --color-bg-1: #221f1b;
+  --color-bg-2: #322e28;
+  --color-ink: #e7e0d4;
+  --color-ink-dim: #b3aa9b;
+  --color-ink-mute: #857d70;
+  --color-accent: #e0745c;
+  --monograph-rule: #45403a;
+  --monograph-rule-soft: #322e28;
+  --monograph-red: #e0745c;
+}
+
+:root[data-page-theme="monograph"] .biolume {
+  display: none;
+}
+
+.monograph-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Everything the canvas draws is a moving horizontal band, which is the
+     single worst thing to run under a line of text. Cut to nothing under the
+     column; the strips live in the margins. */
+  -webkit-mask-image: radial-gradient(52% 62% at 50% 44%, transparent 0%, rgba(0, 0, 0, 0.5) 62%, #000 100%);
+  mask-image: radial-gradient(52% 62% at 50% 44%, transparent 0%, rgba(0, 0, 0, 0.5) 62%, #000 100%);
+}
+.monograph-strip {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The serif. Body and headings share it, the way a monograph does — the app
+   uses one text face for everything that is a sentence and reserves the mono
+   entirely for labels. */
+:root[data-page-theme="monograph"] .prose-mdx p,
+:root[data-page-theme="monograph"] .prose-mdx li,
+:root[data-page-theme="monograph"] .prose-mdx blockquote {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 1.0625rem;
+  line-height: 1.68;
+}
+
+/* Section heads sit under a hairline that runs the measure, in the same serif
+   at a larger size. The rule is the app's own section divider. */
+:root[data-page-theme="monograph"] .prose-mdx h2,
+:root[data-page-theme="monograph"] [data-page-title] {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+:root[data-page-theme="monograph"] .prose-mdx h2 {
+  border-top: 1px solid var(--monograph-rule);
+  padding-top: 1.1rem;
+  margin-top: 3rem;
+  margin-bottom: 0.8rem;
+  font-size: 1.4rem;
+}
+/* The app's vermilion square, borrowed off its eyebrow labels and hung at the
+   end of the heading instead — where it reads as an editorial end-mark rather
+   than as a list bullet, which is what a square in front of "Problem" would
+   have become. */
+:root[data-page-theme="monograph"] .prose-mdx h2::after {
+  content: "";
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-left: 0.5em;
+  vertical-align: 0.12em;
+  background: var(--monograph-red);
+}
+
+/* Labels — the date · kind line, and the link row — are the app's mono caps,
+   tracked wide. */
+:root[data-page-theme="monograph"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* Nothing on the app is rounded and nothing is filled — a link is a hairline
+   box that turns vermilion. */
+:root[data-page-theme="monograph"] header button,
+:root[data-page-theme="monograph"] header [role="menu"],
+:root[data-page-theme="monograph"] [data-node-link],
+:root[data-page-theme="monograph"] .prose-mdx code,
+:root[data-page-theme="monograph"] .prose-mdx pre,
+:root[data-page-theme="monograph"] .reader-image {
+  border-radius: 0;
+}
+:root[data-page-theme="monograph"] [data-node-link] {
+  border: 1px solid var(--monograph-rule);
+  background: transparent;
+  color: var(--color-ink-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.5rem 0.9rem;
+  transition: border-color 0.12s, color 0.12s;
+}
+:root[data-page-theme="monograph"] [data-node-link]:hover {
+  border-color: var(--monograph-red);
+  color: var(--monograph-red);
+}
+
+:root[data-page-theme="monograph"] .prose-mdx code,
+:root[data-page-theme="monograph"] .prose-mdx pre {
+  background: var(--color-bg-1);
+  border: 1px solid var(--monograph-rule-soft);
+}
+:root[data-page-theme="monograph"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Screenshots as plates on the sheet: one hairline, no shadow, no corner. */
+:root[data-page-theme="monograph"] .reader-image {
+  border: 1px solid var(--monograph-rule);
+  box-shadow: none;
+}
+
+
+/* ---- precisionbom: the reticle (reader/ReticleAtmosphere.tsx) ------------
+   precisionbom.com is black, a faint green survey grid, a serif wordmark with
+   a targeting reticle through the O, and phosphor green on everything else.
+   Its controls are square, its labels are mono and bracketed — `[FEATURES]`,
+   `[INTERNALS]`, `[✓] Ready to export` — and its one panel is a terminal.
+   The world is those four things.
+
+   Dark is forced, for jterm's reason: the product has exactly one look, and
+   phosphor green only means phosphor against black. */
+:root[data-page-theme="reticle"] {
+  --color-bg-0: #050807;
+  --color-bg-1: #0b100d;
+  --color-bg-2: #16201a;
+  --color-ink: #e6f2e9;
+  --color-ink-dim: #9fbca9;
+  --color-ink-mute: #5f7a68;
+  --color-accent: #22c55e;
+  --reticle-line: rgba(34, 197, 94, 0.28);
+  --reticle-line-soft: rgba(34, 197, 94, 0.14);
+  color-scheme: dark;
+}
+
+:root[data-page-theme="reticle"] .biolume {
+  display: none;
+}
+
+/* Forced dark means the toggle is a lie on this page, so it goes — the same
+   thing jterm does. */
+:root[data-page-theme="reticle"] [data-theme-toggle] {
+  display: none;
+}
+
+.reticle-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: radial-gradient(70% 64% at 46% 42%, rgba(0, 0, 0, 0.24) 0%, #000 72%, #000 100%);
+  mask-image: radial-gradient(70% 64% at 46% 42%, rgba(0, 0, 0, 0.24) 0%, #000 72%, #000 100%);
+}
+.reticle-grid {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Square, all of it. The site does not round a single corner. */
+:root[data-page-theme="reticle"] header button,
+:root[data-page-theme="reticle"] header [role="menu"],
+:root[data-page-theme="reticle"] [data-node-link],
+:root[data-page-theme="reticle"] .prose-mdx code,
+:root[data-page-theme="reticle"] .prose-mdx pre,
+:root[data-page-theme="reticle"] .reader-image {
+  border-radius: 0;
+}
+
+:root[data-page-theme="reticle"] header [role="menu"],
+:root[data-page-theme="reticle"] .prose-mdx pre {
+  background: rgba(5, 8, 7, 0.86);
+  border: 1px solid var(--reticle-line);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+:root[data-page-theme="reticle"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* The nav's bracketed mono labels, which is how every link on the site reads.
+   Hovering fills them, the way `SIGN UP` is filled. */
+:root[data-page-theme="reticle"] [data-node-link] {
+  border: 1px solid var(--reticle-line);
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.42rem 0.85rem;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+:root[data-page-theme="reticle"] [data-node-link]::before {
+  content: "[";
+  opacity: 0.55;
+  margin-right: 0.2em;
+}
+:root[data-page-theme="reticle"] [data-node-link]::after {
+  content: "]";
+  opacity: 0.55;
+  margin-left: 0.2em;
+}
+:root[data-page-theme="reticle"] [data-node-link]:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #041007;
+}
+
+/* Headings as the site's status line: mono, caps, and a green cursor block
+   ahead of them. */
+:root[data-page-theme="reticle"] .prose-mdx h2 {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-ink);
+}
+:root[data-page-theme="reticle"] .prose-mdx h2::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.85em;
+  margin-right: 0.55em;
+  vertical-align: -0.06em;
+  background: var(--color-accent);
+}
+
+:root[data-page-theme="reticle"] .prose-mdx code {
+  background: var(--color-bg-1);
+  border: 1px solid var(--reticle-line-soft);
+  color: var(--color-accent);
+}
+:root[data-page-theme="reticle"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+}
+
+:root[data-page-theme="reticle"] .prose-mdx a {
+  color: var(--color-accent);
+  text-decoration-color: var(--reticle-line);
+}
+
+/* Screenshots framed like the terminal panel: a green hairline and a faint
+   phosphor glow around it, no shadow. */
+:root[data-page-theme="reticle"] .reader-image {
+  border: 1px solid var(--reticle-line);
+  box-shadow: 0 0 40px -10px rgba(34, 197, 94, 0.3);
+}
+
+
+/* ---- the cinema: space-pong, princess-suzzane, night-light, fieldratchet
+   (reader/CinemaAtmosphere.tsx) --------------------------------------------
+   Four pages whose artifact is a film, so the page is the room you watch one
+   in: true black, a tungsten amber for anything that lights up, and the clip
+   sitting at the top of the article where the screen goes.
+
+   This is the only world here that dresses a viewing condition rather than an
+   existing interface, and dark is forced for a reason that is not taste. The
+   clip is the page; everything around it is supposed to disappear; a cinema
+   with the lights on is a room with a screen in it. */
+:root[data-page-theme="cinema"] {
+  --color-bg-0: #000000;
+  --color-bg-1: #0b0b0d;
+  --color-bg-2: #17171b;
+  --color-ink: #e9e9ec;
+  --color-ink-dim: #a3a3ab;
+  --color-ink-mute: #6d6d76;
+  /* The lamp. Tungsten, not white — a projector has never been neutral. */
+  --color-accent: #e8b04b;
+  --cinema-hairline: rgba(233, 233, 236, 0.16);
+  color-scheme: dark;
+}
+
+:root[data-page-theme="cinema"] .biolume {
+  display: none;
+}
+
+/* Forced dark means the toggle is a lie on this page, so it goes — the same
+   thing jterm and precisionbom do. */
+:root[data-page-theme="cinema"] [data-theme-toggle] {
+  display: none;
+}
+
+.cinema-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Only lightly masked. Everything the canvas draws is already a soft gradient
+     or a hairline in the gutters, and cutting the beam out of the middle would
+     remove the one thing that makes the room a room. */
+  -webkit-mask-image: radial-gradient(78% 70% at 50% 44%, rgba(0, 0, 0, 0.42) 0%, #000 74%, #000 100%);
+  mask-image: radial-gradient(78% 70% at 50% 44%, rgba(0, 0, 0, 0.42) 0%, #000 74%, #000 100%);
+}
+.cinema-beam {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The vignette. A house light falls off toward the walls, and without this the
+   black is a flat sheet of paper that happens to be black. */
+:root[data-page-theme="cinema"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(72% 62% at 50% 40%, transparent 0%, rgba(0, 0, 0, 0.55) 78%, rgba(0, 0, 0, 0.82) 100%);
+}
+
+/* The screen. Every clip and every still on these pages gets the same
+   treatment: a hairline edge, a black mat, and the light the picture spills on
+   the wall behind it. This is the one piece of furniture that matters here —
+   the video is why the reader came.
+
+   Aimed at the *frame* rather than at the `<iframe>` inside it. `<Video>` and
+   `<LiveDemo>` both wrap their embed in an overflow-clipped div, so a shadow
+   set on the iframe would be cropped away by its own parent; the wrapper is
+   `figure > div`, and a bare `<video>` for a self-hosted file is `figure >
+   video`. Both are here. */
+:root[data-page-theme="cinema"] .prose-mdx figure > div,
+:root[data-page-theme="cinema"] .prose-mdx figure > video,
+:root[data-page-theme="cinema"] .reader-image {
+  border-radius: 2px;
+  border: 1px solid var(--cinema-hairline);
+  background: #000;
+  box-shadow:
+    0 0 0 10px #000,
+    0 30px 120px -20px rgba(232, 176, 75, 0.2),
+    0 0 170px -40px rgba(233, 233, 236, 0.16);
+}
+
+/* Titles as a title card: caps, tracked out, over a hairline. */
+:root[data-page-theme="cinema"] .prose-mdx h2 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 1.05rem;
+  border-bottom: 1px solid var(--cinema-hairline);
+  padding-bottom: 0.6rem;
+  margin-top: 3rem;
+}
+
+:root[data-page-theme="cinema"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* Links as the marquee: an amber hairline plate that lights up rather than
+   fills, because a bulb behind glass is what the reference actually is. */
+:root[data-page-theme="cinema"] [data-node-link] {
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.45rem 0.9rem;
+  transition: box-shadow 0.15s, border-color 0.15s, color 0.15s;
+}
+:root[data-page-theme="cinema"] [data-node-link]:hover {
+  border-color: var(--color-accent);
+  color: #1a1206;
+  background: var(--color-accent);
+  box-shadow: 0 0 26px -4px rgba(232, 176, 75, 0.55);
+}
+
+:root[data-page-theme="cinema"] header button,
+:root[data-page-theme="cinema"] header [role="menu"],
+:root[data-page-theme="cinema"] .prose-mdx code,
+:root[data-page-theme="cinema"] .prose-mdx pre {
+  border-radius: 2px;
+}
+:root[data-page-theme="cinema"] header [role="menu"],
+:root[data-page-theme="cinema"] .prose-mdx pre,
+:root[data-page-theme="cinema"] .prose-mdx code {
+  background: rgba(11, 11, 13, 0.88);
+  border: 1px solid var(--cinema-hairline);
+}
+:root[data-page-theme="cinema"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+
+/* ---- racksavant: the contact sheet (reader/EditorialAtmosphere.tsx) -------
+   RackSavant's own tokens, copied off its stylesheet rather than eyeballed:
+   ink `#0b0b0c`, paper `#efebe3`, oxblood `#7e2436` with `#ff3b00` held back
+   for the moment something fires, Instrument Serif at display sizes, and a
+   radius scale whose every entry is `0px` except the pill on a control.
+
+   Dark is forced. The product declares that palette exactly once — there is no
+   light half of the token file and no toggle in the app — so a cream version of
+   this page would be a picture of software that does not exist. */
+:root[data-page-theme="editorial"] {
+  --color-bg-0: #0b0b0c;
+  --color-bg-1: #131313;
+  --color-bg-2: #1c1b1a;
+  --color-ink: #efebe3;
+  --color-ink-dim: #bdb7ac;
+  --color-ink-mute: #8a857b;
+  /* The oxblood, opened up until it holds as link text on the ink. `#7e2436`
+     is the fill weight and stays available below; at body size on near-black
+     it is unreadable, and lightening it is the smaller lie. */
+  --color-accent: #c9556a;
+  --rs-oxblood: #7e2436;
+  --rs-flash: #ff3b00;
+  --rs-rule: rgba(239, 235, 227, 0.28);
+  --rs-rule-hi: rgba(239, 235, 227, 0.9);
+  --rs-serif: "Instrument Serif", "Playfair Display", Georgia, "Times New Roman", serif;
+  color-scheme: dark;
+}
+
+:root[data-page-theme="editorial"] .biolume {
+  display: none;
+}
+:root[data-page-theme="editorial"] [data-theme-toggle] {
+  display: none;
+}
+
+.editorial-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* The plates are large blocks of saturated colour, which is the worst thing
+     to run under body copy. Cut hard through the column; the rail lives in the
+     gutters where it reads as a sheet going past. */
+  -webkit-mask-image: radial-gradient(58% 62% at 50% 44%, transparent 0%, rgba(0, 0, 0, 0.45) 60%, #000 100%);
+  mask-image: radial-gradient(58% 62% at 50% 44%, transparent 0%, rgba(0, 0, 0, 0.45) 60%, #000 100%);
+}
+.editorial-sheet {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The display face. The product sets every headline in Instrument Serif and
+   everything that is a label in the mono; the page follows, and falls back
+   through the same stack the product's own token declares. */
+:root[data-page-theme="editorial"] .prose-mdx h2,
+:root[data-page-theme="editorial"] .prose-mdx h3,
+:root[data-page-theme="editorial"] [data-page-title] {
+  font-family: var(--rs-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+:root[data-page-theme="editorial"] .prose-mdx h2 {
+  font-size: 1.75rem;
+  margin-top: 3rem;
+  margin-bottom: 0.7rem;
+}
+/* The rule under a section head, in the product's own hairline. It runs the
+   measure and stops — a full-bleed rule would be a divider, and this is a
+   masthead. */
+:root[data-page-theme="editorial"] .prose-mdx h2::after {
+  content: "";
+  display: block;
+  width: 100%;
+  max-width: 70ch;
+  height: 1px;
+  margin-top: 0.7rem;
+  background: var(--rs-rule);
+}
+
+/* Every radius token in the product is 0 except the pill on a control. */
+:root[data-page-theme="editorial"] header [role="menu"],
+:root[data-page-theme="editorial"] .prose-mdx code,
+:root[data-page-theme="editorial"] .prose-mdx pre,
+:root[data-page-theme="editorial"] .reader-image {
+  border-radius: 0;
+}
+:root[data-page-theme="editorial"] header button,
+:root[data-page-theme="editorial"] [data-node-link] {
+  border-radius: 999px;
+}
+
+:root[data-page-theme="editorial"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* Controls as the product draws them: a paper hairline pill that fills oxblood
+   on hover. No glow anywhere — nothing in this design system emits light. */
+:root[data-page-theme="editorial"] [data-node-link] {
+  border: 1px solid var(--rs-rule);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 0.5rem 1rem;
+  transition: background 0.18s cubic-bezier(0.16, 0.84, 0.24, 1), border-color 0.18s, color 0.18s;
+}
+:root[data-page-theme="editorial"] [data-node-link]:hover {
+  background: var(--rs-oxblood);
+  border-color: var(--rs-oxblood);
+  color: var(--color-ink);
+}
+
+:root[data-page-theme="editorial"] header [role="menu"],
+:root[data-page-theme="editorial"] .prose-mdx pre,
+:root[data-page-theme="editorial"] .prose-mdx code {
+  background: var(--color-bg-1);
+  border: 1px solid rgba(239, 235, 227, 0.12);
+}
+:root[data-page-theme="editorial"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Images as plates on the sheet: square, one paper hairline, no shadow. The
+   product's own gallery is a grid of hard-edged photographs and a rounded
+   corner would be the first thing to look wrong. */
+:root[data-page-theme="editorial"] .reader-image {
+  border: 1px solid var(--rs-rule);
+  box-shadow: none;
+}
+
+/* The one place `--flash` is allowed, which is the same rule the product
+   follows: it marks the thing that just happened, never a surface. */
+:root[data-page-theme="editorial"] .prose-mdx strong {
+  color: var(--rs-flash);
+  font-weight: 500;
+}
+
+
+/* ---- tensor-computer: the machine's state (reader/TensorAtmosphere.tsx) ---
+   No site to borrow from, and none needed: everything this computer has is a
+   tensor, and the only picture it has ever made of itself is the framebuffer in
+   the clip on the page — a hard pixel grid with nothing under it to interpolate.
+   So the world is the machine's own state, and every corner on the page is
+   square because the display cannot draw a round one.
+
+   The reader is the temperature. Scrolling anneals the field from a blend of
+   all 32 opcodes down to one-hot; the stylesheet's job is to make sure the page
+   around it looks like the same machine. No theme is forced — the computer has
+   no opinion about the colour of paper. */
+:root[data-page-theme="tensor"] {
+  --color-bg-0: #f3f5f3;
+  --color-bg-1: #fbfcfb;
+  --color-bg-2: #dfe3e0;
+  --color-ink: #14181a;
+  --color-ink-dim: #464f52;
+  --color-ink-mute: #78817f;
+  --color-accent: #1f7a52;
+  --tensor-hairline: #ccd3cf;
+  --tensor-dim: #b3bdb8;
+  --tensor-hot: #b8720b;
+}
+:root[data-page-theme="tensor"][data-theme="dark"] {
+  --color-bg-0: #0d0f12;
+  --color-bg-1: #14171b;
+  --color-bg-2: #212529;
+  --color-ink: #e6ebe8;
+  --color-ink-dim: #a4aeaa;
+  --color-ink-mute: #757e7b;
+  --color-accent: #8ee6b8;
+  --tensor-hairline: #2b3136;
+  --tensor-dim: #454d51;
+  --tensor-hot: #f0b429;
+}
+
+:root[data-page-theme="tensor"] .biolume {
+  display: none;
+}
+
+.tensor-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  /* Hard-edged cells under a line of text are unreadable however faint, so the
+     framebuffer is cut back through the column and left whole at the margins —
+     the same trade the canvas-engineering world makes for the same reason. */
+  -webkit-mask-image: radial-gradient(60% 56% at 50% 44%, rgba(0, 0, 0, 0.12) 0%, #000 66%, #000 100%);
+  mask-image: radial-gradient(60% 56% at 50% 44%, rgba(0, 0, 0, 0.12) 0%, #000 66%, #000 100%);
+}
+.tensor-state {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Nothing here is rounded. A pixel is not rounded. */
+:root[data-page-theme="tensor"] header button,
+:root[data-page-theme="tensor"] header [role="menu"],
+:root[data-page-theme="tensor"] [data-node-link],
+:root[data-page-theme="tensor"] .prose-mdx code,
+:root[data-page-theme="tensor"] .prose-mdx pre,
+:root[data-page-theme="tensor"] .reader-image {
+  border-radius: 0;
+}
+
+:root[data-page-theme="tensor"] [data-node-meta] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  color: var(--color-ink-mute);
+}
+
+/* Every heading carries a one-hot vector: five cells, one lit. It is the
+   machine's only way of naming a thing — an opcode, a register, an address are
+   all this shape — and putting it in the margin says so once per section
+   without a word of explanation. */
+:root[data-page-theme="tensor"] .prose-mdx h2 {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding-left: 4.2rem;
+}
+:root[data-page-theme="tensor"] .prose-mdx h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  background: var(--tensor-dim);
+  box-shadow:
+    11px 0 0 var(--tensor-dim),
+    22px 0 0 var(--color-accent),
+    33px 0 0 var(--tensor-dim),
+    44px 0 0 var(--tensor-dim);
+}
+
+:root[data-page-theme="tensor"] .prose-mdx code,
+:root[data-page-theme="tensor"] .prose-mdx pre,
+:root[data-page-theme="tensor"] header [role="menu"] {
+  background: var(--color-bg-1);
+  border: 1px solid var(--tensor-hairline);
+}
+:root[data-page-theme="tensor"] .prose-mdx pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Repo / paper links as switch positions: a square outline that fills when it
+   is the one selected. */
+:root[data-page-theme="tensor"] [data-node-link] {
+  border: 1px solid var(--tensor-hairline);
+  background: transparent;
+  color: var(--color-ink-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 0.42rem 0.85rem;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+:root[data-page-theme="tensor"] [data-node-link]:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-bg-0);
+}
+
+/* The machine's display has no interpolation, and neither does the page: a
+   pixel-art frame out of that framebuffer is meant to be looked at as pixels,
+   and a browser smoothing it is inventing values the computer never held. */
+:root[data-page-theme="tensor"] .reader-image {
+  border: 1px solid var(--tensor-hairline);
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
+/* The results table set as a register dump: mono, tabular, square. */
+:root[data-page-theme="tensor"] .prose-mdx td {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ---- Embed frames inside the square worlds ------------------------------
+   `<Pdf>`, `<Video>` and `<LiveDemo>` wrap their embed in a 16px-radius plate
+   with the site's default hairline. That is right on the site and wrong in any
+   world that has already said it does not round corners, so the four worlds
+   that now carry an embed square theirs off and re-draw the edge in their own
+   line colour. The wrapper is `figure > div`; the embed itself is untouched. */
+:root[data-page-theme="editorial"] .prose-mdx figure > div {
+  border-radius: 0;
+  border-color: var(--rs-rule);
+  background: var(--color-bg-1);
+}
+:root[data-page-theme="tensor"] .prose-mdx figure > div {
+  border-radius: 0;
+  border-color: var(--tensor-hairline);
+  background: var(--color-bg-1);
+}
+:root[data-page-theme="wbd"] .prose-mdx figure > div {
+  border-radius: 0;
+  border-color: var(--wbd-rule-strong);
+  background: var(--color-bg-1);
+}
+:root[data-page-theme="langcurriculum"] .prose-mdx figure > div {
+  border-radius: 0;
+}
