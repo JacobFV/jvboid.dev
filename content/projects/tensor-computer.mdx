@@ -1,7 +1,7 @@
 ---
 title: The Tensor Computer
 date: 2026-02-01
-resume_description: "complete von neumann computer rebuilt as differentiable tensor operations so machine-code programs can in principle be learned by gradient descent. python, jax, differentiable programming, research."
+resume_description: "complete von neumann computer rebuilt as differentiable tensor operations so machine-code programs can in principle be learned by gradient descent. four independent ISA backends held in agreement by a shared conformance suite; a self-hosting c compiler and a windowing os run on the machine. python, jax, c, rust, differentiable programming, research."
 lane: building
 tags: [differentiable-programming, program-synthesis, jax, agents, research]
 summary: "A complete von Neumann computer — ALU, registers, cache, virtual memory, bus, GPU, peripherals — rebuilt as differentiable tensor operations in JAX, so that programs written in machine code can, in principle, be learned end-to-end by gradient descent."
@@ -10,6 +10,7 @@ hero:
   alt: A pixel-art Blender-style GUI environment the tensor computer's agents are trained to operate
   fit: contain
 links:
+  code: file:///home/brandonin/Documents/tensor-computer
   paper: /assets/pdf/tensor-computer-paper.pdf
 influences: [tensacode, computatrum, full-stack-artificial-intelligence]
 realizes: [tensor-computer-paper]
@@ -58,10 +59,22 @@ At temperature τ → 0 every softmax collapses to one-hot and the machine
 recovers exact discrete semantics. At higher τ, gradients flow through
 the entire computation, so a program — encoded as 112 real-valued
 parameters per instruction — is just another differentiable object you
-can optimize. To prove the architecture is real and not a toy, a
-**self-hosting C compiler** written in tensor machine code compiles and
-runs `factorial(5) = 120`, exercising recursion, stack frames,
-conditionals, and function calls.
+can optimize.
+
+To prove the architecture is real and not a toy, the implementation
+carries four independent backends — the JAX machine, a reference C VM, a
+Rust VM, and a batched C++ simulator — held in agreement by 59 shared
+conformance vectors. Recursive `factorial(5)` returns 120 in **exactly 49
+cycles** on all four, which is the load-bearing check: the soft machine
+and the real machine have to be the same machine.
+
+Two things run on top of it. A **self-hosting C compiler**: `tcc`, written
+in C, compiled to tensor machine code, occupies 40,942 of the machine's
+65,536 instruction slots and — *running on the tensor computer* — compiles
+a C program to output byte-identical to the host-built compiler's. And
+**tensor-os**, a preemptive multitasking kernel with a windowing GUI
+written in C: damage-tracking compositor, widget toolkit, bitmap font, and
+five applications, in 20,256 slots.
 
 ## How
 
@@ -106,9 +119,25 @@ Within those bounds the results are real and verifiable:
 | Task         | Episodes to 100% | Learned program                     |
 | ------------ | ---------------- | ------------------------------------ |
 | `add`        | 847 ± 123        | `ADD R0,R0,R1; HALT` — optimal       |
-| `max`        | 2,341 ± 412      | `CMP; JGE; MOV; HALT` — optimal      |
+| `max`        | 2,341 ± 412      | `CMP; JGE; MOV; HALT` — see below    |
 | `sum_array`  | 15K              | correct loop, generalizes to any `n` |
 | `bubble_sort`| 50K              | nested-loop bubble sort, 98.5% @ n=4 |
+
+The `max` row needs a correction I only found while building the full
+implementation, and it is more interesting than the original claim. That
+four-instruction sequence is **not** a signed maximum at full width. This
+ISA derives its conditional branches from the zero and negative flags
+alone — there is no `N != V` form, no branch on overflow, and no
+instruction that can read the overflow flag into a register — so
+`CMP a, b; JGE` decides `a >= b` only while `a - b` cannot overflow. It is
+wrong on roughly a quarter of 32-bit input pairs: `max(0x7FFFFFFF, -1)`
+returns `-1`, halting cleanly with a plausible answer.
+
+The overflow-safe form costs eight instructions, not four. The same defect
+turned up independently in three places — the evaluation suite's reference
+implementations, the C compiler's own code generator, and the paper — which
+is the sort of thing you only catch by making several implementations agree
+on shared test vectors rather than testing each against itself.
 
 Fixed high temperature (no annealing) plateaus at ~10% — chance.
 Annealing is not optional; it is the experiment.
@@ -194,3 +223,22 @@ still worth having — it sharpens the question of *when* gradients help
 program synthesis, and the differentiable substrate remains a clean
 testbed for interpretability and for the RL-driven phases of the research
 program.
+
+The second lesson came from the implementation rather than the research,
+and I did not expect it. Building four independent backends and forcing
+them to agree on shared test vectors found bugs that no single
+implementation could have found, because each one was internally
+consistent and passed its own tests. All four had independently chosen a
+*different* random number generator. A timer off-by-one appeared in two of
+them from the same root cause, arrived at separately. The straight-through
+estimator was inverted in a way that returned the wrong value *and* exactly
+zero gradient — training would have annealed into crystallization and
+silently stopped learning while still producing plausible output. And the
+signed-comparison defect above sat in three places at once.
+
+None of those fail loudly. They produce plausible answers, which is
+precisely why differential testing across implementations catches them and
+unit tests do not. For a project whose central claim is that two
+implementations of the same machine — one soft, one discrete — must agree
+to within `1e-4`, that turned out to be the methodology rather than an
+accident of it.

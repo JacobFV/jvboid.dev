@@ -1,15 +1,16 @@
 ---
-title: "Differentiable Tensor Computers for End-to-End Program Synthesis"
+title: "A Differentiable von Neumann Computer"
 date: 2026-01-01
 lane: research
 tags: [differentiable-programming, program-synthesis, jax, agents, machine-code]
-summary: "A research paper specifying a complete von Neumann computer rebuilt as differentiable tensor operations in JAX, including soft ALU dispatch, soft memory hierarchies, temperature annealing, and a self-hosting compiler validation path."
+summary: "A complete von Neumann computer rebuilt as differentiable tensor operations, shown by differential testing against three independent discrete implementations to be the same machine as its discrete counterpart, and demonstrated by running a self-hosting C compiler and a windowing OS. Reports what the construction established, what it cost, and why the synthesis question is still open."
 hero:
   src: /assets/img/papers/tensor-computer.png
-  alt: "First page of Differentiable Tensor Computers for End-to-End Program Synthesis"
+  alt: "First page of A Differentiable von Neumann Computer"
   fit: contain
 authors: [Jacob Valdez]
 venue: working paper
+pages: 44
 pdf: /assets/pdf/tensor-computer-paper.pdf
 bibKey: valdez2026tensorcomputer
 influences: [tensacode, computatrum, full-stack-artificial-intelligence]
@@ -18,6 +19,21 @@ critiques: []
 ---
 
 [Open the PDF](/assets/pdf/tensor-computer-paper.pdf).
+
+The paper specifies the architecture; the implementation is a separate,
+larger artifact and is the better place to check the claims. It carries four
+independent backends for the same ISA — the differentiable JAX machine, a
+reference C VM, a Rust VM, and a batched C++ simulator — held in agreement
+by 59 shared conformance vectors, and the self-hosting compiler the paper
+describes as a validation path is now demonstrated rather than asserted:
+`tcc` runs on the tensor computer and compiles C to output byte-identical
+to the host-built compiler's.
+
+Building it also turned up a correction to the paper. The four-instruction
+`CMP; JGE; MOV` maximum in the experiments section is not a signed maximum
+at full width — this ISA has no `N != V` branch and no way to read the
+overflow flag, so the sequence is wrong on roughly a quarter of 32-bit
+input pairs. The overflow-safe form costs eight instructions.
 
 This paper is the formal specification behind the Tensor Computer project: a complete von Neumann architecture implemented as differentiable tensor operations in JAX. The design includes a softmax-gated ALU, differentiable register file, cache hierarchy, main memory, virtual memory, system bus, GPU, display framebuffer, and peripheral buffers.
 
