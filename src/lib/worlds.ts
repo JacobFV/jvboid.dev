@@ -48,6 +48,36 @@ export const WORLDS: Record<string, World> = {
   "/projects/windows-web-next": { id: "fluent", theme: null },
   // macOS: vibrancy, capsule controls, traffic lights on every window.
   "/projects/macos-web-next": { id: "aqua", theme: null },
+  // The window manager with no OS on top of it — the third of the desktop
+  // family, and the one both others are built out of.
+  "/projects/browser-os": { id: "shell", theme: null },
+  // The compiler's own output: latent regions auto-packed onto the canvas.
+  "/projects/canvas-engineering": { id: "canvas", theme: null },
+  // The Reference Monograph — yt2ctx's paper, red rule, and filmstrip.
+  "/projects/yt2ctx": { id: "monograph", theme: null },
+  // Phosphor green on black behind a targeting reticle: precisionbom.com.
+  "/projects/precisionbom": { id: "reticle", theme: "dark" },
+  // The contact sheet: RackSavant's own near-black ground, paper type and
+  // oxblood, with the mood rail running behind the article. Forced dark — the
+  // product's token file declares its palette exactly once and has no light
+  // half, so a cream version would be a picture of an app that does not exist.
+  "/projects/racksavant": { id: "editorial", theme: "dark" },
+  // The machine's own tensors — framebuffer, opcode weights, program counter —
+  // annealing as the reader scrolls. No theme is forced: the computer has no
+  // opinion about the colour of paper and the field takes its ink from the
+  // cascade.
+  "/projects/tensor-computer": { id: "tensor", theme: null },
+  // The room you watch a film in, for the four pages whose artifact is one.
+  //
+  // The only world here that dresses a *viewing condition* rather than an
+  // existing interface, which is the honest answer for a page that is a video
+  // and a caption. Dark is forced and is not a preference: the clip is the
+  // page, the room around it is supposed to disappear, and a cinema with the
+  // lights on is just a room with a screen in it.
+  "/projects/space-pong": { id: "cinema", theme: "dark" },
+  "/projects/looking-for-princess-suzzane": { id: "cinema", theme: "dark" },
+  "/projects/the-right-night-light": { id: "cinema", theme: "dark" },
+  "/projects/fieldratchet": { id: "cinema", theme: "dark" },
   // The refractive glass itself — this page runs the real lens.
   "/projects/halo-prismatic": { id: "halo", theme: null },
   // An open field, which is where you would actually test the thing.

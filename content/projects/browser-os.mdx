@@ -28,6 +28,20 @@ realizes: []
 critiques: []
 ---
 
+<ShellAtmosphere />
+
+<LiveDemo
+  url="https://desktop-shell.vercel.app"
+  title="browser-os"
+  caption="The shell running here — open apps, drag and stack windows, and work the virtual filesystem from the terminal. No OS chrome on top of it."
+/>
+
+<Video
+  url="https://www.youtube.com/watch?v=JVPbi7MRZFg"
+  title="browser-os"
+  caption="The same shell, driven: window management, virtual filesystem, and app lifecycle before any OS-specific chrome is layered on."
+/>
+
 ## Problem
 The windows-web-next and macos-web-next simulations share a lot of plumbing: window manager, virtual filesystem, app lifecycle, taskbar/menu chrome. Re-implementing each per-OS is wasteful and drifts the two apart.
 
@@ -39,13 +53,7 @@ A generic browser-native desktop shell that the OS-specific simulators reuse. Sa
 - **Deployed at:** [desktop-shell.vercel.app](https://desktop-shell.vercel.app).
 
 ## Results
-Foundation layer for the controllable-desktop family. Both windows-web-next and macos-web-next pull from this shell.
-
-<Video
-  url="https://www.youtube.com/watch?v=JVPbi7MRZFg"
-  title="browser-os"
-  caption="The shell running: window management, virtual filesystem, and app lifecycle before any OS-specific chrome is layered on."
-/>
+Foundation layer for the controllable-desktop family. Both windows-web-next and macos-web-next pull from this shell. Live at [desktop-shell.vercel.app](https://desktop-shell.vercel.app) — running at the top of this page.
 
 ## Lessons
 Splitting the chrome from the shell makes new "OS" simulators cheap. Worth doing earlier in similar product-research stacks.

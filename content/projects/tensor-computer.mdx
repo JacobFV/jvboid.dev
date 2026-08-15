@@ -16,6 +16,8 @@ realizes: [tensor-computer-paper]
 critiques: []
 ---
 
+<TensorAtmosphere />
+
 ## Problem
 
 An LLM agent that "increments a loop counter" spends 20–50 tokens doing
@@ -159,8 +161,20 @@ deeper than UI aesthetics.
 />
 
 Full architecture, mathematical formalization, training strategy, and the
-$1,000 / two-week research program are in the
-[paper](/assets/pdf/tensor-computer-paper.pdf).
+$1,000 / two-week research program are in the paper, which is here rather than
+behind a link — the state-tuple definitions and the annealing schedule are the
+part of this project that is hardest to take on trust, and they are on pages you
+can read without leaving:
+
+<Pdf
+  src="/assets/pdf/tensor-computer-paper.pdf"
+  title="The Tensor Computer: A Differentiable von Neumann Architecture"
+  caption="The paper: the full machine-state tuple, the soft-addressing formalization, the five-phase annealing schedule, and the two-week research program."
+/>
+
+If you want the short version of what to look for: the machine-state tuple is
+the honest measure of how complete the architecture is, and the annealing
+schedule is where the negative result lives.
 
 ## Lessons
 

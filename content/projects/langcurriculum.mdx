@@ -27,6 +27,17 @@ critiques: []
 
 ![The progressive curriculum as a layered graph: seven columns of lessons, 83 nodes wide at the roots and 3 at the far end, with derived prerequisite edges between them](/assets/img/projects/langcurriculum-graph.svg)
 
+The whole corpus is browsable, and browsing it is the fastest way to tell
+whether any of the claims below are true. Every lesson has a page, every page
+carries 50 real episodes, and every episode is shown in all 64 published
+languages at once:
+
+<LiveDemo
+  url="https://jacobfv.github.io/formal-language-cirriculum/"
+  title="langcurriculum"
+  caption="The published site: 180 lessons in 18 tracks, L001 through L180, 50 samples each, 64 languages side by side."
+/>
+
 ## Problem
 
 Every claim about a model's reasoning runs into the same two objections, and neither has a good answer.
@@ -43,11 +54,53 @@ A lesson is a generator: hand it a seed and it builds a world — a grammar, an 
 
 The presentation is then peeled off entirely. The same episode can be rendered in any of 411 languages, in five media, in eight different answer formats — and every one of those carries an identical underlying string. That is what makes the confound measurable instead of invisible: render one problem five ways, and ask whether the answers agree. A system that internalized the structure is invariant. One that learned a surface is not, and it shows.
 
+That claim is checkable rather than rhetorical, and this is where to check it.
+`L029 grammar_induction` is one episode — seed `000`, eleven labelled strings,
+four candidates — laid out in every published language in a row. The English
+asks *which object is grammatical*, the Turkish asks *hangi nesne grammatical*,
+the Chinese asks 哪个物体是 grammatical, the Swahili labels its examples *ndiyo*
+and *hapana*, and the answer under every one of them is the identical string
+`rv vl kz`. Nothing was translated; the same episode was said 64 times.
+
+<LiveDemo
+  url="https://jacobfv.github.io/formal-language-cirriculum/lessons/grammar_induction.html"
+  title="L029 grammar induction, in 64 languages"
+  caption="One episode, one answer, 64 surfaces. Scroll the frame: the labelled strings and the candidate set never move, and the language around them changes completely."
+/>
+
+The languages are deliberately not the usual six. Alongside Spanish, German,
+Japanese and Arabic sit Navajo, Chukchi, Lushootseed, Yahgan, !Xóõ, Nivkh,
+Ainu, Lakhota, Adyghe, Ingush, Greenlandic, Woiwurrung and Chickasaw — chosen
+because the point is to break any correspondence between the shape of a
+sentence and the shape of the problem, and a set of closely related European
+languages would fail to break it. There is also a `Symbolic notation` surface
+and an `English (held-out synonyms)` one: the first drops natural language
+entirely, the second keeps English and changes only the words, which isolates
+lexical memorization from everything else.
+
 ## How
 
 **Lessons are flat; ordering is an opinion.** A lesson has no number and no section — it does not know where it sits. Sequence and prerequisites belong to `Curriculum` objects, directed acyclic graphs over the same lessons, of which several ship and disagree with each other. Only one has edges, and they are *derived*: X comes before Y when Y is at least as demanding on every declared difficulty axis and strictly more on one. Hand-writing 169 prerequisites would have been inventing structure nobody measured; a derived relation is auditable and wrong in ways someone can point at.
 
 That graph pays for itself immediately. For any node, everything upstream is a training set and the node itself is held out — so the DAG is a generator of **97 compositional-generalization tests**, with disjointness by construction rather than by sampling.
+
+Five curricula ship and each one is drawn. `canonical` is the taught order over
+all 180; `core170` and `supplementary` cut the same catalogue 170 / 10;
+`everything` is the whole set again with nothing withheld; and `progressive` is
+the only one carrying edges — the derived DAG, laid out in seven layers of
+83 · 39 · 18 · 16 · 15 · 6 · 3.
+
+<LiveDemo
+  url="https://jacobfv.github.io/formal-language-cirriculum/graph/progressive.html"
+  title="The progressive curriculum, drawn"
+  caption="Layer 0 is 83 lessons wide because 83 lessons have no prerequisite that the difficulty-axis rule can derive. The narrowing is the whole claim about ordering."
+/>
+
+The interesting thing in that picture is the first layer. It is 83 lessons
+wide — nearly half the catalogue — because the derivation rule only draws an
+edge when one lesson dominates another on *every* declared difficulty axis and
+strictly exceeds it on one. Most pairs of lessons are simply incomparable, and
+a hand-authored curriculum would have hidden that behind a confident ordering.
 
 **Difficulty is a dial, not a switch.** 177 of the 179 working lessons take a difficulty in `[0, 1]` that scales whatever actually makes *that* lesson harder: proof length, recursion depth, the number of rival theories to eliminate, the width of a game to solve. The two that refuse say so honestly — one has exactly one object per compass direction, which is the whole reason each direction denotes uniquely.
 
@@ -58,6 +111,51 @@ That graph pays for itself immediately. For any node, everything upstream is a t
 One surface is deliberately *not* a re-presentation of the text. `scene` reads the episode's structure and draws it — the picture is of the scene, not of the sentence describing it — with the question beside it in words. That is visual question answering, and it is kept separate in the code, because a transcode inherits the lesson's floor and a native drawing does not.
 
 ![The same episode drawn natively: nine coloured shapes on a labelled grid at the coordinates the episode gives them](/assets/img/projects/langcurriculum-scene.png)
+
+## The catalogue
+
+The 180 lessons are `L001` through `L180`, grouped into **18 tracks** that run
+from "what is a symbol" to "what does a civilization do with one". The arc is
+the point — each track is a claim about what has to be in place before the next
+one is a coherent thing to ask.
+
+| Track | Range | What it asks for |
+| --- | --- | --- |
+| `symbols` | L001–L011 | denotation, sequence memory, automata induction, recursion, variable identity, unification |
+| `compositional-semantics` | L012–L019 | predicate logic, generalized quantifiers, scope ambiguity, spatial and temporal language, event semantics, thematic roles |
+| `pragmatics` | L020–L040 | instruction following, coreference, ellipsis, presupposition, implicature, speaker–listener games, lexicon and grammar induction, entailment, concept invention |
+| `analogy` | L041–L060 | analogy, causal language, counterfactuals, planning, program synthesis and explanation, negotiation, deception detection, noisy-channel language |
+| `ontology` | L061–L067 | ontology construction, revision and alignment; representation selection and invention; abstraction ladders; conceptual chunking |
+| `science` | L068–L080 | latent-rule discovery, model induction, experimental design, theory comparison, falsification, anomaly resolution, emergence, invariance, symmetry, conservation laws |
+| `mathematics` | L081–L093 | definition learning, conjecture generation, theorem proving, lemma invention, proof compression, counterexample generation, default reasoning, belief revision |
+| `epistemics` | L094–L102 | source provenance and reliability, argumentation and its adversarial form, explanation and explanation repair, teaching, curriculum design, knowledge-gap detection |
+| `problem-formulation` | L103–L114 | formulation and reformulation, decomposition, hierarchical planning, resource-bounded and anytime reasoning, metareasoning, strategy and algorithm discovery |
+| `reflective-computation` | L115–L120 | recursive self-application, metalinguistic reasoning, language design, DSL invention, compiler construction, interpreter learning |
+| `protocols` | L121–L130 | protocol discovery, institution learning and design, norm and contract reasoning, mechanism design, coalition formation, distributed knowledge, cultural evolution |
+| `history` | L131–L134 | which history is consistent with the present state; the causally pivotal event, verified by deletion and re-simulation; what an agent believes given what it was there to see |
+| `self-modeling` | L135–L145 | predicting a described agent's success, attributing a failure to its stage, architecture selection and composition, tool construction, knowledge refactoring, minimum description length |
+| `open-ended-epistemology` | L146–L156 | inventing the concept that carves the marked set, asking the question that eliminates the most, paradigm shift, formalization and deformalization, ambiguity preservation |
+| `values` | L157–L162 | recovering a preference order from choices, Pareto exclusion, goal inference, goal revision and generation, deciding which goal to abandon |
+| `civilization-scale` | L163–L166 | multi-generation cultural transmission under a stated rule, cumulative consensus, symbolic world building, curriculum invention |
+| `transfer` | L167–L170 | universal interface transfer, an unknown game, the symbolic generalist, an open-world research agent |
+| `syntax` | L171–L180 | centre embedding, comparatives, counting quantifiers, expression evaluation, long-range agreement, negation, nesting depth, palindromes, set operations, string reversal |
+
+Each lesson carries its own metadata, and all of it is on the page rather than
+in a paper: the tags it belongs to, whether it takes a difficulty knob, its
+position on each declared difficulty axis — `grammar complexity`, `lexical
+novelty`, `reasoning depth` — and the capabilities it claims to exercise, from
+`finite_state_induction` through `scientific_induction` and `abstraction`.
+Those axes are not decoration. They are the input to the prerequisite
+derivation, which is why the ordering is auditable at all: you can disagree
+with an edge by pointing at the axis that produced it.
+
+The site publishes 50 sampled episodes per lesson with their computed answers,
+which is a deliberate and slightly awkward choice — it is a benchmark whose
+answers are printed next to the questions. It works because the samples are not
+*the* evaluation set. They are 50 draws from a generator with an unbounded seed
+space, published so the corpus can be inspected, and any real evaluation asks
+for seeds nobody has seen. A fixed benchmark cannot make that trade; this is
+the one structural advantage of shipping a program instead of a corpus.
 
 ## Tests
 

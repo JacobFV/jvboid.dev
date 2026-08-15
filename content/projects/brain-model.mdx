@@ -17,36 +17,20 @@ links:
 - Represents happiness as a six-dimensional coordinate over valence, arousal, integration, effective rank, compression-friction, and self-model salience
 - Maps target affect into MIDI and audio, with a proposed BCI loop for closed-loop adaptation
 
-Presentation: [Resonance Presentation (PDF)](/assets/pdf/Resonance_Presentation.pdf)
+![Title slide: "Resonance — algorithmic music that targets the geometry of happiness", with the affect vector and the beauty proportionality set small underneath. Jacob Valdez, Human Enhancement Hackathon 2026](/assets/img/projects/brain-model-resonance-slide-1.png)
 
-<PresentationSlides
-  slides={[
-    {
-      src: "/assets/img/projects/brain-model-resonance-slide-3.png",
-      alt: "Resonance system slide showing affect geometry, cortical prediction, and music mapping",
-    },
-    {
-      src: "/assets/img/projects/brain-model-resonance-slide-4.png",
-      alt: "Structured sparse attention slide with cortical regions, connectivity matrix, and BCI metrics",
-    },
-    {
-      src: "/assets/img/projects/brain-model-resonance-slide-6.png",
-      alt: "Happiness target slide with six affect dimensions and the flourishing objective",
-    },
-    {
-      src: "/assets/img/projects/brain-model-resonance-slide-7.png",
-      alt: "Pipeline slide showing target affect, cortical model, affect-to-music mapping, MIDI generation, audio, and BCI loop",
-    },
-    {
-      src: "/assets/img/projects/brain-model-resonance-slide-5.png",
-      alt: "Beauty operates through resonance slide from the Resonance deck",
-    },
-  ]}
-/>
+The eight slides of the [Resonance deck](/assets/pdf/Resonance_Presentation.pdf) are
+below, each one placed where the page is making its argument rather than stacked in
+a carousel at the top. Read straight through, the images are the talk and the prose
+is the footnotes.
 
 ## Overview
 
 `brain-model` started as a set of experiments around predicted brain activity, affect, UX, and virtual EEG. The Resonance deck sharpens that into a more specific product thesis: music should not only be recommended by collaborative filtering or genre tags. It should be generated toward a desired emotional trajectory, grounded in a model of how sound changes cortical and affective state.
+
+The deck opens on the gap directly, and states it as two lines of notation rather than as a complaint. Collaborative filtering recommends $s$ by summing ratings over users similar to $u$ — a procedure with no model of affect, no model of cortex, and no model of why. The alternative it proposes replaces the arg max over catalog items with an arg min over generator parameters: $\text{generate}(a_{\mathrm{target}}) = \arg\min_\theta \lVert \hat{a}(\theta) - a_{\mathrm{target}} \rVert^2$, where $\hat{a}$ is a *predicted* affect state coming out of a cortical dynamics model. The question changes from "what else did people like this play?" to "what should I emit to land here?"
+
+![Problem slide: "Music changes how people feel. Nobody can say exactly how." — contrasting collaborative filtering, which has no model of affect, cortex, or why, against affect-geometric targeting, which minimizes distance to a target affect state](/assets/img/projects/brain-model-resonance-slide-2.png)
 
 The core object is an affect vector:
 
@@ -57,6 +41,17 @@ $$
 where $V$ is valence, $A$ is arousal, $\Phi$ is integration, $r_{\mathrm{eff}}$ is effective rank or distributed richness, $CF$ is compression-friction, and $SM$ is self-model salience. In the deck, happiness is not treated as a single score. It is a region: $V > 0$, moderate $A$, high $\Phi$, high $r_{\mathrm{eff}}$, low $CF$, and low $SM$.
 
 This framing is drawn from the larger [Geometry of Affect](https://theshapeofexperience.com/part-2/the-geometry-of-affect) idea in *The Shape of Experience*: affect coordinates are tools for reading a relational structure, not a claim that emotion is literally exhausted by six scalars. That matters for Resonance because the generator is trying to move through an affect space, not optimize a single "happy" slider.
+
+The deck's own summary is three claims in three columns, and the rest of the talk is
+those three claims worked out. Affect has geometry — happiness is a point in a
+six-dimensional coordinate system rather than a score. Brain dynamics are
+predictable — structured sparse attention mirroring cortical wiring beats a dense
+baseline. And music maps to affect — each musical feature is a declared function of
+one affect dimension. The load-bearing word is *one system*: none of the three is
+interesting alone, and the pipeline only exists because the output of each is the
+input of the next.
+
+![Three-column slide: "Three ideas, one system." Affect has geometry, with the six-dimensional affect vector and its definitions. Brain dynamics are predictable, with the masked attention formula, 19.6% density, and R-squared 0.837 against 0.832 dense. Music maps to affect, with tempo, mode, harmonic complexity, voice count, phrase predictability and rhythmic disruption each a function of one affect coordinate](/assets/img/projects/brain-model-resonance-slide-3.png)
 
 ## The cortical substrate
 
@@ -75,6 +70,10 @@ $$
 $$
 
 The claimed result in the deck is small but important: the sparse model slightly outperforms a dense baseline on EEG prediction, with $R^2_{\mathrm{cortical}} = 0.837$ versus $R^2_{\mathrm{dense}} = 0.832$, and reports 68.8% BCI accuracy versus 59.4% for an SVM baseline. The point is not that the numbers settle neuroscience. The point is that topology can be part of the model interface: typed regions, anatomical paths, attention masks, loss weights, and scheduling become a compiler target for neural architectures.
+
+The slide shows both halves of that claim as pictures: the 23 Destrieux regions on a right-lateral surface, and the 23×23 connectivity matrix they compile into, where colour is connection weight and the block structure along the diagonal is the network families falling out of the anatomy rather than being imposed on it. The mask is 3,579 live entries out of 18,225 — the 19.6% — and the compiler's job is exactly the arrow in the caption: *topology → attention masks + loss weights + scheduling*. This is where the project touches [canvas-engineering](/projects/canvas-engineering), which is the typed process compiler that would emit it.
+
+![Slide: "Structured sparse attention." Left, 23 cortical regions from the Destrieux atlas rendered on a right-lateral surface; centre, the 23-by-23 cortical connectivity matrix with block structure on the diagonal; right, the three headline figures — 19.6% connectivity, 0.837 R-squared on EEG, 68.8% BCI accuracy — with the typed cortical state vector and the masked prediction rule](/assets/img/projects/brain-model-resonance-slide-4.png)
 
 This is also where the older `brain-model` plots still matter. They show the project before it became a music-generator pitch: predicted state dynamics, consciousness-style trajectory questions, and affective intervention experiments.
 
@@ -99,6 +98,10 @@ $$
 
 That equation is doing a lot of philosophical work. It says flourishing rewards positive valence, integration, distributed representational richness, and flexibility, while penalizing the wrong amount of self-model salience and arousal. The project is implicitly suspicious of addictive engagement metrics: high arousal and high self-model salience can be powerful without being good.
 
+The happiness-target slide is the whole six-coordinate specification written as six columns, and it is worth reading as a *specification* rather than as a mood board: each dimension gets a target value, the musical consequence of that value, and the estimator that would measure it. High valence means major mode and ascending contour. Moderate arousal means 90–130 BPM. High integration means coherent voice leading. Distributed effective rank means rich texture and varied register. Low compression-friction means predictable phrases. Low self-model salience means a steady groove — the condition the deck names *flow*, and the one that separates absorption from self-consciousness. Underneath, the flourishing functional and two named regions of the space: joy is $(V{+}, \Phi{\uparrow}, r_{\mathrm{eff}}{\uparrow}, SM{\downarrow})$, awe is $\Phi$ expanding with $r_{\mathrm{eff}}$ up and $SM$ down.
+
+![Slide: "The happiness target." Six columns — valence high, arousal moderate, integration high, effective rank distributed, CF weight low, self-model low — each with its musical consequence and its estimator, over the flourishing functional and the named joy, awe and flow regions of the affect space](/assets/img/projects/brain-model-resonance-slide-6.png)
+
 ## Music as intervention
 
 Resonance maps the desired affect vector into musical parameters:
@@ -121,9 +124,17 @@ The full pipeline is:
 
 The optimization target minimizes $\lVert a^* - \hat{a}(m_\theta(z_t)) \rVert^2$, while regularizing temporal smoothness and music-theory validity. The closed loop then updates the current affect estimate toward $a^*$ and adjusts $\theta$ from the loss $L(a_t, a^*)$.
 
+Drawn as six numbered stages, the honest structure of the project shows up immediately: stages 01 through 05 are built, and 06 — the BCI loop that closes it — is the one set in red. The deck says as much in its own schedule line underneath, splitting the work into *week 1: affect engine + music gen* and *week 2: cortical integration + BCI loop*. Everything upstream of the loop is a generator with a target; only the loop makes it an intervention with feedback.
+
+![Pipeline slide: six numbered stages — target affect, cortical model, affect-to-music mapping, MIDI generation with pretty_midi, audio with FluidSynth, and the BCI loop in red — over the optimization objective and the closed-loop update rules](/assets/img/projects/brain-model-resonance-slide-7.png)
+
 ## Why the beauty slide matters
 
 The aesthetic claim in the deck is that beauty operates through resonance: aesthetic pleasure is mutual information between stimulus structure and internal model structure. In that framing, art is powerful because it changes the observer's internal basis. It does not merely decorate a pre-existing state; it installs new couplings.
+
+The slide argues it with a painting rather than a plot, and the choice of painting is the argument. Gérôme's *Pygmalion and Galatea* is a picture of a sculptor's model becoming real under his hands — a stimulus that stops being an object and starts being a participant. Beside it the deck separates the aesthetic coordinate from the sublime one: aesthetic is varied valence with moderately high arousal, high integration and *low* self-model salience, while the sublime keeps ambivalent valence and very high arousal and drives $SM$ down hard. And it names the failure mode in the same breath as the success: **palette expansion** is $\Delta r_{\mathrm{eff}} > 0$, new basis vectors genuinely installed; **palette capture** is $\arg\max |\Delta V|$ — eigen-art, maximum valence swing, zero structural gain. That distinction is the difference between art and an engagement metric, and it is why the project keeps insisting the objective penalize arousal rather than reward it.
+
+![Slide: "Beauty operates through resonance." Gérôme's Pygmalion and Galatea fills the left half; on the right, beauty as mutual information between stimulus structure and internal model structure, the aesthetic and sublime affect coordinates, and the distinction between palette expansion and palette capture](/assets/img/projects/brain-model-resonance-slide-5.png)
 
 That is why Resonance belongs on the `brain-model` page rather than a separate toy music page. The project is really about intervention: if a model can estimate how a stimulus changes cortical-affective geometry, then music, UI, ritual, and media become controllable inputs into cognition. That makes the project both technically interesting and ethically loaded.
 
@@ -138,4 +149,13 @@ What still needs to become real:
 - constraints that distinguish flourishing from mere engagement, especially around high arousal and self-model salience
 - a usable composition interface that exposes the affect target without forcing users to think in equations
 
+The deck closes on a quieter version of its own title slide — the same wordmark, a
+different subtitle. "Algorithmic music that targets the geometry of happiness" is a
+pitch; "music that understands the geometry of joy" is a claim about the model, and
+it is the one the project has not earned yet. Everything in the list above is what
+stands between the two.
+
+![Closing slide: the Resonance wordmark over the subtitle "Music that understands the geometry of joy", with the deck's full notation set very faint underneath](/assets/img/projects/brain-model-resonance-slide-8.png)
+
+Deck: [Resonance Presentation (PDF)](/assets/pdf/Resonance_Presentation.pdf)  
 Repo: [JacobFV/brain-model](https://github.com/JacobFV/brain-model)

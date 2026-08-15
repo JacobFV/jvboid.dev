@@ -26,6 +26,12 @@ links:
 
 <FluentAtmosphere />
 
+<LiveDemo
+  url="https://windows-web-next.vercel.app"
+  title="windows-web-next"
+  caption="The simulator running here — open apps, move windows, and browse the in-memory filesystem."
+/>
+
 - Recreates a desktop environment with window management, taskbar, start menu, and bundled apps in Svelte
 - Includes a reactive in-memory filesystem and app surface for realistic computer-use interaction traces
 - Serves as a controlled environment for annotation, evaluation, and agent training rather than just a visual parody of Windows
@@ -40,12 +46,6 @@ What makes it useful is not pixel-perfect mimicry. It is that the environment ex
 The in-memory filesystem is a good example of the project's intent. It models drives, folders, files, path normalization, creation, deletion, copy, move, and rename operations, which is exactly the kind of substrate you want if you are collecting annotations or evaluating an autonomous agent against desktop-like tasks without handing it a real machine.
 
 The result is a pragmatic middle layer: more realistic than a toy benchmark, safer and more inspectable than a real desktop, and much easier to instrument for human annotation and agent evaluation.
-
-<LiveDemo
-  url="https://windows-web-next.vercel.app"
-  title="windows-web-next"
-  caption="The simulator running here — open apps, move windows, and browse the in-memory filesystem."
-/>
 
 Repo: [JacobFV/windows-web-next](https://github.com/JacobFV/windows-web-next)
 
