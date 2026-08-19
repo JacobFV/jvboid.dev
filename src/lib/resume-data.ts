@@ -27,7 +27,7 @@ export const variantMeta: Record<ResumeVariant, {
   software: {
     headline: "Research engineer · AI systems & full-stack",
     summary:
-      "Agent infrastructure, full-stack AI products, and the runtime glue that turns research ideas into shipped software \u2014 and the research end of that too: I train the models, run the ablations, write the paper, and publish the negative results.",
+      "Agent infrastructure, full-stack AI products, and foundation-model training.",
     strengths: [
       "AI agents", "agent runtime", "tool use", "schemas", "evals",
       "TypeScript", "Next.js", "React", "Python", "FastAPI",
@@ -37,16 +37,16 @@ export const variantMeta: Record<ResumeVariant, {
       "research synthesis", "paper writing", "technical writing", "rapid prototyping",
     ],
     highlights: [
-      "Trained SC-WBD, a whole-brain dynamics foundation model over 414 regions fusing EEG, fMRI, stimulation and behaviour through declared forward operators \u2014 four public checkpoints, leave-one-source-out ablations, and the checkpoint that failed to reproduce published as the negative result it is.",
-      "Architected production integration surfaces for mobile and web clients at AGI, Inc.",
-      "Building VibeStartup, an end-to-end platform for spinning up startups (planning, code, infra, growth) on top of agent workflows.",
+      "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
+      "Architected and implemented production integration surfaces for mobile and web clients at AGI, Inc.",
+      "Building CommandAGI.com, an end-to-end agentic platform aimed wide — vibestartups, robotics, sim, code/CAD/EDA and broader engineering automation — with 43+ integrations.",
       "Authored a wide technical archive (ML systems, agents, multi-agent networks, consciousness, dev platforms) backing each project.",
     ],
   },
   robotics: {
     headline: "Research engineer · robotics & embodied AI",
     summary:
-      "Embodied intelligence, hydraulic actuation, lab automation, and the agent stack that drives physical systems \u2014 and the research behind them: world models trained, ablated, and published, not just integrated.",
+      "Embodied intelligence, hydraulic actuation, lab automation, and the world models that drive physical systems.",
     strengths: [
       "robotics", "CAD", "hydraulic actuation", "low-level control", "calibration",
       "embodied AI", "world models", "multimodal perception", "sim-to-real",
@@ -57,7 +57,7 @@ export const variantMeta: Record<ResumeVariant, {
       "agent control loops", "telemetry", "rapid prototyping",
     ],
     highlights: [
-      "Trained SC-WBD, a whole-brain dynamics foundation model over 414 regions where EEG, fMRI, stimulation and behaviour each constrain only what their forward operator can speak to \u2014 four public checkpoints and the ablations that falsify them.",
+      "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
       "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
       "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
       "AGI, Inc. integration architect — same agent-runtime skills feed directly into robot agent control loops.",
