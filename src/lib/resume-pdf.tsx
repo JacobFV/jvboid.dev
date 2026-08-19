@@ -160,17 +160,8 @@ export function ResumeDocument({
 }) {
   const meta = variantMeta[variant];
 
-  const focused: Node[] = [];
-  const adjacent: Node[] = [];
-  for (const n of projects) {
-    const focus = projectFocus(n);
-    if (focus[variant]) focused.push(n);
-    else adjacent.push(n);
-  }
-
   const sortByDateDesc = (a: Node, b: Node) => (a.date < b.date ? 1 : -1);
-  focused.sort(sortByDateDesc);
-  adjacent.sort(sortByDateDesc);
+  const focused = projects.filter((n) => projectFocus(n)[variant]).sort(sortByDateDesc);
 
   const focusLabel = variant === "software" ? "Software & AI" : "Robotics & embodied AI";
 
@@ -226,8 +217,7 @@ export function ResumeDocument({
         </View>
 
         <Text style={styles.sectionLabel}>Projects</Text>
-        <ProjectGroup label={`${focusLabel} — focus`} items={focused} />
-        <ProjectGroup label="Adjacent work" items={adjacent} />
+        <ProjectGroup label={focusLabel} items={focused} />
 
         <View style={styles.footer} fixed>
           <Text>{contact.name} — {variant === "software" ? "Software" : "Robotics"} resume</Text>

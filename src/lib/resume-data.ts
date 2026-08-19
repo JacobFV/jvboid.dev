@@ -163,144 +163,90 @@ export const experience: {
   },
 ];
 
-// Tag → variant classifier. Returns which variant a project is a "focus"
-// fit for. A project can be a focus for both (or neither). When a project
-// isn't a focus for the active variant it falls into the adjacent-work
-// bucket on that resume.
+// Which resume a project belongs on — curated per project, not inferred.
+// The tag vocabulary was written for the site graph, not for a hiring
+// reader: "school", "work" and "personal" say nothing about whether a
+// piece of work belongs on a resume, and the old tag classifier answered
+// "not this variant" for a fifth of the software list and two thirds of
+// the robotics one. Those all landed in an "adjacent work" group that had
+// become a dumpster, so the group is gone and the classification has to
+// be right on its own.
+//
+// Every published project is named exactly once below: on the software
+// resume, the robotics resume, both, or NOT_ON_RESUME for creative and
+// personal work a hiring reader has no use for. A project named in none
+// of the three falls through to the tag heuristic at the bottom, so newly
+// added work still surfaces somewhere instead of silently vanishing.
+
+const SOFTWARE_RESUME = new Set([
+  // AI systems, agents, world models, ML research
+  "sc-wbd", "general-unified-world-modeling", "canvas-engineering",
+  "recursive-omnimodal-video-action-model", "brain-model", "tensor-computer",
+  "tensacode", "the-multi-agent-network", "the-fertile-crescent", "computatrum",
+  "belief-graph-orchestrator", "predictive-general-intelligence",
+  "full-stack-artificial-intelligence", "multigraph-nn", "multi-graph-former-project",
+  "multiparadigm-networks", "bsbr", "tf-som", "eggroll-trainer", "rl-lab",
+  "broadening-and-building-beyond-classical-reinforcement-learning",
+  "synthux", "node-tree", "langcurriculum", "jplotlib", "jnumpy",
+  // Agent products, tooling, platforms
+  "notion-vibestartup", "theagentsuite", "standup-ai", "yt2ctx", "lifelogger",
+  "imgpt", "bonk", "fieldratchet", "precisionbom", "racksavant",
+  // Full-stack, front-end, systems
+  "jacobfv-site", "browser-os", "macos-web-next", "windows-web-next",
+  "living-with-intelligence", "jterm", "ascii-art", "halo-prismatic",
+  "microscope-viewer", "esp32-usb-webcam", "mln-dashboard", "dash",
+  // Coursework and early work that still shows range
+  "labatron", "desparados-a-eye", "20q", "sqtest", "sale", "copyright-calculator",
+  "stanford-open-datathon-group-project", "home-internet-factory",
+  "workplace-surveillance-system", "cookie-cutter-cnc",
+]);
+
+const ROBOTICS_RESUME = new Set([
+  // Robots, hardware, physical builds
+  "limboid", "lunar-rover", "trash-sorter", "chem-0", "labatron",
+  "cookie-baker-3d-printer", "cookie-cutter-cnc", "home-internet-factory",
+  "precisionbom", "fieldratchet", "esp32-usb-webcam", "microscope-viewer",
+  "workplace-surveillance-system", "dolphin-rocket",
+  // The models and control research that drive embodiment
+  "sc-wbd", "canvas-engineering", "recursive-omnimodal-video-action-model",
+  "general-unified-world-modeling", "rl-lab", "computatrum",
+  "full-stack-artificial-intelligence",
+  "broadening-and-building-beyond-classical-reinforcement-learning",
+]);
+
+// Real work, but a hiring reader gets nothing from it: music, animation,
+// games made as a teenager, the superseded portfolio site, the fund.
+const NOT_ON_RESUME = new Set([
+  "ai-proverbs", "jacobs-hits-2023", "summer-break-2021-album", "tiles",
+  "space-pong", "looking-for-princess-suzzane", "polonius-as-a-fool",
+  "the-right-night-light", "jacobfv-github-io", "gohuman-fund",
+]);
+
+// Fallback for projects added after this file was last curated. Deliberately
+// loose — showing new work on the wrong resume beats hiding it on both.
 const SOFTWARE_TAGS = new Set([
-  "agents",
-  "multi-agent",
-  "ai",
-  "ml",
-  "deep-learning",
-  "framework",
-  "python",
-  "cli",
-  "tooling",
-  "infra",
-  "web",
-  "meta",
-  "ui",
-  "graphics",
-  "mcp",
-  "oauth",
-  "stripe",
-  "cloudflare",
-  "vercel",
-  "notion",
-  "productivity",
-  "synthetic-data",
-  "fine-tuning",
-  "world-modeling",
-  "computer-use",
-  "attention",
-  "multimodal-learning",
-  "voice-ai",
-  "automation",
-  "program-synthesis",
-  "differentiable-programming",
-  "jax",
-  "tensorflow",
-  "unsupervised-learning",
-  "visualization",
-  "hackathon",
-  "desktop-pet",
-  "electron",
-  "ai-coach",
-  "ascii",
-  "grammars",
-  "cognition",
+  "agents", "multi-agent", "ai", "ml", "deep-learning", "framework", "python",
+  "cli", "tooling", "infra", "web", "meta", "ui", "graphics", "mcp",
+  "synthetic-data", "fine-tuning", "world-modeling", "computer-use", "attention",
+  "multimodal-learning", "voice-ai", "automation", "program-synthesis",
+  "differentiable-programming", "jax", "tensorflow", "unsupervised-learning",
+  "reinforcement-learning", "visualization", "research", "cognition",
 ]);
 
 const ROBOTICS_TAGS = new Set([
-  "robotics",
-  "embodied-ai",
-  "lerobot",
-  "lunar-rover",
-  "autonomy",
-  "llm-routing",
-  "hardware",
-  "procurement",
-  "digikey",
-  "chemistry",
-  "rocketry",
-  "sim",
+  "robotics", "embodied-ai", "lerobot", "lunar-rover", "autonomy", "llm-routing",
+  "hardware", "embedded", "procurement", "chemistry", "sim", "simulation",
+  "physics", "hydraulics", "cad",
 ]);
 
 export function projectFocus(node: Node): { software: boolean; robotics: boolean } {
+  const id = node.id;
+  if (SOFTWARE_RESUME.has(id) || ROBOTICS_RESUME.has(id) || NOT_ON_RESUME.has(id)) {
+    return { software: SOFTWARE_RESUME.has(id), robotics: ROBOTICS_RESUME.has(id) };
+  }
   const tags = node.tags.map((t) => t.toLowerCase());
   const has = (set: Set<string>) => tags.some((t) => set.has(t));
-  // A handful of hand-pinned ids guarantee placement no matter how tags drift.
-  const softwarePinned = new Set([
-    "vibestartup",
-    "notion-vibestartup",
-    "theagentsuite",
-    "tensacode",
-    "jacobfv-site",
-    "macos-web-next",
-    "windows-web-next",
-    "browser-os",
-    "canvas-engineering",
-    "tensor-computer",
-    "multigraph-nn",
-    "multiparadigm-networks",
-    "multi-graph-former-project",
-    "general-unified-world-modeling",
-    "imgpt",
-    "brain-model",
-    "yt2ctx",
-    "node-tree",
-    "belief-graph-orchestrator",
-    "synthux",
-    "standup-ai",
-    "lifelogger",
-    // Promoted into the software focus list (hand-curated).
-    "esp32-usb-webcam",
-    "bsbr",
-    "mln-dashboard",
-    "jnumpy",
-    "dash",
-    "20q",
-    "stanford-open-datathon-group-project",
-    "desparados-a-eye",
-    "home-internet-factory",
-    "workplace-surveillance-system",
-    "sqtest",
-    "labatron",
-    "sale",
-    "cookie-cutter-cnc",
-    "copyright-calculator",
-  ]);
-  // Forced OUT of the software focus list into "adjacent work", even if
-  // their tags would otherwise match SOFTWARE_TAGS (hand-curated).
-  const softwareExcluded = new Set([
-    "predictive-general-intelligence",
-    "computatrum",
-    "polonius-as-a-fool",
-    "the-multi-agent-network",
-  ]);
-  const roboticsPinned = new Set([
-    "limboid",
-    "lunar-rover",
-    "computatrum",
-    "labatron",
-    "chem-0",
-    "precisionbom",
-    "cookie-baker-3d-printer",
-    "cookie-cutter-cnc",
-    "trash-sorter",
-    "dolphin-rocket",
-    "tensor-computer",
-    "the-right-night-light",
-    "home-internet-factory",
-    "workplace-surveillance-system",
-    "the-fertile-crescent",
-    "recursive-omnimodal-video-action-model",
-  ]);
-  return {
-    software: !softwareExcluded.has(node.id) && (softwarePinned.has(node.id) || has(SOFTWARE_TAGS)),
-    robotics: roboticsPinned.has(node.id) || has(ROBOTICS_TAGS),
-  };
+  return { software: has(SOFTWARE_TAGS), robotics: has(ROBOTICS_TAGS) };
 }
 
 // Date formatting for the resume project list. The graph stores a single

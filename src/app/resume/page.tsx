@@ -42,7 +42,6 @@ export default async function ResumePage({
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const focused = projects.filter((p) => projectFocus(p)[variant]);
-  const adjacent = projects.filter((p) => !projectFocus(p)[variant]);
   const focusLabel = variant === "software" ? "Software & AI" : "Robotics & embodied AI";
 
   return (
@@ -208,34 +207,10 @@ export default async function ResumePage({
       {/* Projects -------------------------------------------------------- */}
       <section className="mb-12">
         <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Projects ({projects.length})
+          Projects — {focusLabel} ({focused.length})
         </h2>
-
-        <h3 className="mb-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--color-ink-dim)]">
-          {focusLabel} — focus ({focused.length})
-        </h3>
-        <ul className="mb-6 grid gap-1.5">
-          {focused.map((n) => (
-            <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
-              <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
-                {formatResumeDate(n)}
-              </div>
-              <Link
-                href={nodeHref(n)}
-                className="text-sm text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
-              >
-                <span className="font-medium underline decoration-1 underline-offset-2">{n.title}</span>
-                <span className="text-[var(--color-ink-dim)]"> — {resumeBlurb(n)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <h3 className="mb-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wider text-[var(--color-ink-dim)]">
-          Adjacent work ({adjacent.length})
-        </h3>
         <ul className="grid gap-1.5">
-          {adjacent.map((n) => (
+          {focused.map((n) => (
             <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
               <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
                 {formatResumeDate(n)}
