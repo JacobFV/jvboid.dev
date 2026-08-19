@@ -39,8 +39,7 @@ export const variantMeta: Record<ResumeVariant, {
     highlights: [
       "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
       "Architected and implemented production integration surfaces for mobile and web clients at AGI, Inc.",
-      "Building CommandAGI.com, an end-to-end agentic platform aimed wide — vibestartups, robotics, sim, code/CAD/EDA and broader engineering automation — with 43+ integrations.",
-      "Authored a wide technical archive (ML systems, agents, multi-agent networks, consciousness, dev platforms) backing each project.",
+      "Building CommandAGI.com, an end-to-end agentic social platform for creators to build their vibestartups — computer + browser + mobile device control, robotics, sim, code/CAD/EDA and more eng automation, 43+ integrations, and more.",
     ],
   },
   robotics: {
