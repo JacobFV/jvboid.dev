@@ -15,7 +15,7 @@ import {
 
 export const metadata = {
   title: "Resume · Jacob Valdez",
-  description: "AI systems engineer and robotics builder — software and robotics resume variants.",
+  description: "Research engineer, AI systems engineer, and robotics builder — software and robotics resume variants.",
 };
 
 function isVariant(v: string): v is ResumeVariant {
