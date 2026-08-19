@@ -184,7 +184,7 @@ export function ResumeDocument({
         <View>
           <Text style={styles.name}>{contact.name}</Text>
           <Text style={styles.headline}>{meta.headline}</Text>
-          <Text style={styles.summary}>{meta.summary}</Text>
+          {meta.summary ? <Text style={styles.summary}>{meta.summary}</Text> : null}
           <View style={styles.contactRow}>
             <Link src={`mailto:${contact.email}`} style={styles.contactLink}>{contact.email}</Link>
             <Text style={styles.contactItem}>{contact.phone}</Text>

@@ -1,8 +1,10 @@
 // Resume content used by both the on-page embed and the PDF renderer.
 // Two variants — `software` and `robotics` — share the same header,
 // experience block, and full project list; the variant only changes the
-// headline summary, the strength bullets, and which projects land in
-// the "focus" group vs. the "adjacent work" group.
+// strength bullets, the highlights, and which projects land in the
+// "focus" group vs. the "adjacent work" group. The headline is one line
+// of titles and carries no separate summary under it — `summary` stays
+// optional so a variant can add one back without a schema change.
 
 import type { Node } from "./graph-types";
 
@@ -20,14 +22,12 @@ export const contact = {
 
 export const variantMeta: Record<ResumeVariant, {
   headline: string;
-  summary: string;
+  summary?: string;
   strengths: string[];
   highlights: string[];
 }> = {
   software: {
-    headline: "Research engineer · AI systems & full-stack",
-    summary:
-      "Agent infrastructure, full-stack AI products, and foundation-model training.",
+    headline: "AI systems, full-stack, data/ml engineering, architect",
     strengths: [
       "AI agents", "agent runtime", "tool use", "schemas", "evals",
       "TypeScript", "Next.js", "React", "Python", "FastAPI",
@@ -43,9 +43,7 @@ export const variantMeta: Record<ResumeVariant, {
     ],
   },
   robotics: {
-    headline: "Research engineer · robotics & embodied AI",
-    summary:
-      "Embodied intelligence, hydraulic actuation, lab automation, and the world models that drive physical systems.",
+    headline: "AI systems, full-stack, data/ml engineering, architect",
     strengths: [
       "robotics", "CAD", "hydraulic actuation", "low-level control", "calibration",
       "embodied AI", "world models", "multimodal perception", "sim-to-real",

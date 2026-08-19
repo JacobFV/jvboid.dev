@@ -15,7 +15,7 @@ import {
 
 export const metadata = {
   title: "Resume · Jacob Valdez",
-  description: "Research engineer, AI systems engineer, and robotics builder — software and robotics resume variants.",
+  description: "AI systems, full-stack, data/ml engineering, architect — software and robotics resume variants.",
 };
 
 function isVariant(v: string): v is ResumeVariant {
@@ -100,7 +100,9 @@ export default async function ResumePage({
         <p className="mt-1 text-sm uppercase tracking-widest text-[var(--color-accent)] font-[family-name:var(--font-mono)]">
           {meta.headline}
         </p>
-        <p className="mt-3 text-lg leading-relaxed text-[var(--color-ink-dim)]">{meta.summary}</p>
+        {meta.summary && (
+          <p className="mt-3 text-lg leading-relaxed text-[var(--color-ink-dim)]">{meta.summary}</p>
+        )}
         <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
           <a className="hover:text-[var(--color-accent)]" href={`mailto:${contact.email}`}>
             {contact.email}
