@@ -29,12 +29,12 @@ export const variantMeta: Record<ResumeVariant, {
   software: {
     headline: "AI systems, full-stack, data/ml engineering, architect",
     strengths: [
-      "AI agents", "agent runtime", "tool use", "schemas", "evals",
+      "AI agents", "schemas", "evals",
       "TypeScript", "Next.js", "React", "Python", "FastAPI",
       "iOS", "on-device LLMs", "model quantization", "multimodal pipelines",
       "Postgres", "Redis", "Vercel", "Cloudflare", "Modal",
-      "PyTorch", "JAX", "model training", "ablation design", "reproducibility",
-      "research synthesis", "paper writing", "technical writing", "rapid prototyping",
+      "PyTorch", "JAX", "model training",
+      "rapid prototyping",
     ],
     highlights: [
       "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
@@ -50,8 +50,8 @@ export const variantMeta: Record<ResumeVariant, {
       "LeRobot", "SO-101", "ROS",
       "CNC", "3D printing", "electronics", "lab automation", "procurement",
       "Python", "PyTorch", "JAX",
-      "model training", "ablation design", "reproducibility", "paper writing",
-      "agent control loops", "telemetry", "rapid prototyping",
+      "model training", "ablation design",
+      "agent control loops", "rapid prototyping",
     ],
     highlights: [
       "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
