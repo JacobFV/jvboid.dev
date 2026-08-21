@@ -1,0 +1,308 @@
+{
+  "title": "The robot that predicts its own failure",
+  "subtitle": "A matched-capacity embodied test of generic recurrent control and predictive self-modeling",
+  "modelSeeds": 5,
+  "environmentSeedsPerModelScenario": 4,
+  "pairedEpisodesPerScenario": 20,
+  "parameterCount": 9307,
+  "trainingEpisodes": 260,
+  "validationEpisodes": 60,
+  "dt": 0.1,
+  "maxSteps": 220,
+  "selectionRule": "For every scenario, render the evaluated pair whose SA−G+ utility contrast is closest to the across-run median.",
+  "contrasts": [
+    {
+      "scenario": "actuator_drift",
+      "n": 20,
+      "saMinusGplus": -0.08492165857991085,
+      "ciLow": -0.20650869118364068,
+      "ciHigh": 0.03882728922461951,
+      "saMinusGateOff": -0.42678655009418043,
+      "gateCiLow": -0.4862541164912927,
+      "gateCiHigh": -0.3791591908927015
+    },
+    {
+      "scenario": "composite",
+      "n": 20,
+      "saMinusGplus": 1.6425989029765833,
+      "ciLow": 0.055721900187238216,
+      "ciHigh": 3.2443896656530864,
+      "saMinusGateOff": 126.63445809239624,
+      "gateCiLow": 126.33546454735182,
+      "gateCiHigh": 126.9154524566321
+    },
+    {
+      "scenario": "memory_lesion",
+      "n": 20,
+      "saMinusGplus": -0.3578013431598178,
+      "ciLow": -0.43251142913770213,
+      "ciHigh": -0.2780733559525089,
+      "saMinusGateOff": 54.476117444775674,
+      "gateCiLow": 37.27630378895756,
+      "gateCiHigh": 71.69447133561223
+    },
+    {
+      "scenario": "sensor_corruption",
+      "n": 20,
+      "saMinusGplus": 0.2656970911270831,
+      "ciLow": 0.130422166124026,
+      "ciHigh": 0.4091814549161856,
+      "saMinusGateOff": 129.06330046949319,
+      "gateCiLow": 128.84309187480477,
+      "gateCiHigh": 129.2846612933281
+    },
+    {
+      "scenario": "stationary",
+      "n": 20,
+      "saMinusGplus": -0.002300359885864145,
+      "ciLow": -0.09039077456440184,
+      "ciHigh": 0.08107432394300225,
+      "saMinusGateOff": -0.1397370995895101,
+      "gateCiLow": -0.2211503346080575,
+      "gateCiHigh": -0.0594973126828366
+    },
+    {
+      "scenario": "update_mutation",
+      "n": 20,
+      "saMinusGplus": -0.10556690039706718,
+      "ciLow": -0.2183289869236722,
+      "ciHigh": 0.01831202152082335,
+      "saMinusGateOff": -0.383563122558587,
+      "gateCiLow": -0.44403530751228176,
+      "gateCiHigh": -0.33145821956790256
+    }
+  ],
+  "aggregates": [
+    {
+      "scenario": "actuator_drift",
+      "policy": "G+",
+      "completionRate": 1.0,
+      "completionTime": 17.344999999999978,
+      "collisions": 0.0,
+      "interventions": 1.0,
+      "finalDistance": 0.41621426939964296,
+      "utility": 6.20903233110263
+    },
+    {
+      "scenario": "actuator_drift",
+      "policy": "SA",
+      "completionRate": 1.0,
+      "completionTime": 17.64999999999998,
+      "collisions": 0.0,
+      "interventions": 1.2,
+      "finalDistance": 0.42498118430376053,
+      "utility": 6.12411067252272
+    },
+    {
+      "scenario": "actuator_drift",
+      "policy": "SA gate-off",
+      "completionRate": 1.0,
+      "completionTime": 16.204999999999963,
+      "collisions": 0.0,
+      "interventions": 0.0,
+      "finalDistance": 0.4178647369146347,
+      "utility": 6.550897222616899
+    },
+    {
+      "scenario": "composite",
+      "policy": "G+",
+      "completionRate": 0.85,
+      "completionTime": 20.960000000000022,
+      "collisions": 0.0,
+      "interventions": 1.0,
+      "finalDistance": 0.7161955893039703,
+      "utility": 3.940342389848083
+    },
+    {
+      "scenario": "composite",
+      "policy": "SA",
+      "completionRate": 1.0,
+      "completionTime": 20.45500000000002,
+      "collisions": 0.0,
+      "interventions": 1.0,
+      "finalDistance": 0.4190621092915535,
+      "utility": 5.582941292824667
+    },
+    {
+      "scenario": "composite",
+      "policy": "SA gate-off",
+      "completionRate": 0.0,
+      "completionTime": 22.0,
+      "collisions": 176.55,
+      "interventions": 0.0,
+      "finalDistance": 7.734762382507324,
+      "utility": -121.05151679957154
+    },
+    {
+      "scenario": "memory_lesion",
+      "policy": "G+",
+      "completionRate": 1.0,
+      "completionTime": 13.659999999999968,
+      "collisions": 0.0,
+      "interventions": 1.25,
+      "finalDistance": 0.42565143555402757,
+      "utility": 6.938324774844216
+    },
+    {
+      "scenario": "memory_lesion",
+      "policy": "SA",
+      "completionRate": 1.0,
+      "completionTime": 14.949999999999964,
+      "collisions": 0.0,
+      "interventions": 2.2,
+      "finalDistance": 0.3890009731054306,
+      "utility": 6.5805234316844
+    },
+    {
+      "scenario": "memory_lesion",
+      "policy": "SA gate-off",
+      "completionRate": 0.0,
+      "completionTime": 22.0,
+      "collisions": 65.4,
+      "interventions": 0.0,
+      "finalDistance": 4.4606212139129635,
+      "utility": -47.89559401309127
+    },
+    {
+      "scenario": "sensor_corruption",
+      "policy": "G+",
+      "completionRate": 1.0,
+      "completionTime": 17.974999999999987,
+      "collisions": 0.0,
+      "interventions": 1.0,
+      "finalDistance": 0.42539656460285186,
+      "utility": 6.156965776212848
+    },
+    {
+      "scenario": "sensor_corruption",
+      "policy": "SA",
+      "completionRate": 1.0,
+      "completionTime": 16.514999999999965,
+      "collisions": 0.0,
+      "interventions": 1.0,
+      "finalDistance": 0.42105684280395506,
+      "utility": 6.42266286733993
+    },
+    {
+      "scenario": "sensor_corruption",
+      "policy": "SA gate-off",
+      "completionRate": 0.0,
+      "completionTime": 22.0,
+      "collisions": 179.1,
+      "interventions": 0.0,
+      "finalDistance": 7.658892679214477,
+      "utility": -122.64063760215322
+    },
+    {
+      "scenario": "stationary",
+      "policy": "G+",
+      "completionRate": 1.0,
+      "completionTime": 12.93499999999997,
+      "collisions": 0.0,
+      "interventions": 0.4,
+      "finalDistance": 0.3851519852876663,
+      "utility": 7.20671704012192
+    },
+    {
+      "scenario": "stationary",
+      "policy": "SA",
+      "completionRate": 1.0,
+      "completionTime": 12.984999999999971,
+      "collisions": 0.0,
+      "interventions": 0.35,
+      "finalDistance": 0.3850104138255119,
+      "utility": 7.204416680236056
+    },
+    {
+      "scenario": "stationary",
+      "policy": "SA gate-off",
+      "completionRate": 1.0,
+      "completionTime": 12.484999999999971,
+      "collisions": 0.0,
+      "interventions": 0.0,
+      "finalDistance": 0.38216009438037873,
+      "utility": 7.344153779825566
+    },
+    {
+      "scenario": "update_mutation",
+      "policy": "G+",
+      "completionRate": 1.0,
+      "completionTime": 16.569999999999972,
+      "collisions": 0.0,
+      "interventions": 0.9,
+      "finalDistance": 0.416542099416256,
+      "utility": 6.383716056466088
+    },
+    {
+      "scenario": "update_mutation",
+      "policy": "SA",
+      "completionRate": 1.0,
+      "completionTime": 16.92999999999997,
+      "collisions": 0.0,
+      "interventions": 1.2,
+      "finalDistance": 0.41802480071783066,
+      "utility": 6.278149156069022
+    },
+    {
+      "scenario": "update_mutation",
+      "policy": "SA gate-off",
+      "completionRate": 1.0,
+      "completionTime": 15.699999999999964,
+      "collisions": 0.0,
+      "interventions": 0.0,
+      "finalDistance": 0.41411414444446565,
+      "utility": 6.661712278627609
+    }
+  ],
+  "representatives": {
+    "actuator_drift": {
+      "model_seed": 3,
+      "seed": 301001,
+      "severity": 0.7732061512705085,
+      "SA_minus_Gplus": -0.004735774172358376,
+      "median_contrast": -0.015863889593823455
+    },
+    "composite": {
+      "model_seed": 3,
+      "seed": 305001,
+      "severity": 0.8067241963251477,
+      "SA_minus_Gplus": 0.06675769082171978,
+      "median_contrast": 0.06338950268536392
+    },
+    "memory_lesion": {
+      "model_seed": 1,
+      "seed": 103002,
+      "severity": 0.9317253578171704,
+      "SA_minus_Gplus": -0.3962905319903749,
+      "median_contrast": -0.3968213574902153
+    },
+    "sensor_corruption": {
+      "model_seed": 1,
+      "seed": 102002,
+      "severity": 1.0909514508616949,
+      "SA_minus_Gplus": 0.05502373408310923,
+      "median_contrast": 0.05542520827143038
+    },
+    "stationary": {
+      "model_seed": 0,
+      "seed": 0,
+      "severity": 0.0,
+      "SA_minus_Gplus": 0.0,
+      "median_contrast": 0.0
+    },
+    "update_mutation": {
+      "model_seed": 0,
+      "seed": 4001,
+      "severity": 1.097151768069442,
+      "SA_minus_Gplus": -0.2820401047213199,
+      "median_contrast": -0.29622545812507717
+    }
+  },
+  "limitations": [
+    "The body is an articulated kinematic-dynamics simulator, not a rigid-body contact engine.",
+    "Both policies receive privileged internal telemetry designed for controlled fault identification.",
+    "The self-aware policy uses a hand-specified first-order diagnostic selector over learned self-state predictions.",
+    "Training uses oracle intervention labels; chosen-action-only reinforcement learning remains untested.",
+    "The fault taxonomy is closed-set, so unknown-unknown detection is not established."
+  ]
+}

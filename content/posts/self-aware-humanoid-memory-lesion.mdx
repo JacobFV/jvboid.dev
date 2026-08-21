@@ -1,0 +1,22 @@
+---
+title: "Memory lesion: causal self-modeling and over-intervention"
+date: 2026-07-30
+lane: research
+tags: [robotics, memory, continual learning, metacognition]
+summary: "The self-aware humanoid recognizes damaged task memory and reconstructs it from an external console, but repeated refreshes make it slower than the matched generic learner."
+unlisted: true
+---
+
+The robot must visit waypoint A before waypoint B. Mid-route, the integrity of the internal task memory is reduced. A memory refresh requires returning to an external console, paying time and energy to reconstruct the latent task state.
+
+<HumanoidExperiment scenario="memory_lesion" />
+
+## A causal but negative result
+
+SA gate-off cannot complete the representative run, so the explicit self-model is causally involved in the recovery. Yet G+ completes the task more efficiently. SA performs too many refreshes and has a mean utility difference of $-0.358$, with interval $[-0.433,-0.278]$.
+
+This is a useful warning. Once an agent has a semantic category called *memory failure*, ambiguous evidence can be assimilated into that category. Each refresh temporarily validates the diagnosis, making another refresh appear reasonable. The result is a machine analogue of recursive checking: accurate enough to prevent total failure, but insufficiently calibrated to stop.
+
+## Required follow-up
+
+The next policy should predict the **marginal value of another refresh**, not merely the probability of memory damage. It should be evaluated with proper scoring rules, a cost-sensitive stopping rule, open-set failures, and delayed tests of whether the reconstructed memory remains stable.

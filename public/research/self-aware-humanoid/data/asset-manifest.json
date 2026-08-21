@@ -1,0 +1,76 @@
+{
+  "artifact": "self-aware-humanoid",
+  "generated": "2026-07-30",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1441,
+      "sha256": "0b6d6b2ec9fc587a6bb03f4cffe12ad5c95529cc902ecbab219e3bce1e31b7b8"
+    },
+    {
+      "path": "code/simulate.py.gz.b64",
+      "bytes": 16884,
+      "sha256": "547a70c8e4b4181498b182f13385fc55fbfad7564c9cb1a631a57ec5fd2732af"
+    },
+    {
+      "path": "data/benchmark_episode_results.csv.gz.b64",
+      "bytes": 20796,
+      "sha256": "6aee3f7359f84502b8f5fda8a786db93bdde9b3333c263198746352a1b7f61d0"
+    },
+    {
+      "path": "data/paired_summary.csv",
+      "bytes": 635,
+      "sha256": "e476d32d187ecbba27275862a18dfeffb40eceec04127803b6abab62ea498030"
+    },
+    {
+      "path": "data/representative_seeds.json",
+      "bytes": 1086,
+      "sha256": "5ac78319cbf7d6f1f2822d95fa4a3bb5e524e36f7d6980d8319c26f5048bc963"
+    },
+    {
+      "path": "data/study.json",
+      "bytes": 9061,
+      "sha256": "68a1a135888d6aa38db61c0bbe2d1234c3116c113feefcde09828c401f374240"
+    },
+    {
+      "path": "figures/architecture.svg",
+      "bytes": 6359,
+      "sha256": "f131b98a983096c87154f23b42c4487c781a231457bdc9243793eff40da8846b"
+    },
+    {
+      "path": "figures/completion-rates.svg",
+      "bytes": 11293,
+      "sha256": "059a4d2bdc4acbc971991ab525f3a7df89b91f83d18e4b43a25d79b894ca6819"
+    },
+    {
+      "path": "figures/paired-effects.svg",
+      "bytes": 17746,
+      "sha256": "a027835902292c4b7d68cfb548cab3685dd24d23bc60061f8f141fbc43b15ec2"
+    },
+    {
+      "path": "figures/protocol.svg",
+      "bytes": 3746,
+      "sha256": "132a0cede76c3168c9a0e1473260b6f8d37a2c5aae3a38ed0e27ffaed95e5421"
+    },
+    {
+      "path": "data/replays.0.b64",
+      "bytes": 19500,
+      "sha256": "8d74448aaa5dbda28d8fb2b6b74c5a01c9944c41d5aa8d223d07651687bf6d70"
+    },
+    {
+      "path": "data/replays.1.b64",
+      "bytes": 19500,
+      "sha256": "e34f8eb472938afaee4379fd51bd7895f27a78a1dc5c5bf5b3744ac9aff58643"
+    },
+    {
+      "path": "data/replays.2.b64",
+      "bytes": 19500,
+      "sha256": "48b1babb948815e0266198f52ae650a6b2f406b2b6348fca2b9ed9e91d6aedca"
+    },
+    {
+      "path": "data/replays.3.b64",
+      "bytes": 19440,
+      "sha256": "bc58b8eddbc11bb5b47bc1d07b7263bb71d0a5944989414593121226f99886d0"
+    }
+  ]
+}

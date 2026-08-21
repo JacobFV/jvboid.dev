@@ -1,0 +1,20 @@
+---
+title: "Update-rule mutation: knowing that learning is wrong but not why"
+date: 2026-07-30
+lane: research
+tags: [machine learning, learned optimization, metacognition]
+summary: "The humanoid detects an abnormal future learning trajectory after its online update rule changes, but often misattributes the failure to the motor system."
+unlisted: true
+---
+
+The environment remains physically ordinary, but the operator that updates the robot's internal actuator estimate changes. Evidence that previously produced a stable correction now produces an abnormal learning trajectory.
+
+<HumanoidExperiment scenario="update_mutation" />
+
+## Failure of causal attribution
+
+SA often raises its predicted future error, which is the right metacognitive signal, but chooses a motor probe rather than an update reset. Its mean utility difference is $-0.106$, with interval $[-0.218,+0.018]$.
+
+The problem is identifiability. Motor drift and update-rule drift can generate similar short-horizon residuals. A semantic self-model does not solve that ambiguity merely by naming both possibilities. The agent needs an experiment whose outcomes differ under the competing causal models—for example, a sandboxed no-motion update, a frozen-parameter probe, or a known calibration trajectory.
+
+This record is evidence against treating articulate internal categories as reliable self-knowledge. The policy can correctly know *that* its future cognition is going wrong while being wrong about *which part* is responsible.

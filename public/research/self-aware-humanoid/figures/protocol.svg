@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#7f8b9b"/></marker></defs>
+<rect width="1600" height="720" fill="#080a0e"/>
+<text x="72" y="74" font-family="Inter" font-size="18" fill="#8f9baa" letter-spacing="2">EXPERIMENT PROTOCOL</text>
+<text x="72" y="128" font-family="Inter" font-size="40" font-weight="700" fill="#eef2f6">The video clips are selected from the data—not staged for the camera</text>
+<text x="72" y="172" font-family="Inter" font-size="18" fill="#a7b1be">Every published replay is the evaluated seed pair closest to the median paired effect for its regime.</text>
+<rect x="72" y="270" width="220" height="220" rx="18" fill="#11161d" stroke="#596678" stroke-width="2"/>
+<text x="94" y="318" font-family="Inter" font-size="23" font-weight="600" fill="#eef2f6">Train</text>
+<text x="94" y="365" font-family="Inter" font-size="16" fill="#9aa6b4">5 initializations
+260 episodes each</text>
+<text x="94" y="458" font-family="DejaVu Sans Mono" font-size="12" fill="#596678">01</text>
+<line x1="292" y1="380" x2="366" y2="380" stroke="#7f8b9b" stroke-width="2" marker-end="url(#a)"/>
+<rect x="390" y="270" width="220" height="220" rx="18" fill="#11161d" stroke="#596678" stroke-width="2"/>
+<text x="412" y="318" font-family="Inter" font-size="23" font-weight="600" fill="#eef2f6">Pair</text>
+<text x="412" y="365" font-family="Inter" font-size="16" fill="#9aa6b4">same model seed
+same environment seed</text>
+<text x="412" y="458" font-family="DejaVu Sans Mono" font-size="12" fill="#596678">02</text>
+<line x1="610" y1="380" x2="684" y2="380" stroke="#7f8b9b" stroke-width="2" marker-end="url(#a)"/>
+<rect x="708" y="270" width="220" height="220" rx="18" fill="#11161d" stroke="#52c7e2" stroke-width="2"/>
+<text x="730" y="318" font-family="Inter" font-size="23" font-weight="600" fill="#eef2f6">Evaluate</text>
+<text x="730" y="365" font-family="Inter" font-size="16" fill="#9aa6b4">6 regimes × 20 pairs
+120 paired evaluations</text>
+<text x="730" y="458" font-family="DejaVu Sans Mono" font-size="12" fill="#52c7e2">03</text>
+<line x1="928" y1="380" x2="1002" y2="380" stroke="#7f8b9b" stroke-width="2" marker-end="url(#a)"/>
+<rect x="1026" y="270" width="220" height="220" rx="18" fill="#11161d" stroke="#f1b74c" stroke-width="2"/>
+<text x="1048" y="318" font-family="Inter" font-size="23" font-weight="600" fill="#eef2f6">Select</text>
+<text x="1048" y="365" font-family="Inter" font-size="16" fill="#9aa6b4">closest to median
+SA − G+ utility</text>
+<text x="1048" y="458" font-family="DejaVu Sans Mono" font-size="12" fill="#f1b74c">04</text>
+<line x1="1246" y1="380" x2="1320" y2="380" stroke="#7f8b9b" stroke-width="2" marker-end="url(#a)"/>
+<rect x="1344" y="270" width="190" height="220" rx="18" fill="#11161d" stroke="#f1b74c" stroke-width="2"/>
+<text x="1366" y="318" font-family="Inter" font-size="23" font-weight="600" fill="#eef2f6">Render</text>
+<text x="1366" y="365" font-family="Inter" font-size="16" fill="#9aa6b4">synchronized 3D replay
++ full telemetry log</text>
+<text x="1366" y="458" font-family="DejaVu Sans Mono" font-size="12" fill="#f1b74c">05</text>
+<rect x="72" y="558" width="1456" height="94" rx="14" fill="#0e1218" stroke="#303a47"/>
+<text x="98" y="595" font-family="DejaVu Sans Mono" font-size="14" fill="#f1b74c">SELECTION RULE</text>
+<text x="98" y="626" font-family="Inter" font-size="17" fill="#dce2e9">arg minᵢ | (VSA − VG+)ᵢ − median(VSA − VG+) |  within each scenario</text>
+<text x="1500" y="626" font-family="Inter" font-size="15" fill="#8f9baa" text-anchor="end">full CSV + replay JSON published</text>
+</svg>

@@ -1,0 +1,24 @@
+---
+title: "Held-out composite fault: when explicit self-modeling generalizes"
+date: 2026-07-30
+lane: research
+tags: [robotics, generalization, metacognition]
+summary: "Under an actuator-and-sensor fault combination absent from training, the self-aware humanoid completes all paired evaluations while the generic learner fails in three of twenty."
+unlisted: true
+---
+
+The composite regime activates actuator drift and sensor corruption together. Each component appears during training, but their joint occurrence does not. This tests whether the factorized self-state supports compositional diagnosis rather than memorization of whole fault regimes.
+
+<HumanoidExperiment scenario="composite" />
+
+## Strongest aggregate result
+
+SA completes all 20 evaluations. G+ completes 17. The mean utility difference is $+1.643$, with interval $[+0.056,+3.244]$.
+
+The large mean is driven partly by avoiding rare catastrophic failures rather than by a uniform speed advantage. That is exactly why the interval is wide and why the representative clip is selected by median paired effect rather than by the most dramatic failure.
+
+## Interpretation
+
+A factorized self-model can reuse predictions such as *sensor unreliable* and *left actuator uncertain* under a combination that never had a single training label. This is the most promising evidence that explicit self-state structure acts as a useful inductive bias.
+
+It is not yet proof of open-world self-awareness. The component fault categories remain known, the diagnostic action vocabulary is fixed, and the physical simulator is simple. The decisive extension is to introduce a novel fault that cannot be represented as a combination of the training ontology and test whether the agent discovers a new latent cause rather than forcing it into an old category.
