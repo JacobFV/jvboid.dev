@@ -1,0 +1,50 @@
+---
+title: EEG Acquisition Chain
+date: 2026-08-31
+resume_description: "interactive browser simulator of the physical EEG signal path and telemetry-based artifact compensation. react, javascript, signal processing, electrophysiology."
+lane: research
+tags: [eeg, biosignals, signal-processing, instrumentation]
+summary: "Interactive browser simulator tracing EEG from cortical current dipoles through tissue, electrode physics, amplification, multiplexing, digitization, and telemetry-based artifact compensation."
+hero:
+  src: "/assets/img/projects/eeg-acquisition-chain-spectrograph.jpg"
+  alt: "Stacked EEG waveforms and scrolling spectrograms at successive points in the acquisition chain"
+icon:
+  src: "/assets/img/projects/eeg-acquisition-chain-spectrograph.jpg"
+  alt: "EEG acquisition-chain spectrogram"
+  fit: cover
+threadImages:
+  - src: "/assets/img/projects/eeg-acquisition-chain-spectrograph.jpg"
+    alt: "Stacked EEG waveforms and scrolling spectrograms at successive points in the acquisition chain"
+links:
+  github: https://github.com/JacobFV/eeg-acquisition-chain
+  demo: https://jvboid.dev/eeg-acquisition-chain
+influences: [sc-wbd]
+realizes: []
+critiques: []
+---
+
+![Stacked EEG waveforms and scrolling spectrograms at successive points in the acquisition chain](/assets/img/projects/eeg-acquisition-chain-spectrograph.jpg)
+
+## Problem
+
+EEG hardware decisions are difficult to reason about when cortical sources, volume conduction, electrode contact, front-end electronics, sampling, and artifact compensation are treated as separate diagrams.
+
+## Solution
+
+A compact interactive research tool that exposes the acquisition chain as one continuous simulation, from cortical current dipoles to the converter output.
+
+## How
+
+The client-side React model couples tissue and electrode parameters to complex impedance, noise, filtering, gain, multiplexing, quantization, sensor telemetry, and a deliberately simple nuisance estimator. Every measurement point includes a waveform and scrolling spectrogram.
+
+## Tests
+
+The repository runs a production build plus server-render, physics, and LaTeX validation tests in its GitHub Pages workflow.
+
+## Results
+
+The tool makes signal loss and unrecoverable corruption visible while letting force, displacement, impedance, optical telemetry, and neighboring channels be ablated against the same simulated sequence.
+
+## Lessons
+
+Telemetry can remove observable nuisance; it cannot reconstruct information already destroyed by volume conduction, clipping, aliasing, or the electronics noise floor.

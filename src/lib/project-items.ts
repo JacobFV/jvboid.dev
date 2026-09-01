@@ -75,6 +75,7 @@ const projectHexSize: Record<string, HexSize> = {
   "standup-ai": 0.5,
   "microscope-viewer": 0.5,
   "esp32-usb-webcam": 0.5,
+  "eeg-acquisition-chain": 0.5,
   imgpt: 0.5,
   "full-stack-artificial-intelligence": 0.5,
   theagentsuite: 0.5,

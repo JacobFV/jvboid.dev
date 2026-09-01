@@ -141,6 +141,18 @@ const nextConfig = {
       // The homepage briefly linked the flat /introduction path; keep it alive.
       ...dual("/introduction", "/visions/introduction"),
 
+      // Static EEG acquisition-chain research tool, published from its own
+      // repository through GitHub Pages. Keep the portfolio-owned URL stable.
+      {
+        source: "/eeg-acquisition-chain",
+        destination: "https://jacobfv.github.io/eeg-acquisition-chain/",
+        permanent: false,
+      },
+      {
+        source: "/eeg-acquisition-chain/:path*",
+        destination: "https://jacobfv.github.io/eeg-acquisition-chain/:path*",
+        permanent: false,
+      },
       // canvas-engineering moved to the commandAGI org; forward the docs
       // (deep links included). Temporary on purpose: the destination will
       // become commandagi.com/research/canvas-engineering once that exists.
