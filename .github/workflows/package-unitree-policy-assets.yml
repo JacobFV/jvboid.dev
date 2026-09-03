@@ -1,0 +1,88 @@
+name: package official Unitree policy assets
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/package-unitree-policy-assets.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/package-unitree-policy-assets.yml"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone official repositories and extract only executable policy assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git-lfs rsync
+          git lfs install
+          mkdir -p /tmp/unitree-src /tmp/unitree-policy-assets
+          cd /tmp/unitree-src
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_rl_gym.git
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_rl_mjlab.git
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_mujoco.git
+          for repo in unitree_rl_gym unitree_rl_mjlab unitree_mujoco; do
+            git -C "$repo" lfs pull || true
+            git -C "$repo" rev-parse HEAD > "/tmp/unitree-policy-assets/${repo}-commit.txt"
+          done
+
+          mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym/deploy
+          rsync -a unitree_rl_gym/deploy/ /tmp/unitree-policy-assets/unitree_rl_gym/deploy/
+          if [ -d unitree_rl_gym/resources/robots/g1_description ]; then
+            mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/g1_description
+            rsync -a unitree_rl_gym/resources/robots/g1_description/ /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/g1_description/
+          fi
+          if [ -d unitree_rl_gym/resources/robots/go2_description ]; then
+            mkdir -p /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/go2_description
+            rsync -a unitree_rl_gym/resources/robots/go2_description/ /tmp/unitree-policy-assets/unitree_rl_gym/resources/robots/go2_description/
+          fi
+
+          mkdir -p /tmp/unitree-policy-assets/unitree_rl_mjlab
+          cd /tmp/unitree-src/unitree_rl_mjlab
+          find . -type f \( -name '*.pt' -o -name '*.pth' -o -name '*.onnx' -o -name '*.onnx.data' -o -name '*.yaml' -o -name '*.xml' -o -name '*.npz' -o -name '*.py' \) -print0 \
+            | rsync -a --from0 --files-from=- ./ /tmp/unitree-policy-assets/unitree_rl_mjlab/
+
+          mkdir -p /tmp/unitree-policy-assets/unitree_mujoco/unitree_robots
+          cd /tmp/unitree-src/unitree_mujoco
+          for robot in go2 g1; do
+            if [ -d "unitree_robots/$robot" ]; then
+              mkdir -p "/tmp/unitree-policy-assets/unitree_mujoco/unitree_robots/$robot"
+              rsync -a "unitree_robots/$robot/" "/tmp/unitree-policy-assets/unitree_mujoco/unitree_robots/$robot/"
+            fi
+          done
+
+          cd /tmp/unitree-policy-assets
+          find . -type f -printf '%s %p\n' | sort -n > asset-index.txt
+          find . -type f \( -name '*.pt' -o -name '*.pth' -o -name '*.onnx' -o -name '*.onnx.data' \) -printf '%s %p\n' | sort -n > policy-index.txt
+          tar -czf /tmp/unitree-policy-assets.tar.gz .
+          sha256sum /tmp/unitree-policy-assets.tar.gz > /tmp/unitree-policy-assets.tar.gz.sha256
+          du -sh /tmp/unitree-policy-assets /tmp/unitree-policy-assets.tar.gz
+          cat policy-index.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-policy-assets
+          path: |
+            /tmp/unitree-policy-assets.tar.gz
+            /tmp/unitree-policy-assets.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-policy-index
+          path: |
+            /tmp/unitree-policy-assets/asset-index.txt
+            /tmp/unitree-policy-assets/policy-index.txt
+            /tmp/unitree-policy-assets/*-commit.txt
+          if-no-files-found: error
+          retention-days: 14

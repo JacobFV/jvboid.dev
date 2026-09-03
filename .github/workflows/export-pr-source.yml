@@ -1,0 +1,36 @@
+name: export pull request source
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/export-pr-source.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/export-pr-source.yml"
+  workflow_dispatch:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create repository source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar --exclude=.git -czf /tmp/jvboid-dev-pr-source.tar.gz .
+          sha256sum /tmp/jvboid-dev-pr-source.tar.gz > /tmp/jvboid-dev-pr-source.tar.gz.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jvboid-dev-pr-source
+          path: |
+            /tmp/jvboid-dev-pr-source.tar.gz
+            /tmp/jvboid-dev-pr-source.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7

@@ -1,0 +1,48 @@
+name: fetch selected MuJoCo Menagerie models
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/fetch-menagerie-assets.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fetch-menagerie-assets.yml"
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch exact mesh-based robot models
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/google-deepmind/mujoco_menagerie.git /tmp/mujoco_menagerie
+          cd /tmp/mujoco_menagerie
+          git sparse-checkout set franka_emika_panda unitree_go2 unitree_g1
+          git rev-parse HEAD > /tmp/menagerie-commit.txt
+          cd /tmp
+          tar -czf selected-mujoco-menagerie-models.tar.gz \
+            menagerie-commit.txt \
+            mujoco_menagerie/franka_emika_panda \
+            mujoco_menagerie/unitree_go2 \
+            mujoco_menagerie/unitree_g1
+          sha256sum selected-mujoco-menagerie-models.tar.gz > selected-mujoco-menagerie-models.tar.gz.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: selected-mujoco-menagerie-models
+          path: |
+            /tmp/selected-mujoco-menagerie-models.tar.gz
+            /tmp/selected-mujoco-menagerie-models.tar.gz.sha256
+            /tmp/menagerie-commit.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
