@@ -189,7 +189,45 @@ export default async function ResumePage({
                     {n.title}
                     <span className="text-[var(--color-ink-dim)]"> · {n.org}</span>
                   </Wrap>
-                  <p className="mt-1 text-sm text-[var(--color-ink-dim)]">{n.summary}</p>
+                  {n.bullets.length === 1 ? (
+                    <p className="mt-1 text-sm text-[var(--color-ink-dim)]">{n.bullets[0]}</p>
+                  ) : (
+                    <ul className="mt-1 grid gap-1 text-sm text-[var(--color-ink-dim)]">
+                      {n.bullets.map((b) => (
+                        <li key={b} className="relative pl-4 before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full before:bg-[var(--color-ink-mute)]">
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {n.media && n.media.length > 0 && (
+                    // A LinkedIn-style media strip, deliberately small: fixed
+                    // 56px height, natural width, caption on hover/focus via
+                    // the title attribute so the row stays one line tall.
+                    <ul className="mt-2 flex flex-wrap items-end gap-2">
+                      {n.media.map((m) => (
+                        <li key={m.src}>
+                          <a
+                            href={m.src}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={m.description ? `${m.caption} — ${m.description}` : m.caption}
+                            className="block overflow-hidden rounded border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] transition-opacity hover:opacity-80"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={m.thumb}
+                              alt={m.caption}
+                              width={Math.round((m.w / m.h) * 56)}
+                              height={56}
+                              loading="lazy"
+                              className="block h-14 w-auto object-cover"
+                            />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-2 font-[family-name:var(--font-mono)] text-[10px] text-[var(--color-ink-mute)]">
                     {n.tags.map((tag) => (
                       <span key={tag} className="rounded-full bg-[var(--color-bg-1)] px-2 py-0.5">

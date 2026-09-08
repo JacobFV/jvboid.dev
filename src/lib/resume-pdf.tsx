@@ -4,7 +4,8 @@
 // node-only at our usage). Routes that need the PDF binary should call
 // `renderResumePdf()` from a route handler.
 
-import { Document, Page, Text, View, StyleSheet, Link, renderToBuffer } from "@react-pdf/renderer";
+import path from "node:path";
+import { Document, Page, Text, View, StyleSheet, Link, Image, renderToBuffer } from "@react-pdf/renderer";
 import type { Node } from "./graph-types";
 import {
   contact,
@@ -23,6 +24,16 @@ const colors = {
   rule: "#dcdcdc",
   accent: "#b34700",
 };
+
+// Height of a job's media thumbnail strip, in PDF points. Deliberately tiny —
+// these are evidence that the work exists, not figures to read. The images
+// come from `public/assets/img/experience/thumbs` (height-180 downscales), so
+// a full page of them costs ~110 KB rather than ~760 KB.
+const MEDIA_H = 26;
+
+function pdfImagePath(publicPath: string): string {
+  return path.join(process.cwd(), "public", publicPath);
+}
 
 const styles = StyleSheet.create({
   page: {
@@ -86,6 +97,10 @@ const styles = StyleSheet.create({
   expTitle: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
   expSummary: { marginTop: 1, fontSize: 9, color: colors.inkDim },
+  expBullet: { position: "relative", marginTop: 1, paddingLeft: 7, fontSize: 9, color: colors.inkDim },
+  expBulletDot: { position: "absolute", left: 0, top: 5, width: 2, height: 2, borderRadius: 1, backgroundColor: colors.inkMute },
+  expMediaRow: { marginTop: 3, flexDirection: "row", flexWrap: "wrap", gap: 3, alignItems: "flex-end" },
+  expMediaImg: { height: MEDIA_H, borderRadius: 1 },
   expTags: { marginTop: 2, fontSize: 7.5, color: colors.inkMute, letterSpacing: 0.5 },
 
   projGroupLabel: {
@@ -209,7 +224,27 @@ export function ResumeDocument({
                   <Text style={styles.expTitle}>{e.title}</Text>
                   <Text style={styles.expOrg}> · {e.org}</Text>
                 </Text>
-                <Text style={styles.expSummary}>{e.summary}</Text>
+                {e.bullets.length === 1 ? (
+                  <Text style={styles.expSummary}>{e.bullets[0]}</Text>
+                ) : (
+                  e.bullets.map((b) => (
+                    <View key={b} style={styles.expBullet}>
+                      <View style={styles.expBulletDot} />
+                      <Text>{b}</Text>
+                    </View>
+                  ))
+                )}
+                {e.media && e.media.length > 0 ? (
+                  <View style={styles.expMediaRow}>
+                    {e.media.map((m) => (
+                      <Image
+                        key={m.src}
+                        src={pdfImagePath(m.thumb)}
+                        style={{ ...styles.expMediaImg, width: (m.w / m.h) * MEDIA_H }}
+                      />
+                    ))}
+                  </View>
+                ) : null}
                 <Text style={styles.expTags}>{e.tags.join(" · ")}</Text>
               </View>
             </View>

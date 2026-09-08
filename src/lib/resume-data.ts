@@ -62,76 +62,143 @@ export const variantMeta: Record<ResumeVariant, {
   },
 };
 
+// One media item attached to a job: the caption and (optional) description
+// are Jacob's own, copied verbatim from the LinkedIn entry the photo was
+// published under. `thumb` is a height-180 downscale used for the on-page
+// strip and the PDF strip alike (~5-13 KB each, so a dozen of them add ~110 KB
+// to the PDF instead of ~760 KB); `src` is the full-size file the on-page
+// thumbnail links out to. `w`/`h` are the *thumb* pixel dimensions, carried
+// here so the PDF can lay a row out without measuring the file at render time.
+export type ExperienceMedia = {
+  src: string;
+  thumb: string;
+  caption: string;
+  description?: string;
+  w: number;
+  h: number;
+};
+
+const IMG = "/assets/img/experience";
+
+function media(
+  file: string,
+  w: number,
+  h: number,
+  caption: string,
+  description?: string,
+): ExperienceMedia {
+  return { src: `${IMG}/${file}`, thumb: `${IMG}/thumbs/${file}`, caption, description, w, h };
+}
+
+// Job descriptions below are Jacob's own words, copied verbatim from LinkedIn
+// rather than rewritten — the voice is the point. Don't "improve" them without
+// asking; a previous pass paraphrased Breezy and AGI into something blander and
+// had to be reverted.
 export const experience: {
   title: string;
   org: string;
   href?: string;
   range: string;
-  summary: string;
+  bullets: string[];
   tags: string[];
+  media?: ExperienceMedia[];
 }[] = [
   {
     title: "API / Integration Architect",
     org: "AGI, Inc.",
     href: "https://agi.app",
     range: "Jan 2026 – Apr 2026",
-    summary:
-      "Owned the integration surface across API, SDKs, and partner-facing edges — iOS, on-device LLMs, model quantization, agents, control plane. Owned api.agi.tech and was first responder for API infra and full-stack backend incidents across a team in three countries, pushing straight to production.",
+    bullets: [
+      "Interfaces and integration across our API, SDKs, and other partner-facing surfaces. iOS, on-device llms, model quantization, agents, control plane, etc.",
+      "Owned api.agi.tech. First-responder to API infra / full-stack backend issues (Team across 3 countries/timezones, constant pushes directly to production)",
+    ],
     tags: ["agents", "ios", "on-device", "schemas", "api"],
+    media: [
+      media(
+        "burning-the-midnight-oil.jpg", 201, 180,
+        "Burning the midnight oil",
+        "After all the original founding engineers moved onto their own startup, I was the only engineer left who actually stayed past midnight to work. It took me some time to readjust to the new culture that was forming in the company.",
+      ),
+      media(
+        "ios-computer-use.jpg", 83, 180,
+        "iOS computer use 😃",
+        "The agent controls a virtual cursor on the screen to complete the task “Book an Uber from here to SFO” using a BLE accessibility relay",
+      ),
+    ],
   },
   {
     title: "Software Engineer",
     org: "AGI, Inc.",
     href: "https://agi.app",
     range: "Oct 2025 – Jan 2026",
-    summary:
-      "Full-stack and infrastructure engineering across agentic systems — TypeScript, Python, Next.js, Node, distributed systems on AWS/GCP, Postgres/Drizzle, queues, browser and computer use, agent runtimes, model inference, evals, observability, CI/CD. Promoted into the integration architect role.",
+    bullets: [
+      "WE ARE BUILDING THE INFRASTRUCTURE FOR ARTIFICIAL GENERAL INTELLIGENCE",
+      "full-stack + infrastructure engineering across agentic systems: typescript, python, react/next.js, node.js, apis, distributed systems, cloud infrastructure, aws, gcp, s3, data engineering, containers, drizzle, pg/psql, databases, queues, browser/computer use, agent runtimes, tool use, model inference, llm integrations, multimodal models, evals, automation, control planes, observability, debugging, deployment, ci/cd, production operations. shipped rapidly across the stack in a high-velocity, production-first environment.",
+    ],
     tags: ["agents", "infra", "full-stack", "evals"],
+    // The "AGI" thumbnail from this LinkedIn entry was the one image missing
+    // from the handoff — the file that arrived under it was a duplicate of the
+    // Human Robots prototype photo. Add it here when the real file turns up.
   },
   {
     title: "Software Engineer",
     org: "Breezy",
     range: "Apr 2025 – Oct 2025",
-    summary:
-      "Full-stack product engineering across a Rails/Next.js monorepo for a prosumer AI receptionist platform. Independently owned features end to end — requirements, implementation, integration, debugging, production delivery — across frontend, backend, AI integrations, and app infrastructure.",
+    bullets: [
+      "Full-stack product engineering across a rails/next.js monorepo for a prosumer (single-person business) AI receptionist platform.",
+      "Independently owned features end-to-end from product requirements and implementation through integration, debugging, and production delivery.",
+      "Worked across frontend, backend, ai integrations, and application infrastructure; Left for infra role at AGI Inc",
+    ],
     tags: ["voice-ai", "agents", "rails", "next.js"],
+    media: [
+      media("breezy-scheduling-appointments.jpg", 161, 180, "Using Breezy to Schedule Appointments"),
+      media("breezy-ai-assistant.jpg", 156, 180, "Breezy AI assistant"),
+    ],
   },
   {
-    title: "Applied ML Engineer (Intern)",
+    title: "Applied Machine Learning Engineer",
     org: "Deepshard",
     range: "Sep 2024 – Dec 2024",
-    summary:
-      "The Truffle computer — large-model experimentation, multi-agent research, on-device inference tooling.",
+    bullets: ["the truffle computer"],
     tags: ["ml", "on-device", "research"],
   },
   {
     title: "Humanoid Robot Prototyping",
     org: "Human Robots",
     range: "Jan 2023 – Sep 2024",
-    summary:
-      "Prototyped a hydraulically actuated, endoskeletal humanoid: KiCad, FreeCAD, Blender, Python, 3D printing, MDF CNC routing, 3/16\" plasma cutting, 100µm/300µm-trace PCB fabrication and SMT assembly. Sourced from direct factory contacts in China and negotiated with several more; did the actuator and pump math by hand.",
+    bullets: [
+      'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), also 3018 diy milling if that counts. Ordered from 2 direct factory contacts in China and negotiated with several others. Did all the math in my notebook and brain before ChatGPT was useful for this!',
+    ],
     tags: ["robotics", "hydraulics", "cad", "hardware", "pcb"],
+    media: [
+      media(
+        "endoskeletal-hydraulic-prototype.jpg", 83, 180,
+        "Whole body endoskeletal + hydraulic system (no actuator) prototype assembly",
+      ),
+      media("lobe-pump-early-iteration.jpg", 135, 180, "Early iteration of positive displacement lobe pump"),
+    ],
   },
   {
-    title: "Full-Stack Pipeline Engineer",
+    title: "Full Stack Pipeline Engineer",
     org: "FLORA",
     range: "Jun 2024",
-    summary:
-      "Generative-AI creative pipeline — TypeScript, Python, Modal, fal.ai, ComfyUI, diffusion models, serverless Next.js front end.",
+    bullets: [
+      "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
+    ],
     tags: ["generative-ai", "diffusion", "full-stack"],
   },
   {
     title: "Software Engineer",
     org: "Motio, Inc.",
     range: "Aug 2022 – Jan 2023",
-    summary: "Develop Soterre for Qlik Sense.",
+    bullets: ["Develop Soterre for Qlik Sense"],
     tags: ["java", "hibernate"],
   },
   {
     title: "Software Engineer (Intern)",
     org: "Motio, Inc.",
     range: "Jun 2022 – Aug 2022",
-    summary: "Develop Soterre for Qlik Sense.",
+    bullets: ["Develop Soterre for Qlik Sense"],
     tags: ["java", "hibernate"],
   },
   {
@@ -139,42 +206,79 @@ export const experience: {
     org: "IT Lab · UT Arlington",
     href: "https://uta.edu",
     range: "Jun 2021 – May 2022",
-    summary:
-      "Evolved and tested CoWiz, a Flask-based statistical visualization tool, and built MLN-Dashboard, a full-stack web server on a Next/React/GraphQL stack.",
+    bullets: [
+      "Collaborated with research group to evolve and test a flask-based statistical visualization tool CoWiz",
+      "Currently developing a full stack web server MLN-Dashboard using Next-React-GraphQL stack",
+    ],
     tags: ["react", "next.js", "graphql", "flask"],
+    media: [
+      media(
+        "mln-dashboard.jpg", 288, 180,
+        "MLN Dashboard",
+        "The Multi-layer Network Visualization Dashboard: a web app I started while working at the IT Lab",
+      ),
+      media(
+        "dash-cowiz.jpg", 320, 180,
+        "Dash",
+        "Cowiz visualization dashboard: a web app I enhanced while working at the IT Lab",
+      ),
+    ],
   },
   {
     title: "Software Developer",
     org: "College of Social Work · UT Arlington",
     href: "https://uta.edu",
     range: "Jun 2021 – May 2022",
-    summary:
-      "Maintained and enhanced MyAmble, a multi-platform (iOS + Android) data-collection app, plus its web admin interface, using Flutter and Firebase.",
+    bullets: [
+      "Maintain and enhance multi-platform (iOS and Android) data collecting application MyAmble using flutter and firebase and web administrator interface",
+    ],
     tags: ["flutter", "firebase", "mobile"],
+    media: [
+      media("myamble-application.jpg", 234, 180, "MyAmble Application", "This was taken from the user guide"),
+    ],
+  },
+  {
+    title: "Career break",
+    org: "Professional development",
+    range: "Apr 2020 – Jun 2021",
+    bullets: ["Pandemic + First year at University of Texas at Arlington"],
+    tags: ["career-break"],
   },
   {
     title: "Crew Trainer",
     org: "McDonald's",
     range: "May 2016 – Mar 2020",
-    summary:
-      "Led the safety committee and addressed the crew at the monthly 30-minute safety meeting; trained employees on the job and formally; used Spanish daily on shift alongside four years of formal study.",
+    bullets: [
+      "Led safety committee and addressed employees during 30-minute monthly safety meeting",
+      "Train employees on-the-job and formally",
+      "In addition to 4 years of formal education, actively used Spanish on-the-job",
+    ],
     tags: ["training", "team-leadership", "safety", "spanish"],
+    media: [
+      media(
+        "fire-safety-poster.jpg", 255, 180,
+        "Fire Safety Poster",
+        "This poster was designed to emphasize the importance of not leaving trash in the fire exit",
+      ),
+      media("employee-of-the-month.jpg", 135, 180, "Employee of the Month"),
+      media("working-together.jpg", 135, 180, "Working togethor"),
+    ],
   },
   {
     title: "B.S., Computer Science",
     org: "The University of Texas at Arlington",
     href: "https://uta.edu",
     range: "2020 – 2022",
-    summary:
+    bullets: [
       "CS coursework alongside heavy lab work, independent ML/robotics prototypes, and a steady research output. GPA 3.6/4.0.",
+    ],
     tags: ["education", "cs"],
   },
   {
     title: "A.A.S., Mathematics",
     org: "Navarro College",
     range: "2016 – 2018",
-    summary:
-      "Math associate degree taken dual-credit during high school. GPA 3.9/4.0.",
+    bullets: ["Math associate degree taken dual-credit during high school. GPA 3.9/4.0."],
     tags: ["education", "math"],
   },
 ];
