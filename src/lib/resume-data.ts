@@ -76,8 +76,8 @@ export const experience: {
     href: "https://agi.app",
     range: "Jan 2026 – Apr 2026",
     summary:
-      "Owned the integration surface across API, SDKs, and partner-facing edges — iOS, on-device LLMs, model quantization, agent control plane. Led schema + integration work through fast product pivots.",
-    tags: ["agents", "ios", "on-device", "schemas"],
+      "Owned the integration surface across API, SDKs, and partner-facing edges — iOS, on-device LLMs, model quantization, agents, control plane. Owned api.agi.tech and was first responder for API infra and full-stack backend incidents across a team in three countries, pushing straight to production.",
+    tags: ["agents", "ios", "on-device", "schemas", "api"],
   },
   {
     title: "Software Engineer",
@@ -85,16 +85,16 @@ export const experience: {
     href: "https://agi.app",
     range: "Oct 2025 – Jan 2026",
     summary:
-      "Infrastructure for AGI — agent runtime, mobile glue, eval tooling. Promoted into the integration architect role.",
-    tags: ["agents", "infra", "mobile"],
+      "Full-stack and infrastructure engineering across agentic systems — TypeScript, Python, Next.js, Node, distributed systems on AWS/GCP, Postgres/Drizzle, queues, browser and computer use, agent runtimes, model inference, evals, observability, CI/CD. Promoted into the integration architect role.",
+    tags: ["agents", "infra", "full-stack", "evals"],
   },
   {
     title: "Software Engineer",
     org: "Breezy",
     range: "Apr 2025 – Oct 2025",
     summary:
-      "Voice-AI automation product — agent workflows, conversational interfaces, integration plumbing.",
-    tags: ["voice-ai", "agents"],
+      "Full-stack product engineering across a Rails/Next.js monorepo for a prosumer AI receptionist platform. Independently owned features end to end — requirements, implementation, integration, debugging, production delivery — across frontend, backend, AI integrations, and app infrastructure.",
+    tags: ["voice-ai", "agents", "rails", "next.js"],
   },
   {
     title: "Applied ML Engineer (Intern)",
@@ -103,6 +103,14 @@ export const experience: {
     summary:
       "The Truffle computer — large-model experimentation, multi-agent research, on-device inference tooling.",
     tags: ["ml", "on-device", "research"],
+  },
+  {
+    title: "Humanoid Robot Prototyping",
+    org: "Human Robots",
+    range: "Jan 2023 – Sep 2024",
+    summary:
+      "Prototyped a hydraulically actuated, endoskeletal humanoid: KiCad, FreeCAD, Blender, Python, 3D printing, MDF CNC routing, 3/16\" plasma cutting, 100µm/300µm-trace PCB fabrication and SMT assembly. Sourced from direct factory contacts in China and negotiated with several more; did the actuator and pump math by hand.",
+    tags: ["robotics", "hydraulics", "cad", "hardware", "pcb"],
   },
   {
     title: "Full-Stack Pipeline Engineer",
@@ -143,6 +151,14 @@ export const experience: {
     summary:
       "Maintained and enhanced MyAmble, a multi-platform (iOS + Android) data-collection app, plus its web admin interface, using Flutter and Firebase.",
     tags: ["flutter", "firebase", "mobile"],
+  },
+  {
+    title: "Crew Trainer",
+    org: "McDonald's",
+    range: "May 2016 – Mar 2020",
+    summary:
+      "Led the safety committee and addressed the crew at the monthly 30-minute safety meeting; trained employees on the job and formally; used Spanish daily on shift alongside four years of formal study.",
+    tags: ["training", "team-leadership", "safety", "spanish"],
   },
   {
     title: "B.S., Computer Science",
