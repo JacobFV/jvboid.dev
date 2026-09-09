@@ -73,11 +73,19 @@ const tweetId = (url: string) => url.match(/\/status\/(\d+)/)?.[1];
 
 function resolve({ url, urls, posts }: Pick<XPostProps, "url" | "urls" | "posts">): XPostData[] {
   if (posts?.length) {
-    // Inline entries still get the cache as a backstop, so a post can
-    // override just the text and inherit the author and date.
+    // Inline entries take only identity from the cache — never its
+    // text, photos or truncation. A hand-written thread routinely
+    // points every entry at the same status URL (the reply chain has
+    // one canonical link), so merging the cached body in would repeat
+    // one tweet's text and photo once per entry.
     return posts.map((post) => {
-      const id = tweetId(post.url);
-      return { ...(id ? CACHE[id] : undefined), ...post };
+      const cached = CACHE[tweetId(post.url) ?? ""];
+      return {
+        authorName: cached?.authorName,
+        authorHandle: cached?.authorHandle,
+        date: cached?.date,
+        ...post,
+      };
     });
   }
   const list = urls?.length ? urls : url ? [url] : [];
