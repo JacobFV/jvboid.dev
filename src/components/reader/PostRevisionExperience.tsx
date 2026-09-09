@@ -9,7 +9,6 @@ type PostRevisionExperienceProps = {
   postId: string;
   postedDate: string;
   currentTitle: string;
-  currentSummary: string;
   currentBody: string;
   revisions: PostRevision[];
 };
@@ -42,7 +41,6 @@ export function PostRevisionExperience({
   postId,
   postedDate,
   currentTitle,
-  currentSummary,
   currentBody,
   revisions,
 }: PostRevisionExperienceProps) {
@@ -89,34 +87,14 @@ export function PostRevisionExperience({
   };
 
   const title = selected?.title ?? currentTitle;
-  const summary = selected?.summary ?? currentSummary;
   const body = selected?.body ?? currentBody;
 
   return (
     <>
       <header
         style={{ viewTransitionName: `node-${postId}` }}
-        className="mb-10 border-b border-[var(--color-bg-2)]/60 pb-8"
+        className="mb-8 border-b border-[var(--color-bg-2)]/60 pb-6"
       >
-        <div className="mb-3 flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-          <span>
-            posted: <time dateTime={postedDate}>{postedDate}</time>
-          </span>
-          {revisions.length > 1 && latest && (
-            <>
-              <span aria-hidden>·</span>
-              <PostRevisionMenu
-                revisions={revisions}
-                selectedCommit={selected?.commit ?? latest.commit}
-                latest={latest}
-                highlightChanges={highlightChanges}
-                onSelect={selectRevision}
-                onHighlightChange={setHighlight}
-              />
-            </>
-          )}
-        </div>
-
         <h1
           data-page-title
           className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)] sm:text-5xl"
@@ -124,7 +102,6 @@ export function PostRevisionExperience({
         >
           {title}
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-[var(--color-ink-dim)]">{summary}</p>
       </header>
 
       <div className="prose-mdx prose-lede">
@@ -134,6 +111,29 @@ export function PostRevisionExperience({
           <MDXContent code={body} />
         )}
       </div>
+
+      {/* The dateline reads as an endnote, not a headline: a post opens on
+          its title and the prose, and when it was posted or last revised is
+          what you want once you have read it. The revision menu travels with
+          it — it is the same fact, made browsable. */}
+      <footer className="mt-12 flex flex-wrap items-baseline gap-2 border-t border-[var(--color-bg-2)]/60 pt-6 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+        <span>
+          posted: <time dateTime={postedDate}>{postedDate}</time>
+        </span>
+        {revisions.length > 1 && latest && (
+          <>
+            <span aria-hidden>·</span>
+            <PostRevisionMenu
+              revisions={revisions}
+              selectedCommit={selected?.commit ?? latest.commit}
+              latest={latest}
+              highlightChanges={highlightChanges}
+              onSelect={selectRevision}
+              onHighlightChange={setHighlight}
+            />
+          </>
+        )}
+      </footer>
     </>
   );
 }

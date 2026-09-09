@@ -63,7 +63,6 @@ export default async function NodePage({ params }: { params: Params }) {
             postId={node.id}
             postedDate={new Date(node.date).toISOString().slice(0, 10)}
             currentTitle={node.title}
-            currentSummary={node.summary}
             currentBody={node.body}
             revisions={postRevisions}
           />
