@@ -18,10 +18,16 @@ import xPosts from "@/data/x-posts.json";
  * third-party script, no layout shift, and the quote still renders when
  * X is down or the reader blocks it.
  *
- * What we give up is X's media. A tweet that was carrying a screenshot
- * renders as its words plus a link, so when the image *is* the point,
- * place it in the MDX next to the embed the way any other figure is
- * placed — projects own their own media (see CONTENT_MODEL.md).
+ * The photos come along: the sync script copies them into
+ * public/assets/media/x/ rather than hotlinking pbs.twimg.com, so a
+ * project page does not quietly lose its screenshot the day a tweet
+ * goes away.
+ *
+ * The one thing genuinely out of reach is the full text of a long-form
+ * post. X caps those at ~275 characters for anyone without API
+ * credentials and hands back only an id for the rest, so those are
+ * flagged `truncated` and say so, rather than trailing an ellipsis and
+ * pretending that was the whole thought.
  */
 
 type XPostData = {
@@ -30,6 +36,10 @@ type XPostData = {
   authorName?: string;
   authorHandle?: string;
   date?: string;
+  /** X only serves the first ~275 characters of a long-form post. */
+  truncated?: boolean;
+  /** Site-relative paths under public/, written by the sync script. */
+  photos?: string[];
 };
 
 type XPostProps = {
@@ -90,20 +100,39 @@ export function XPost({ url, urls, posts, caption }: XPostProps) {
 function Tweet({ post }: { post: XPostData }) {
   const handle = post.authorHandle ?? "@jvboid";
   const meta = [handle, post.date].filter(Boolean).join(" · ");
+  const photos = post.photos ?? [];
+  const paragraphs = post.text ? post.text.split(/\n{2,}/) : [];
 
   return (
-    <figure className="m-0 grid gap-2">
-      {post.text && (
-        <blockquote className="m-0 grid gap-3 border-0 p-0 not-italic">
-          {post.text.split(/\n{2,}/).map((para, i) => (
+    <figure className="m-0 grid gap-3">
+      {paragraphs.length > 0 && (
+        <blockquote className="m-0 grid gap-3 p-0">
+          {paragraphs.map((para, i) => (
             <p
               key={i}
               className="m-0 whitespace-pre-line text-[17px] leading-[1.65] text-[var(--color-ink)]"
             >
               <Linkified text={para} />
+              {/* The cut is real — show it, rather than letting the
+                  sentence appear to simply stop. */}
+              {post.truncated && i === paragraphs.length - 1 && "…"}
             </p>
           ))}
         </blockquote>
+      )}
+      {photos.length > 0 && (
+        <div className={photos.length > 1 ? "grid gap-2 sm:grid-cols-2" : "grid"}>
+          {photos.map((src) => (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              key={src}
+              src={src}
+              alt=""
+              loading="lazy"
+              className="m-0 h-auto w-full rounded-lg"
+            />
+          ))}
+        </div>
       )}
       <figcaption>
         <a
@@ -112,7 +141,7 @@ function Tweet({ post }: { post: XPostData }) {
           rel="noreferrer"
           className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline transition-colors hover:text-[var(--color-accent)]"
         >
-          {meta} · X ↗
+          {meta} · {post.truncated ? "read the rest on X" : "X"} ↗
         </a>
       </figcaption>
     </figure>

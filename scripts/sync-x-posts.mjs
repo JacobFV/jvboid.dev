@@ -2,8 +2,10 @@
  * Resolve every X post referenced from content into src/data/x-posts.json.
  *
  * The site renders tweets itself rather than loading X's widget (see
- * reader/XPost.tsx for why), so it needs the text. X's oEmbed endpoint
- * gives it away without auth: author, handle, date, and the tweet body.
+ * reader/XPost.tsx for why), so it needs the words. X's syndication
+ * endpoint — the one its own embed script calls — hands them over
+ * without auth, along with the author, an ISO date, the photos, and
+ * the real destination behind every t.co.
  *
  * The result is committed. Builds must not depend on X being up or on
  * whatever rate limit we are under that day, and a deploy that silently
@@ -18,13 +20,18 @@
  * its timeline. `--prune` drops entries no longer referenced anywhere.
  */
 
-import { readFile, writeFile, readdir } from "node:fs/promises";
+import { readFile, writeFile, readdir, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
 const CONTENT = path.join(ROOT, "content");
 const OUT = path.join(ROOT, "src", "data", "x-posts.json");
+// Photos are copied in rather than hotlinked: pbs.twimg.com is not a CDN
+// we control, and a tweet's image disappearing would silently gut a
+// project page. Same reason the text is committed.
+const MEDIA_DIR = path.join(ROOT, "public", "assets", "media", "x");
+const MEDIA_HREF = "/assets/media/x";
 
 const REFRESH = process.argv.includes("--refresh");
 const PRUNE = process.argv.includes("--prune");
@@ -53,107 +60,102 @@ async function collectIds() {
   return found;
 }
 
-const ENTITIES = {
-  amp: "&",
-  lt: "<",
-  gt: ">",
-  quot: '"',
-  "#39": "'",
-  apos: "'",
-  nbsp: " ",
-  mdash: "—",
-  ndash: "–",
-  hellip: "…",
-};
-
-function decode(s) {
-  return s
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
-    .replace(/&([a-z0-9#]+);/gi, (m, name) => ENTITIES[name] ?? ENTITIES[name.toLowerCase()] ?? m);
-}
-
 /**
- * t.co hides where a link actually goes, and we render the text as
- * prose — "https://t.co/RvCQwlDFuU" mid-sentence tells the reader
- * nothing. One redirect hop gets the real destination. Failures fall
- * back to the shortlink, which still works.
- */
-async function expandShortlinks(text) {
-  const links = [...new Set(text.match(/https:\/\/t\.co\/\w+/g) ?? [])];
-  let out = text;
-  for (const short of links) {
-    try {
-      const res = await fetch(short, { redirect: "manual" });
-      const target = res.headers.get("location");
-      // A t.co pointing back at a tweet is the "quoted/self" link X
-      // appends; it adds nothing next to the text it is attached to.
-      if (target) out = out.replaceAll(short, target.split("?")[0]);
-    } catch {
-      /* keep the shortlink */
-    }
-  }
-  return out;
-}
-
-/**
- * Pull the parts we render out of oEmbed's blob of markup.
+ * X's syndication endpoint — the one its own embed script talks to.
+ * Public, no auth, and it hands back more than oEmbed does: the media,
+ * the real destination of every t.co, an ISO timestamp, and the author.
  *
- * The payload is a <blockquote> holding one <p> of tweet text followed
- * by "— Author (@handle) <a>date</a>". We want the text with its line
- * breaks intact and the date as X displayed it; everything else in
- * there is widget scaffolding.
+ * The token is a checksum of the id, computed the same way the embed
+ * script computes it.
  */
-function parseOembed(payload) {
-  const html = payload.html ?? "";
-
-  const body = html.match(/<p[^>]*>([\s\S]*?)<\/p>/);
-  const text = body
-    ? decode(
-        body[1]
-          .replace(/<br\s*\/?>/gi, "\n")
-          .replace(/<[^>]+>/g, "")
-          .replace(/ /g, " "),
-      )
-        // X appends a pic.twitter.com stub for every attached photo or
-        // video. We do not render X's media, so the stub is a dead
-        // token — the MDX places the image itself when it matters.
-        .replace(/\s*pic\.twitter\.com\/\w+/g, "")
-        .trim()
-    : "";
-
-  const dateMatch = html.match(/<a[^>]*>([^<]*\d{4})<\/a>/);
-  const handleMatch = (payload.author_url ?? "").match(/x\.com\/([A-Za-z0-9_]+)/);
-
-  return {
-    authorName: payload.author_name ?? undefined,
-    authorHandle: handleMatch ? `@${handleMatch[1]}` : undefined,
-    date: dateMatch ? decode(dateMatch[1]).trim() : undefined,
-    text,
-  };
+function syndicationUrl(id) {
+  const token = ((Number(id) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, "");
+  return `https://cdn.syndication.twimg.com/tweet-result?id=${id}&token=${token}&lang=en`;
 }
 
-async function fetchPost(id, handle) {
-  const url = `https://x.com/${handle}/status/${id}`;
-  const endpoint =
-    "https://publish.x.com/oembed?" +
-    new URLSearchParams({ url, omit_script: "1", dnt: "1" }).toString();
+/**
+ * Swap every t.co for where it actually goes, using the entity table
+ * rather than a redirect hop. Media stubs come out entirely: we render
+ * the photos ourselves, so the stub is a dead token in the prose.
+ */
+function detokenize(text, entities = {}) {
+  let out = text;
+  for (const u of entities.urls ?? []) {
+    if (u.url && u.expanded_url) out = out.replaceAll(u.url, u.expanded_url);
+  }
+  for (const m of entities.media ?? []) {
+    if (m.url) out = out.replaceAll(m.url, "");
+  }
+  return out.replace(/\s*https:\/\/t\.co\/\w+\s*$/, "").trim();
+}
 
-  const res = await fetch(endpoint, {
+/**
+ * Pull a tweet's photos into public/ and hand back site-relative paths.
+ * Already-downloaded files are left alone, so re-running is cheap.
+ */
+async function savePhotos(id, urls) {
+  if (!urls.length) return [];
+  await mkdir(MEDIA_DIR, { recursive: true });
+
+  const saved = [];
+  for (const [i, url] of urls.entries()) {
+    const ext = (url.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] ?? "jpg").toLowerCase();
+    const name = `${id}-${i + 1}.${ext}`;
+    const file = path.join(MEDIA_DIR, name);
+    if (!existsSync(file)) {
+      // `name=large` is the biggest rendition X will serve unauthenticated.
+      const res = await fetch(`${url}?format=${ext}&name=large`);
+      if (!res.ok) {
+        console.log(`    ! photo ${name}: HTTP ${res.status}`);
+        continue;
+      }
+      await writeFile(file, Buffer.from(await res.arrayBuffer()));
+    }
+    saved.push(`${MEDIA_HREF}/${name}`);
+  }
+  return saved;
+}
+
+async function fetchPost(id) {
+  const res = await fetch(syndicationUrl(id), {
     headers: {
-      // The endpoint 404s on some default agents.
+      // The endpoint is picky about looking like a browser.
       "user-agent":
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
       accept: "application/json",
     },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const t = await res.json();
+  if (!t?.id_str) throw new Error("no tweet in payload");
 
-  const parsed = parseOembed(await res.json());
-  // A tweet that is only a photo or a link has no text once the stub is
-  // stripped. That is a real state, not a failure — the component
-  // renders it as a plain attributed link.
-  return { url, ...parsed, text: await expandShortlinks(parsed.text) };
+  const handle = t.user?.screen_name;
+  const text = detokenize(t.text ?? "", t.entities);
+
+  // A long-form post ("note tweet") comes back capped at ~275
+  // characters, and the payload carries only an id for the full
+  // version — the rest needs credentials we do not have. Recording the
+  // cut honestly beats a dangling ellipsis: the component sends the
+  // reader to X for the rest.
+  const truncated = Boolean(t.note_tweet) || /[…]$/.test(text);
+
+  const photos = await savePhotos(
+    id,
+    (t.mediaDetails ?? [])
+      .filter((m) => m.type === "photo" && m.media_url_https)
+      .map((m) => m.media_url_https),
+  );
+
+  return {
+    url: `https://x.com/${handle ?? "i"}/status/${id}`,
+    authorName: t.user?.name ?? undefined,
+    authorHandle: handle ? `@${handle}` : undefined,
+    date: t.created_at ? t.created_at.slice(0, 10) : undefined,
+    text,
+    ...(truncated ? { truncated: true } : {}),
+    ...(photos.length ? { photos } : {}),
+    ...(t.quoted_tweet?.id_str ? { quotes: t.quoted_tweet.id_str } : {}),
+  };
 }
 
 async function main() {
@@ -168,9 +170,9 @@ async function main() {
 
   let ok = 0;
   const failed = [];
-  for (const [id, handle] of todo) {
+  for (const [id] of todo) {
     try {
-      cache[id] = await fetchPost(id, handle);
+      cache[id] = await fetchPost(id);
       ok++;
       const preview = cache[id].text.slice(0, 60).replace(/\n/g, " ");
       console.log(`  ✓ ${id}  ${preview ? preview + "…" : "(no text — media or link only)"}`);
