@@ -11,6 +11,7 @@ import {
 } from "@/lib/graph";
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { CollectionTitle } from "@/components/chrome/CollectionTitle";
+import { CoverArt } from "@/components/chrome/CoverArt";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
 
@@ -43,6 +44,13 @@ const KIND_DESCRIPTION: Record<NodeKind, string> = {
 // Writings and readings carry their title alone: the standfirst under the
 // heading read as a subheader, and the home page dropped its equivalents.
 const BARE_HEADER: ReadonlySet<NodeKind> = new Set<NodeKind>(["paper", "reading"]);
+
+// The two kinds that are *objects* — a PDF, a book, a published page —
+// rather than writing that lives here. They already have covers on the
+// home shelf, and a row of them reads much faster with the cover than
+// without: you recognise a paper you have read before you finish the
+// title. Every other index stays pure text.
+const COVER_KINDS: ReadonlySet<NodeKind> = new Set<NodeKind>(["paper", "reading"]);
 
 export function generateStaticParams() {
   return Object.values(KIND_PREFIX).map((kind) => ({ kind }));
@@ -96,9 +104,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
         >
           {KIND_TITLE[nodeKind]}
         </h1>
-        {!bare && (
-          <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>
-        )}
+        {!bare && <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>}
       </header>
 
       {/* No cards. An index is a list of things to read, so it is set as
@@ -110,57 +116,70 @@ export default async function KindIndexPage({ params }: { params: Params }) {
         <ul className="flex flex-col gap-10">
           {nodes.map((node) => {
             const postedDate = new Date(node.date).toISOString().slice(0, 10);
-            const revisionSummary =
-              node.kind === "post" ? getPostRevisionSummary(node.id) : null;
+            const revisionSummary = node.kind === "post" ? getPostRevisionSummary(node.id) : null;
             // Papers and readings have no page here — the title is a link
             // to the artifact itself. See `nodeSourceHref`.
             const href = nodeLinkHref(node);
             const offsite = /^https?:/i.test(href);
+            const withCover = COVER_KINDS.has(node.kind);
             return (
               <li key={node.id}>
                 <Link
                   href={href}
                   {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
-                  className="group block no-underline"
+                  className={
+                    withCover
+                      ? "group flex items-start gap-5 no-underline"
+                      : "group block no-underline"
+                  }
                 >
-                  <div className="flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-                    {node.kind === "post" ? (
-                      <>
-                        <span>
-                          posted: <time dateTime={postedDate}>{postedDate}</time>
-                        </span>
-                        {revisionSummary?.updatedDate && (
-                          <>
-                            <span aria-hidden>·</span>
-                            <span>
-                              updated:{" "}
-                              <time dateTime={revisionSummary.updatedDate}>
-                                {revisionSummary.updatedDate}
-                              </time>
-                            </span>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <time dateTime={postedDate}>{postedDate}</time>
-                        {node.eventStatus && (
-                          <>
-                            <span>·</span>
-                            <span>{node.eventStatus}</span>
-                          </>
-                        )}
-                        <span>·</span>
-                        <span>{node.lane}</span>
-                      </>
-                    )}
+                  {withCover && (
+                    <CoverArt
+                      node={node}
+                      variant={node.kind === "paper" ? "paper" : "reading"}
+                      className="w-20 shrink-0 transition-[transform,box-shadow] duration-200 group-hover:scale-[1.02] group-hover:shadow-[0_10px_26px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] sm:w-24"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                      {node.kind === "post" ? (
+                        <>
+                          <span>
+                            posted: <time dateTime={postedDate}>{postedDate}</time>
+                          </span>
+                          {revisionSummary?.updatedDate && (
+                            <>
+                              <span aria-hidden>·</span>
+                              <span>
+                                updated:{" "}
+                                <time dateTime={revisionSummary.updatedDate}>
+                                  {revisionSummary.updatedDate}
+                                </time>
+                              </span>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <time dateTime={postedDate}>{postedDate}</time>
+                          {node.eventStatus && (
+                            <>
+                              <span>·</span>
+                              <span>{node.eventStatus}</span>
+                            </>
+                          )}
+                          <span>·</span>
+                          <span>{node.lane}</span>
+                        </>
+                      )}
+                    </div>
+                    <h2 className="mt-1.5 text-xl leading-snug text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
+                      {node.title}
+                    </h2>
+                    <p className="mt-1.5 max-w-[64ch] leading-relaxed text-[var(--color-ink-dim)]">
+                      {node.summary}
+                    </p>
                   </div>
-                  <h2 className="mt-1.5 text-xl leading-snug text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
-                    {node.title}
-                  </h2>
-                  <p className="mt-1.5 max-w-[64ch] leading-relaxed text-[var(--color-ink-dim)]">
-                    {node.summary}
-                  </p>
                 </Link>
               </li>
             );

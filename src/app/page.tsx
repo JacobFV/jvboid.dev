@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { type HeroSocial, type HeroSocialGroup } from "@/components/chrome/HeroHex";
 import { CoverGallery } from "@/components/chrome/CoverGallery";
+import { CoverArt } from "@/components/chrome/CoverArt";
 import { HomeField } from "@/components/chrome/HomeField";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
 import { getGraph, isListedNode, nodeHref, nodeLinkHref, type Lane, type Node } from "@/lib/graph";
@@ -234,11 +235,7 @@ export default function HomePage() {
 
       {/* ---- Papers ---- */}
       {recentPapers.length > 0 && (
-        <Section
-          tight
-          title="Writings"
-          link={{ href: "/papers", label: "all writings →" }}
-        >
+        <Section tight title="Writings" link={{ href: "/papers", label: "all writings →" }}>
           <CoverRail nodes={recentPapers} variant="paper" />
         </Section>
       )}
@@ -313,11 +310,6 @@ function CoverRail({ nodes, variant }: { nodes: Node[]; variant: "reading" | "pa
 }
 
 function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper" }) {
-  // Paper covers are first-page PNG exports from PDFs. To add another,
-  // download the PDF to /tmp and run:
-  // `pdftoppm -png -f 1 -singlefile -r 160 /tmp/<slug>.pdf public/assets/img/{readings|papers}/<slug>`.
-  // Then set `hero.src` in frontmatter to `/assets/img/{readings|papers}/<slug>.png`.
-  //
   // A cover opens the thing it is a cover of — the PDF, the arXiv page,
   // the publisher — not a page about it. See `nodeSourceHref`.
   const href = nodeLinkHref(node);
@@ -330,29 +322,11 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
       aria-label={node.title}
       className="group block w-28 no-underline sm:w-32"
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-sm transition-[transform,box-shadow] duration-200 group-hover:scale-[1.02] group-hover:shadow-[0_10px_26px_color-mix(in_srgb,var(--color-ink)_16%,transparent)]">
-        {node.hero ? (
-          <img
-            src={node.hero.src}
-            alt={node.hero.alt}
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full flex-col justify-between bg-[linear-gradient(145deg,var(--color-bg-1),var(--color-bg-0)_46%,var(--color-bg-2))] p-3">
-            <div className="font-[family-name:var(--font-mono)] text-[9px] tracking-wider text-[var(--color-ink-mute)] uppercase">
-              {variant === "paper" ? "note" : (node.workType ?? "reading")}
-            </div>
-            <div className="text-sm leading-tight text-[var(--color-ink)]">{node.title}</div>
-            <div className={`h-1 w-8 rounded-full ${laneBg[node.lane]}`} aria-hidden />
-          </div>
-        )}
-        {node.tier && (
-          <div className="absolute top-2 right-2 rounded-full bg-[var(--color-bg-0)]/90 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]">
-            {node.tier}
-          </div>
-        )}
-      </div>
+      <CoverArt
+        node={node}
+        variant={variant}
+        className="transition-[transform,box-shadow] duration-200 group-hover:scale-[1.02] group-hover:shadow-[0_10px_26px_color-mix(in_srgb,var(--color-ink)_16%,transparent)]"
+      />
       <div className="mt-2 line-clamp-2 min-h-[2.5rem] text-center text-xs leading-tight text-[var(--color-ink-dim)] underline-offset-4 group-hover:text-[var(--color-ink)] group-hover:underline">
         {node.title}
       </div>
