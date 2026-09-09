@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { nodeHref, type Node } from "@/lib/graph";
+import { XPost } from "./XPost";
 
 const fmt = (iso?: string) => (iso ? new Date(iso).toISOString().slice(0, 10) : null);
 
@@ -181,16 +182,15 @@ function EmbedPreview({ node }: { node: Node }) {
   }
 
   if (embed.kind === "x" && (embed.url || embed.urls?.length)) {
-    const urls = embed.urls?.length ? embed.urls : embed.url ? [embed.url] : [];
+    // Same embed the MDX <XPost> uses: no panel of our own around it.
+    // A tweet already ships a bordered card, and the old wrapper here
+    // stacked a second one behind it.
     return (
-      <div className="grid gap-4 rounded-2xl bg-[var(--color-bg-1)] p-4">
-        {urls.map((url, index) => (
-          <blockquote key={url} className="twitter-tweet" data-theme="dark">
-            <a href={url}>{index === 0 ? (embed.alt ?? node.title) : `${node.title} (${index + 1})`}</a>
-          </blockquote>
-        ))}
-        <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8" />
-      </div>
+      <XPost
+        url={embed.url}
+        urls={embed.urls}
+        caption={embed.alt ?? node.title}
+      />
     );
   }
 

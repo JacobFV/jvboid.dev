@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type XFallbackPost = {
   url: string;
@@ -17,6 +17,16 @@ type XPostProps = {
   url?: string;
   urls?: string[];
   posts?: XFallbackPost[];
+  /**
+   * Accessible name for the group — deliberately not painted.
+   *
+   * An X embed already arrives inside its own card: avatar, handle,
+   * timestamp, border. Wrapping that in a second labelled panel put
+   * chrome around chrome and made the tweet read as a sidebar exhibit
+   * rather than as part of the page. The caption survives as the
+   * group's `aria-label` and as the link text a blocked embed falls
+   * back to, so nothing is lost for a reader who never sees the widget.
+   */
   caption?: string;
 };
 
@@ -30,61 +40,116 @@ declare global {
   }
 }
 
+const WIDGETS_SRC = "https://platform.twitter.com/widgets.js";
+let widgetsPromise: Promise<void> | null = null;
+
+/**
+ * One <script> per page instead of one per embed. Each XPost used to
+ * render its own tag, so a post with three of them asked for (and
+ * re-evaluated) the same bundle three times.
+ */
+function loadWidgets(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.twttr?.widgets) return Promise.resolve();
+  if (widgetsPromise) return widgetsPromise;
+
+  widgetsPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${WIDGETS_SRC}"]`);
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve());
+    script.addEventListener("error", () => reject(new Error("x widgets failed to load")));
+    if (!existing) {
+      script.src = WIDGETS_SRC;
+      script.async = true;
+      script.setAttribute("charset", "utf-8");
+      document.head.appendChild(script);
+    }
+  });
+
+  return widgetsPromise;
+}
+
+/**
+ * The widget bakes its colour scheme in at render time, so it has to be
+ * told which theme the page is currently wearing — a hard-coded dark
+ * tweet on a light page is exactly the foreign-object look we are
+ * trying to get rid of. Changing themes re-keys the embeds below.
+ */
+function useSiteTheme(): "light" | "dark" {
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  useEffect(() => {
+    const read = () =>
+      setTheme(
+        document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
+      );
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return theme;
+}
+
 export function XPost({ url, urls, posts, caption }: XPostProps) {
-  const id = useId();
   const ref = useRef<HTMLDivElement>(null);
-  const fallbackTimer = useRef<number | null>(null);
   const [showFallback, setShowFallback] = useState(false);
+  const theme = useSiteTheme();
   const fallbackPosts = normalizePosts({ url, urls, posts });
+  const embedded = fallbackPosts.filter((post) => post.embed !== false);
 
   useEffect(() => {
     const root = ref.current;
     if (!root) return;
 
-    const markFallbackIfUnrendered = () => {
-      const rendered = root.querySelector("iframe, .twitter-tweet-rendered");
-      if (!rendered) setShowFallback(true);
-    };
+    let cancelled = false;
+    let timer: number | undefined;
 
-    if (window.twttr?.widgets) {
-      window.twttr.widgets.load(root);
-    }
-
-    fallbackTimer.current = window.setTimeout(markFallbackIfUnrendered, 3500);
+    loadWidgets()
+      .then(() => {
+        if (cancelled) return;
+        window.twttr?.widgets?.load(root);
+        timer = window.setTimeout(() => {
+          if (cancelled) return;
+          if (!root.querySelector("iframe, .twitter-tweet-rendered")) setShowFallback(true);
+        }, 3500);
+      })
+      .catch(() => {
+        if (!cancelled) setShowFallback(true);
+      });
 
     return () => {
-      if (fallbackTimer.current) window.clearTimeout(fallbackTimer.current);
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
     };
-  }, []);
+  }, [theme]);
 
   if (!fallbackPosts.length) return null;
 
   return (
-    <aside
-      aria-labelledby={caption ? id : undefined}
-      className="my-8 grid gap-4 rounded-2xl border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] p-4"
+    <div
+      role={fallbackPosts.length > 1 ? "group" : undefined}
+      aria-label={caption}
+      className="my-8 grid gap-4"
     >
-      {caption && (
-        <p
-          id={id}
-          className="m-0 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wide text-[var(--color-ink-mute)]"
-        >
-          {caption}
-        </p>
-      )}
-      <div ref={ref} className={showFallback ? "hidden" : "grid gap-4"}>
-        {fallbackPosts.map((post, index) =>
-          post.embed === false ? null : (
+      {/* Re-keyed on theme: twttr replaces the blockquote with an iframe
+          and will not revisit one it has already rendered, so a theme
+          swap needs fresh blockquotes to load against. */}
+      <div key={theme} ref={ref} className={showFallback ? "hidden" : "grid gap-4"}>
+        {embedded.map((post, index) => (
           <blockquote
             key={`${post.url}-${index}`}
             className="twitter-tweet"
-            data-theme="dark"
-            aria-label={post.alt ?? `${caption ?? "X post"} ${index + 1}`}
+            data-theme={theme}
+            data-dnt="true"
           >
             <a href={post.url}>{post.alt ?? caption ?? post.url}</a>
           </blockquote>
-          ),
-        )}
+        ))}
       </div>
       {showFallback && (
         <div className="grid gap-3">
@@ -93,8 +158,7 @@ export function XPost({ url, urls, posts, caption }: XPostProps) {
           ))}
         </div>
       )}
-      <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8" />
-    </aside>
+    </div>
   );
 }
 
