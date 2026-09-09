@@ -2,7 +2,7 @@
   "name": "jacobfv-site",
   "version": "0.0.0",
   "private": true,
-  "description": "Jacob Valdez's site — a navigable graph of projects, writing, and visions.",
+  "description": "Jacob Valdez's site \u2014 a navigable graph of projects, writing, and visions.",
   "scripts": {
     "predev": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build",
     "dev": "next dev",
@@ -12,6 +12,7 @@
     "lint": "next lint",
     "typecheck": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsc --noEmit",
     "images": "tsx scripts/generate-image-placeholders.ts",
+    "x:sync": "node scripts/sync-x-posts.mjs",
     "sync:assets": "tsx scripts/sync-assets.ts",
     "validate": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/validate-edges.ts",
     "format": "prettier --write ."

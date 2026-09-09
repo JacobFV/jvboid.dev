@@ -479,24 +479,6 @@ a:hover {
   color: var(--color-ink-dim);
   font-style: italic;
 }
-/* An X embed starts life as a <blockquote class="twitter-tweet"> that the
-   widget swaps for an iframe. Until it does, the pull-quote rule above
-   paints it as an italic quote with a rule down the side — a flash of
-   the wrong thing on every load. The tweet card is the frame here. */
-.prose-mdx blockquote.twitter-tweet {
-  border-left: 0;
-  padding-left: 0;
-  color: inherit;
-  font-style: normal;
-}
-/* twttr writes `margin: 10px 0` inline on the wrapper it swaps in. The
-   grid gap around the embeds is already doing that job, so the two stack
-   into an uneven 36px trough between tweets. Spacing on this page is
-   ours; !important is the only way past an inline style. */
-.twitter-tweet-rendered {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
 .prose-mdx code {
   font-family: var(--font-mono);
   font-size: 0.9em;

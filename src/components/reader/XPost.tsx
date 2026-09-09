@@ -1,214 +1,149 @@
-"use client";
+import xPosts from "@/data/x-posts.json";
 
-import { useEffect, useRef, useState } from "react";
+/**
+ * A tweet, rendered by us.
+ *
+ * This used to mount X's official widget, which meant every quoted post
+ * arrived as a 550px card in X's own dim navy (#15202b) with a
+ * #425364 border and 16px corners — a panel sitting on a #08090b page,
+ * visibly a foreign object in the middle of an essay. None of that is
+ * reachable from here: it renders inside a cross-origin iframe, and the
+ * widget exposes no chrome options for single posts (`data-chrome` is a
+ * timeline-only feature). The only way to make a quoted tweet look like
+ * part of the page was to stop asking X to draw it.
+ *
+ * So the text lives in `src/data/x-posts.json`, resolved from X's
+ * oEmbed endpoint by `scripts/sync-x-posts.mjs` and committed. That
+ * makes this a plain server component: no widget, no client bundle, no
+ * third-party script, no layout shift, and the quote still renders when
+ * X is down or the reader blocks it.
+ *
+ * What we give up is X's media. A tweet that was carrying a screenshot
+ * renders as its words plus a link, so when the image *is* the point,
+ * place it in the MDX next to the embed the way any other figure is
+ * placed — projects own their own media (see CONTENT_MODEL.md).
+ */
 
-type XFallbackPost = {
+type XPostData = {
   url: string;
   text?: string;
   authorName?: string;
   authorHandle?: string;
   date?: string;
-  meta?: string;
-  alt?: string;
-  embed?: boolean;
 };
 
 type XPostProps = {
   url?: string;
   urls?: string[];
-  posts?: XFallbackPost[];
   /**
-   * Accessible name for the group — deliberately not painted.
-   *
-   * An X embed already arrives inside its own card: avatar, handle,
-   * timestamp, border. Wrapping that in a second labelled panel put
-   * chrome around chrome and made the tweet read as a sidebar exhibit
-   * rather than as part of the page. The caption survives as the
-   * group's `aria-label` and as the link text a blocked embed falls
-   * back to, so nothing is lost for a reader who never sees the widget.
+   * Hand-written entries, used in place of the synced cache. For a
+   * tweet that is deleted, protected, or whose oEmbed text reads badly
+   * out of context.
+   */
+  posts?: XPostData[];
+  /**
+   * Accessible name for the group — deliberately not painted. It is the
+   * group's `aria-label` and nothing else; the whole point of this
+   * component is that a quoted tweet arrives without a label above it.
    */
   caption?: string;
 };
 
-declare global {
-  interface Window {
-    twttr?: {
-      widgets?: {
-        load: (element?: HTMLElement | null) => void;
-      };
-    };
-  }
-}
+const CACHE = xPosts as Record<string, XPostData>;
 
-const WIDGETS_SRC = "https://platform.twitter.com/widgets.js";
-let widgetsPromise: Promise<void> | null = null;
+const tweetId = (url: string) => url.match(/\/status\/(\d+)/)?.[1];
 
-/**
- * One <script> per page instead of one per embed. Each XPost used to
- * render its own tag, so a post with three of them asked for (and
- * re-evaluated) the same bundle three times.
- */
-function loadWidgets(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.twttr?.widgets) return Promise.resolve();
-  if (widgetsPromise) return widgetsPromise;
-
-  widgetsPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${WIDGETS_SRC}"]`);
-    const script = existing ?? document.createElement("script");
-    script.addEventListener("load", () => resolve());
-    script.addEventListener("error", () => reject(new Error("x widgets failed to load")));
-    if (!existing) {
-      script.src = WIDGETS_SRC;
-      script.async = true;
-      script.setAttribute("charset", "utf-8");
-      document.head.appendChild(script);
-    }
-  });
-
-  return widgetsPromise;
-}
-
-/**
- * The widget bakes its colour scheme in at render time, so it has to be
- * told which theme the page is currently wearing — a hard-coded dark
- * tweet on a light page is exactly the foreign-object look we are
- * trying to get rid of. Changing themes re-keys the embeds below.
- */
-function useSiteTheme(): "light" | "dark" {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-
-  useEffect(() => {
-    const read = () =>
-      setTheme(
-        document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
-      );
-    read();
-    const observer = new MutationObserver(read);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
+function resolve({ url, urls, posts }: Pick<XPostProps, "url" | "urls" | "posts">): XPostData[] {
+  if (posts?.length) {
+    // Inline entries still get the cache as a backstop, so a post can
+    // override just the text and inherit the author and date.
+    return posts.map((post) => {
+      const id = tweetId(post.url);
+      return { ...(id ? CACHE[id] : undefined), ...post };
     });
-    return () => observer.disconnect();
-  }, []);
-
-  return theme;
+  }
+  const list = urls?.length ? urls : url ? [url] : [];
+  return list.map((postUrl) => {
+    const id = tweetId(postUrl);
+    return { url: postUrl, ...(id ? CACHE[id] : undefined) };
+  });
 }
 
 export function XPost({ url, urls, posts, caption }: XPostProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [showFallback, setShowFallback] = useState(false);
-  const theme = useSiteTheme();
-  const fallbackPosts = normalizePosts({ url, urls, posts });
-  const embedded = fallbackPosts.filter((post) => post.embed !== false);
-
-  useEffect(() => {
-    const root = ref.current;
-    if (!root) return;
-
-    let cancelled = false;
-    let timer: number | undefined;
-
-    loadWidgets()
-      .then(() => {
-        if (cancelled) return;
-        window.twttr?.widgets?.load(root);
-        timer = window.setTimeout(() => {
-          if (cancelled) return;
-          if (!root.querySelector("iframe, .twitter-tweet-rendered")) setShowFallback(true);
-        }, 3500);
-      })
-      .catch(() => {
-        if (!cancelled) setShowFallback(true);
-      });
-
-    return () => {
-      cancelled = true;
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [theme]);
-
-  if (!fallbackPosts.length) return null;
+  const resolved = resolve({ url, urls, posts });
+  if (!resolved.length) return null;
 
   return (
     <div
-      role={fallbackPosts.length > 1 ? "group" : undefined}
+      role={resolved.length > 1 ? "group" : undefined}
       aria-label={caption}
-      className="my-8 grid gap-4"
+      className="my-8 grid gap-7"
     >
-      {/* Re-keyed on theme: twttr replaces the blockquote with an iframe
-          and will not revisit one it has already rendered, so a theme
-          swap needs fresh blockquotes to load against. */}
-      <div key={theme} ref={ref} className={showFallback ? "hidden" : "grid gap-4"}>
-        {embedded.map((post, index) => (
-          <blockquote
-            key={`${post.url}-${index}`}
-            className="twitter-tweet"
-            data-theme={theme}
-            data-dnt="true"
-          >
-            <a href={post.url}>{post.alt ?? caption ?? post.url}</a>
-          </blockquote>
-        ))}
-      </div>
-      {showFallback && (
-        <div className="grid gap-3">
-          {fallbackPosts.map((post, index) => (
-            <FallbackCard key={`${post.url}-${index}`} post={post} />
-          ))}
-        </div>
-      )}
+      {resolved.map((post, index) => (
+        <Tweet key={`${post.url}-${index}`} post={post} />
+      ))}
     </div>
   );
 }
 
-function normalizePosts({
-  url,
-  urls,
-  posts,
-}: Pick<XPostProps, "url" | "urls" | "posts">): XFallbackPost[] {
-  if (posts?.length) return posts;
-  const postUrls = urls?.length ? urls : url ? [url] : [];
-  return postUrls.map((postUrl) => ({ url: postUrl }));
+function Tweet({ post }: { post: XPostData }) {
+  const handle = post.authorHandle ?? "@jvboid";
+  const meta = [handle, post.date].filter(Boolean).join(" · ");
+
+  return (
+    <figure className="m-0 grid gap-2">
+      {post.text && (
+        <blockquote className="m-0 grid gap-3 border-0 p-0 not-italic">
+          {post.text.split(/\n{2,}/).map((para, i) => (
+            <p
+              key={i}
+              className="m-0 whitespace-pre-line text-[17px] leading-[1.65] text-[var(--color-ink)]"
+            >
+              <Linkified text={para} />
+            </p>
+          ))}
+        </blockquote>
+      )}
+      <figcaption>
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noreferrer"
+          className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline transition-colors hover:text-[var(--color-accent)]"
+        >
+          {meta} · X ↗
+        </a>
+      </figcaption>
+    </figure>
+  );
 }
 
-function FallbackCard({ post }: { post: XFallbackPost }) {
-  const authorName = post.authorName ?? "Jacob";
-  const authorHandle = post.authorHandle ?? "@jvboid";
+// Bare URLs and @handles are load-bearing in a tweet — the reader
+// expects to be able to follow them. Split on both and link them; the
+// surrounding text stays a plain text node, so nothing here interpolates
+// markup.
+const TOKEN = /(https?:\/\/[^\s]+|@[A-Za-z0-9_]{1,15})/g;
+
+function Linkified({ text }: { text: string }) {
   return (
-    <a
-      href={post.url}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={post.alt ?? `Open X post by ${authorHandle}`}
-      className="block rounded-xl border border-[color-mix(in_srgb,var(--color-ink)_18%,transparent)] bg-[var(--color-bg)] p-4 text-[var(--color-ink)] no-underline transition-colors hover:border-[var(--color-accent)]"
-    >
-      {post.alt && (
-        <p className="mb-3 rounded-lg bg-[var(--color-bg-1)] px-3 py-2 font-[family-name:var(--font-mono)] text-xs leading-relaxed text-[var(--color-ink-mute)]">
-          Alt: {post.alt}
-        </p>
-      )}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="m-0 text-sm font-semibold text-[var(--color-ink)]">{authorName}</p>
-          <p className="m-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-            {authorHandle}
-          </p>
-        </div>
-        <span className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-          X ↗
-        </span>
-      </div>
-      {post.text && (
-        <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.6] text-[var(--color-ink)]">
-          {post.text}
-        </p>
-      )}
-      {(post.date || post.meta) && (
-        <p className="mt-4 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
-          {[post.date, post.meta].filter(Boolean).join(" · ")}
-        </p>
-      )}
-    </a>
+    <>
+      {text.split(TOKEN).map((part, i) => {
+        if (/^https?:\/\//.test(part)) {
+          return (
+            <a key={i} href={part} target="_blank" rel="noreferrer">
+              {part.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+            </a>
+          );
+        }
+        if (/^@[A-Za-z0-9_]{1,15}$/.test(part)) {
+          return (
+            <a key={i} href={`https://x.com/${part.slice(1)}`} target="_blank" rel="noreferrer">
+              {part}
+            </a>
+          );
+        }
+        return part;
+      })}
+    </>
   );
 }
