@@ -11,6 +11,7 @@ import {
 } from "@/lib/graph";
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { CollectionTitle } from "@/components/chrome/CollectionTitle";
+import { Folio } from "@/components/chrome/Folio";
 import { CoverArt } from "@/components/chrome/CoverArt";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
@@ -81,7 +82,8 @@ export default async function KindIndexPage({ params }: { params: Params }) {
 
   if (nodeKind === "project") {
     return (
-      <main className="mx-auto max-w-5xl px-6 pb-16">
+      <main className="mx-auto max-w-5xl px-6 pt-10 pb-16">
+        <Folio section="projects" right={`${nodes.length} entries`} />
         <CollectionTitle>Projects</CollectionTitle>
 
         {nodes.length === 0 ? (
@@ -95,26 +97,25 @@ export default async function KindIndexPage({ params }: { params: Params }) {
 
   const bare = BARE_HEADER.has(nodeKind);
 
+  const total = nodes.length;
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <header className={bare ? "mb-8" : "mb-12"}>
-        <h1
-          className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
-          style={{ fontVariationSettings: '"opsz" 144' }}
-        >
+    <main className="mx-auto max-w-3xl px-6 pt-10 pb-16">
+      <Folio section={kind} right={`${total} ${total === 1 ? "entry" : "entries"}`} />
+      <header className={bare ? "mt-14 mb-14" : "mt-14 mb-16"}>
+        <h1 data-page-title className="display-title">
           {KIND_TITLE[nodeKind]}
         </h1>
-        {!bare && <p className="mt-3 text-[var(--color-ink-dim)]">{KIND_DESCRIPTION[nodeKind]}</p>}
+        {!bare && <p className="standfirst mt-8">{KIND_DESCRIPTION[nodeKind]}</p>}
       </header>
 
       {/* No cards. An index is a list of things to read, so it is set as
-          text: mono meta line, title, summary. Spacing and type weight do
-          the separating that borders used to do. */}
+          text: a numeral, the title in the serif, the summary, and a
+          hairline between entries — a table of contents, not a feed. */}
       {nodes.length === 0 ? (
         <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
       ) : (
-        <ul className="flex flex-col gap-10">
-          {nodes.map((node) => {
+        <ol className="flex flex-col">
+          {nodes.map((node, i) => {
             const postedDate = new Date(node.date).toISOString().slice(0, 10);
             const revisionSummary = node.kind === "post" ? getPostRevisionSummary(node.id) : null;
             // Papers and readings have no page here — the title is a link
@@ -123,17 +124,22 @@ export default async function KindIndexPage({ params }: { params: Params }) {
             const offsite = /^https?:/i.test(href);
             const withCover = COVER_KINDS.has(node.kind);
             return (
-              <li key={node.id}>
+              <li key={node.id} className="border-t border-[var(--color-rule)] last:border-b">
                 <Link
                   href={href}
                   {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
                   {...(node.note ? { title: node.note } : {})}
                   className={
                     withCover
-                      ? "group flex items-start gap-5 no-underline"
-                      : "group block no-underline"
+                      ? "group flex items-start gap-5 py-7 no-underline"
+                      : "group grid grid-cols-[3.5rem_1fr] gap-x-4 py-7 no-underline sm:grid-cols-[5rem_1fr]"
                   }
                 >
+                  {!withCover && (
+                    <span className="numeral pt-1">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  )}
                   {withCover && (
                     <CoverArt
                       node={node}
@@ -143,7 +149,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                     />
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+                    <div className="flex flex-wrap items-baseline gap-2 font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
                       {node.kind === "post" ? (
                         <>
                           <span>
@@ -175,18 +181,19 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                         </>
                       )}
                     </div>
-                    <h2 className="mt-1.5 text-xl leading-snug text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
+                    <h2
+                      className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-3xl"
+                      style={{ fontVariationSettings: '"opsz" 96' }}
+                    >
                       {node.title}
                     </h2>
-                    <p className="mt-1.5 max-w-[64ch] leading-relaxed text-[var(--color-ink-dim)]">
-                      {node.summary}
-                    </p>
+                    <p className="standfirst mt-3 !text-[1.02rem] !leading-[1.5]">{node.summary}</p>
                   </div>
                 </Link>
               </li>
             );
           })}
-        </ul>
+        </ol>
       )}
     </main>
   );

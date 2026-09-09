@@ -8,13 +8,6 @@ import { getGraph, isListedNode, nodeHref, nodeLinkHref, type Lane, type Node } 
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
 
-const laneClass: Record<Lane, string> = {
-  research: "text-[var(--color-lane-research)]",
-  building: "text-[var(--color-lane-building)]",
-  writing: "text-[var(--color-lane-writing)]",
-  personal: "text-[var(--color-lane-personal)]",
-};
-
 const laneBg: Record<Lane, string> = {
   research: "bg-[var(--color-lane-research)]",
   building: "bg-[var(--color-lane-building)]",
@@ -23,6 +16,10 @@ const laneBg: Record<Lane, string> = {
 };
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
+const pad2 = (n: number) => String(n).padStart(2, "0");
+// The dateline on the masthead: the month the site was last built.
+const issueDate = () =>
+  new Date().toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 // Contact row inside the hero hexagon, in the order it reads. Kept to the
 // accounts worth interrupting someone for — the long tail lives in
 // `moreSocialGroups`, behind the row's `> more` toggle.
@@ -164,13 +161,33 @@ export default function HomePage() {
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 8);
 
+  // The issue's contents: the sections below in reading order, with
+  // their counts. Projects and posts are on this page; the two shelves
+  // link through to their indexes as well.
+  const contents = [
+    { n: 1, label: "Projects", href: "#projects", count: allProjects.length },
+    { n: 2, label: "Writing", href: "#posts", count: listedNodes.filter((n) => n.kind === "post").length },
+    { n: 3, label: "Readings", href: "/readings", count: listedNodes.filter((n) => n.kind === "reading").length },
+    { n: 4, label: "Writings", href: "/papers", count: recentPapers.length },
+  ];
+  const [feature, ...restPosts] = recentPosts;
+
   return (
-    <main className="mx-auto max-w-5xl px-6 pt-24 pb-32">
+    <main className="mx-auto max-w-5xl px-6 pt-10 pb-32">
       {/* Home only: a monochrome cloud field at 2%, behind everything
           including the bioluminescent mesh. One channel and one hue-free
           value swing, which is the term on which it is allowed inside the
           content measure at all. See components/chrome/HomeField.tsx. */}
       <HomeField />
+
+      {/* ---- Masthead ---- */}
+      {/* The home page is an issue, and this is its dateline: the running
+          head every other page carries, with the month it was printed on
+          the right. The name itself is set inside the hexagon below. */}
+      <div className="folio mb-16">
+        <span>jvboid.dev</span>
+        <span>{issueDate()}</span>
+      </div>
 
       {/* ---- Hero + projects ---- */}
       {/* The hero is a 4× tile of the projects comb, not a block above
@@ -213,32 +230,90 @@ export default function HomePage() {
         }}
       />
 
-      {/* ---- Recent posts ---- */}
-      <Section
-        id="posts"
-        eyebrow="Writing"
-        title="Recent posts"
-        link={{ href: "/posts", label: "all posts →" }}
-      >
-        <ul className="flex flex-col">
-          {recentPosts.map((n) => (
-            <li key={n.id}>
-              <RowLink node={n} />
+      {/* ---- Contents ---- */}
+      {/* The table of contents: the page's sections, numbered, with what
+          each holds. It is the one place the whole issue is laid out in a
+          line. */}
+      <nav aria-label="Contents" className="mt-32">
+        <div className="rule-label">Contents</div>
+        <ol className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+          {contents.map((c) => (
+            <li key={c.n}>
+              <a href={c.href} className="group block no-underline">
+                <span className="numeral">{pad2(c.n)}</span>
+                <span
+                  className="mt-1 block font-[family-name:var(--font-display)] text-2xl tracking-tight text-[var(--color-ink)] underline-offset-[6px] decoration-[var(--color-rule)] group-hover:underline"
+                  style={{ fontVariationSettings: '"opsz" 96' }}
+                >
+                  {c.label}
+                </span>
+                <span className="mt-1 block font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
+                  {c.count} {c.count === 1 ? "entry" : "entries"}
+                </span>
+              </a>
             </li>
           ))}
-        </ul>
+        </ol>
+      </nav>
+
+      {/* ---- Feature ---- */}
+      {/* The issue's one feature spread: the latest essay, set as large
+          as a page title, with its standfirst beside it. */}
+      {feature && (
+        <section id="posts" className="mt-40 scroll-mt-20">
+          <div className="rule-label">
+            <span>Feature</span>
+          </div>
+          <Link
+            href={nodeHref(feature)}
+            className="group mt-10 grid gap-8 no-underline lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14"
+          >
+            <div>
+              <div className="flex items-baseline gap-3">
+                <span className="numeral">{pad2(1)}</span>
+                <span className="font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
+                  <time dateTime={fmtDate(feature.date)}>{fmtDate(feature.date)}</time>
+                </span>
+              </div>
+              <h2 className="display-title mt-4 transition-colors duration-500 group-hover:text-[var(--color-ink-dim)]">
+                {feature.title}
+              </h2>
+            </div>
+            <div className="lg:pt-10">
+              <p className="standfirst">{feature.summary}</p>
+              <span className="mt-6 inline-block font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-brass)] uppercase">
+                Read the essay
+              </span>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* ---- Recent posts ---- */}
+      <Section
+        title="Writing"
+        link={{ href: "/posts", label: "all posts" }}
+        tight
+      >
+        <ol className="flex flex-col">
+          {restPosts.map((n, i) => (
+            <li key={n.id} className="border-t border-[var(--color-rule)] last:border-b">
+              <RowLink node={n} n={i + 2} of={recentPosts.length} />
+            </li>
+          ))}
+        </ol>
       </Section>
 
       {/* ---- Readings ---- */}
       {recentReadings.length > 0 && (
-        <Section title="Readings" link={{ href: "/readings", label: "all readings →" }}>
+        <Section title="Readings" link={{ href: "/readings", label: "all readings" }}>
           <ReadingCoverRail nodes={recentReadings} />
         </Section>
       )}
 
       {/* ---- Papers ---- */}
       {recentPapers.length > 0 && (
-        <Section tight title="Writings" link={{ href: "/papers", label: "all writings →" }}>
+        <Section title="Writings" link={{ href: "/papers", label: "all writings" }}>
           <CoverRail nodes={recentPapers} variant="paper" />
         </Section>
       )}
@@ -262,29 +337,21 @@ function Section({
   /** Pulls the section up close to the one above it. */
   tight?: boolean;
 }) {
+  // The heading sits on the rule, small and letterspaced, with the
+  // section's link at the far end of the same line: the running head of
+  // a magazine section rather than a heading above a card.
   return (
-    <section id={id} className={`${tight ? "mt-12" : "mt-24"} scroll-mt-20`}>
-      <div className="mb-8 flex items-baseline justify-between gap-6">
-        <div>
-          {eyebrow && <p className="text-xs text-[var(--color-ink-mute)]">{eyebrow}</p>}
-          <h2
-            className={[
-              eyebrow ? "mt-2" : "",
-              "font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={{ fontVariationSettings: '"opsz" 96' }}
-          >
-            {title}
-          </h2>
-        </div>
+    <section id={id} className={`${tight ? "mt-20" : "mt-40"} scroll-mt-20`}>
+      <div className="rule-label mb-10">
+        <h2 className="font-[inherit] text-[inherit] tracking-[inherit] uppercase">
+          {eyebrow ? `${eyebrow} · ${title}` : title}
+        </h2>
         {link && (
           <Link
             href={link.href}
-            className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)]"
+            className="order-last text-[var(--color-ink-mute)] no-underline hover:text-[var(--color-ink)]"
           >
-            {link.label}
+            {link.label} →
           </Link>
         )}
       </div>
@@ -337,27 +404,33 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
   );
 }
 
-function RowLink({ node }: { node: Node }) {
+// A numbered contents row: "02 / 06", the title in the serif, the dates
+// on the right. Rules above and below come from the list.
+function RowLink({ node, n, of }: { node: Node; n: number; of: number }) {
   const postedDate = fmtDate(node.date);
   const { updatedDate } = getPostRevisionSummary(node.id);
   return (
     <Link
       href={nodeHref(node)}
-      className="group flex items-start gap-4 px-3 py-3 no-underline transition-colors"
+      className="group grid grid-cols-[auto_1fr] items-baseline gap-x-5 gap-y-1 py-5 no-underline sm:grid-cols-[5rem_1fr_auto]"
     >
-      <span className="w-44 shrink-0 font-[family-name:var(--font-mono)] text-[10px] leading-4 text-[var(--color-ink-mute)] sm:text-xs">
-        <span className="block">
-          posted: <time dateTime={postedDate}>{postedDate}</time>
-        </span>
+      <span className="numeral">
+        {pad2(n)} <span className="text-[var(--color-ink-mute)]">/ {pad2(of)}</span>
+      </span>
+      <span
+        className="font-[family-name:var(--font-display)] text-xl leading-snug tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-2xl"
+        style={{ fontVariationSettings: '"opsz" 96' }}
+      >
+        <span className={`mr-3 inline-block h-1.5 w-1.5 rounded-full align-middle ${laneBg[node.lane]}`} aria-hidden />
+        {node.title}
+      </span>
+      <span className="col-start-2 font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase sm:col-start-3 sm:text-right">
+        <time dateTime={postedDate}>{postedDate}</time>
         {updatedDate && (
           <span className="block">
-            updated: <time dateTime={updatedDate}>{updatedDate}</time>
+            rev. <time dateTime={updatedDate}>{updatedDate}</time>
           </span>
         )}
-      </span>
-      <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${laneBg[node.lane]}`} aria-hidden />
-      <span className="pt-0.5 text-[var(--color-ink)] underline-offset-4 group-hover:text-[var(--color-accent)] group-hover:underline">
-        {node.title}
       </span>
     </Link>
   );

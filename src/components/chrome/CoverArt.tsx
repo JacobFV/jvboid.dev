@@ -52,7 +52,7 @@ export function CoverArt({
   return (
     <div
       className={[
-        "relative aspect-[2/3] overflow-hidden rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-sm",
+        "relative aspect-[2/3] overflow-hidden rounded-[3px] border border-[var(--color-rule)] bg-[var(--color-bg-1)] shadow-sm",
         className ?? "",
       ]
         .filter(Boolean)
@@ -67,7 +67,7 @@ export function CoverArt({
           alt={node.hero.alt}
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover"
+          className="cover-grade h-full w-full object-cover"
         />
       ) : (
         <div className="flex h-full flex-col justify-between bg-[linear-gradient(145deg,var(--color-bg-1),var(--color-bg-0)_46%,var(--color-bg-2))] p-3">
