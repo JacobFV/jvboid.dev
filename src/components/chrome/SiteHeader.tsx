@@ -37,10 +37,14 @@ const NAV = [
   { label: "Posts", href: "/posts" },
 ];
 
-const MORE_NAV = [
+// `external: true` sends the item off-site. Next's <Link> would happily
+// take an absolute URL, but it would also prefetch it and treat it as an
+// app route, so external entries render as a plain <a> in a new tab.
+const MORE_NAV: { label: string; href: string; external?: boolean }[] = [
   { label: "Readings", href: "/readings" },
   { label: "Writings", href: "/papers" },
   { label: "Resume", href: "/resume" },
+  { label: "CAD Editor", href: "https://cad.jvboid.dev", external: true },
 ];
 
 // kind → the dedicated collection page the breadcrumb points back at.
@@ -90,9 +94,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
   }, [pathname, nodes]);
 
   useEffect(() => {
-    const current = document.documentElement.getAttribute(
-      "data-theme",
-    ) as Theme | null;
+    const current = document.documentElement.getAttribute("data-theme") as Theme | null;
     setTheme(current ?? "light");
 
     const onScroll = () => setDocked(window.scrollY > 12);
@@ -131,10 +133,9 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
     if (!crumb) return;
     const el = document.querySelector("[data-page-title]");
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => setTitleInPage(entry.isIntersecting),
-      { rootMargin: "-60px 0px 0px 0px" },
-    );
+    const io = new IntersectionObserver(([entry]) => setTitleInPage(entry.isIntersecting), {
+      rootMargin: "-60px 0px 0px 0px",
+    });
     io.observe(el);
     return () => io.disconnect();
   }, [crumb, pathname]);
@@ -168,9 +169,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
             : "transparent",
           backdropFilter: docked ? "blur(10px)" : "none",
           WebkitBackdropFilter: docked ? "blur(10px)" : "none",
-          borderBottom: docked
-            ? "1px solid var(--color-bg-2)"
-            : "1px solid transparent",
+          borderBottom: docked ? "1px solid var(--color-bg-2)" : "1px solid transparent",
           boxShadow: docked ? "var(--ring-soft)" : "none",
         }}
       >
@@ -194,9 +193,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
                 aria-hidden={titleInPage}
               >
                 <Chevron />
-                <span className="truncate text-[var(--color-ink)]">
-                  {crumb.section.label}
-                </span>
+                <span className="truncate text-[var(--color-ink)]">{crumb.section.label}</span>
               </span>
             )}
             {crumb && crumb.title !== null && (
@@ -214,9 +211,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
                   aria-hidden={titleInPage}
                 >
                   <Chevron />
-                  <span className="truncate text-[var(--color-ink)]">
-                    {crumb.title}
-                  </span>
+                  <span className="truncate text-[var(--color-ink)]">{crumb.title}</span>
                 </span>
               </span>
             )}
@@ -247,18 +242,29 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
               {moreOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full mt-2 grid w-44 gap-1 rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-0)] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
+                  className="absolute top-full right-0 mt-2 grid w-44 gap-1 rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-0)] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
                 >
-                  {MORE_NAV.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      role="menuitem"
-                      className="rounded-md px-3 py-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-1)] hover:text-[var(--color-accent)]"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  {MORE_NAV.map((item) => {
+                    const cls =
+                      "rounded-md px-3 py-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-1)] hover:text-[var(--color-accent)]";
+                    return item.external ? (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        role="menuitem"
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setMoreOpen(false)}
+                        className={cls}
+                      >
+                        {item.label} ↗
+                      </a>
+                    ) : (
+                      <Link key={item.href} href={item.href} role="menuitem" className={cls}>
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -311,17 +317,33 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
                 {item.label}
               </Link>
             ))}
-            {MORE_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                tabIndex={menuOpen ? undefined : -1}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-md px-3 py-2.5 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-2)]"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {MORE_NAV.map((item) => {
+              const cls =
+                "rounded-md px-3 py-2.5 font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-2)]";
+              return item.external ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  tabIndex={menuOpen ? undefined : -1}
+                  onClick={() => setMenuOpen(false)}
+                  className={cls}
+                >
+                  {item.label} ↗
+                </a>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  tabIndex={menuOpen ? undefined : -1}
+                  onClick={() => setMenuOpen(false)}
+                  className={cls}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
             <button
               type="button"
               onClick={openSearch}
@@ -337,9 +359,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
               tabIndex={menuOpen ? undefined : -1}
               className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)]"
             >
-              <span style={{ width: 16, textAlign: "center" }}>
-                {themeGlyph}
-              </span>{" "}
+              <span style={{ width: 16, textAlign: "center" }}>{themeGlyph}</span>{" "}
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </button>
           </div>
@@ -353,7 +373,7 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
 
 function Chevron() {
   return (
-    <span className="shrink-0 select-none text-[var(--color-ink-mute)]" aria-hidden>
+    <span className="shrink-0 text-[var(--color-ink-mute)] select-none" aria-hidden>
       ›
     </span>
   );
