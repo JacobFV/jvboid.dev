@@ -540,6 +540,126 @@ a:hover {
   border-top: 1px solid var(--color-bg-2);
 }
 
+/* ---- Pull quotes ---- */
+
+/* A line lifted from the body, set at display size out in the page margin.
+   `float`, so the body column keeps running beside it — the step in and out
+   of the measure is the magazine effect, and it is why a body places the
+   quote *before* the paragraph it should sit next to.
+
+   The bleed is whatever margin the viewport actually has. `.prose-mdx` is a
+   70ch column inside a centred `max-w-3xl` (48rem) main, so the margin
+   beside it is `50vw - 24rem`; the extra 3rem holds a gutter so a
+   left-side quote does not end up against the window edge on a 1024px
+   laptop, and the clamp collapses the bleed to 0 rather than pushing the
+   quote off-screen on a narrow window. */
+.prose-mdx .pull-quote {
+  --pull-bleed: clamp(0px, 50vw - 27rem, 11rem);
+  margin-block: 2rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144;
+  font-size: clamp(1.3rem, 1.05rem + 0.85vw, 1.75rem);
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* A short accent rule instead of quotation marks: the size already says
+   "this is lifted", and glyph quotes at this scale fight the body's own. */
+.prose-mdx .pull-quote::before {
+  content: "";
+  display: block;
+  width: 2.25rem;
+  height: 2px;
+  margin-bottom: 0.8rem;
+  background: var(--color-accent);
+}
+
+/* MDX hands the child through the reader's `p` map when it is written on
+   its own line, which would drag `text-[17px]`, `leading-[1.65]` and the
+   70ch cap in with it. Three classes of specificity outrank those. */
+.prose-mdx .pull-quote-line,
+.prose-mdx .pull-quote-line > p {
+  margin: 0;
+  max-width: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+.prose-mdx .pull-quote cite {
+  display: block;
+  margin-top: 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-variation-settings: normal;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--color-ink-mute);
+}
+
+/* Below this there is no margin worth bleeding into, so the quote stays a
+   full-width block and only the type size distinguishes it. */
+@media (min-width: 64rem) {
+  .prose-mdx .pull-quote {
+    width: clamp(13rem, 26vw, 19rem);
+    margin-block: 0.5rem 1.1rem;
+  }
+  .prose-mdx .pull-quote[data-side="right"] {
+    float: right;
+    margin-inline: 2rem calc(-1 * var(--pull-bleed));
+  }
+  .prose-mdx .pull-quote[data-side="left"] {
+    float: left;
+    margin-inline: calc(-1 * var(--pull-bleed)) 2rem;
+  }
+}
+
+/* A section heading should start on clean ground rather than tucking itself
+   into the gap beside a quote, and the last float in the body must not
+   escape into the graph that follows the article. A clearfix rather than
+   `display: flow-root` on `.prose-mdx`: flow-root would also stop the first
+   paragraph's margin collapsing out of the column, which pushes every post
+   body a further 1rem below its header. */
+.prose-mdx::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.prose-mdx h2,
+.prose-mdx h3 {
+  clear: both;
+}
+
+/* ---- Drop cap ---- */
+
+/* The opening paragraph of every post takes one. `:first-of-type`, not
+   `:first-child`: a world's atmosphere component renders a fixed, invisible
+   div as the body's first child, so `:first-child` would match nothing.
+
+   The `:has()` guard skips paragraphs that open on an editor's italic note,
+   a bold lede, or a bare link — a drop cap on any of those reads as a bug
+   rather than a flourish, and several older posts start exactly that way.
+
+   `flow-root` makes the paragraph tall enough to hold the floated letter, so
+   a one-sentence opener does not push the cap down into whatever follows. */
+.prose-lede > p:first-of-type:not(:has(> :is(em, strong, a):first-child)) {
+  display: flow-root;
+}
+.prose-lede
+  > p:first-of-type:not(:has(> :is(em, strong, a):first-child))::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144;
+  font-size: 3.3em;
+  line-height: 0.82;
+  padding: 0.06em 0.1em 0 0;
+  color: var(--color-ink);
+}
+
 /* ---- PfpReveal animations ---- */
 @keyframes pfp-backdrop-in {
   from {

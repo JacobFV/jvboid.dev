@@ -127,7 +127,7 @@ export function PostRevisionExperience({
         <p className="mt-4 max-w-2xl text-lg text-[var(--color-ink-dim)]">{summary}</p>
       </header>
 
-      <div className="prose-mdx">
+      <div className="prose-mdx prose-lede">
         {highlightChanges && selected ? (
           <PostRevisionDiff previous={previous} selected={selected} />
         ) : (

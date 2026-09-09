@@ -339,6 +339,39 @@ a sitemap should serve a page rather than bounce.
 node. It cannot check a URL target; whether the remote page still exists
 is not something a build-time script can know.
 
+## Pull quotes
+
+A prose body can lift one of its own lines into the page margin:
+
+```mdx
+<PullQuote>Ten retellings of one event do not become ten independent constraints.</PullQuote>
+
+<PullQuote side="left" cite="Can an Echo Become a Voice Again?">
+  The unusual claim becomes scientifically productive when its conditions let it lose.
+</PullQuote>
+```
+
+| Prop     | Default   | What it does                                                   |
+| -------- | --------- | -------------------------------------------------------------- |
+| `side`   | `"right"` | Which margin it floats into.                                    |
+| `cite`   | —         | Small caps attribution under the quote. Usually unnecessary.     |
+| `spoken` | `false`   | Drop the `aria-hidden` for a quote whose text is not in the body.|
+
+Two things to get right when placing one:
+
+- **Put it *before* the paragraph it should sit beside.** It floats, so it
+  pulls up alongside what follows it, not what precedes it. Placing it after
+  the line it quotes leaves it stranded next to the next section.
+- **Quote a line that is already in the body, a paragraph or two away.**
+  That is what makes it a pull quote rather than a second voice, and it is
+  why the component is `aria-hidden` by default — a screen reader that says
+  the line twice turns the flourish into a stutter. Use `spoken` only for a
+  quote that appears nowhere else.
+
+Below 64rem there is no margin to float into, so it stacks full-width and
+only the type size sets it apart. Keep quotes short: 8-20 words holds a
+sensible line length in a 19rem column.
+
 ## Authoring rules
 
 - Every new node gets at least one `influences` entry. Empty influence lists are a red flag.
