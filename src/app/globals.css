@@ -489,6 +489,14 @@ a:hover {
   color: inherit;
   font-style: normal;
 }
+/* twttr writes `margin: 10px 0` inline on the wrapper it swaps in. The
+   grid gap around the embeds is already doing that job, so the two stack
+   into an uneven 36px trough between tweets. Spacing on this page is
+   ours; !important is the only way past an inline style. */
+.twitter-tweet-rendered {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
 .prose-mdx code {
   font-family: var(--font-mono);
   font-size: 0.9em;
