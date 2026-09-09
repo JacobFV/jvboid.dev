@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 442" role="img" aria-labelledby="title desc" font-family="Inter, system-ui, Arial, sans-serif">
+  <title id="title">Three separable achievements</title>
+  <desc id="desc">Reconstructing organization from surviving evidence is an inverse problem with existing tools. Discovering an additional physical channel is a speculative hypothesis needing its own evidence. Establishing what renewed organization means for personal continuity stays open even if the first two succeed.</desc>
+  <style>
+    :root { --svg-primary: #0f172a; --svg-secondary: #64748b; --svg-muted: #94a3b8; --svg-soft: #475569; --svg-line: #cbd5e1; --svg-divider: #e2e8f0; --svg-inverse: #ffffff; --svg-accent: #b45309; --svg-fill: #f8fafc; }
+    @media (prefers-color-scheme: dark) {
+      :root { --svg-primary: #e5e7eb; --svg-secondary: #a1a1aa; --svg-muted: #71717a; --svg-soft: #cbd5e1; --svg-line: #52525b; --svg-divider: #3f3f46; --svg-inverse: #111827; --svg-accent: #fbbf24; --svg-fill: #18181b; }
+    }
+  </style>
+  <rect id="bg" width="980" height="442" fill="var(--svg-inverse)"/>
+
+  <text x="40" y="52" font-size="22" font-weight="500" fill="var(--svg-primary)" letter-spacing="-0.01em">Three separable achievements, not three rungs of one ladder</text>
+  <text x="40" y="76" font-size="13" fill="var(--svg-secondary)">Each needs its own kind of evidence. Succeeding at the first two would not settle the third.</text>
+
+  <g fill="var(--svg-inverse)" stroke="var(--svg-primary)" stroke-width="1">
+    <rect x="40" y="110" width="280" height="230" rx="3"/>
+    <rect x="350" y="110" width="280" height="230" rx="3"/>
+    <rect x="660" y="110" width="280" height="230" rx="3"/>
+  </g>
+
+  <g font-size="11" font-weight="600" letter-spacing="0.08em" fill="var(--svg-muted)">
+    <text x="64" y="142">01</text>
+    <text x="374" y="142">02</text>
+    <text x="684" y="142">03</text>
+  </g>
+
+  <g font-size="16" font-weight="500" fill="var(--svg-primary)">
+    <text x="64" y="178">reconstruct the</text>
+    <text x="64" y="200">organization from</text>
+    <text x="64" y="222">surviving evidence</text>
+    <text x="374" y="178">discover a channel</text>
+    <text x="374" y="200">that makes past</text>
+    <text x="374" y="222">organization accessible</text>
+    <text x="684" y="178">establish what</text>
+    <text x="684" y="200">renewed organization</text>
+    <text x="684" y="222">means for continuity</text>
+  </g>
+
+  <g stroke="var(--svg-divider)" stroke-width="1">
+    <line x1="64" y1="244" x2="296" y2="244"/>
+    <line x1="374" y1="244" x2="606" y2="244"/>
+    <line x1="684" y1="244" x2="916" y2="244"/>
+  </g>
+
+  <g font-size="11.5" fill="var(--svg-secondary)">
+    <text x="64" y="266">An inverse problem with</text>
+    <text x="64" y="283">substantial existing tools:</text>
+    <text x="64" y="300">generative model, evidence</text>
+    <text x="64" y="317">model, held-out traces.</text>
+    <text x="374" y="266">A speculative physical</text>
+    <text x="374" y="283">hypothesis. It needs an</text>
+    <text x="374" y="300">operational version, a null,</text>
+    <text x="374" y="317">and conditions to lose under.</text>
+    <text x="684" y="266">Not an experiment. It stays</text>
+    <text x="684" y="283">a question even if the first</text>
+    <text x="684" y="300">two succeed &#8212; and may expose</text>
+    <text x="684" y="317">a distinction we handle badly.</text>
+  </g>
+
+  <g>
+    <rect x="40" y="340" width="280" height="26" fill="var(--svg-divider)" stroke="var(--svg-primary)" stroke-width="1"/>
+    <text x="180" y="357" text-anchor="middle" font-size="11" letter-spacing="0.06em" fill="var(--svg-soft)">TRACTABLE NOW</text>
+    <rect x="350" y="340" width="280" height="26" fill="var(--svg-accent)" stroke="var(--svg-accent)" stroke-width="1"/>
+    <text x="490" y="357" text-anchor="middle" font-size="11" letter-spacing="0.06em" fill="var(--svg-inverse)">SPECULATIVE &#183; TESTABLE</text>
+    <rect x="660" y="340" width="280" height="26" fill="none" stroke="var(--svg-primary)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="800" y="357" text-anchor="middle" font-size="11" letter-spacing="0.06em" fill="var(--svg-soft)">OPEN</text>
+  </g>
+
+  <text x="40" y="402" font-size="12.5" fill="var(--svg-secondary)">None of this requires first explaining the origin of the universe, assigning agency to quantum collapse, or treating</text>
+  <text x="40" y="420" font-size="12.5" fill="var(--svg-secondary)">consciousness as the selector of physical outcomes.</text>
+</svg>

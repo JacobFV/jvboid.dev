@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 550" role="img" aria-labelledby="title desc" font-family="Inter, system-ui, Arial, sans-serif">
+  <title id="title">The discovery clock is brutally sensitive to the channel</title>
+  <desc id="desc">Reference discovery time for 1,000 unresolved bits at 100 comparisons per second, plotted against the symmetric match probability. At 51 percent the time is under ten hours; at 50.1 percent it is about forty days. A tenfold weaker effect costs a hundredfold more time.</desc>
+  <style>
+    :root { --svg-primary: #0f172a; --svg-secondary: #64748b; --svg-muted: #94a3b8; --svg-soft: #475569; --svg-line: #cbd5e1; --svg-divider: #e2e8f0; --svg-inverse: #ffffff; --svg-accent: #b45309; --svg-fill: #f8fafc; }
+    @media (prefers-color-scheme: dark) {
+      :root { --svg-primary: #e5e7eb; --svg-secondary: #a1a1aa; --svg-muted: #71717a; --svg-soft: #cbd5e1; --svg-line: #52525b; --svg-divider: #3f3f46; --svg-inverse: #111827; --svg-accent: #fbbf24; --svg-fill: #18181b; }
+    }
+  </style>
+  <rect id="bg" width="980" height="550" fill="var(--svg-inverse)"/>
+  <defs>
+    <marker id="arrA" markerWidth="9" markerHeight="9" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="var(--svg-accent)"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="52" font-size="22" font-weight="500" fill="var(--svg-primary)" letter-spacing="-0.01em">A tenfold weaker effect costs a hundredfold more time</text>
+  <text x="60" y="76" font-size="13" fill="var(--svg-secondary)">i = 1 &#8722; h&#8322;(q) bits per comparison &#183; J = r &#183; i &#183; t &#8776; b / J. Here b = 1,000 unresolved bits and r = 100 effective comparisons per second.</text>
+
+  <g stroke="var(--svg-divider)" stroke-width="1">
+    <line x1="140" y1="400" x2="900" y2="400"/>
+    <line x1="140" y1="335" x2="900" y2="335"/>
+    <line x1="140" y1="270" x2="900" y2="270"/>
+    <line x1="140" y1="205" x2="900" y2="205"/>
+    <line x1="140" y1="140" x2="900" y2="140"/>
+  </g>
+  <g stroke="var(--svg-line)" stroke-width="1">
+    <line x1="140" y1="140" x2="140" y2="400"/>
+    <line x1="140" y1="400" x2="900" y2="400"/>
+    <line x1="140" y1="400" x2="140" y2="406"/>
+    <line x1="330" y1="400" x2="330" y2="406"/>
+    <line x1="520" y1="400" x2="520" y2="406"/>
+    <line x1="710" y1="400" x2="710" y2="406"/>
+    <line x1="900" y1="400" x2="900" y2="406"/>
+  </g>
+  <g font-size="11" fill="var(--svg-muted)">
+    <text x="128" y="404" text-anchor="end">1 h</text>
+    <text x="128" y="339" text-anchor="end">10 h</text>
+    <text x="128" y="274" text-anchor="end">100 h</text>
+    <text x="128" y="209" text-anchor="end">1,000 h</text>
+    <text x="128" y="144" text-anchor="end">10,000 h</text>
+  </g>
+  <g font-size="11" fill="var(--svg-muted)">
+    <text x="140" y="422" text-anchor="middle">50.0%</text>
+    <text x="330" y="422" text-anchor="middle">50.5%</text>
+    <text x="520" y="422" text-anchor="middle">51.0%</text>
+    <text x="710" y="422" text-anchor="middle">51.5%</text>
+    <text x="900" y="422" text-anchor="middle">52.0%</text>
+  </g>
+  <text x="520" y="444" text-anchor="middle" font-size="12" fill="var(--svg-secondary)">symmetric match probability q</text>
+  <text x="66" y="270" transform="rotate(-90 66 270)" text-anchor="middle" font-size="12" fill="var(--svg-secondary)">reference discovery time</text>
+
+  <polyline points="900.0,375.2 824.0,369.3 710.0,359.0 596.0,346.4 520.0,336.1 444.0,323.5 368.0,307.2 330.0,296.9 292.0,284.3 254.0,268.1 235.0,257.8 216.0,245.2 200.8,232.6 189.4,220.9 181.8,211.5 178.0,206.1 172.3,196.9 168.5,189.8 165.8,184.3" fill="none" stroke="var(--svg-accent)" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- the two quoted operating points -->
+  <g>
+    <circle cx="520" cy="336" r="4" fill="var(--svg-primary)"/>
+    <line x1="520" y1="336" x2="600" y2="294" stroke="var(--svg-primary)" stroke-width="1"/>
+    <text x="606" y="292" font-size="12.5" font-weight="500" fill="var(--svg-primary)">51% match &#8594; 9.6 hours</text>
+    <text x="606" y="308" font-size="11" fill="var(--svg-secondary)">about 104 new bits per hour, $0.25 of allocated hardware</text>
+  </g>
+  <g>
+    <circle cx="178" cy="206" r="4" fill="var(--svg-accent)"/>
+    <line x1="178" y1="206" x2="238" y2="176" stroke="var(--svg-accent)" stroke-width="1"/>
+    <text x="244" y="174" font-size="12.5" font-weight="500" fill="var(--svg-accent)">50.1% match &#8594; 963 hours</text>
+    <text x="244" y="190" font-size="11" fill="var(--svg-secondary)">the same experiment, forty days instead of an afternoon</text>
+  </g>
+
+  <text x="60" y="482" font-size="12.5" fill="var(--svg-secondary)">The same multiplication applies if the effective comparison rate falls from 100 per second to one.</text>
+  <text x="60" y="500" font-size="12.5" fill="var(--svg-secondary)">Faster represented brain experience helps only if it raises J.</text>
+  <text x="60" y="532" font-size="12.5" fill="var(--svg-accent)">Finite reliability, changing signal strength and failed preparations belong in the measured performance &#8212; not inside an unexplained multiplier.</text>
+</svg>

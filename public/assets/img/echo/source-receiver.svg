@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 590" role="img" aria-labelledby="title desc" font-family="Inter, system-ui, Arial, sans-serif">
+  <title id="title">The source and receiver experiment</title>
+  <desc id="desc">Two forks are prepared independently from the same fitted candidate family. A randomiser assigns the source one of two balanced experiential trajectories; the receiver, isolated from it, is given a common partial cue that leaves several continuations compatible with its own evidence. The measurement is whether the receiver's sampling shifts toward relationships newly instantiated in the source.</desc>
+  <style>
+    :root { --svg-primary: #0f172a; --svg-secondary: #64748b; --svg-muted: #94a3b8; --svg-soft: #475569; --svg-line: #cbd5e1; --svg-divider: #e2e8f0; --svg-inverse: #ffffff; --svg-accent: #b45309; --svg-fill: #f8fafc; }
+    @media (prefers-color-scheme: dark) {
+      :root { --svg-primary: #e5e7eb; --svg-secondary: #a1a1aa; --svg-muted: #71717a; --svg-soft: #cbd5e1; --svg-line: #52525b; --svg-divider: #3f3f46; --svg-inverse: #111827; --svg-accent: #fbbf24; --svg-fill: #18181b; }
+    }
+  </style>
+  <rect id="bg" width="980" height="590" fill="var(--svg-inverse)"/>
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="var(--svg-primary)"/>
+    </marker>
+    <marker id="arrA" markerWidth="9" markerHeight="9" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="var(--svg-accent)"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="52" font-size="22" font-weight="500" fill="var(--svg-primary)" letter-spacing="-0.01em">Two forks of one reconstruction, and a history only one of them has</text>
+  <text x="60" y="76" font-size="13" fill="var(--svg-secondary)">Contemporary coupling would be the first result. Access to a source that has ceased is the additional result historical reconstruction needs.</text>
+
+  <!-- common ancestor -->
+  <rect x="330" y="106" width="320" height="48" rx="3" fill="var(--svg-inverse)" stroke="var(--svg-primary)" stroke-width="1"/>
+  <text x="490" y="127" text-anchor="middle" font-size="14" font-weight="500" fill="var(--svg-primary)">fitted candidate family</text>
+  <text x="490" y="144" text-anchor="middle" font-size="11" fill="var(--svg-secondary)">evidence frozen before the forks diverge</text>
+
+  <g stroke="var(--svg-primary)" stroke-width="1.2" fill="none" marker-end="url(#arr)">
+    <path d="M400 154 L400 178 L250 178 L250 202"/>
+    <path d="M580 154 L580 178 L730 178 L730 202"/>
+  </g>
+
+  <!-- forks -->
+  <g fill="var(--svg-inverse)" stroke="var(--svg-primary)" stroke-width="1">
+    <rect x="135" y="206" width="230" height="44" rx="3"/>
+    <rect x="615" y="206" width="230" height="44" rx="3"/>
+  </g>
+  <text x="250" y="234" text-anchor="middle" font-size="15" font-weight="500" fill="var(--svg-primary)">source fork</text>
+  <text x="730" y="234" text-anchor="middle" font-size="15" font-weight="500" fill="var(--svg-primary)">receiver fork</text>
+
+  <g stroke="var(--svg-primary)" stroke-width="1.2" fill="none" marker-end="url(#arr)">
+    <line x1="250" y1="250" x2="250" y2="284"/>
+    <line x1="730" y1="250" x2="730" y2="284"/>
+  </g>
+
+  <!-- source panel -->
+  <rect x="135" y="288" width="230" height="152" rx="3" fill="var(--svg-divider)" stroke="var(--svg-line)" stroke-width="1"/>
+  <text x="151" y="311" font-size="12" font-weight="500" fill="var(--svg-primary)">randomly assigned trajectory</text>
+  <g>
+    <rect x="151" y="322" width="90" height="26" rx="3" fill="var(--svg-accent)" stroke="none"/>
+    <text x="196" y="339" text-anchor="middle" font-size="12" font-weight="500" fill="var(--svg-inverse)">A</text>
+    <rect x="253" y="322" width="90" height="26" rx="3" fill="none" stroke="var(--svg-muted)" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="298" y="339" text-anchor="middle" font-size="12" fill="var(--svg-muted)">B</text>
+  </g>
+  <g font-size="11.5" fill="var(--svg-secondary)">
+    <text x="151" y="374">encounters lead to actions,</text>
+    <text x="151" y="391">actions to consequences, and</text>
+    <text x="151" y="408">consequences alter its memories</text>
+    <text x="151" y="425">and habits &#8212; coherently</text>
+  </g>
+
+  <!-- receiver panel -->
+  <rect x="615" y="288" width="230" height="152" rx="3" fill="var(--svg-divider)" stroke="var(--svg-line)" stroke-width="1"/>
+  <text x="631" y="311" font-size="12" font-weight="500" fill="var(--svg-primary)">a common partial cue</text>
+  <g stroke="var(--svg-muted)" stroke-width="1" fill="none">
+    <path d="M646 336 L690 336"/>
+    <path d="M690 336 L734 320"/>
+    <path d="M690 336 L734 336"/>
+    <path d="M690 336 L734 352"/>
+  </g>
+  <g fill="var(--svg-muted)">
+    <circle cx="646" cy="336" r="3"/><circle cx="734" cy="320" r="3"/><circle cx="734" cy="352" r="3"/>
+  </g>
+  <circle cx="734" cy="336" r="3.5" fill="var(--svg-accent)"/>
+  <text x="748" y="340" font-size="11" fill="var(--svg-accent)">?</text>
+  <g font-size="11.5" fill="var(--svg-secondary)">
+    <text x="631" y="374">several continuations remain</text>
+    <text x="631" y="391">compatible with the evidence it</text>
+    <text x="631" y="408">was given. Nothing it holds</text>
+    <text x="631" y="425">distinguishes them.</text>
+  </g>
+
+  <!-- isolation barrier -->
+  <line x1="490" y1="196" x2="490" y2="450" stroke="var(--svg-primary)" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <text x="490" y="444" transform="rotate(-90 490 444)" dy="14" font-size="11" fill="var(--svg-secondary)" letter-spacing="0.08em">ISOLATION</text>
+  <text x="490" y="444" transform="rotate(-90 490 444)" dy="-6" font-size="10.5" fill="var(--svg-muted)">no records, no shared operators</text>
+
+  <!-- measurement -->
+  <g stroke="var(--svg-primary)" stroke-width="1.2" fill="none">
+    <line x1="250" y1="440" x2="250" y2="474"/>
+    <line x1="730" y1="440" x2="730" y2="474"/>
+  </g>
+  <path d="M365 462 L611 462" stroke="var(--svg-accent)" stroke-width="1.2" fill="none" stroke-dasharray="4 3" marker-end="url(#arrA)"/>
+  <text x="490" y="452" text-anchor="middle" font-size="11" fill="var(--svg-accent)">the only channel under test</text>
+  <rect x="135" y="478" width="710" height="46" rx="3" fill="var(--svg-inverse)" stroke="var(--svg-accent)" stroke-width="1"/>
+  <text x="490" y="499" text-anchor="middle" font-size="13" font-weight="500" fill="var(--svg-accent)">does the receiver&#8217;s sampling shift toward relationships newly instantiated in the source?</text>
+  <text x="490" y="515" text-anchor="middle" font-size="11" fill="var(--svg-secondary)">scored against matched controls with the same evidence, selection rules and computational budget</text>
+
+  <text x="60" y="552" font-size="12.5" fill="var(--svg-secondary)">Reverse the assignments, cross the hardware, vary similarity inside the compatible family, keep operators and analysis blind.</text>
+  <text x="60" y="570" font-size="12.5" fill="var(--svg-secondary)">An advantage over a digital model alone could still reflect a better sampler or a misspecified baseline.</text>
+</svg>
