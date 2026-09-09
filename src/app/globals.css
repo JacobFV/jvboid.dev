@@ -486,6 +486,16 @@ a:hover {
 .prose-mdx [data-x-post] {
   margin-block: 2.25rem;
 }
+/* The tweet body is a <blockquote> because that is what it is, but the
+   pull-quote rule above is meant for prose the author is quoting inline
+   — it was setting whole tweets in italic behind a rule, which is the
+   bordered-box look again by another name. Outranks it on specificity. */
+.prose-mdx [data-x-post] blockquote {
+  border-left: 0;
+  padding-left: 0;
+  color: inherit;
+  font-style: normal;
+}
 .prose-mdx code {
   font-family: var(--font-mono);
   font-size: 0.9em;
