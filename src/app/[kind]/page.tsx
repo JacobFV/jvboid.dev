@@ -138,6 +138,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                     <CoverArt
                       node={node}
                       variant={node.kind === "paper" ? "paper" : "reading"}
+                      size="compact"
                       className="w-20 shrink-0 transition-[transform,box-shadow] duration-200 group-hover:scale-[1.02] group-hover:shadow-[0_10px_26px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] sm:w-24"
                     />
                   )}

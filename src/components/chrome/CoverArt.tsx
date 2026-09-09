@@ -28,11 +28,20 @@ export function CoverArt({
   node,
   variant,
   className,
+  size = "shelf",
 }: {
   node: Node;
   variant: "reading" | "paper";
   className?: string;
+  /**
+   * The tier badge is absolutely positioned, so it does not shrink with
+   * the cover. At the shelf's 112-128px it reads as a chip; at the
+   * index's 80-96px the same chip covers a quarter of the art. "compact"
+   * is the same badge tuned for the smaller plate.
+   */
+  size?: "shelf" | "compact";
 }) {
+  const compact = size === "compact";
   return (
     <div
       className={[
@@ -59,7 +68,13 @@ export function CoverArt({
         </div>
       )}
       {node.tier && (
-        <div className="absolute top-2 right-2 rounded-full bg-[var(--color-bg-0)]/90 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]">
+        <div
+          className={
+            compact
+              ? "absolute top-1 right-1 rounded-full bg-[var(--color-bg-0)]/85 px-1.5 font-[family-name:var(--font-mono)] text-[8px] leading-[1.4] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]"
+              : "absolute top-2 right-2 rounded-full bg-[var(--color-bg-0)]/90 px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] font-semibold text-[var(--color-ink)] shadow-[var(--ring-soft)]"
+          }
+        >
           {node.tier}
         </div>
       )}
