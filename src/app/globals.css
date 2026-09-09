@@ -9,10 +9,10 @@
  * Lane colors are the only chromatic variation between nodes.
  */
 @theme {
-  --color-bg-0: #08090b;
-  --color-bg-1: #0e1014;
-  --color-bg-2: #15181e;
-  --color-ink: #f2f4f8;
+  --color-bg-0: #0a0908;
+  --color-bg-1: #110f0d;
+  --color-bg-2: #1a1714;
+  --color-ink: #f4f1eb;
   --color-ink-dim: #9097a3;
   --color-ink-mute: #5a6070;
   --color-accent: #ff6b35;
@@ -24,6 +24,16 @@
   --color-lane-building: #93c47d;
   --color-lane-writing: #c27ba0;
   --color-lane-personal: #f1c232;
+
+  /* Editorial metal. Rules, ornaments, folio marks and feature numerals
+     are set in this instead of the accent — the accent is loud and is
+     kept for the one call to action a page has; a magazine's furniture is
+     a quiet warm neutral. Light gets a duller brass, dark a paler one,
+     so both sit a step below the body ink. */
+  --color-brass: #c2a56b;
+  /* The hairline every rule on the site is drawn in. A half-tone of ink,
+     never a panel colour: rules read as print, panels read as UI. */
+  --color-rule: color-mix(in srgb, var(--color-ink) 16%, transparent);
 
   /* Fonts are wired via next/font in app/layout.tsx; the variables below
      are populated at runtime so utilities like `font-display` resolve. */
@@ -45,10 +55,10 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-bg-0: #fafaf8;
-  --color-bg-1: #f1f1ee;
-  --color-bg-2: #e3e3df;
-  --color-ink: #18181b;
+  --color-bg-0: #f8f5ef;
+  --color-bg-1: #f0ece4;
+  --color-bg-2: #e3ded4;
+  --color-ink: #1a1815;
   --color-ink-dim: #54585f;
   --color-ink-mute: #8a8f99;
   --color-accent: #d8541c;
@@ -57,6 +67,7 @@
   --color-lane-building: #4a8b34;
   --color-lane-writing: #9a447b;
   --color-lane-personal: #a87a1e;
+  --color-brass: #9a7d47;
   --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.06);
   --ring-soft: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
@@ -123,6 +134,196 @@ body {
 ::selection {
   background: var(--color-accent);
   color: var(--color-bg-0);
+}
+
+/* ---- Pace ----
+   Nothing on the site snaps. Links and controls settle over ~400ms on a
+   long ease-out, which is the difference between a UI and a page that is
+   being read. Tailwind's `duration-*` utilities still win on the few
+   things that need to feel like machinery (rails, the hexagon). */
+:where(a, button, [role="button"], summary) {
+  transition-property: color, background-color, border-color, text-decoration-color, opacity, box-shadow, transform, filter;
+  transition-duration: 420ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- Paper ----
+   Light mode is printed, not lit: a faint monochrome grain over the
+   warm off-white, fixed to the viewport so it never scrolls with the
+   text. One channel, near-zero alpha — inside the content measure it is
+   allowed on exactly the same terms as the home cloud field: it can
+   only move value, and barely. Dark mode gets none; night is already
+   matte. */
+:root[data-theme="light"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+/* A world paints its own ground; the paper stays out of it. */
+:root[data-page-theme] body::before {
+  display: none;
+}
+
+/* ---- Rules and folios ----
+   The print furniture. `.rule` is the hairline; `.rule-label` sits a
+   small mono word on it; `.folio` is the running head at the top of a
+   page — section on the left, date on the right — like a printed page. */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+}
+.rule-ornament {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-brass);
+}
+.rule-ornament::before,
+.rule-ornament::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--color-rule);
+}
+.rule-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-mute);
+}
+.rule-label::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--color-rule);
+}
+.folio {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--color-rule);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-mute);
+}
+.folio a {
+  color: inherit;
+  text-decoration: none;
+}
+.folio a:hover {
+  color: var(--color-ink);
+}
+/* Feature numerals: "01 / 06" beside a numbered item. */
+.numeral {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144;
+  font-style: italic;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--color-brass);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Colophon ---- */
+.colophon-text {
+  max-width: 44em;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 18;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--color-ink-mute);
+  text-wrap: pretty;
+}
+.colophon-text em {
+  font-style: italic;
+  color: var(--color-ink-dim);
+}
+.colophon-text a {
+  color: var(--color-ink-dim);
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule);
+  text-underline-offset: 0.2em;
+}
+.colophon-text a:hover {
+  color: var(--color-ink);
+  text-decoration-color: var(--color-ink);
+}
+.colophon-mark {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-mute);
+  white-space: nowrap;
+}
+
+/* ---- Page turn ----
+   The route's content fades up over half a second; the title and the
+   standfirst hold back a beat and then settle in behind it. A cross-fade,
+   not a slide — nothing on the site should look like it is being pushed. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes title-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-turn {
+  animation: page-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.page-turn [data-page-title],
+.page-turn .standfirst {
+  animation: title-in 720ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both;
+}
+
+/* ---- Display type ----
+   A title is one enormous word. The page title runs to ~6.5rem on a
+   desktop, tracks in hard, and is allowed to break over two or three
+   lines on purpose — `balance` keeps those lines even. */
+.display-title {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 1.6rem + 4.6vw, 6.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--color-ink);
+}
+/* The deck under it: one sentence, larger and lighter than the body,
+   set in the serif so it reads as the editor's voice rather than a
+   summary field. */
+.standfirst {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 48;
+  font-weight: 300;
+  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.45rem);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  color: var(--color-ink-dim);
+  max-width: 34em;
+  text-wrap: pretty;
 }
 
 /* ---- Auto-hiding rail scrollbar (ScrollRail.tsx, CoverGallery.tsx) ----
@@ -474,7 +675,7 @@ a:hover {
   margin-top: 1.5em;
 }
 .prose-mdx blockquote {
-  border-left: 2px solid var(--color-bg-2);
+  border-left: 1px solid var(--color-rule);
   padding-left: 1em;
   color: var(--color-ink-dim);
   font-style: italic;
@@ -537,7 +738,7 @@ a:hover {
 }
 .prose-mdx hr {
   border: 0;
-  border-top: 1px solid var(--color-bg-2);
+  border-top: 1px solid var(--color-rule);
 }
 
 /* ---- Pull quotes ---- */
@@ -573,7 +774,7 @@ a:hover {
   width: 2.25rem;
   height: 2px;
   margin-bottom: 0.8rem;
-  background: var(--color-accent);
+  background: var(--color-brass);
 }
 
 /* MDX hands the child through the reader's `p` map when it is written on
@@ -634,7 +835,68 @@ a:hover {
   clear: both;
 }
 
-/* ---- Drop cap ---- */
+/* ---- The serif column ----
+   Posts are set in Fraunces at 19px, not Inter at 17: the sans is the
+   site's chrome, and a long essay in it reads as an app. The measure
+   comes down to 62ch to suit the wider serif. Unlayered CSS outranks
+   the Tailwind utilities on the reader's `p`, so no `!important`. */
+.prose-lede {
+  max-width: none;
+}
+.prose-lede h2,
+.prose-lede h3,
+.prose-lede h4,
+.prose-lede p,
+.prose-lede li {
+  max-width: 62ch;
+}
+.prose-lede p,
+.prose-lede li {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 18;
+  font-size: 19px;
+  line-height: 1.55;
+  letter-spacing: -0.002em;
+}
+.prose-lede p {
+  margin-block: 1.25rem;
+  text-wrap: pretty;
+}
+.prose-lede a {
+  text-decoration-color: var(--color-rule);
+}
+.prose-lede a:hover {
+  text-decoration-color: var(--color-ink);
+}
+.prose-lede blockquote {
+  border-left: 1px solid var(--color-rule);
+  padding-left: 1.25rem;
+}
+.prose-lede h2 {
+  font-size: clamp(1.9rem, 1.5rem + 1.2vw, 2.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-top: 3.5rem;
+}
+.prose-lede h3 {
+  font-size: 1.45rem;
+  line-height: 1.2;
+  margin-top: 2.75rem;
+}
+.prose-lede hr {
+  border: 0;
+  margin-block: 3.5rem;
+  text-align: center;
+  color: var(--color-brass);
+}
+.prose-lede hr::after {
+  content: "\2726";
+  font-size: 0.7rem;
+  letter-spacing: 0.9em;
+  padding-left: 0.9em;
+}
+
+/* ---- Drop cap and opener ---- */
 
 /* The opening paragraph of every post takes one. `:first-of-type`, not
    `:first-child`: a world's atmosphere component renders a fixed, invisible
@@ -645,19 +907,118 @@ a:hover {
    rather than a flourish, and several older posts start exactly that way.
 
    `flow-root` makes the paragraph tall enough to hold the floated letter, so
-   a one-sentence opener does not push the cap down into whatever follows. */
+   a one-sentence opener does not push the cap down into whatever follows.
+
+   The cap sits three lines deep and the first line after it runs in
+   letterspaced small caps, the classic opener. */
 .prose-lede > p:first-of-type:not(:has(> :is(em, strong, a):first-child)) {
   display: flow-root;
+}
+.prose-lede
+  > p:first-of-type:not(:has(> :is(em, strong, a):first-child))::first-line {
+  font-variant-caps: small-caps;
+  letter-spacing: 0.06em;
 }
 .prose-lede
   > p:first-of-type:not(:has(> :is(em, strong, a):first-child))::first-letter {
   float: left;
   font-family: var(--font-display);
   font-variation-settings: "opsz" 144;
-  font-size: 3.3em;
-  line-height: 0.82;
-  padding: 0.06em 0.1em 0 0;
+  font-size: 4.15em;
+  line-height: 0.78;
+  padding: 0.08em 0.12em 0 0;
   color: var(--color-ink);
+}
+
+/* ---- Figures in the serif column ----
+   An image's caption is its alt, set small and italic. Where the page
+   has a margin the caption steps out into it beside the picture, the
+   sidenote; below that it sits under the picture. The first picture in a
+   post is the hero: it runs edge to edge across the viewport and its
+   caption tucks back into the column. Only the post column — a project
+   page's atmosphere owns its own frames. */
+.prose-lede .reader-figure {
+  display: block;
+  position: relative;
+  margin-block: 2.5rem;
+}
+.prose-lede .reader-figure .reader-image {
+  margin: 0;
+  border-radius: 0;
+  width: 100%;
+}
+.prose-lede .reader-caption {
+  display: block;
+  margin-top: 0.7rem;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 18;
+  font-style: italic;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--color-ink-mute);
+  max-width: 36em;
+}
+.prose-lede .reader-caption::before {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 1px;
+  margin-bottom: 0.5rem;
+  background: var(--color-brass);
+}
+@media (min-width: 64rem) {
+  .prose-lede .reader-figure .reader-caption {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: clamp(9rem, 50vw - 27rem, 12rem);
+    margin: 0 1.5rem 0 0;
+    text-align: right;
+  }
+  .prose-lede .reader-figure .reader-caption::before {
+    margin-left: auto;
+  }
+}
+/* Which figure is the hero is decided here, not in the component: the
+   first paragraph in the column that holds a lone picture, i.e. one not
+   preceded by another such paragraph. The paragraph gives up its measure
+   so the bleed's `50%` is the column's centre and not the paragraph's. */
+.prose-lede > p:has(> .reader-figure) {
+  max-width: none;
+}
+.prose-lede > p:has(> .reader-figure):not(.prose-lede > :has(.reader-figure) ~ *) > .reader-figure {
+  width: 100vw;
+  margin-inline-start: calc(50% - 50vw);
+  margin-block: 3rem 3.5rem;
+  clear: both;
+}
+.prose-lede > p:has(> .reader-figure):not(.prose-lede > :has(.reader-figure) ~ *) > .reader-figure .reader-image {
+  max-height: 82vh;
+  object-fit: cover;
+}
+.prose-lede > p:has(> .reader-figure):not(.prose-lede > :has(.reader-figure) ~ *) > .reader-figure .reader-caption {
+  position: static;
+  width: auto;
+  margin: 0.7rem auto 0;
+  max-width: 48rem;
+  padding-inline: 1.5rem;
+  text-align: left;
+}
+.prose-lede > p:has(> .reader-figure):not(.prose-lede > :has(.reader-figure) ~ *) > .reader-figure .reader-caption::before {
+  margin-left: 0;
+}
+/* Pictures tiled in a grid keep their captions underneath. */
+.prose-lede .reader-image-grid .reader-figure {
+  margin: 0;
+}
+.prose-lede .reader-image-grid .reader-caption {
+  position: static;
+  width: auto;
+  margin: 0.5rem 0 0;
+  text-align: left;
+}
+.prose-lede .reader-image-grid .reader-caption::before {
+  margin-left: 0;
 }
 
 /* ---- PfpReveal animations ---- */
@@ -731,6 +1092,18 @@ a:hover {
   grid-template-columns: repeat(var(--reader-grid-cols, 3), minmax(0, 1fr));
   gap: 12px;
   margin: 1.75rem 0;
+}
+/* The figure wrapper is a <span> (see ReaderImage.tsx); it is only a
+   block here so the tile can fill its cell. The caption is drawn only
+   in the serif post column. */
+.reader-figure {
+  display: block;
+}
+.reader-caption {
+  display: none;
+}
+.reader-image-grid .reader-figure {
+  height: 100%;
 }
 .reader-image-grid .reader-image {
   margin: 0;

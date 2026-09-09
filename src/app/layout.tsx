@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { Bioluminescence } from "@/components/chrome/Bioluminescence";
+import { Colophon } from "@/components/chrome/Colophon";
 import { SiteHeader, type NodeTitles } from "@/components/chrome/SiteHeader";
 import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Bioluminescence />
         <SiteHeader titles={titles} />
         {children}
+        <Colophon />
         {/* Page-wide fullscreen image viewer; renders null until a
             reader image is clicked. */}
         <Lightbox />

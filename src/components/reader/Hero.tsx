@@ -21,32 +21,28 @@ export function Hero({ node }: { node: Node }) {
       style={{
         viewTransitionName: `node-${node.id}`,
       }}
-      className="mb-10 border-b border-[var(--color-bg-2)]/60 pb-8"
+      className="mt-12 mb-14 sm:mt-16"
     >
       {/* `data-node-meta` and `data-node-link` below are styling joints, not
           behaviour. A page-scoped theme (see globals.css, data-page-theme)
           needs somewhere stable to attach; chaining Tailwind classes in a
           selector would break the next time this markup is touched. */}
-      <div
-        data-node-meta
-        className="mb-3 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]"
-      >
-        <time>{range}</time>
-        <span>·</span>
-        <span>{node.kind}</span>
-      </div>
-
-      <h1
-        data-page-title
-        className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)] sm:text-5xl"
-        style={{ fontVariationSettings: '"opsz" 144' }}
-      >
+      <h1 data-page-title className="display-title">
         {node.title}
       </h1>
 
-      <p className="mt-4 max-w-2xl text-lg text-[var(--color-ink-dim)]">{node.summary}</p>
+      <p className="standfirst mt-8">{node.summary}</p>
+
+      <div
+        data-node-meta
+        className="mt-8 flex items-baseline gap-3 font-[family-name:var(--font-mono)] text-[0.68rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase"
+      >
+        <time>{range}</time>
+      </div>
 
       <KindMeta node={node} />
+
+      <hr className="rule mt-10" />
     </header>
   );
 }

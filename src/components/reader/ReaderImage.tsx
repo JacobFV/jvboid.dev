@@ -11,20 +11,30 @@ const cls = (...x: (string | false | undefined)[]) =>
 // as…" and the native title tooltip keep working — but clicking it
 // opens the fullscreen Lightbox. `data-reader-image` lets the lightbox
 // gather every content image on the page for prev/next navigation.
+//
+// The picture and its caption are wrapped in <span>s rather than a
+// <figure>: MDX hands a lone `![]()` through the `p` map, and a block
+// inside a paragraph is invalid HTML that the browser re-parents before
+// React hydrates. The alt *is* the caption. It is only drawn in the
+// serif post column (`.prose-lede .reader-caption`); everywhere else the
+// span is inert and the picture reads as it always has.
 export function ReaderImage(p: ImgHTMLAttributes<HTMLImageElement>) {
   const alt = p.alt ?? "";
   return (
-    <ProgressiveImage
-      {...p}
-      alt={alt}
-      title={p.title ?? (alt || undefined)}
-      data-reader-image=""
-      loading="lazy"
-      onClick={(e) => openLightbox(e.currentTarget)}
-      className={cls(
-        "reader-image my-6 max-w-full cursor-zoom-in rounded",
-        p.className,
-      )}
-    />
+    <span className="reader-figure">
+      <ProgressiveImage
+        {...p}
+        alt={alt}
+        title={p.title ?? (alt || undefined)}
+        data-reader-image=""
+        loading="lazy"
+        onClick={(e) => openLightbox(e.currentTarget)}
+        className={cls(
+          "reader-image my-6 max-w-full cursor-zoom-in rounded",
+          p.className,
+        )}
+      />
+      {alt && <span className="reader-caption">{alt}</span>}
+    </span>
   );
 }

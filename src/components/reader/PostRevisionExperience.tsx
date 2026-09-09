@@ -9,6 +9,8 @@ type PostRevisionExperienceProps = {
   postId: string;
   postedDate: string;
   currentTitle: string;
+  /** The standfirst: one sentence under the title, from frontmatter. */
+  summary?: string;
   currentBody: string;
   revisions: PostRevision[];
 };
@@ -41,6 +43,7 @@ export function PostRevisionExperience({
   postId,
   postedDate,
   currentTitle,
+  summary,
   currentBody,
   revisions,
 }: PostRevisionExperienceProps) {
@@ -91,17 +94,17 @@ export function PostRevisionExperience({
 
   return (
     <>
+      {/* Title, then the standfirst, then a rule: the magazine opener.
+          The dateline stays at the foot of the page. */}
       <header
         style={{ viewTransitionName: `node-${postId}` }}
-        className="mb-8 border-b border-[var(--color-bg-2)]/60 pb-6"
+        className="mt-14 mb-14 sm:mt-20"
       >
-        <h1
-          data-page-title
-          className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)] sm:text-5xl"
-          style={{ fontVariationSettings: '"opsz" 144' }}
-        >
+        <h1 data-page-title className="display-title">
           {title}
         </h1>
+        {summary && <p className="standfirst mt-8">{summary}</p>}
+        <hr className="rule mt-10" />
       </header>
 
       <div className="prose-mdx prose-lede">
@@ -116,7 +119,7 @@ export function PostRevisionExperience({
           its title and the prose, and when it was posted or last revised is
           what you want once you have read it. The revision menu travels with
           it — it is the same fact, made browsable. */}
-      <footer className="mt-12 flex flex-wrap items-baseline gap-2 border-t border-[var(--color-bg-2)]/60 pt-6 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
+      <footer className="mt-16 flex flex-wrap items-baseline gap-2 border-t border-[var(--color-rule)] pt-6 font-[family-name:var(--font-mono)] text-xs tracking-[0.08em] text-[var(--color-ink-mute)] uppercase">
         <span>
           posted: <time dateTime={postedDate}>{postedDate}</time>
         </span>
