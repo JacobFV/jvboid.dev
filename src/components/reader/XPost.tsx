@@ -40,6 +40,14 @@ type XPostData = {
   truncated?: boolean;
   /** Site-relative paths under public/, written by the sync script. */
   photos?: string[];
+  /**
+   * Alt text per photo, positionally. X ships none of its own, so this
+   * is the only way a screenshot that carries meaning gets described —
+   * supply it through the `posts` prop when the image is the point.
+   * Falls back to a provenance line, which at least tells a screen
+   * reader what the image *is* rather than claiming it is decorative.
+   */
+  photoAlts?: string[];
 };
 
 type XPostProps = {
@@ -122,12 +130,15 @@ function Tweet({ post }: { post: XPostData }) {
       )}
       {photos.length > 0 && (
         <div className={photos.length > 1 ? "grid gap-2 sm:grid-cols-2" : "grid"}>
-          {photos.map((src) => (
+          {photos.map((src, i) => (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               key={src}
               src={src}
-              alt=""
+              alt={
+                post.photoAlts?.[i] ??
+                `Image attached to ${handle}'s post${post.date ? ` of ${post.date}` : ""}`
+              }
               loading="lazy"
               className="m-0 h-auto w-full rounded-lg"
             />
