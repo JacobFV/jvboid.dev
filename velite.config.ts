@@ -167,6 +167,11 @@ const readings = defineCollection({
       status: s.enum(["queued", "reading", "finished", "paused", "reference"]).default("reading"),
       source: s.string().optional(),
       url: s.string().optional(),
+      // A line of personal context that belongs *to the link* rather than
+      // to the work — why this edition, why this copy. Readings link
+      // straight out, so there is no page here to put it on; it rides
+      // along as the tooltip on the cover and the title.
+      note: s.string().optional(),
     })
     .transform((d) => ({ ...d, kind: "reading" as const })),
 });

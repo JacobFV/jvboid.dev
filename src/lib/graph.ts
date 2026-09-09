@@ -113,6 +113,7 @@ const toNode =
       readingStatus: kind === "reading" ? (extra.status as ReadingStatus | undefined) : undefined,
       source: extra.source as string | undefined,
       url: extra.url as string | undefined,
+      note: extra.note as string | undefined,
       updateType: extra.updateType as UpdateType | undefined,
       embed: extra.embed as UpdateEmbed | undefined,
       category: extra.category as string | undefined,

@@ -86,6 +86,8 @@ export type Node = {
   readingStatus?: ReadingStatus;
   source?: string;
   url?: string;
+  /** Reading-only: why this copy, shown as the tooltip on its cover. */
+  note?: string;
   updateType?: UpdateType;
   embed?: UpdateEmbed;
   category?: string;

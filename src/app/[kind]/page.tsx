@@ -127,6 +127,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                 <Link
                   href={href}
                   {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
+                  {...(node.note ? { title: node.note } : {})}
                   className={
                     withCover
                       ? "group flex items-start gap-5 no-underline"

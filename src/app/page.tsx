@@ -318,8 +318,8 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
     <a
       href={href}
       {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
-      title={node.title}
-      aria-label={node.title}
+      title={node.note ?? node.title}
+      aria-label={node.note ? `${node.title} — ${node.note}` : node.title}
       className="group block w-28 no-underline sm:w-32"
     >
       <CoverArt

@@ -1,0 +1,75 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  @page { margin: 0 }
+  html, body { margin: 0; padding: 0; background: #08090b; }
+  .plate {
+    width: 900px; height: 1350px; box-sizing: border-box;
+    background:
+      radial-gradient(120% 70% at 50% 8%, rgba(241,194,50,0.07), transparent 62%),
+      linear-gradient(#0a0b0e, #08090b 55%, #060709);
+    padding: 78px 68px 62px;
+    display: flex; flex-direction: column;
+    font-family: "Liberation Serif", "DejaVu Serif", Georgia, serif;
+    color: #e9eaee;
+    position: relative;
+  }
+  .plate::after {
+    content: ""; position: absolute; inset: 26px;
+    border: 1px solid rgba(241,194,50,0.20); pointer-events: none;
+  }
+  .chapter {
+    font-size: 108px; line-height: .9; font-weight: 700;
+    letter-spacing: -0.015em; color: #f6f7f9; margin: 0;
+  }
+  .book {
+    font-size: 25px; letter-spacing: .38em; text-transform: uppercase;
+    color: #f1c232; margin: 0 0 16px;
+  }
+  .super {
+    margin: 26px 0 0; font-size: 23px; line-height: 1.5;
+    font-style: italic; color: #9097a3;
+    border-top: 1px solid rgba(233,234,238,0.16); padding-top: 22px;
+  }
+  .verses { margin: 40px 0 0; }
+  .v { margin: 0 0 26px; font-size: 31px; line-height: 1.5; color: #dcdee4; }
+  .v b {
+    font-weight: 700; font-size: 17px; color: #f1c232;
+    vertical-align: 0.42em; margin-right: 10px; font-family: "DejaVu Serif", serif;
+  }
+  /* First line runs on after the verse number; the rest of the couplet
+     is indented under it, the way a psalm is set. */
+  .l { display: block; padding-left: 34px; }
+  .gap {
+    margin: 52px 0 52px; text-align: center; font-size: 34px;
+    letter-spacing: .3em; color: #3a3f4a;
+  }
+  .tail { margin-top: auto; }
+  .rule { width: 96px; height: 1px; background: rgba(241,194,50,.55); margin: 0 0 20px; }
+  .close { margin: 0; font-size: 29px; line-height: 1.5; font-style: italic; color: #cfd2d9; }
+  .close b { font-style: normal; font-weight: 700; font-size: 17px; color: #f1c232; vertical-align: .42em; margin-right: 10px; }
+  .credit {
+    margin: 26px 0 0; font-size: 15px; line-height: 1.5; color: #5a6070;
+    font-family: "DejaVu Sans", system-ui, sans-serif;
+  }
+</style>
+<div class="plate">
+  <p class="book">Psalms</p>
+  <h1 class="chapter">88</h1>
+
+  <p class="super">A song. A melody of the sons of Koʹrah. To the director; in the style of Maʹha·lath, to be sung alternately. Masʹkil of Heʹman the Ezʹra·hite.</p>
+
+  <div class="verses">
+    <p class="v"><b>1</b>O Jehovah, the God of my salvation,<span class="l">By day I cry out,</span><span class="l">And by night I come before you.</span></p>
+    <p class="v"><b>2</b>Let my prayer come to you,<span class="l">Incline your ear to my cry for help.</span></p>
+    <p class="v"><b>3</b>For my soul has been filled with calamity,<span class="l">And my life is on the brink of the Grave.</span></p>
+  </div>
+
+  <p class="gap">⋯</p>
+
+  <div class="tail">
+    <div class="rule"></div>
+    <p class="close"><b>18</b>You have driven my friends and companions far away from me; Darkness has become my companion.</p>
+    <p class="credit">New World Translation of the Holy Scriptures (Study Edition)<br>© Watch Tower Bible and Tract Society of Pennsylvania · wol.jw.org</p>
+  </div>
+</div>
