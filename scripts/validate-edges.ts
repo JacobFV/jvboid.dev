@@ -3,6 +3,8 @@
  * connections-filling agent — reads `.velite/*.json` and `src/data/edges.ts`
  * directly, prints a report on:
  *   - edges that reference a node id that doesn't exist
+ *   - body links: bare `/{slug}` links that lost their kind prefix in the
+ *     move to /{kind-plural}/{slug}, plus /assets links with no file
  *   - duplicate edges (same source, target, kind)
  *   - per-node out-degree (helps spot "I added 14 influences" anti-patterns)
  *   - weight outliers in manualEdges (0 / >1 / very-low / unset)
@@ -46,9 +48,11 @@ const slugBase = (p: string) => p.split("/").pop() ?? p;
 
 async function loadNodes(): Promise<{
   ids: Set<string>;
+  collectionById: Map<string, string>;
   outgoingByKind: Map<string, Record<string, number>>;
 }> {
   const ids = new Set<string>();
+  const collectionById = new Map<string, string>();
   const outgoingByKind = new Map<string, Record<string, number>>();
   for (const c of COLLECTIONS) {
     const file = path.join(VELITE, `${c}.json`);
@@ -62,6 +66,7 @@ async function loadNodes(): Promise<{
     for (const n of data) {
       const id = slugBase(n.slug);
       ids.add(id);
+      collectionById.set(id, c);
       outgoingByKind.set(id, {
         influences: n.influences?.length ?? 0,
         realizes: n.realizes?.length ?? 0,
@@ -69,7 +74,7 @@ async function loadNodes(): Promise<{
       });
     }
   }
-  return { ids, outgoingByKind };
+  return { ids, collectionById, outgoingByKind };
 }
 
 async function loadFrontmatterEdges(): Promise<Edge[]> {
@@ -116,6 +121,139 @@ async function loadRedirects(): Promise<Redirect[]> {
   return out;
 }
 
+/* ---- Body links --------------------------------------------------------
+ *
+ * Every node lives at /{kind-plural}/{slug}. The old site served the flat
+ * /{slug}, so prose written before the move links at a path that now 404s
+ * by design (see CLAUDE.md). Frontmatter edges are already checked above;
+ * this catches the same mistake in the body, where nothing else looks.
+ *
+ * Only site-absolute links are checked. Relative and external ones are
+ * somebody else's problem, and anchors are stripped before matching.
+ */
+
+type BodyLink = { href: string; origin: string; line: number; hint?: string };
+
+// Route prefixes that exist for reasons other than a node: real pages,
+// static directories under public/, and the legacy shapes next.config.mjs
+// redirects. A link starting with one of these is left alone.
+const NON_NODE_PREFIXES = new Set([
+  // pages
+  "resume",
+  "t",
+  "feed.xml",
+  // public/ directories
+  "assets",
+  "img",
+  "notebooks",
+  "static",
+  "tiles",
+  "_generated",
+  // legacy shapes with redirects in next.config.mjs
+  "blog",
+  "bio",
+  "jobs",
+  "news",
+  "feed",
+  "repositories",
+  "repos",
+  "about",
+  "introduction",
+  "experience",
+  "eeg-acquisition-chain",
+  "canvas-engineering",
+]);
+
+// The kind-plural route prefixes — mirrors KIND_PREFIX in graph-types.ts.
+// `experience` is a velite collection with no route of its own, so it is
+// deliberately absent: a link at an experience id has nowhere to point.
+const KIND_PREFIXES = new Set([
+  "posts",
+  "projects",
+  "papers",
+  "readings",
+  "updates",
+  "skills",
+  "friends",
+  "events",
+  "visions",
+]);
+
+async function loadBodyLinks(): Promise<BodyLink[]> {
+  const links: BodyLink[] = [];
+  // Markdown `](/path)` and JSX `href="/path"` — the two shapes prose uses.
+  const patterns = [/\]\(\s*(\/[^)\s]*)/g, /href=["'](\/[^"']*)["']/g];
+
+  const walk = async (dir: string): Promise<void> => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      // Generated post revisions are snapshots of old prose. Rewriting
+      // history to fix a link there would just churn the hashes.
+      if (entry.name === "_generated") continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(full);
+        continue;
+      }
+      if (!/\.mdx?$/.test(entry.name)) continue;
+      const rel = path.relative(NEW, full);
+      const lines = (await readFile(full, "utf8")).split("\n");
+      lines.forEach((line, i) => {
+        for (const re of patterns) {
+          re.lastIndex = 0;
+          let m: RegExpExecArray | null;
+          while ((m = re.exec(line))) links.push({ href: m[1], origin: rel, line: i + 1 });
+        }
+      });
+    }
+  };
+
+  await walk(path.join(NEW, "content"));
+  return links;
+}
+
+function checkBodyLinks(
+  links: BodyLink[],
+  ids: Set<string>,
+  collectionById: Map<string, string>,
+): BodyLink[] {
+  const broken: BodyLink[] = [];
+
+  for (const link of links) {
+    const clean = link.href.split("#")[0].split("?")[0];
+    const parts = clean.split("/").filter(Boolean);
+    if (parts.length === 0) continue; // "/" — the home page
+
+    const [head, second] = parts;
+
+    // A file under public/ — check it is actually there.
+    if (NON_NODE_PREFIXES.has(head)) {
+      const isStatic = ["assets", "img", "notebooks", "static", "tiles"].includes(head);
+      if (isStatic && !existsSync(path.join(NEW, "public", decodeURIComponent(clean)))) {
+        broken.push({ ...link, hint: "no such file under public/" });
+      }
+      continue;
+    }
+
+    // A canonical /{kind-plural}/{slug}: the slug has to be a real node.
+    if (KIND_PREFIXES.has(head)) {
+      if (parts.length === 1) continue; // the collection index page
+      if (!ids.has(second)) broken.push({ ...link, hint: "no node with that id" });
+      continue;
+    }
+
+    // Anything else is a flat path. If it names a node, it is the
+    // pre-move link shape and needs its kind prefix back.
+    const collection = collectionById.get(head);
+    if (collection && KIND_PREFIXES.has(collection)) {
+      broken.push({ ...link, hint: `missing kind prefix — use /${collection}/${head}` });
+    } else {
+      broken.push({ ...link, hint: "not a route on this site" });
+    }
+  }
+
+  return broken;
+}
+
 function color(s: string, code: number) {
   return process.stdout.isTTY ? `\x1b[${code}m${s}\x1b[0m` : s;
 }
@@ -130,9 +268,10 @@ async function main() {
     process.exit(1);
   }
 
-  const { ids, outgoingByKind } = await loadNodes();
+  const { ids, collectionById, outgoingByKind } = await loadNodes();
   const fmEdges = await loadFrontmatterEdges();
   const redirects = await loadRedirects();
+  const bodyLinks = await loadBodyLinks();
   const manual: Edge[] = manualEdges.map((e) => ({
     ...e,
     origin: "src/data/edges.ts",
@@ -168,6 +307,9 @@ async function main() {
     (r) => !isExternal(r.target) && (!ids.has(r.target) || r.target === r.source),
   );
 
+  // ---- Body links ----------------------------------------------------
+  const brokenLinks = checkBodyLinks(bodyLinks, ids, collectionById);
+
   // ---- Weight sanity (manualEdges only — frontmatter has no weight) -
   const badWeights = manual.filter((e) => {
     if (e.weight === undefined) return false; // ok to omit
@@ -198,6 +340,7 @@ async function main() {
   console.log(
     `${dim("edges:")} ${allEdges.length} (${fmEdges.length} from frontmatter, ${manual.length} manual)`,
   );
+  console.log(`${dim("body links:")} ${bodyLinks.length}`);
   console.log("");
 
   if (missing.length === 0) console.log(green("✓") + " all edges resolve to a real node id");
@@ -258,6 +401,17 @@ async function main() {
     }
   }
 
+  if (brokenLinks.length === 0) {
+    console.log(green("✓") + ` all ${bodyLinks.length} site-absolute body links resolve`);
+  } else {
+    console.log(
+      red(`✖ ${brokenLinks.length} broken body link${brokenLinks.length === 1 ? "" : "s"}:`),
+    );
+    for (const l of brokenLinks) {
+      console.log(`  ${red(l.href)}  ${dim(`(${l.hint}) — ${l.origin}:${l.line}`)}`);
+    }
+  }
+
   if (badWeights.length > 0) {
     console.log(yellow(`! ${badWeights.length} weight outside [0, 1]:`));
     for (const e of badWeights) console.log(`  ${e.source} -> ${e.target}  weight=${e.weight}`);
@@ -299,7 +453,12 @@ async function main() {
   }
 
   console.log("");
-  if (missing.length > 0 || selfEdges.length > 0 || badRedirects.length > 0) {
+  if (
+    missing.length > 0 ||
+    selfEdges.length > 0 ||
+    badRedirects.length > 0 ||
+    brokenLinks.length > 0
+  ) {
     console.log(red("validation failed"));
     process.exit(1);
   }
