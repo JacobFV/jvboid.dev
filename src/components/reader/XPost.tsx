@@ -75,9 +75,10 @@ export function XPost({ url, urls, posts, caption }: XPostProps) {
 
   return (
     <div
+      data-x-post
       role={resolved.length > 1 ? "group" : undefined}
       aria-label={caption}
-      className="my-8 grid gap-7"
+      className="grid gap-7"
     >
       {resolved.map((post, index) => (
         <Tweet key={`${post.url}-${index}`} post={post} />

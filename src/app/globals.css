@@ -479,6 +479,13 @@ a:hover {
   color: var(--color-ink-dim);
   font-style: italic;
 }
+/* A quoted tweet carries no box now, so spacing is the only thing left
+   to say "these are someone else's words, and they end here". Sits
+   above `.prose-mdx > * + *`, which would otherwise hand the group the
+   same 1em a paragraph gets and let it blend into the essay. */
+.prose-mdx [data-x-post] {
+  margin-block: 2.25rem;
+}
 .prose-mdx code {
   font-family: var(--font-mono);
   font-size: 0.9em;
