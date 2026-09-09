@@ -90,10 +90,7 @@ export default async function ResumePage({
 
       {/* Header ---------------------------------------------------------- */}
       <header className="mb-10">
-        <h1
-          className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)]"
-          style={{ fontVariationSettings: '"opsz" 144' }}
-        >
+        <h1 className="font-block text-4xl font-extrabold tracking-tight text-[var(--color-ink)]">
           {contact.name}
         </h1>
         <p className="mt-1 text-sm uppercase tracking-widest text-[var(--color-accent)] font-[family-name:var(--font-mono)]">

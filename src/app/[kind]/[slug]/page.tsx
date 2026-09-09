@@ -2,7 +2,6 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { getGraph, isExternalRedirect, KIND_PREFIX, nodeHref, nodeSourceHref } from "@/lib/graph";
 import { MDXContent } from "@/lib/mdx";
 import { getPostRevisions } from "@/lib/post-revisions";
-import { Folio } from "@/components/chrome/Folio";
 import { Hero } from "@/components/reader/Hero";
 import { LocalGraph } from "@/components/reader/LocalGraph";
 import { PostRevisionExperience } from "@/components/reader/PostRevisionExperience";
@@ -59,8 +58,6 @@ export default async function NodePage({ params }: { params: Params }) {
   const posted = new Date(node.date).toISOString().slice(0, 10);
   const article = (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      {/* The running head: section on the left, date on the right. */}
-      <Folio section={KIND_PREFIX[node.kind]} href={`/${KIND_PREFIX[node.kind]}`} right={posted} />
       <article>
         {node.kind === "post" ? (
           <PostRevisionExperience

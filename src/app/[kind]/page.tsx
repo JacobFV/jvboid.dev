@@ -11,7 +11,6 @@ import {
 } from "@/lib/graph";
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { CollectionTitle } from "@/components/chrome/CollectionTitle";
-import { Folio } from "@/components/chrome/Folio";
 import { CoverArt } from "@/components/chrome/CoverArt";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
@@ -83,7 +82,6 @@ export default async function KindIndexPage({ params }: { params: Params }) {
   if (nodeKind === "project") {
     return (
       <main className="mx-auto max-w-5xl px-6 pt-10 pb-16">
-        <Folio section="projects" right={`${nodes.length} entries`} />
         <CollectionTitle>Projects</CollectionTitle>
 
         {nodes.length === 0 ? (
@@ -97,10 +95,8 @@ export default async function KindIndexPage({ params }: { params: Params }) {
 
   const bare = BARE_HEADER.has(nodeKind);
 
-  const total = nodes.length;
   return (
     <main className="mx-auto max-w-3xl px-6 pt-10 pb-16">
-      <Folio section={kind} right={`${total} ${total === 1 ? "entry" : "entries"}`} />
       <header className={bare ? "mt-14 mb-14" : "mt-14 mb-16"}>
         <h1 data-page-title className="display-title">
           {KIND_TITLE[nodeKind]}
@@ -181,10 +177,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                         </>
                       )}
                     </div>
-                    <h2
-                      className="mt-2 font-[family-name:var(--font-display)] text-2xl leading-tight tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-3xl"
-                      style={{ fontVariationSettings: '"opsz" 96' }}
-                    >
+                    <h2 className="mt-2 font-block text-2xl font-extrabold leading-tight tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-3xl">
                       {node.title}
                     </h2>
                     <p className="standfirst mt-3 !text-[1.02rem] !leading-[1.5]">{node.summary}</p>

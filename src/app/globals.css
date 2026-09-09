@@ -40,6 +40,13 @@
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains);
+  /* Headers only — h1–h4, the display title, and the page titles that
+     stand in for them. A blockface: condensed, slab-ish, squared-off
+     terminals. It reads next to Fraunces the way a masthead reads next
+     to the column under it, and it is deliberately not used for body
+     copy, the standfirst, the drop cap, or pull quotes — those stay the
+     editor's serif voice. */
+  --font-block: var(--font-big-shoulders);
 
   /* Theme-aware elevation tokens. `--shadow-soft` is a tiny drop shadow,
      `--ring-soft` a hairline inset border. Both flip with the active theme
@@ -70,6 +77,16 @@
   --color-brass: #9a7d47;
   --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.06);
   --ring-soft: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+/* The header face. `--font-block` is loaded as a full variable font
+   (see app/layout.tsx) so its `opsz` axis is free — pinned here near its
+   display end (max 72), which is what turns the typeface's default
+   condensed-text cut into a proper blockface. Pair with a `font-*`
+   weight utility; the axis leaves weight free. */
+.font-block {
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
 }
 
 html {
@@ -169,10 +186,9 @@ body {
   display: none;
 }
 
-/* ---- Rules and folios ----
+/* ---- Rules ----
    The print furniture. `.rule` is the hairline; `.rule-label` sits a
-   small mono word on it; `.folio` is the running head at the top of a
-   page — section on the left, date on the right — like a printed page. */
+   small mono word on it. */
 .rule {
   border: 0;
   border-top: 1px solid var(--color-rule);
@@ -203,25 +219,6 @@ body {
   content: "";
   flex: 1;
   border-top: 1px solid var(--color-rule);
-}
-.folio {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--color-rule);
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-ink-mute);
-}
-.folio a {
-  color: inherit;
-  text-decoration: none;
-}
-.folio a:hover {
-  color: var(--color-ink);
 }
 /* Feature numerals: "01 / 06" beside a numbered item. */
 .numeral {
@@ -314,12 +311,12 @@ body {
    desktop, tracks in hard, and is allowed to break over two or three
    lines on purpose — `balance` keeps those lines even. */
 .display-title {
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 144;
-  font-weight: 400;
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
   font-size: clamp(2.6rem, 1.6rem + 4.6vw, 6.5rem);
-  line-height: 0.98;
-  letter-spacing: -0.03em;
+  line-height: 0.92;
+  letter-spacing: -0.005em;
   text-wrap: balance;
   color: var(--color-ink);
 }
@@ -676,13 +673,17 @@ a:hover {
   margin-top: 1em;
 }
 .prose-mdx h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
   font-size: 1.6rem;
   letter-spacing: -0.01em;
   margin-top: 2em;
 }
 .prose-mdx h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
   font-size: 1.25rem;
   margin-top: 1.5em;
 }

@@ -22,10 +22,7 @@ export default function UpdatesPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <header className="mb-12">
-        <h1
-          className="font-[family-name:var(--font-display)] text-4xl tracking-tight"
-          style={{ fontVariationSettings: '"opsz" 144' }}
-        >
+        <h1 className="font-block text-4xl font-extrabold tracking-tight">
           Updates
         </h1>
         <p className="mt-3 text-[var(--color-ink-dim)]">

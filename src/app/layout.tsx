@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Big_Shoulders, Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { Bioluminescence } from "@/components/chrome/Bioluminescence";
 import { Colophon } from "@/components/chrome/Colophon";
 import { SiteHeader, type NodeTitles } from "@/components/chrome/SiteHeader";
@@ -68,6 +68,19 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
+// The header face — see --font-block in globals.css. Only the two heavy
+// weights: headers never sit at body weight.
+const bigShoulders = Big_Shoulders({
+  subsets: ["latin"],
+  variable: "--font-big-shoulders",
+  // Full variable font: wght is the free axis (set per element with
+  // Tailwind's `font-*` weight utilities) and opsz is pinned toward its
+  // display end everywhere via `.font-block`, which is what turns this
+  // typeface's condensed text cut into a proper blockface.
+  axes: ["opsz"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Jacob Valdez",
   description: "A navigable map of projects, writing, and visions — not a list of pages.",
@@ -87,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${inter.variable} ${jetbrains.variable}`}
+      className={`${fraunces.variable} ${inter.variable} ${jetbrains.variable} ${bigShoulders.variable}`}
       suppressHydrationWarning
     >
       <head>

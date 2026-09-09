@@ -111,11 +111,10 @@ export function HeroHex({ name, bio, socials, moreSocials, pfp }: HeroContent) {
             when the column runs out of height: the air around the name
             goes before the portrait does. */}
         <h1
-          className="font-[family-name:var(--font-display)] tracking-tight text-[var(--color-ink)]"
+          className="font-block font-extrabold tracking-tight text-[var(--color-ink)]"
           style={{
             marginTop: GAP_NAME,
             fontSize: NAME_TYPE,
-            fontVariationSettings: '"opsz" 144',
           }}
         >
           {name}
@@ -168,10 +167,7 @@ export function HeroStack({ name, bio, socials, moreSocials, pfp }: HeroContent)
         />
       </div>
 
-      <h1
-        className="mt-6 font-[family-name:var(--font-display)] text-4xl tracking-tight text-[var(--color-ink)] sm:text-5xl"
-        style={{ fontVariationSettings: '"opsz" 144' }}
-      >
+      <h1 className="mt-6 font-block text-4xl font-extrabold tracking-tight text-[var(--color-ink)] sm:text-5xl">
         {name}
       </h1>
 

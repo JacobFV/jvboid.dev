@@ -44,9 +44,8 @@ const cls = (...x: (string | false | undefined)[]) =>
 const H1 = (p: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h1
     {...p}
-    style={{ fontVariationSettings: '"opsz" 144', ...p.style }}
     className={cls(
-      "mt-12 mb-4 font-[family-name:var(--font-display)] text-3xl tracking-tight text-[var(--color-ink)]",
+      "mt-12 mb-4 font-block text-3xl font-extrabold tracking-tight text-[var(--color-ink)]",
       p.className,
     )}
   />
@@ -54,9 +53,8 @@ const H1 = (p: React.HTMLAttributes<HTMLHeadingElement>) => (
 const H2 = (p: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     {...p}
-    style={{ fontVariationSettings: '"opsz" 96', ...p.style }}
     className={cls(
-      "mt-12 mb-3 font-[family-name:var(--font-display)] text-2xl tracking-tight text-[var(--color-ink)]",
+      "mt-12 mb-3 font-block text-2xl font-extrabold tracking-tight text-[var(--color-ink)]",
       p.className,
     )}
   />
@@ -65,7 +63,7 @@ const H3 = (p: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h3
     {...p}
     className={cls(
-      "mt-10 mb-2 font-[family-name:var(--font-display)] text-xl tracking-tight text-[var(--color-ink)]",
+      "mt-10 mb-2 font-block text-xl font-extrabold tracking-tight text-[var(--color-ink)]",
       p.className,
     )}
   />

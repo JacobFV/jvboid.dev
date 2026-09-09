@@ -17,9 +17,6 @@ const laneBg: Record<Lane, string> = {
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const pad2 = (n: number) => String(n).padStart(2, "0");
-// The dateline on the masthead: the month the site was last built.
-const issueDate = () =>
-  new Date().toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 // Contact row inside the hero hexagon, in the order it reads. Kept to the
 // accounts worth interrupting someone for — the long tail lives in
 // `moreSocialGroups`, behind the row's `> more` toggle.
@@ -180,15 +177,6 @@ export default function HomePage() {
           content measure at all. See components/chrome/HomeField.tsx. */}
       <HomeField />
 
-      {/* ---- Masthead ---- */}
-      {/* The home page is an issue, and this is its dateline: the running
-          head every other page carries, with the month it was printed on
-          the right. The name itself is set inside the hexagon below. */}
-      <div className="folio mb-16">
-        <span>jvboid.dev</span>
-        <span>{issueDate()}</span>
-      </div>
-
       {/* ---- Hero + projects ---- */}
       {/* The hero is a 4× tile of the projects comb, not a block above
             it, so the tiles pack against its edges. That is also why this
@@ -241,10 +229,7 @@ export default function HomePage() {
             <li key={c.n}>
               <a href={c.href} className="group block no-underline">
                 <span className="numeral">{pad2(c.n)}</span>
-                <span
-                  className="mt-1 block font-[family-name:var(--font-display)] text-2xl tracking-tight text-[var(--color-ink)] underline-offset-[6px] decoration-[var(--color-rule)] group-hover:underline"
-                  style={{ fontVariationSettings: '"opsz" 96' }}
-                >
+                <span className="mt-1 block font-block text-2xl font-extrabold tracking-tight text-[var(--color-ink)] underline-offset-[6px] decoration-[var(--color-rule)] group-hover:underline">
                   {c.label}
                 </span>
                 <span className="mt-1 block font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
@@ -417,10 +402,7 @@ function RowLink({ node, n, of }: { node: Node; n: number; of: number }) {
       <span className="numeral">
         {pad2(n)} <span className="text-[var(--color-ink-mute)]">/ {pad2(of)}</span>
       </span>
-      <span
-        className="font-[family-name:var(--font-display)] text-xl leading-snug tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-2xl"
-        style={{ fontVariationSettings: '"opsz" 96' }}
-      >
+      <span className="font-block text-xl font-extrabold leading-snug tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-2xl">
         <span className={`mr-3 inline-block h-1.5 w-1.5 rounded-full align-middle ${laneBg[node.lane]}`} aria-hidden />
         {node.title}
       </span>

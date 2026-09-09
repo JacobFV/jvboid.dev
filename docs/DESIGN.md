@@ -28,25 +28,33 @@ The lane colors are the only way nodes vary chromatically. Status (idea/active/s
 
 ## Typography
 
-- **Display / hero** — `Fraunces` (variable, opsz). Tight tracking. Used for node titles in detail mode and chapter headers in `/loop`.
-- **Body** — `Inter` (variable). 17px / 1.6 on desktop. Generous measure (~70ch).
+- **Headers** — `Big Shoulders` (variable, wght + opsz), `opsz` pinned
+  toward its display end via `.font-block`. The blockface: h1–h4, the
+  `.display-title` page titles, and every other place a heading stands in
+  for one (index entries, home page titles, the hero name). Never body
+  copy, standfirsts, drop caps, or pull quotes — those stay the serif.
+- **Editorial serif** — `Fraunces` (variable, opsz). Body copy in the post
+  column, standfirsts, drop caps, pull quotes, captions, the colophon.
+  Tight tracking where used for emphasis.
+- **Body (chrome)** — `Inter` (variable). 17px / 1.6 on desktop outside
+  the post column. Generous measure (~70ch).
 - **Mono** — `JetBrains Mono`. Code, captions in figures, the latest update dock.
 
-Self-host all three via `next/font`. No CDN fonts.
+Self-host all four via `next/font`. No CDN fonts.
 
 ## Editorial layer
 
 The site reads as an issue of a magazine, not an app. The furniture that
 does it, all in `globals.css`:
 
-- **`.display-title`** — Fraunces at up to 6.5rem, `opsz` 144, tracked
-  −0.03em, balanced over two or three lines. Every page title and the
-  home feature use it.
+- **`.display-title`** — the blockface at up to 6.5rem, weight 800,
+  balanced over two or three lines. Every page title and the home
+  feature use it.
+- **`.font-block`** — the header face's font-family plus its pinned
+  `opsz`. Pair with a `font-*` weight utility; the axis leaves weight
+  free.
 - **`.standfirst`** — the one-sentence deck under a title, Fraunces light,
   larger than the body. It is the node's `summary`.
-- **`.folio`** — the running head at the top of every reading page and
-  index: section left, date or count right, mono and letterspaced over
-  a hairline. `components/chrome/Folio.tsx`.
 - **`.rule` / `.rule-label` / `.rule-ornament`** — hairlines in
   `--color-rule` (16% ink). Section headings on the home page are a small
   word sitting *on* the rule, never a heading above a card.
