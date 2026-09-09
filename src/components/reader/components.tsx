@@ -22,6 +22,16 @@ import { EditorialAtmosphere } from "./EditorialAtmosphere";
 import { TensorAtmosphere } from "./TensorAtmosphere";
 import { CinemaAtmosphere } from "./CinemaAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
+import { EchoBottlenecks } from "./echo/EchoBottlenecks";
+import { EchoLoop } from "./echo/EchoLoop";
+import { EchoCompletion } from "./echo/EchoCompletion";
+import { EchoBrain } from "./echo/EchoBrain";
+import { EchoInverse } from "./echo/EchoInverse";
+import { EchoLandscape } from "./echo/EchoLandscape";
+import { EchoDrift } from "./echo/EchoDrift";
+import { EchoAnalog } from "./echo/EchoAnalog";
+import { EchoForks } from "./echo/EchoForks";
+import { EchoClock } from "./echo/EchoClock";
 
 // Reader typography components. Mapped into MDXContent so migrated bodies
 // inherit Fraunces / Inter / JetBrains Mono and the dark-first palette
@@ -219,6 +229,18 @@ export const readerComponents: MDXComponents = {
   Pdf,
   Video,
   LiveDemo,
+  // The figures of "Can an Echo Become a Voice Again?" — inline canvas and
+  // SVG rather than <img>, so they follow the theme and can move.
+  EchoBottlenecks,
+  EchoLoop,
+  EchoCompletion,
+  EchoBrain,
+  EchoInverse,
+  EchoLandscape,
+  EchoDrift,
+  EchoAnalog,
+  EchoForks,
+  EchoClock,
   // Page-scoped dressing: the worlds. Placed by a body, like everything else
   // here — nothing is hoisted from frontmatter. The route table lives in
   // lib/worlds.ts and the shared hooks in reader/atmosphere.ts.

@@ -628,6 +628,131 @@ a:hover {
   }
 }
 
+/* ---- Essay figures (reader/echo) ---- */
+/* Inline canvas and SVG figures for "Can an Echo Become a Voice Again?".
+   They live inside the reading column and take the article's own tokens,
+   so they follow the theme toggle — unlike an <img> of an SVG, which can
+   only see the OS preference. The arrows' dash flow is CSS, stilled under
+   reduced motion; the canvases handle their own stillness. */
+.echo-figure {
+  margin: 2.25rem 0;
+}
+.echo-figure-frame {
+  position: relative;
+  width: 100%;
+  border-radius: 4px;
+  background: var(--color-bg-1);
+  box-shadow: var(--ring-soft);
+  overflow: hidden;
+}
+.echo-figure-frame canvas {
+  display: block;
+  width: 100%;
+}
+.echo-figure figcaption {
+  margin-top: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-ink-dim);
+}
+.echo-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--font-sans);
+}
+.echo-svg .echo-box {
+  fill: var(--color-bg-1);
+  stroke: var(--color-ink);
+  stroke-width: 1;
+}
+.echo-svg .echo-line {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 1.1;
+}
+.echo-svg .echo-line-dim {
+  stroke: var(--color-ink-mute);
+}
+.echo-svg .echo-line-accent {
+  stroke: var(--color-accent);
+}
+.echo-svg .echo-grid {
+  stroke: var(--color-bg-2);
+  stroke-width: 1;
+}
+.echo-svg .echo-flow {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 22;
+  stroke-linecap: round;
+  animation: echo-flow 2.4s linear infinite;
+  opacity: 0.9;
+}
+@keyframes echo-flow {
+  to {
+    stroke-dashoffset: -25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .echo-svg .echo-flow {
+    animation: none;
+    opacity: 0;
+  }
+}
+.echo-svg .echo-text-title {
+  fill: var(--color-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+.echo-svg .echo-text-small {
+  fill: var(--color-ink-dim);
+  font-size: 11px;
+}
+.echo-svg .echo-mono {
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.echo-svg .echo-dim {
+  fill: var(--color-ink-mute);
+}
+.echo-svg .echo-accent {
+  fill: var(--color-accent);
+}
+.echo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
+  padding: 0.6rem 0.9rem 0.8rem;
+  border-top: 1px solid var(--color-bg-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-ink-dim);
+}
+.echo-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.echo-controls input[type="range"] {
+  width: 160px;
+  accent-color: var(--color-accent);
+}
+.echo-controls select {
+  background: var(--color-bg-2);
+  color: var(--color-ink);
+  border: 1px solid var(--color-bg-2);
+  border-radius: 3px;
+  padding: 0.15rem 0.35rem;
+  font: inherit;
+}
+.echo-controls output {
+  color: var(--color-ink);
+  min-width: 4.5ch;
+}
+
 /* ---- Fullscreen image viewer ---- */
 .lightbox-backdrop {
   position: fixed;

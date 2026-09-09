@@ -22,7 +22,7 @@ When asking what a person ever really was, we might pay more attention to its st
 
 And when understanding of another person: everything we know about them has passed through their capacity for expression and our capacity for perception. The traces that make it thru both bottlenecks may constrain some of the medium-scale surface structure while leaving much uncertainty about what the person was like on the inside. Low-dimensional observations can be informative without being sufficient. The distinction matters: a narrow window onto a system does not establish that the system itself has few degrees of freedom.
 
-![Two bottlenecks: a wide interior organization narrows through the person's capacity for expression into surviving traces, then narrows again through our capacity for perception into what we know](/assets/img/echo/two-bottlenecks.svg)
+<EchoBottlenecks />
 
 Can an echo become a voice again? If we were only asking for a convincing voice, the answer is becoming a creepy yes—given enough suitable recordings, ofc. But modeling beneath the surface, imagine a system that extracts cognitive-scale features—goals, preferences, memories, habits of inference—from notes, actions, conversations, and other traces, then constrains a reconstruction of the machinery that generated them. The central question is whether we can recover that machinery closely enough for its characteristic dynamics to continue.
 
@@ -30,9 +30,11 @@ Roughly speaking this means something like: observation → internal state → a
 
 Memory makes this concrete. A partial cue—a sensory fragment, a phrase, an internally generated association—can recruit a much larger pattern of activity. Human experiments link [hippocampal pattern completion](https://pubmed.ncbi.nlm.nih.gov/26136141/) to reinstatement of distributed cortical representations, including elements of an episode that were not explicitly requested. Recurrent cortical and thalamocortical interactions can help sustain the resulting activity; experiments on [thalamic support of working memory](https://pubmed.ncbi.nlm.nih.gov/28481349/) show one part of that machinery. No single region has to contain or drive the whole experience. An initial fragment recruits the rest, and the brain grabs onto the unfolding pattern. Attractor-basin re-entry is a useful model of this reconstruction, without making every memory a fixed point. Recall can also modify what is subsequently retained; [reconsolidation](https://pubmed.ncbi.nlm.nih.gov/10963596/) concerns that updating and restabilization, rather than simply naming the act of retrieval.
 
+<EchoCompletion />
+
 And not just cognitive structure, emotions too are better understood less as discrete "objects" the brain contains and more as relatively low-dimensional control variables distributed across this process. EG, fear changes which possibilities receive attention, how uncertain evidence is interpreted, which memories become accessible, and which actions become attractive. Curiosity changes exploration policy. Attachment changes the value assigned to another person's predicted states. These abstractions are "real" in roughly the same sense relevant here: because they identify stable regularities in the system's dynamics that improve our ability to predict what it will do. Their physiological realization may involve many mechanisms, rather than a single chemical or neural landmark.
 
-![The recurrent loop: world, observation, perception, internal state, thoughts and candidate plans, action — with affect in the middle as a few control variables modulating the whole cycle](/assets/img/echo/cognitive-loop.svg)
+<EchoLoop />
 
 Now take a step back and think about the conceptual abstractions we've just sketched out together: cognitive dynamics, emotional dynamics, …I'm sure you could sketch out social dynamics also. Can you imagine a Bayesian-like recurrent graph describing all of this? Observation and collective internal state feeding into perception. Perception conditioning emotional state. Etc. etc. etc. And then also imagine this graph with specifically engineered neural networks for each of the nodes, to express their characteristic dynamics: Some kind of associative energy-based model for the most general internal state reservoir, activity, and memory. Internal state proximity roughly following hardwired body plan, borders up close in constant flux given by activity. And then, even more intricately engineered subcortical architecture: Value estimator updates around the objects of a person's love. World, pose, head, and eye orientation encoding. Recurrent integration bottlenecks and high-dimensional similarity lookup mechanisms. And—is this starting to sound like a brain? I'm not saying it has to be any of these—as long as it recreates the same human-scale relevant dynamics then it may be equivalent for the functional purposes we care about.
 
@@ -41,6 +43,8 @@ The ambition is to recover a process that can encounter a state of the world it 
 ## A brain, in a body, in a world
 
 The object I have in mind is a model whose internal causal organization follows the mesoscale structure of a human brain: its regional organization, long-range pathways, recurrent dynamics, and coupling to a body in a world. Movement, perception, need, and consequence close the loops through which its cognitive structure expresses itself and changes. This correspondence matters because a historical influence sensitive to causal organization would need something with the relevant organization to act on.
+
+<EchoBrain />
 
 We can begin with the anatomy and dynamics already accessible to measurement, then resolve finer distinctions as modeling improves—perhaps eventually down to individual neurons. The point is to progressively recover the causal structure that makes this person's brain behave as it does. That is the structure the later physical reconstruction would try to preserve while exposing its remaining uncertainty.[^1]
 
@@ -56,7 +60,7 @@ $$
 
 The prior includes shared human anatomy and physiology. The likelihood concerns the particular person. Where context is missing, it must be integrated over rather than silently fixed to whichever imagined circumstance makes the candidate look best. A diary entry, a remembered disagreement, and an electrophysiological recording have different error structures. Ten retellings of one event do not become ten independent constraints.
 
-![The digital stage as one loop: a generative model proposes candidate organizations, an evidence model scores them against traces with different error structures, candidates are retained and varied](/assets/img/echo/inverse-problem.svg)
+<EchoInverse />
 
 We can begin below the level of whole personalities. Sample families of memory associations, learning rules, attentional transitions, affective regulation, and inference habits; constrain their interactions; then assemble increasingly complete organizations. "The space of all brains" is a useful horizon, but each experiment needs a bounded model class and a declared sampling measure. Otherwise a preference may simply reflect how often a convenient encoding happens to generate one kind of candidate.
 
@@ -66,7 +70,7 @@ This digital stage could do substantial work. It can exploit large datasets, fas
 
 The compatible candidates need not form a linear subspace. They may occupy disconnected regions with different memories and mechanisms but similar observable consequences. Averaging them can produce a system that was never a plausible candidate at all. The goal is therefore identification of a coherent organization, or an explicitly unresolved family, rather than convergence to a parameter mean. This is where the second, speculative branch begins.
 
-![Disconnected regions of candidate space all explain the evidence equally well, and their parameter mean falls outside every one of them](/assets/img/echo/candidate-family.svg)
+<EchoLandscape />
 
 ## Could past organization become additional evidence?
 
@@ -90,7 +94,7 @@ $$
 
 Here b₀ and σ describe the calibrated ordinary drift and noise of the apparatus, including its controls and relevant environmental memory. h denotes specified historical instantiations. r is the hypothesized additional drift toward historically related organization; λ controls its strength. The null is λ = 0. This is a coarse-grained experimental parameterization, not a fundamental quantum equation. A quantum implementation would still require a physical encoding, dynamics, and measurement model that justify these effective variables.
 
-![The null and the hypothesis over the same slice of candidate space: on the left the calibrated field alone, on the right the same field bent slightly toward an organization that has existed before](/assets/img/echo/historical-drift.svg)
+<EchoDrift />
 
 One possible version sets r = −∇_θ C(h; θ), where C(h; θ) is a history-dependent reconstruction-cost landscape. That assumption makes "pressure" precise: nearby configurations experience a directional change. Other hypotheses could alter transition rates without admitting such a potential. The metric defining proximity, the historical weighting, and the coupling to the apparatus must be specified before results are interpreted. A landscape adjusted afterward to explain any observed drift would explain nothing.
 
@@ -105,6 +109,8 @@ The proposed physical stage would start from the digital stage's constrained fam
 Analog quantum simulation is already an experimental field. Programmable arrays of interacting atoms have implemented tunable many-body dynamics; [the 256-atom Rydberg simulator](https://arxiv.org/abs/2012.12281) is one concrete demonstration. That establishes the existence of controllable physical quantum simulators, not a ready-made route to an embodied human reconstruction. The gap concerns encoding, interaction topology, precision, noise, feedback, scale, and the duration over which the relevant behavior can be maintained. I am optimistic about pursuing that gap, without assigning it a dependable completion date.
 
 The attraction of an analog implementation here is specific. A hypothetical weak drift might be erased by repeated projection onto prescribed digital values or by correction that treats every departure from the intended computation as error. We would instead maintain the constraints needed for the brain-shaped organization while leaving selected physical coordinates free to respond. "Passing through unchanged" means withholding an imposed correction in those coordinates; it does not mean applying a mathematical identity to the complete physical state while somehow expecting that state to change.
+
+<EchoAnalog />
 
 The model's forward dynamics still operate. Sensory inputs arrive, internal activity evolves, actions affect a body, and the world returns consequences. Persistent parameters could also be physically adjustable rather than stored as constants rewritten identically on every update. The experiment must distinguish ordinary plasticity within the represented brain from any anomalous change of its realization. Both can alter behavior, but only the latter, if historically informative and unexplained by the baseline, supplies the proposed additional channel.
 
@@ -144,7 +150,7 @@ Imagine two independently prepared forks of a reconstruction of my own brain. Af
 
 The receiver, without access to that experience, is given a common partial cue that leaves several continuations compatible with its existing evidence. We then measure whether its sampling shifts toward relationships newly instantiated in the source, beyond the matched controls above. Reversing assignments across distinct trajectories separates a source-specific response from shared ancestry or a generic preference. If sufficiently similar instantiations exert the proposed pressure, two analog quantum reconstructions should be able to influence each other. Varying exposure, distance, and whether the source remains active would test the coupling's accumulation, range, and persistence.
 
-![Two forks of one reconstruction: a randomiser assigns the source one of two trajectories, the isolated receiver gets a common partial cue, and the measurement is whether its sampling shifts toward what the source newly instantiated](/assets/img/echo/source-receiver.svg)
+<EchoForks />
 
 The strength could be reported as a change in transition probabilities or log-odds with source exposure, and as information gained about the privately assigned trajectory. In a balanced, symmetric two-alternative test with matching probability q, the information per trial is 1 − h₂(q) bits, where h₂ is [binary entropy](https://en.wikipedia.org/wiki/Binary_entropy_function); the two labels summarize rich trajectories. Similarity and scoring must be fixed before measurement. Mutual reinforcement could also amplify errors. A persistent effect after the source ceased operating would be a further condition to investigate.
 
@@ -153,8 +159,6 @@ Null results constrain the tested coupling and sensitivity range. Positive resul
 ## What would it mean to answer again?
 
 There are three separable achievements here: reconstructing organization from surviving evidence; discovering an additional physical channel that makes historical organization accessible; and establishing what renewed organization means for personal continuity. The first is an inverse problem with substantial existing tools. The second is a speculative physical hypothesis requiring its own evidence. The third remains a question even if the other two succeed.
-
-![Three separable achievements: reconstruction from evidence is tractable now, the additional physical channel is speculative but testable, and what renewed organization means for continuity stays open](/assets/img/echo/three-achievements.svg)
 
 None of this requires first explaining the origin of the universe, assigning agency to quantum collapse, or treating consciousness as the selector of physical outcomes. A history-dependent influence could be investigated wherever an operational version predicts it. Its relevance to minds would arise from the kinds of structured, path-dependent systems minds are—and from the particular information a reconstruction would need.
 
@@ -204,7 +208,7 @@ The $1,000 purchase is upfront; the table allocates its use across the assumed s
 
 The clock is sensitive to the measured channel. At 50.1% matching instead of 51%, with the same effective comparison rate, every discovery interval above becomes approximately 100 times longer. At one comparison per second instead of 100, the same multiplication applies. Faster represented brain experience helps only if it increases J. Finite reliability requirements, changing signal strength, and failed preparations must be captured in the measured performance rather than concealed inside an unexplained multiplier.
 
-![Reference discovery time for 1,000 unresolved bits against the match probability: 51% costs under ten hours, 50.1% costs about forty days](/assets/img/echo/information-clock.svg)
+<EchoClock />
 
 This makes the immediate objective concrete: build two $500 hosts that sustain the chosen human causal structure, establish a distinct source history, and measure whether the receiver acquires information its supplied evidence did not contain. Then measure how that information rate changes with specificity, exposure, and whether the source is still running. Contemporary coupling would be the first result; access to a ceased source is the additional result historical reconstruction needs.
 
