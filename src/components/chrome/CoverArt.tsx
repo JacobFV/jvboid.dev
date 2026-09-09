@@ -1,4 +1,5 @@
 import type { Lane, Node } from "@/lib/graph-types";
+import { bakedCover } from "@/lib/cover-art";
 
 /**
  * The cover of a paper or reading — the 2:3 rectangle itself, without
@@ -15,6 +16,11 @@ import type { Lane, Node } from "@/lib/graph-types";
  * then point `hero.src` at `/assets/img/{readings|papers}/<slug>.png`.
  * Until that exists the typographic fallback below stands in, so a
  * missing cover is a plain-looking entry rather than a hole in the row.
+ *
+ * What actually gets served is the baked plate from
+ * `scripts/generate-thumbnails.ts` — the same crop at the size the plate
+ * renders, rather than the full-page export. The original is the
+ * fallback for anything the compositor couldn't read.
  */
 
 const laneBg: Record<Lane, string> = {
@@ -42,6 +48,7 @@ export function CoverArt({
   size?: "shelf" | "compact";
 }) {
   const compact = size === "compact";
+  const baked = bakedCover(node.id);
   return (
     <div
       className={[
@@ -53,9 +60,13 @@ export function CoverArt({
     >
       {node.hero ? (
         <img
-          src={node.hero.src}
+          src={baked?.src ?? node.hero.src}
+          {...(baked
+            ? { srcSet: `${baked.src} 1x, ${baked.src2x} 2x`, width: baked.w, height: baked.h }
+            : {})}
           alt={node.hero.alt}
           loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover"
         />
       ) : (

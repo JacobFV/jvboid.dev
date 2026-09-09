@@ -18,6 +18,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { HeroHex, HeroStack, HERO_SIZE, type HeroContent } from "@/components/chrome/HeroHex";
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane } from "@/lib/graph-types";
+import type { FacePlan, IconKey, TileArt, TileGround } from "@/lib/project-face";
 import {
   HEX_CLIP,
   HEX_RATIO,
@@ -35,20 +36,30 @@ export type ProjectItem = {
   id: string;
   kind: "project";
   title: string;
-  summary: string;
   date: string;
   lane: Lane;
-  tags: string[];
-  hero?: { src: string; alt: string; fit?: "cover" | "contain" };
-  icon?: { src: string; alt: string; fit?: "cover" | "contain" };
-  video?: string;
-  threadImages?: { src: string; alt: string }[];
-  // Thumbnail mosaic layout: `cols` cells across and down, `tint` the
-  // mean colour of the images in it, which fills the seams and any cell
-  // the project has no image for. Set by src/lib/project-items.ts.
-  mosaic?: { cols: number; tint?: string };
-  orbitEmbed?: string;
-  links?: Record<string, string | undefined>;
+  /** List view only — the honeycomb never shows one, so it omits them. */
+  summary?: string;
+  /** Caption glyph, resolved from tags server-side. */
+  glyph: IconKey;
+  /**
+   * The theme-dependent ground painted behind the art, for the faces
+   * whose art doesn't fill the hexagon: a project with no art at all
+   * ("glyph"), or a logo letterboxed inside it ("letterbox"). Everything
+   * else covers its box and needs no ground.
+   */
+  ground?: TileGround;
+  /**
+   * The face, already composited into one image at build time by
+   * scripts/generate-hex-tiles.ts, at the size this tile renders.
+   */
+  tile?: TileArt;
+  /**
+   * Only for the handful of projects with no baked tile — no art, or
+   * sources the compositor couldn't decode. `IconFace` draws the plan in
+   * the browser out of the originals, the way the whole comb used to.
+   */
+  face?: FacePlan;
   // Honeycomb tile size, in multiples of the base hexagon. Defaults to 1.
   size?: HexSize;
 };
@@ -85,50 +96,11 @@ const laneBg: Record<Lane, string> = {
 
 const fmtYear = (iso: string) => new Date(iso).getUTCFullYear();
 
-// Hand-tuned, hairline-stroke glyph per project. Walks tags in rough
-// specificity order, falls back to lane, then to a generic wrench.
-// Inline SVGs (Lucide-derived paths) so the icons inherit currentColor
-// and stay crisp at 11px without an icon-library dependency.
-type IconKey =
-  | "video"
-  | "music"
-  | "palette"
-  | "gamepad"
-  | "rocket"
-  | "bot"
-  | "flask"
-  | "image"
-  | "mic"
-  | "brain"
-  | "microscope"
-  | "cap"
-  | "sprout"
-  | "code"
-  | "wrench";
-
-function tileIconKey(project: ProjectItem): IconKey {
-  const tags = new Set(project.tags.map((t) => t.toLowerCase()));
-  const has = (...t: string[]) => t.some((x) => tags.has(x));
-  if (project.video || has("video", "video-diffusion", "cinematic", "documentary")) return "video";
-  if (has("music", "audio")) return "music";
-  if (has("animation", "blender")) return "palette";
-  if (has("game")) return "gamepad";
-  if (has("rocketry")) return "rocket";
-  if (has("robotics", "embodied-ai", "lunar-rover", "hardware", "lerobot")) return "bot";
-  if (has("chemistry")) return "flask";
-  if (has("graphics", "ui")) return "image";
-  if (has("voice-ai")) return "mic";
-  if (has("agents", "multi-agent")) return "brain";
-  if (has("research", "ml", "deep-learning", "unsupervised-learning", "attention"))
-    return "microscope";
-  if (has("school", "hamlet", "spanish")) return "cap";
-  if (has("community")) return "sprout";
-  if (has("cli", "tooling", "python", "web", "infra", "framework", "meta")) return "code";
-  if (project.lane === "research") return "microscope";
-  if (project.lane === "personal") return "sprout";
-  return "wrench";
-}
-
+// The caption glyph. Which glyph a project gets is decided server-side
+// by `tileIconKey` (src/lib/project-face.ts) and shipped as one short
+// string; these are the hairline Lucide-derived paths it names. Inline
+// so they inherit currentColor and stay crisp at 11px with no icon
+// library in the bundle.
 function TileIcon({ kind, px = 11 }: { kind: IconKey; px?: number }) {
   return (
     <svg
@@ -278,79 +250,115 @@ function ThreadImageGrid({
   );
 }
 
-// The app-icon face — hero image, thread mosaic, or a lane-tinted
-// gradient. Always fills its box; the hexagon clip lives on the wrapper.
+// The theme-dependent ground under a face, when it has one. A contained
+// image is letterboxed, so something has to fill the margins, and the
+// lane tint is what fills them — which is also why a contained face can
+// never be baked flat: the gradient resolves differently in each theme,
+// and `--color-bg-1` moves under it. Cover and mosaic faces fill their
+// box and need no ground at all.
+function faceGround(ground: TileGround | undefined, lane: Lane): string | undefined {
+  if (ground === "glyph") {
+    return `radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--color-lane-${lane}) 55%, transparent) 0%, var(--color-bg-1) 80%)`;
+  }
+  if (ground === "letterbox") {
+    return `radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--color-lane-${lane}) 38%, transparent) 0%, var(--color-bg-1) 82%)`;
+  }
+  return undefined;
+}
+
+// The app-icon face. Always fills its box; the hexagon clip lives on the
+// wrapper.
+//
+// The fast path is one `<img>`: `tile` is the whole face, composited at
+// build time at the size this hexagon actually renders (see
+// scripts/generate-hex-tiles.ts), so a nine-cell mosaic of 3 MB
+// photographs costs a single ~25 kB request. `tint` — the mean colour of
+// that art — paints under it, so a tile still scrolling into view is a
+// coloured hexagon rather than a hole.
+//
+// Everything below the `tile` branch is the fallback for the few
+// projects the compositor couldn't bake, and draws the same plan in the
+// browser out of the original artwork.
 function IconFace({
   project,
-  preferThread = false,
-  preferIcon = false,
+  eager = false,
 }: {
   project: ProjectItem;
-  preferThread?: boolean;
-  preferIcon?: boolean;
+  /** Above the fold: fetch immediately instead of waiting on the scroller. */
+  eager?: boolean;
 }) {
-  if (preferIcon && project.icon) {
-    const contain = project.icon.fit !== "cover";
+  const { face, tile } = project;
+  const ground = faceGround(project.ground, project.lane);
+
+  if (tile) {
+    return (
+      <span className="block h-full w-full" style={{ background: ground ?? tile.tint }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={tile.src}
+          srcSet={`${tile.src} 1x, ${tile.src2x} 2x`}
+          width={tile.w}
+          height={tile.h}
+          alt=""
+          loading={eager ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={eager ? "high" : "low"}
+          draggable={false}
+          className="h-full w-full object-cover"
+          aria-hidden
+        />
+      </span>
+    );
+  }
+
+  if (face?.face === "icon") {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={project.icon.src}
+        src={face.image.src}
         alt=""
         loading="lazy"
         draggable={false}
         // Most explicit icons are logos and diagrams that should stay
         // intact; thumbnail-derived icons can opt into cover cropping.
-        className={contain ? "h-full w-full object-contain" : "h-full w-full object-cover"}
+        className={
+          face.fit === "cover" ? "h-full w-full object-cover" : "h-full w-full object-contain"
+        }
         aria-hidden
       />
     );
   }
 
-  if (preferThread && project.threadImages && project.threadImages.length >= 2) {
-    return (
-      <ThreadImageGrid
-        images={project.threadImages}
-        cols={project.mosaic?.cols ?? 2}
-        tint={project.mosaic?.tint}
-      />
-    );
+  if (face?.face === "mosaic") {
+    return <ThreadImageGrid images={face.images} cols={face.cols} tint={face.tint} />;
   }
 
-  if (project.hero) {
+  if (face?.face === "hero") {
     // "contain" letterboxes the logo on a lane-tinted backdrop so the
     // hexagon never crops a wordmark; "cover" (default) fills it.
-    const contain = project.hero.fit === "contain";
     return (
-      <span
-        className="grid h-full w-full place-items-center"
-        style={
-          contain
-            ? {
-                background: `radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--color-lane-${project.lane}) 38%, transparent) 0%, var(--color-bg-1) 82%)`,
-              }
-            : undefined
-        }
-      >
+      <span className="grid h-full w-full place-items-center" style={{ background: ground }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={project.hero.src}
+          src={face.image.src}
           alt=""
           loading="lazy"
           draggable={false}
           className={
-            contain ? "h-full w-full object-contain p-[16%]" : "h-full w-full object-cover"
+            face.fit === "contain"
+              ? "h-full w-full object-contain p-[16%]"
+              : "h-full w-full object-cover"
           }
           aria-hidden
         />
       </span>
     );
   }
+
   return (
     <span
       className="grid h-full w-full place-items-center text-[var(--color-ink-mute)]"
-      style={{
-        background: `radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--color-lane-${project.lane}) 55%, transparent) 0%, var(--color-bg-1) 80%)`,
-      }}
+      style={{ background: ground }}
     >
       <ProjectGlyph />
     </span>
@@ -524,7 +532,7 @@ function ProjectRow({ project }: { project: ProjectItem }) {
             filter: "drop-shadow(0 1px 3px color-mix(in srgb, var(--color-ink) 18%, transparent))",
           }}
         >
-          <IconFace project={project} preferIcon preferThread />
+          <IconFace project={project} />
           <HexEdge />
         </span>
         <span className="min-w-0 flex-1">
@@ -594,9 +602,12 @@ function HexTile({
   cell,
   offset,
   popped,
+  eager,
   onPoint,
 }: {
   cell: HexCell<ProjectItem>;
+  /** One of the tiles that lands above the fold — see EAGER_TILES. */
+  eager?: boolean;
   // Shove from whichever neighbor is currently hovered, if any — or, on
   // the hovered tile itself, the room a fixed neighbor refused to give it.
   offset?: { x: number; y: number };
@@ -649,7 +660,7 @@ function HexTile({
           filter: "drop-shadow(0 2px 5px color-mix(in srgb, var(--color-ink) 20%, transparent))",
         }}
       >
-        <IconFace project={project} preferIcon preferThread />
+        <IconFace project={project} eager={eager} />
 
         {/* Caption scrim — keeps the title legible over any artwork. The
             mini caption sits higher, so its scrim has to reach higher too. */}
@@ -678,7 +689,7 @@ function HexTile({
               className="flex items-center justify-center gap-1 font-[family-name:var(--font-mono)] leading-none tracking-wider text-[var(--color-ink-mute)] uppercase"
               style={{ fontSize: 9 * type }}
             >
-              <TileIcon kind={tileIconKey(project)} px={11 * type} />
+              <TileIcon kind={project.glyph} px={11 * type} />
               <span>{fmtYear(project.date)}</span>
             </span>
           )}
@@ -702,6 +713,13 @@ function HexTile({
 // is hovered reads as a bug rather than as weight — so a tile that grows
 // or is shoved against it takes the whole displacement itself, and slides
 // along the edge it is resting on.
+// The packer fills bottom-left in editorial order, so the head of the
+// list is the top of the comb. These tiles are on screen before anything
+// is scrolled, and waiting for the lazy-load scroller to notice them is
+// the difference between a page that arrives complete and one that
+// develops. Everything past this stays lazy.
+const EAGER_TILES = 8;
+
 const JOSTLE_PUSH = 7;
 // How far the ripple carries, in 1× hexagon widths. Wide enough that the
 // second ring drifts a pixel or two behind the first.
@@ -851,7 +869,7 @@ function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: 
 
   return (
     <div ref={wrapRef} className="relative w-full" style={{ height: layout.height }}>
-      {layout.cells.map((cell) =>
+      {layout.cells.map((cell, index) =>
         cell.item.kind === "hero" ? (
           <div
             key="hero"
@@ -866,6 +884,7 @@ function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: 
             cell={cell as HexCell<ProjectItem>}
             offset={offsets.get(cell.item.id)}
             popped={hovered === cell.item.id}
+            eager={index < EAGER_TILES}
             onPoint={setHovered}
           />
         ),

@@ -146,9 +146,12 @@ export default function HomePage() {
   const allProjects = withAdjacentProjects(
     listedNodes.filter((n) => n.kind === "project").sort(byProjectRank),
   );
-  // Lite shape for the client-side ProjectsBrowser — icon art and meta
-  // only. Every tile links straight to the project page.
-  const projectItems: ProjectItem[] = projectItemsFromNodes(allProjects);
+  // Lite shape for the client-side ProjectsBrowser — a baked tile face
+  // and the caption, nothing else. Every tile links straight to the
+  // project page. The hero variant has no list view to switch to, so the
+  // summaries stay on the server rather than riding along in the flight
+  // payload for 72 projects that will never show one.
+  const projectItems: ProjectItem[] = projectItemsFromNodes(allProjects, { summaries: false });
   const recentPosts = listedNodes
     .filter((n) => n.kind === "post")
     .sort((a, b) => (a.date < b.date ? 1 : -1))

@@ -4,17 +4,18 @@
   "private": true,
   "description": "Jacob Valdez's site \u2014 a navigable graph of projects, writing, and visions.",
   "scripts": {
-    "predev": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build",
+    "predev": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/generate-thumbnails.ts",
     "dev": "next dev",
-    "prebuild": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build",
+    "prebuild": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/generate-thumbnails.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsc --noEmit",
+    "typecheck": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/generate-thumbnails.ts && tsc --noEmit",
     "images": "tsx scripts/generate-image-placeholders.ts",
+    "thumbs": "tsx scripts/generate-thumbnails.ts",
     "x:sync": "node scripts/sync-x-posts.mjs",
     "sync:assets": "tsx scripts/sync-assets.ts",
-    "validate": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/validate-edges.ts",
+    "validate": "node scripts/generate-post-revisions.mjs && tsx scripts/generate-image-placeholders.ts && velite build && tsx scripts/generate-thumbnails.ts && tsx scripts/validate-edges.ts",
     "format": "prettier --write ."
   },
   "dependencies": {
