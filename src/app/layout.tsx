@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { Bioluminescence } from "@/components/chrome/Bioluminescence";
-import { SiteHeader } from "@/components/chrome/SiteHeader";
+import { SiteHeader, type NodeTitles } from "@/components/chrome/SiteHeader";
 import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
 import { WORLDS } from "@/lib/worlds";
@@ -69,24 +69,19 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Jacob Valdez",
-  description:
-    "A navigable map of projects, writing, and visions — not a list of pages.",
+  description: "A navigable map of projects, writing, and visions — not a list of pages.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const searchable = getGraph().nodes.filter(isListedNode).map((n) => ({
-    id: n.id,
-    title: n.title,
-    summary: n.summary,
-    tags: n.tags,
-    lane: n.lane,
-    kind: n.kind,
-    date: n.date,
-  }));
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Titles only. The breadcrumb is the one thing in the chrome that needs
+  // node data on every page, and all it needs is the last segment's title;
+  // the ⌘K index — summaries, tags, the lot — is a static file the palette
+  // fetches when it is first opened. See app/search-index.json/route.ts.
+  const titles: NodeTitles = Object.fromEntries(
+    getGraph()
+      .nodes.filter(isListedNode)
+      .map((n) => [n.id, n.title]),
+  );
 
   return (
     <html
@@ -104,7 +99,7 @@ export default function RootLayout({
             tinted moving texture across the full viewport — including
             the reading column. See components/chrome/Bioluminescence.tsx. */}
         <Bioluminescence />
-        <SiteHeader nodes={searchable} />
+        <SiteHeader titles={titles} />
         {children}
         {/* Page-wide fullscreen image viewer; renders null until a
             reader image is clicked. */}

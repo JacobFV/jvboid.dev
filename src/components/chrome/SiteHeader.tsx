@@ -1,20 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { CmdK } from "./CmdK";
-import { KIND_FROM_PREFIX, type Lane, type NodeKind } from "@/lib/graph-types";
+import { KIND_FROM_PREFIX, type NodeKind } from "@/lib/graph-types";
 
-type SearchableNode = {
-  id: string;
-  title: string;
-  summary: string;
-  tags: string[];
-  lane: Lane;
-  kind: NodeKind;
-  date: string;
-};
+// The search palette is the heaviest thing the chrome can pull in — cmdk,
+// its dialog primitives, fuse.js — and most visits never open it. So it
+// is code-split behind the first request to open it, and the header owns
+// the keyboard shortcut and the open state on its behalf. `ssr: false`
+// because a palette that is closed renders nothing anyway.
+const CmdK = dynamic(() => import("./CmdK").then((m) => m.CmdK), { ssr: false });
 
 type Theme = "light" | "dark";
 
@@ -29,8 +26,10 @@ type Theme = "light" | "dark";
 // out of view, so it never duplicates a heading the reader can already
 // see. Search and theme controls live on the right.
 //
-// Renders CmdK once, globally. The search trigger dispatches a
-// `cmdk:open` window event that CmdK listens for.
+// It also owns the search palette's open state. The palette itself is
+// lazy (see the `CmdK` import above): the header listens for ⌘K and for
+// the `cmdk:open` event other components dispatch, and only then does
+// the chunk load.
 
 const NAV = [
   { label: "Projects", href: "/projects" },
@@ -64,7 +63,14 @@ function sectionFor(kind: NodeKind): { label: string; href: string } {
   return SECTION[kind] ?? { label: "Projects", href: "/projects" };
 }
 
-export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
+/**
+ * Node titles by id, for the breadcrumb's last segment. Titles only: the
+ * full search index moved to /search-index.json (see CmdK), and this is
+ * all the layout still has to carry on every page.
+ */
+export type NodeTitles = Record<string, string>;
+
+export function SiteHeader({ titles }: { titles: NodeTitles }) {
   const pathname = usePathname();
   const [docked, setDocked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -74,6 +80,11 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
   // Whether the current page's own <h1> is still on screen. While it is,
   // the breadcrumb's Title segment stays hidden.
   const [titleInPage, setTitleInPage] = useState(true);
+  // Two states, not one: `searchLoaded` latches on the first request and
+  // keeps the palette mounted so reopening never re-fetches the index,
+  // while `searchOpen` is what the palette actually shows.
+  const [searchLoaded, setSearchLoaded] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Derive the breadcrumb from the URL. Artifact pages /{prefix}/{slug}
   // get a full Section › Title trail; collection pages /{prefix} get a
@@ -88,10 +99,10 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
     if (seg.length !== 2) return null;
     const kind = KIND_FROM_PREFIX[seg[0]];
     if (!kind) return null;
-    const node = nodes.find((n) => n.id === seg[1]);
-    if (!node) return null;
-    return { title: node.title, section: sectionFor(kind) };
-  }, [pathname, nodes]);
+    const title = titles[seg[1]];
+    if (!title) return null;
+    return { title, section: sectionFor(kind) };
+  }, [pathname, titles]);
 
   useEffect(() => {
     const current = document.documentElement.getAttribute("data-theme") as Theme | null;
@@ -151,11 +162,34 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
     setTheme(next);
   };
 
-  const openSearch = () => {
+  const openSearch = useCallback(() => {
     setMenuOpen(false);
     setMoreOpen(false);
-    window.dispatchEvent(new Event("cmdk:open"));
-  };
+    setSearchLoaded(true);
+    setSearchOpen(true);
+  }, []);
+
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
+  // ⌘K / Ctrl-K anywhere, plus the `cmdk:open` event the mobile menu and
+  // other components dispatch. Escape closes; both are cheap listeners
+  // that don't pull the palette's chunk in until one of them fires.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (searchOpen) closeSearch();
+        else openSearch();
+      }
+      if (e.key === "Escape") closeSearch();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("cmdk:open", openSearch);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("cmdk:open", openSearch);
+    };
+  }, [searchOpen, openSearch, closeSearch]);
 
   const themeGlyph = theme === "dark" ? "☀" : "☾";
 
@@ -366,7 +400,9 @@ export function SiteHeader({ nodes }: { nodes: SearchableNode[] }) {
         </div>
       </header>
 
-      <CmdK nodes={nodes} />
+      {/* Mounted only once someone has asked for it; kept mounted after,
+          so reopening is instant and the index is fetched once. */}
+      {searchLoaded && <CmdK open={searchOpen} onClose={closeSearch} />}
     </>
   );
 }

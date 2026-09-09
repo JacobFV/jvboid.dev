@@ -6,6 +6,12 @@ import { Command } from "cmdk";
 import Fuse from "fuse.js";
 import { nodeHref, type Lane, type NodeKind } from "@/lib/graph-types";
 
+// The palette is code-split and only mounted once someone actually asks
+// for it (see SiteHeader), so cmdk, its dialog primitives and fuse.js
+// stay out of every page's first load. It fetches its own index from
+// /search-index.json for the same reason — 55 kB of summaries and tags
+// has no business in the HTML of a page nobody searched.
+
 type SearchableNode = {
   id: string;
   title: string;
@@ -17,7 +23,8 @@ type SearchableNode = {
 };
 
 type Props = {
-  nodes: SearchableNode[];
+  open: boolean;
+  onClose: () => void;
 };
 
 const laneColor: Record<Lane, string> = {
@@ -27,27 +34,24 @@ const laneColor: Record<Lane, string> = {
   personal: "var(--color-lane-personal)",
 };
 
-export function CmdK({ nodes }: Props) {
-  const [open, setOpen] = useState(false);
+export function CmdK({ open, onClose }: Props) {
   const [query, setQuery] = useState("");
+  const [nodes, setNodes] = useState<SearchableNode[]>([]);
   const router = useRouter();
 
+  // Fetched once, on mount — and this component only ever mounts once
+  // the palette has been asked for. A failure just leaves the palette
+  // empty rather than breaking the page around it.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((o) => !o);
-      }
-      if (e.key === "Escape") setOpen(false);
-    };
-    // SiteHeader's search button (and mobile menu) trigger search via
-    // this event, so CmdK no longer needs to render its own button.
-    const onOpen = () => setOpen(true);
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("cmdk:open", onOpen);
+    let live = true;
+    fetch("/search-index.json")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: SearchableNode[]) => {
+        if (live) setNodes(data);
+      })
+      .catch(() => {});
     return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("cmdk:open", onOpen);
+      live = false;
     };
   }, []);
 
@@ -73,7 +77,7 @@ export function CmdK({ nodes }: Props) {
   }, [query, fuse, nodes]);
 
   const go = (href: string) => {
-    setOpen(false);
+    onClose();
     setQuery("");
     router.push(href);
   };
@@ -82,7 +86,7 @@ export function CmdK({ nodes }: Props) {
 
   return (
     <div
-      onClick={() => setOpen(false)}
+      onClick={onClose}
       style={{
         position: "fixed",
         inset: 0,
