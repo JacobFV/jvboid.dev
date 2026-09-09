@@ -37,9 +37,10 @@ const W = 720;
 const H = 400;
 const CX = W / 2;
 const CY = H / 2;
-// Screen aperture inside the bezel.
-const SA = 336;
-const SB = 178;
+// The screen is the whole component: the squircle fills the viewBox, so
+// there is no bezel, no plate, nothing behind it — only the aperture.
+const SA = W / 2;
+const SB = H / 2;
 
 const FOCAL = 520;
 const R1 = 88; // 1° shell radius
@@ -451,15 +452,20 @@ export function NeighborhoodOrbit({
   );
 
   return (
-    <div
-      className="neighborhood-tv"
-      style={{ filter: "drop-shadow(0 16px 34px rgba(0, 0, 0, 0.42))" }}
-    >
+    <div className="neighborhood-tv">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
-        style={{ display: "block", height: "auto", touchAction: "pan-y", cursor: "grab" }}
+        style={{
+          display: "block",
+          height: "auto",
+          touchAction: "pan-y",
+          cursor: "grab",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTapHighlightColor: "transparent",
+        }}
         role="img"
         aria-label={label}
         tabIndex={0}
@@ -497,11 +503,6 @@ export function NeighborhoodOrbit({
             <stop offset="42%" stopColor="#fff" stopOpacity="0.03" />
             <stop offset="60%" stopColor="#fff" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id="tv-bezel" x1="0" y1="0" x2="0.3" y2="1">
-            <stop offset="0%" stopColor="var(--color-bg-2)" />
-            <stop offset="55%" stopColor="var(--color-bg-1)" />
-            <stop offset="100%" stopColor="var(--color-bg-0)" />
-          </linearGradient>
           <pattern id="tv-scanlines" width="4" height="4" patternUnits="userSpaceOnUse">
             <rect width="4" height="2" fill="#000" opacity="0.5" />
           </pattern>
@@ -512,7 +513,10 @@ export function NeighborhoodOrbit({
         </defs>
 
         <style>{`
-          .neighborhood-tv svg:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+          .neighborhood-tv svg { outline: none; }
+          /* Keyboard focus is shown by lighting the glass, not by drawing a
+             rectangle around a shape that isn't one. */
+          .neighborhood-tv svg:focus-visible .orbit-focus-ring { opacity: 0.9; }
           .neighborhood-tv svg:active { cursor: grabbing; }
           .orbit-link { text-decoration: none; }
           .orbit-body { transition: transform 140ms ease; transform-box: fill-box; transform-origin: center; }
@@ -535,19 +539,6 @@ export function NeighborhoodOrbit({
           @keyframes orbit-scan { from { transform: translateY(0); } to { transform: translateY(4px); } }
           @media (prefers-reduced-motion: reduce) { .orbit-scanlines { animation: none; } }
         `}</style>
-
-        {/* Set — the plastic around the tube. */}
-        <rect x="0" y="0" width={W} height={H} rx="34" ry="34" fill="url(#tv-bezel)" />
-        <rect
-          x="0.5"
-          y="0.5"
-          width={W - 1}
-          height={H - 1}
-          rx="33.5"
-          ry="33.5"
-          fill="none"
-          stroke="var(--color-rule)"
-        />
 
         <g clipPath="url(#tv-screen-clip)">
           <rect x="0" y="0" width={W} height={H} fill="url(#tv-space)" />
@@ -680,9 +671,19 @@ export function NeighborhoodOrbit({
             pointerEvents="none"
           />
 
+          <path
+            className="orbit-focus-ring"
+            d={screenPath}
+            fill="none"
+            stroke="var(--color-accent)"
+            strokeWidth="4"
+            opacity="0"
+            pointerEvents="none"
+          />
+
           <text
             x={CX + 246}
-            y={CY + SB - 26}
+            y={CY + SB - 42}
             textAnchor="end"
             className="orbit-caption orbit-caption-tag"
             fontSize="8"
@@ -697,7 +698,7 @@ export function NeighborhoodOrbit({
             ref={hintRef}
             className="orbit-hint orbit-caption"
             x={CX}
-            y={CY + SB - 26}
+            y={CY + SB - 42}
             textAnchor="middle"
             fontSize="8"
             fontFamily="var(--font-mono)"
@@ -708,17 +709,6 @@ export function NeighborhoodOrbit({
             DRAG TO ORBIT
           </text>
         </g>
-
-        {/* Tube rim — the glass sitting a hair proud of the bezel. */}
-        <path d={screenPath} fill="none" stroke="#000" strokeOpacity="0.55" strokeWidth="3" />
-        <path
-          d={screenPath}
-          fill="none"
-          stroke="#FFFFFF"
-          strokeOpacity="0.09"
-          strokeWidth="1"
-          transform={`translate(0 -1)`}
-        />
       </svg>
     </div>
   );
