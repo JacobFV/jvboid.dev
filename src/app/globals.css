@@ -772,9 +772,10 @@ a:hover {
   color: var(--color-ink);
   font-family: var(--font-display);
   font-variation-settings: "opsz" 144;
-  font-size: clamp(1.3rem, 1.05rem + 0.85vw, 1.75rem);
-  line-height: 1.22;
-  letter-spacing: -0.015em;
+  font-style: italic;
+  font-size: clamp(1.6rem, 1.2rem + 1.3vw, 2.4rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
@@ -818,7 +819,7 @@ a:hover {
    full-width block and only the type size distinguishes it. */
 @media (min-width: 64rem) {
   .prose-mdx .pull-quote {
-    width: clamp(13rem, 26vw, 19rem);
+    width: clamp(15rem, 30vw, 22rem);
     margin-block: 0.5rem 1.1rem;
   }
   .prose-mdx .pull-quote[data-side="right"] {
@@ -897,15 +898,21 @@ a:hover {
 }
 .prose-lede hr {
   border: 0;
+  height: auto;
   margin-block: 3.5rem;
   text-align: center;
   color: var(--color-brass);
+  overflow: visible;
 }
 .prose-lede hr::after {
-  content: "\2726";
+  content: "\2726  \2726  \2726";
+  display: block;
+  font-family: var(--font-display);
   font-size: 0.7rem;
-  letter-spacing: 0.9em;
-  padding-left: 0.9em;
+  line-height: 1;
+  letter-spacing: 0.6em;
+  padding-left: 0.6em;
+  white-space: pre;
 }
 
 /* ---- Drop cap and opener ---- */

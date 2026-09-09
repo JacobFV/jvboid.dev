@@ -34,6 +34,38 @@ The lane colors are the only way nodes vary chromatically. Status (idea/active/s
 
 Self-host all three via `next/font`. No CDN fonts.
 
+## Editorial layer
+
+The site reads as an issue of a magazine, not an app. The furniture that
+does it, all in `globals.css`:
+
+- **`.display-title`** — Fraunces at up to 6.5rem, `opsz` 144, tracked
+  −0.03em, balanced over two or three lines. Every page title and the
+  home feature use it.
+- **`.standfirst`** — the one-sentence deck under a title, Fraunces light,
+  larger than the body. It is the node's `summary`.
+- **`.folio`** — the running head at the top of every reading page and
+  index: section left, date or count right, mono and letterspaced over
+  a hairline. `components/chrome/Folio.tsx`.
+- **`.rule` / `.rule-label` / `.rule-ornament`** — hairlines in
+  `--color-rule` (16% ink). Section headings on the home page are a small
+  word sitting *on* the rule, never a heading above a card.
+- **`.numeral`** — brass italic "01 / 06" beside numbered items.
+- **`.prose-lede`** — the post column: Fraunces 19px / 1.55 on 62ch, a
+  three-line drop cap with a small-caps first line, ✦ ✦ ✦ for `---`,
+  captions (the image alt) stepping into the left margin, and the first
+  lone picture in a post running edge to edge as the hero.
+- **`--color-brass`** — the print metal for rules, numerals and
+  ornaments, so `--accent` stays reserved for a page's single call to
+  action.
+- **Paper** — light mode carries a 5% fixed monochrome grain
+  (`body::before`); dark stays matte. Worlds opt out.
+- **Pace** — links settle over ~420ms on a long ease-out; routes
+  cross-fade through `app/template.tsx` (`.page-turn`), the title arriving
+  a beat after the page.
+- **Colophon** — every route closes on `components/chrome/Colophon.tsx`,
+  crediting the type.
+
 ## Grid & spacing
 
 8px base. Container max 1280px on the document view; constellation and timeline are full-bleed.
