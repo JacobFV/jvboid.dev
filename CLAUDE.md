@@ -50,17 +50,26 @@ editing this repo.
   [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#paper).
 - **Auto-deploy.** Pushing to `main` triggers a Vercel build. There is
   no separate deploy step. Env vars are managed in the Vercel dashboard.
-- **Commit your own work. Don't ask.** When a piece of work is finished
-  and validated, commit it — you do not need permission, and you should
-  not end a turn leaving the tree dirty for someone else to find. Two
-  sessions' worth of uncommitted worlds once piled up here because each
-  one stopped to ask. Split into a few honest commits, write the repo's
-  kind of message (lowercase subject, a body that says *why*), and make
-  sure **every commit builds on its own**: the atmospheres, their entry
-  in `worlds.ts`, their registration in `reader/components.tsx` and the
-  MDX that places them are one unit, and a commit carrying only half of
-  it fails on a missing module. Pushing is the deploy, so that is still
-  the one step worth naming out loud before you take it.
+- **Commit *and push* your own work. Don't ask.** When a piece of work
+  is finished and validated, commit it and push it — you do not need
+  permission for either, and you should not end a turn leaving the tree
+  dirty, or leaving commits sitting unpushed on `main`. Two sessions'
+  worth of uncommitted worlds once piled up here because each one
+  stopped to ask. Split into a few honest commits, write the repo's kind
+  of message (lowercase subject, a body that says *why*), and make sure
+  **every commit builds on its own**: the atmospheres, their entry in
+  `worlds.ts`, their registration in `reader/components.tsx` and the MDX
+  that places them are one unit, and a commit carrying only half of it
+  fails on a missing module.
+
+  Push because the push *is* the feedback. Jacob works here in small
+  single changes and then looks at jvboid.dev to see them — a change
+  parked on a local commit is a change he cannot see, and asking "want
+  me to push?" just adds a round trip to something the answer is always
+  yes to. So: finish, type-check, commit, push, and say what landed.
+  The only reason to stop and ask first is a genuinely destructive or
+  hard-to-undo git operation — a force-push, a history rewrite, a branch
+  deletion — not an ordinary push of new commits.
 
 ## Quick sanity checks before committing
 
