@@ -486,6 +486,21 @@ a:hover {
 .prose-mdx [data-x-post] {
   margin-block: 2.25rem;
 }
+/* Two-up groups. Two cards at a phone-ish measure come to ~68rem, which
+   does not fit inside the 70ch prose column, so the group widens and
+   re-centres on that column's own centre — `50%` resolves against the
+   column, so `50% - half the new width` puts it back in the middle
+   however wide the page is. Below the breakpoint it stays one per line
+   and the rule never applies. */
+@media (min-width: 64rem) {
+  .prose-mdx [data-x-post-cols="2"] {
+    --x-wide: min(68rem, calc(100vw - 3rem));
+    width: var(--x-wide);
+    margin-inline-start: calc(50% - var(--x-wide) / 2);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
 /* The tweet body is a <blockquote> because that is what it is, but the
    pull-quote rule above is meant for prose the author is quoting inline
    — it was setting whole tweets in italic behind a rule, which is the

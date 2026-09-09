@@ -77,6 +77,14 @@ type XPostProps = {
    * component is that a quoted tweet arrives without a label above it.
    */
   caption?: string;
+  /**
+   * Lay the group out two-up where the viewport allows, instead of one
+   * per line. Two cards at a readable measure do not fit inside 70ch,
+   * so this also breaks the group out of the prose column — see the
+   * `data-x-post-cols` rule in globals.css. Falls back to a single
+   * column on narrow screens.
+   */
+  columns?: 1 | 2;
 };
 
 const CACHE = xPosts as Record<string, XPostData>;
@@ -107,16 +115,18 @@ function resolve({ url, urls, posts }: Pick<XPostProps, "url" | "urls" | "posts"
   });
 }
 
-export function XPost({ url, urls, posts, caption }: XPostProps) {
+export function XPost({ url, urls, posts, caption, columns = 1 }: XPostProps) {
   const resolved = resolve({ url, urls, posts });
   if (!resolved.length) return null;
+  const twoUp = columns === 2 && resolved.length > 1;
 
   return (
     <div
       data-x-post
+      data-x-post-cols={twoUp ? "2" : undefined}
       role={resolved.length > 1 ? "group" : undefined}
       aria-label={caption}
-      className="grid gap-7"
+      className="grid gap-5"
     >
       {resolved.map((post, index) => (
         <Tweet key={`${post.url}-${index}`} post={post} />
@@ -132,7 +142,7 @@ function Tweet({ post }: { post: XPostData }) {
   const paragraphs = post.text ? post.text.split(/\n{2,}/) : [];
 
   return (
-    <figure className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
+    <figure className="m-0 grid w-full max-w-[34rem] grid-cols-[auto_1fr] gap-x-3 gap-y-2 self-start justify-self-center rounded-2xl border border-[color-mix(in_srgb,var(--color-ink)_15%,transparent)] p-4">
       {post.avatar ? (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
