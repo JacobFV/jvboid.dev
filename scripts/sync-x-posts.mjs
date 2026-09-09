@@ -32,6 +32,8 @@ const OUT = path.join(ROOT, "src", "data", "x-posts.json");
 // project page. Same reason the text is committed.
 const MEDIA_DIR = path.join(ROOT, "public", "assets", "media", "x");
 const MEDIA_HREF = "/assets/media/x";
+const AVATAR_DIR = path.join(MEDIA_DIR, "avatars");
+const AVATAR_HREF = `${MEDIA_HREF}/avatars`;
 
 const REFRESH = process.argv.includes("--refresh");
 const PRUNE = process.argv.includes("--prune");
@@ -116,6 +118,28 @@ async function savePhotos(id, urls) {
   return saved;
 }
 
+/**
+ * Avatars are copied in for the same reason as the photos, and keyed by
+ * account rather than by post — one file serves every tweet by that
+ * person. `_normal` is the 48px rendition X links; `_400x400` is the
+ * one worth rendering on a retina display.
+ */
+async function saveAvatar(handle, url) {
+  if (!handle || !url) return undefined;
+  await mkdir(AVATAR_DIR, { recursive: true });
+  const name = `${handle}.jpg`;
+  const file = path.join(AVATAR_DIR, name);
+  if (!existsSync(file)) {
+    const res = await fetch(url.replace(/_normal\.(jpg|png|webp)$/i, "_400x400.$1"));
+    if (!res.ok) {
+      console.log(`    ! avatar ${name}: HTTP ${res.status}`);
+      return undefined;
+    }
+    await writeFile(file, Buffer.from(await res.arrayBuffer()));
+  }
+  return `${AVATAR_HREF}/${name}`;
+}
+
 async function fetchPost(id) {
   const res = await fetch(syndicationUrl(id), {
     headers: {
@@ -146,14 +170,20 @@ async function fetchPost(id) {
       .map((m) => m.media_url_https),
   );
 
+  const avatar = await saveAvatar(handle, t.user?.profile_image_url_https);
+
   return {
     url: `https://x.com/${handle ?? "i"}/status/${id}`,
     authorName: t.user?.name ?? undefined,
     authorHandle: handle ? `@${handle}` : undefined,
+    ...(avatar ? { avatar } : {}),
+    ...(t.user?.is_blue_verified || t.user?.verified ? { verified: true } : {}),
     date: t.created_at ? t.created_at.slice(0, 10) : undefined,
     text,
     ...(truncated ? { truncated: true } : {}),
     ...(photos.length ? { photos } : {}),
+    ...(t.favorite_count ? { likes: t.favorite_count } : {}),
+    ...(t.conversation_count ? { replies: t.conversation_count } : {}),
     ...(t.quoted_tweet?.id_str ? { quotes: t.quoted_tweet.id_str } : {}),
   };
 }
