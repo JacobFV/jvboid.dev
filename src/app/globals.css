@@ -2897,6 +2897,9 @@ a:hover {
 :root[data-page-theme="wbd"] .wbd-keyfig .n.fail {
   color: var(--wbd-fail);
 }
+:root[data-page-theme="wbd"] .wbd-keyfig .n.pass {
+  color: var(--wbd-pass);
+}
 :root[data-page-theme="wbd"] .wbd-keyfig .l {
   display: block;
   font-family: var(--font-sans);
