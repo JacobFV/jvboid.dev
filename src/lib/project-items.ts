@@ -6,6 +6,7 @@ import {
   imageRefsForNode,
   projectFacePlan,
   projectHexSize,
+  projectTileShape,
   tileIconKey,
   type FacePlan,
   type TileArt,
@@ -156,6 +157,7 @@ export function projectItemsFromNodes(
         ? { tile: { src: baked.src, src2x: baked.src2x, w: baked.w, h: baked.h, tint: baked.tint } }
         : { face: plan }),
       size: projectHexSize(n.id),
+      ...(projectTileShape(n.id) === "app" ? { shape: "app" as const } : {}),
     };
   });
 }

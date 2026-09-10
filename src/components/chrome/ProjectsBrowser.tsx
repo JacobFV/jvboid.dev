@@ -19,7 +19,15 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { HeroHex, HeroStack, HERO_SIZE, type HeroContent } from "@/components/chrome/HeroHex";
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane } from "@/lib/graph-types";
-import type { FacePlan, IconKey, TileArt, TileGround } from "@/lib/project-face";
+import {
+  APP_CLIP,
+  APP_ICON_RADIUS,
+  APP_ICON_SIDE,
+  type FacePlan,
+  type IconKey,
+  type TileArt,
+  type TileGround,
+} from "@/lib/project-face";
 import {
   HEX_CLIP,
   HEX_RATIO,
@@ -65,6 +73,8 @@ export type ProjectItem = {
   face?: FacePlan;
   // Honeycomb tile size, in multiples of the base hexagon. Defaults to 1.
   size?: HexSize;
+  /** "app": an app icon's rounded square inside the hexagon cell. */
+  shape?: "app";
 };
 
 // What the packer lays out: the hero is a tile like any other, it just
@@ -548,18 +558,19 @@ function ProjectRow({ project }: { project: ProjectItem }) {
           <ProjectDeck project={project} />
           <span
             data-hex-face
+            data-tile-shape={project.shape}
             className="absolute block overflow-hidden bg-[var(--color-bg-1)] transition-transform duration-200 ease-out group-hover:scale-[1.04]"
             style={{
               left: (DECK_BOX_W - LIST_HEX_W) / 2,
               top: (DECK_BOX_H - LIST_HEX_W * HEX_RATIO) / 2,
               width: LIST_HEX_W,
               height: LIST_HEX_W * HEX_RATIO,
-              clipPath: HEX_CLIP,
+              clipPath: faceClip(project),
               filter: "drop-shadow(0 1px 3px color-mix(in srgb, var(--color-ink) 18%, transparent))",
             }}
           >
             <IconFace project={project} />
-            <HexEdge />
+            <HexEdge shape={project.shape} />
           </span>
         </span>
         {/* Positioned so it paints over any slide a hovered deck fans
@@ -654,16 +665,21 @@ function ProjectDeck({ project }: { project: ProjectItem }) {
   );
 }
 
+// A tile's mask: the hexagon, or for projects that were apps, an app
+// icon's rounded square inside the same cell.
+const faceClip = (project: ProjectItem) => (project.shape === "app" ? APP_CLIP : HEX_CLIP);
+
 // The hairline around a tile. A clip-path has no border, so the edge is
-// drawn as a polygon on top of the artwork — the same shape HEX_CLIP cuts,
+// drawn as a shape on top of the artwork — the same shape the clip cuts,
 // in the same hairline colour the rest of the site frames things with
 // (HeroHex draws its own version of this around the hero).
 //
 // The stroke straddles the path, and the outer half is cut away by the
 // clip on the parent, so it is set to twice the line we want. Non-scaling,
 // so the line stays a hairline while a hovered tile scales up.
-function HexEdge() {
+function HexEdge({ shape }: { shape?: "app" }) {
   const h = 100 * HEX_RATIO;
+  const side = APP_ICON_SIDE * 100;
   return (
     <svg
       viewBox={`0 0 100 ${h}`}
@@ -672,13 +688,27 @@ function HexEdge() {
       aria-hidden
       focusable="false"
     >
-      <polygon
-        points={`25,0 75,0 100,${h / 2} 75,${h} 25,${h} 0,${h / 2}`}
-        fill="none"
-        stroke="var(--color-bg-2)"
-        strokeWidth={2}
-        vectorEffect="non-scaling-stroke"
-      />
+      {shape === "app" ? (
+        <rect
+          x={(100 - side) / 2}
+          y={(h - side) / 2}
+          width={side}
+          height={side}
+          rx={APP_ICON_RADIUS * 100}
+          fill="none"
+          stroke="var(--color-bg-2)"
+          strokeWidth={2}
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : (
+        <polygon
+          points={`25,0 75,0 100,${h / 2} 75,${h} 25,${h} 0,${h / 2}`}
+          fill="none"
+          stroke="var(--color-bg-2)"
+          strokeWidth={2}
+          vectorEffect="non-scaling-stroke"
+        />
+      )}
     </svg>
   );
 }
@@ -754,9 +784,10 @@ function HexTile({
     >
       <span
         data-hex-face
+        data-tile-shape={project.shape}
         className="pointer-events-auto relative block h-full w-full overflow-hidden transition-transform duration-200 ease-out group-hover:scale-[1.05] group-active:scale-[0.97]"
         style={{
-          clipPath: HEX_CLIP,
+          clipPath: faceClip(project),
           filter: "drop-shadow(0 2px 5px color-mix(in srgb, var(--color-ink) 20%, transparent))",
         }}
       >
@@ -795,7 +826,7 @@ function HexTile({
           )}
         </span>
 
-        <HexEdge />
+        <HexEdge shape={project.shape} />
       </span>
     </Link>
   );

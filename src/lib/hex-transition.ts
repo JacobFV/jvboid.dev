@@ -28,6 +28,8 @@
 // Browsers without View Transitions, and anyone who asked for reduced
 // motion, get a plain push.
 
+import { APP_ICON_RADIUS, APP_ICON_SIDE } from "@/lib/project-face";
+
 const DURATION = 600;
 // Deliberately not a plain ease-out. The hexagon has to travel ~10× its
 // own radius to clear the viewport, so a front-loaded curve throws it
@@ -90,7 +92,22 @@ function navigationSettled(targetPath: string, timeout = 2500): Promise<void> {
   });
 }
 
-function transitionStyles(cx: number, cy: number, r0: number, r1: number): string {
+// The app-icon tiles' rounded square centered on (cx, cy), half-side `h`,
+// corner radius `r`, all px. `xywh()` rather than `inset()` because the
+// final square is far larger than the viewport, which `inset()` would
+// need negative lengths to describe.
+function squareClip(cx: number, cy: number, h: number, r: number): string {
+  const px = (v: number) => `${v.toFixed(2)}px`;
+  return `xywh(${px(cx - h)} ${px(cy - h)} ${px(2 * h)} ${px(2 * h)} round ${px(r)})`;
+}
+
+function transitionStyles(
+  cx: number,
+  cy: number,
+  clipFrom: string,
+  clipTo: string,
+  thumbTo: number,
+): string {
   // The thumbnail is blown up far past its pixel size by the end, so it
   // hands over to the page content early rather than lingering as a
   // blurry ghost.
@@ -124,8 +141,8 @@ html.hexnav::view-transition-new(root) {
     hexnav-zoom ${DURATION}ms ${EASE} both;
 }
 @keyframes hexnav-mask {
-  from { clip-path: ${hexClip(cx, cy, r0 / ZOOM)}; }
-  to { clip-path: ${hexClip(cx, cy, r1)}; }
+  from { clip-path: ${clipFrom}; }
+  to { clip-path: ${clipTo}; }
 }
 @keyframes hexnav-zoom {
   from { transform: scale(${ZOOM}); }
@@ -146,7 +163,7 @@ html.hexnav::view-transition-old(${THUMB_NAME}) {
 }
 @keyframes hexnav-thumb {
   from { transform: scale(${(1 / ZOOM).toFixed(4)}) scale(${ZOOM}); }
-  to { transform: scale(${(r1 / r0).toFixed(4)}) scale(1); }
+  to { transform: scale(${thumbTo.toFixed(4)}) scale(1); }
 }
 @keyframes hexnav-thumb-fade {
   from { opacity: 1; }
@@ -192,13 +209,30 @@ export function hexExpandNavigate({
   );
   const r1 = (far / HEX_APOTHEM) * 1.04;
 
+  // The shape that grows is the shape that was clicked. An app tile's
+  // rounded square opens as a rounded square: from its own size (divided
+  // by ZOOM, like the hexagon, because the clip lives in the zoomed page's
+  // space) to one whose rounded corners still clear the farthest viewport
+  // corner — at 1.5× the reach, with the radius scaled in proportion.
+  let clipFrom = hexClip(cx, cy, r0 / ZOOM);
+  let clipTo = hexClip(cx, cy, r1);
+  let thumbTo = r1 / r0;
+  if (face.dataset.tileShape === "app") {
+    const h0 = (rect.width * APP_ICON_SIDE) / 2;
+    const rad0 = rect.width * APP_ICON_RADIUS;
+    const h1 = far * 1.5;
+    clipFrom = squareClip(cx, cy, h0 / ZOOM, rad0 / ZOOM);
+    clipTo = squareClip(cx, cy, h1, rad0 * (h1 / h0));
+    thumbTo = h1 / h0;
+  }
+
   running = true;
   // Cancel the hover pop so the captured snapshot lines up with `rect`.
   face.style.transform = "none";
   face.style.viewTransitionName = THUMB_NAME;
 
   const style = document.createElement("style");
-  style.textContent = transitionStyles(cx, cy, r0, r1);
+  style.textContent = transitionStyles(cx, cy, clipFrom, clipTo, thumbTo);
   document.head.append(style);
   document.documentElement.classList.add("hexnav");
 
