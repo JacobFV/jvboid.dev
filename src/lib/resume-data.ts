@@ -37,7 +37,7 @@ export const variantMeta: Record<ResumeVariant, {
       "rapid prototyping",
     ],
     highlights: [
-      "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
+      "Training SC-WBD-00X + IBM-1 brain prediction and decoding models for SuperCognition Labs — whole-brain foundation models fusing electrophysiology, hemodynamics and stimulation response (SC-WBD), and a lazily materialized implicit brain model driving image-to-EEG decoding and an embodied musculoskeletal body (IBM-1).",
       "Architected and implemented production integration surfaces for mobile and web clients at AGI, Inc.",
       "Building CommandAGI.com, an end-to-end agentic social platform for creators to build their vibestartups — computer + browser + mobile device control, robotics, sim, code/CAD/EDA and more eng automation, 43+ integrations, and more.",
     ],
@@ -54,7 +54,7 @@ export const variantMeta: Record<ResumeVariant, {
       "agent control loops", "rapid prototyping",
     ],
     highlights: [
-      "Training the SC-WBD-00X model series — the world's first whole-brain multi-dynamics foundation model (electrophysiology, hemodynamics, meso-scale activation dynamics, inner monologue + imagination).",
+      "Training SC-WBD-00X + IBM-1 brain prediction and decoding models for SuperCognition Labs — whole-brain foundation models fusing electrophysiology, hemodynamics and stimulation response (SC-WBD), and a lazily materialized implicit brain model driving image-to-EEG decoding and an embodied musculoskeletal body (IBM-1).",
       "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
       "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
       "AGI, Inc. integration architect — same agent-runtime skills feed directly into robot agent control loops.",
@@ -300,7 +300,7 @@ export const experience: {
 
 const SOFTWARE_RESUME = new Set([
   // AI systems, agents, world models, ML research
-  "sc-wbd", "general-unified-world-modeling", "canvas-engineering",
+  "sc-wbd", "ibm-1", "general-unified-world-modeling", "canvas-engineering",
   "recursive-omnimodal-video-action-model", "brain-model", "tensor-computer",
   "tensacode", "the-multi-agent-network", "the-fertile-crescent", "computatrum",
   "belief-graph-orchestrator", "predictive-general-intelligence",
@@ -328,7 +328,7 @@ const ROBOTICS_RESUME = new Set([
   "precisionbom", "fieldratchet", "esp32-usb-webcam", "microscope-viewer",
   "workplace-surveillance-system", "dolphin-rocket",
   // The models and control research that drive embodiment
-  "sc-wbd", "canvas-engineering", "recursive-omnimodal-video-action-model",
+  "sc-wbd", "ibm-1", "canvas-engineering", "recursive-omnimodal-video-action-model",
   "general-unified-world-modeling", "rl-lab", "computatrum",
   "full-stack-artificial-intelligence",
   "broadening-and-building-beyond-classical-reinforcement-learning",
