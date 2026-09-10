@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CallSheet } from "./CallSheet";
 import { TextSheet } from "./TextSheet";
 
@@ -130,12 +130,13 @@ export function AskInput({
           className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-ink-dim)] transition-colors hover:bg-[var(--color-bg-2)] hover:text-[var(--color-ink)]"
         >
           <PlusIcon />
-          {files.length > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--color-accent)] px-1 font-[family-name:var(--font-mono)] text-[9px] leading-none text-white">
-              {files.length}
-            </span>
-          )}
         </button>
+        {files.length > 0 && (
+          <AttachmentStrip
+            files={files}
+            onRemove={(index) => setFiles((prev) => prev.filter((_, i) => i !== index))}
+          />
+        )}
         <input
           ref={fileRef}
           type="file"
@@ -217,6 +218,54 @@ export function AskInput({
         onClose={() => setTextOpen(false)}
       />
     </>
+  );
+}
+
+const MAX_THUMBS = 3;
+const extOf = (name: string) => (name.includes(".") ? name.split(".").pop()!.slice(0, 4) : "file");
+
+// What's attached, inside the bar: a small thumbnail per image (a type
+// chip for anything else), each removable, and a count past the first
+// few so a long list cannot crowd out the text field.
+function AttachmentStrip({ files, onRemove }: { files: File[]; onRemove: (index: number) => void }) {
+  const urls = useMemo(
+    () => files.map((f) => (f.type.startsWith("image/") ? URL.createObjectURL(f) : null)),
+    [files],
+  );
+  useEffect(() => () => urls.forEach((u) => u && URL.revokeObjectURL(u)), [urls]);
+
+  return (
+    <div className="flex shrink-0 items-center gap-1" aria-label={`${files.length} attached`}>
+      {files.slice(0, MAX_THUMBS).map((file, i) => (
+        <span
+          key={`${file.name}-${i}`}
+          title={file.name}
+          className="group/att relative block h-8 w-8 shrink-0 overflow-hidden rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-bg-2)]"
+        >
+          {urls[i] ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={urls[i]!} alt={file.name} className="h-full w-full object-cover" />
+          ) : (
+            <span className="grid h-full w-full place-items-center font-[family-name:var(--font-mono)] text-[8px] text-[var(--color-ink-mute)] uppercase">
+              {extOf(file.name)}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => onRemove(i)}
+            aria-label={`Remove ${file.name}`}
+            className="absolute inset-0 grid place-items-center bg-black/55 text-sm text-white opacity-0 transition-opacity group-hover/att:opacity-100 focus-visible:opacity-100"
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      {files.length > MAX_THUMBS && (
+        <span className="px-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[var(--color-ink-mute)]">
+          +{files.length - MAX_THUMBS}
+        </span>
+      )}
+    </div>
   );
 }
 

@@ -121,19 +121,30 @@ export function TextSheet({
               className={canShareFiles ? sheetSecondary : sheetPrimary}
             >
               <span>Text</span>
-              <span className={sheetValue}>{state.phone}</span>
+              <span className={sheetValue}>
+                {state.phone}
+                {files.length > 0 && " · words only"}
+              </span>
             </a>
             <a href={mailHref(state.email, message)} onClick={onClose} className={sheetSecondary}>
               <span>Email</span>
-              <span className={sheetValue}>{state.email}</span>
+              <span className={sheetValue}>
+                {state.email}
+                {files.length > 0 && " · words only"}
+              </span>
             </a>
-            <p className="mt-2 text-xs leading-relaxed text-[var(--color-ink-mute)]">
-              {canShareFiles
-                ? `Sharing opens your Messages or Mail with the files attached — send it to ${state.phone} or ${state.email}.`
-                : files.length > 0
-                  ? "Your mail app opens without the files — attach them there before sending."
-                  : "On a desktop the text link may not open anywhere; use email."}
-            </p>
+            {files.length > 0 && (
+              <p className="mt-2 border-l-2 border-[var(--color-accent)] pl-3 text-xs leading-relaxed text-[var(--color-ink)]">
+                {canShareFiles
+                  ? `Text and Email send your words only — your ${files.length === 1 ? "attachment won't" : "attachments won't"} go with them. Share opens Messages or Mail with the files on; send it to ${state.phone} or ${state.email}.`
+                  : `Text and Email send your words only — your ${files.length === 1 ? "attachment won't" : "attachments won't"} go with them. Attach the files in the app once it opens.`}
+              </p>
+            )}
+            {files.length === 0 && (
+              <p className="mt-2 text-xs leading-relaxed text-[var(--color-ink-mute)]">
+                On a desktop the text link may not open anywhere; use email.
+              </p>
+            )}
             {shareError && <p className="text-xs text-[var(--color-accent)]">{shareError}</p>}
           </div>
         )}
