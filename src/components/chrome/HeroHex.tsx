@@ -84,7 +84,11 @@ export function HeroHex({ name, bio, socials, moreSocials, pfp }: HeroContent) {
   return (
     <div data-hex-hero="" className="relative h-full w-full" style={{ containerType: "inline-size" }}>
       <HexFrame />
-      <HexFit className="absolute inset-0 flex flex-col items-center justify-center text-center [&>*]:max-w-[56%]">
+      {/* The column spans the frame's bounding box, whose corners are
+          outside the hexagon and hold project tiles — so it takes no
+          pointer itself; its rows, which HexFit keeps inside the walls,
+          do. */}
+      <HexFit className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center [&>*]:pointer-events-auto [&>*]:max-w-[56%]">
         <div
           data-hex-pfp=""
           className="relative shrink-0 overflow-hidden"

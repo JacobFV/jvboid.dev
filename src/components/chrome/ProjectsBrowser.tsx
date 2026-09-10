@@ -731,7 +731,12 @@ function HexTile({
       onFocus={() => onPoint(project.id)}
       onBlur={() => onPoint(null)}
       // z-index so a hovered hexagon lifts above the row nested under it.
-      className="group absolute z-0 block no-underline hover:z-10"
+      // The link's own box is the hexagon's bounding rectangle, and in a
+      // comb those corners lie over the neighbors — so the link takes no
+      // pointer itself and only the hexagon-clipped face below does
+      // (clip-path clips hit-testing too). Hover, click and the jostle
+      // still arrive here, bubbled up from the face.
+      className="group pointer-events-none absolute z-0 block no-underline hover:z-10"
       style={{
         left,
         top,
@@ -749,7 +754,7 @@ function HexTile({
     >
       <span
         data-hex-face
-        className="relative block h-full w-full overflow-hidden transition-transform duration-200 ease-out group-hover:scale-[1.05] group-active:scale-[0.97]"
+        className="pointer-events-auto relative block h-full w-full overflow-hidden transition-transform duration-200 ease-out group-hover:scale-[1.05] group-active:scale-[0.97]"
         style={{
           clipPath: HEX_CLIP,
           filter: "drop-shadow(0 2px 5px color-mix(in srgb, var(--color-ink) 20%, transparent))",
