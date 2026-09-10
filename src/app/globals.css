@@ -1252,13 +1252,10 @@ a:hover {
 .echo-figure {
   margin: 2.25rem 0;
 }
+/* No frame: the drawing sits straight on the page, like the prose. */
 .echo-figure-frame {
   position: relative;
   width: 100%;
-  border-radius: 4px;
-  background: var(--color-bg-1);
-  box-shadow: var(--ring-soft);
-  overflow: hidden;
 }
 .echo-figure-frame canvas {
   display: block;
