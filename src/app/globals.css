@@ -794,7 +794,6 @@ a:hover {
   border-left: 1px solid var(--color-rule);
   padding-left: 1em;
   color: var(--color-ink-dim);
-  font-style: italic;
 }
 /* A quoted tweet carries no box now, so spacing is the only thing left
    to say "these are someone else's words, and they end here". Sits
@@ -874,12 +873,14 @@ a:hover {
   --pull-bleed: clamp(0px, 50vw - 27rem, 11rem);
   margin-block: 2rem;
   color: var(--color-ink);
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 144;
-  font-style: italic;
-  font-size: clamp(1.6rem, 1.2rem + 1.3vw, 2.4rem);
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  /* Upright, in the header face: an italic serif at this size was the
+     hardest thing on the page to read. */
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 1.3rem + 1.4vw, 2.6rem);
+  line-height: 1.04;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 
@@ -1073,10 +1074,8 @@ a:hover {
 .prose-lede .reader-caption {
   display: block;
   margin-top: 0.7rem;
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 18;
-  font-style: italic;
-  font-size: 0.86rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
   line-height: 1.45;
   color: var(--color-ink-mute);
   max-width: 36em;
