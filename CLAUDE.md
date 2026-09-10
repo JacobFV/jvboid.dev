@@ -31,6 +31,14 @@ editing this repo.
   `getContact()` server actions, when someone opens the call or message
   sheet. There is no captcha in front of them any more — Jacob removed it
   on purpose — but don't hard-code them or put them in client bundles.
+- **The ask bar sends through a Cloudflare Worker.** `workers/contact` is a
+  Worker plus a per-IP Durable Object (the rate limit) that emails each
+  message, attachments included, from `contact@jvboid.dev` via Email
+  Routing's `send_email` binding. It is deployed separately — `npx wrangler
+  deploy` from `workers/contact`, on Jacob's Cloudflare account — never by
+  Vercel, and its destination is the `TO_ADDRESS` secret, not config. It
+  only accepts the origins in its `ALLOWED_ORIGINS` var, so a Vercel
+  preview URL cannot send. It is excluded from the site's `tsc`.
 - **Client-safe imports.** `src/lib/graph-types.ts` holds the pure types
   + `nodeHref`. `src/lib/graph.ts` holds `getGraph()` and pulls in
   `node:fs`. Client components import from `graph-types`. Don't merge

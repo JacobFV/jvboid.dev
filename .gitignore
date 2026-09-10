@@ -44,3 +44,6 @@ coverage
 playwright-report
 test-results
 .vercel
+
+# wrangler local state (workers/contact)
+.wrangler/

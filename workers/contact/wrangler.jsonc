@@ -1,0 +1,22 @@
+// The "Ask me anything" sender. Deployed on its own with `npx wrangler
+// deploy` from this directory; Vercel never builds it. The destination
+// address is a secret (`wrangler secret put TO_ADDRESS`), not config, so it
+// stays out of the public repo — see src/index.ts.
+{
+  "name": "jvboid-contact",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // No destination_address: the Worker may send to any verified Email
+  // Routing destination, and TO_ADDRESS (a secret) picks which.
+  "send_email": [{ "name": "SEND_EMAIL" }],
+  "durable_objects": {
+    "bindings": [{ "name": "OUTBOX", "class_name": "ContactOutbox" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ContactOutbox"] }],
+  "vars": {
+    "FROM_ADDRESS": "contact@jvboid.dev",
+    "ALLOWED_ORIGINS": "https://jvboid.dev,https://www.jvboid.dev,http://localhost:3000"
+  },
+  "observability": { "enabled": true }
+}

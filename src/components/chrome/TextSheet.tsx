@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { getContact } from "@/lib/contact-actions";
+import { CONTACT_SEND_URL } from "@/lib/contact-endpoint";
 import { Sheet, sheetPrimary, sheetSecondary, sheetValue } from "./Sheet";
 
-type State =
+type Contact =
   | { kind: "loading" }
   | { kind: "ready"; phone: string; email: string }
+  | { kind: "error"; error: string };
+
+type Send =
+  | { kind: "idle" }
+  | { kind: "sending" }
+  | { kind: "sent"; reply: string }
   | { kind: "error"; error: string };
 
 function smsHref(phone: string, body: string): string {
@@ -24,52 +31,74 @@ const fmtSize = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : bytes < 1024 ** 2 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 
 // The message the hero's ask bar hands over: what they typed and whatever
-// they attached, and the ways to send it. `sms:` and `mailto:` links cannot
-// carry files, so attachments go through the system share sheet where the
-// browser can share files (phones, Safari, Chrome on Mac and Windows) —
-// straight into Messages or Mail with the files already on. Elsewhere the
-// sheet says plainly that the files have to be attached in the mail app.
+// they attached. "Send to Jacob" posts it to the contact Worker
+// (workers/contact), which emails it with the attachments on, and asks for
+// a reply address so the answer has somewhere to go. Texting or emailing it
+// yourself stays underneath as the fallback — words only, since sms: and
+// mailto: links cannot carry files.
 export function TextSheet({
   open,
   message,
   files,
   onRemoveFile,
+  onSent,
   onClose,
 }: {
   open: boolean;
   message: string;
   files: File[];
   onRemoveFile: (index: number) => void;
+  /** Clears the ask bar once the message has gone. */
+  onSent: () => void;
   onClose: () => void;
 }) {
-  const [state, setState] = useState<State>({ kind: "loading" });
-  const [canShareFiles, setCanShareFiles] = useState(false);
-  const [shareError, setShareError] = useState<string | null>(null);
+  const [contact, setContact] = useState<Contact>({ kind: "loading" });
+  const [send, setSend] = useState<Send>({ kind: "idle" });
+  const [reply, setReply] = useState("");
 
   useEffect(() => {
     if (!open) return;
-    setShareError(null);
-    setState({ kind: "loading" });
+    setSend({ kind: "idle" });
+    setContact({ kind: "loading" });
     getContact().then((r) =>
-      setState(r.ok ? { kind: "ready", phone: r.phone, email: r.email } : { kind: "error", error: r.error }),
+      setContact(r.ok ? { kind: "ready", phone: r.phone, email: r.email } : { kind: "error", error: r.error }),
     );
   }, [open]);
 
-  useEffect(() => {
-    setCanShareFiles(
-      files.length > 0 && typeof navigator !== "undefined" && Boolean(navigator.canShare?.({ files })),
-    );
-  }, [files]);
-
-  async function share() {
-    setShareError(null);
+  async function deliver() {
+    if (send.kind === "sending") return;
+    setSend({ kind: "sending" });
+    const form = new FormData();
+    form.set("message", message);
+    form.set("reply", reply);
+    for (const file of files) form.append("files", file);
     try {
-      await navigator.share({ files, text: message, title: "For Jacob" });
-      onClose();
-    } catch (err) {
-      // Dismissing the share sheet rejects with AbortError; that is not a failure.
-      if ((err as DOMException)?.name !== "AbortError") setShareError("Couldn't open the share sheet.");
+      const res = await fetch(CONTACT_SEND_URL, { method: "POST", body: form });
+      const body = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      if (res.ok && body?.ok) {
+        setSend({ kind: "sent", reply: reply.trim() });
+        onSent();
+      } else {
+        setSend({ kind: "error", error: body?.error ?? "The message couldn't be sent." });
+      }
+    } catch {
+      setSend({ kind: "error", error: "The message couldn't be sent — check your connection." });
     }
+  }
+
+  if (send.kind === "sent") {
+    return (
+      <Sheet open={open} onClose={onClose} title="Sent">
+        <p className="text-sm leading-relaxed text-[var(--color-ink)]">
+          On its way — Jacob gets it by email
+          {send.reply ? `, and can reply to ${send.reply}.` : "."}
+        </p>
+        <button type="button" onClick={onClose} className={`${sheetSecondary} mt-5`}>
+          <span>Close</span>
+          <span aria-hidden>×</span>
+        </button>
+      </Sheet>
+    );
   }
 
   return (
@@ -102,50 +131,66 @@ export function TextSheet({
         </ul>
       )}
 
-      <div className={message || files.length ? "mt-5" : ""}>
-        {state.kind === "loading" && (
+      <form
+        className={message || files.length ? "mt-5" : ""}
+        onSubmit={(e) => {
+          e.preventDefault();
+          void deliver();
+        }}
+      >
+        <label className="block font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.12em] text-[var(--color-ink-mute)] uppercase">
+          Your email or phone, so Jacob can reply
+          <input
+            type="text"
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            autoComplete="email"
+            placeholder="optional"
+            className="mt-1.5 block w-full border border-[var(--color-rule)] bg-transparent px-3 py-2.5 font-[family-name:var(--font-sans)] text-sm tracking-normal text-[var(--color-ink)] normal-case outline-none placeholder:text-[var(--color-ink-mute)] focus:border-[var(--color-ink)]"
+          />
+        </label>
+        <button type="submit" disabled={send.kind === "sending"} className={`${sheetPrimary} mt-3`}>
+          <span>{send.kind === "sending" ? "Sending…" : "Send to Jacob"}</span>
+          <span aria-hidden>→</span>
+        </button>
+        {send.kind === "error" && (
+          <p className="mt-2 text-xs text-[var(--color-accent)]">{send.error}</p>
+        )}
+      </form>
+
+      <div className="mt-6">
+        <p className="mb-2 font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.12em] text-[var(--color-ink-mute)] uppercase">
+          Or send it yourself
+        </p>
+        {contact.kind === "loading" && (
           <p className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">…</p>
         )}
-        {state.kind === "error" && <p className="text-sm text-[var(--color-accent)]">{state.error}</p>}
-        {state.kind === "ready" && (
+        {contact.kind === "error" && (
+          <p className="text-sm text-[var(--color-accent)]">{contact.error}</p>
+        )}
+        {contact.kind === "ready" && (
           <div className="flex flex-col gap-2">
-            {canShareFiles && (
-              <button type="button" onClick={share} className={sheetPrimary}>
-                <span>Share with attachments</span>
-                <span aria-hidden>→</span>
-              </button>
-            )}
-            <a
-              href={smsHref(state.phone, message)}
-              onClick={onClose}
-              className={canShareFiles ? sheetSecondary : sheetPrimary}
-            >
+            <a href={smsHref(contact.phone, message)} onClick={onClose} className={sheetSecondary}>
               <span>Text</span>
               <span className={sheetValue}>
-                {state.phone}
+                {contact.phone}
                 {files.length > 0 && " · words only"}
               </span>
             </a>
-            <a href={mailHref(state.email, message)} onClick={onClose} className={sheetSecondary}>
+            <a href={mailHref(contact.email, message)} onClick={onClose} className={sheetSecondary}>
               <span>Email</span>
               <span className={sheetValue}>
-                {state.email}
+                {contact.email}
                 {files.length > 0 && " · words only"}
               </span>
             </a>
             {files.length > 0 && (
-              <p className="mt-2 border-l-2 border-[var(--color-accent)] pl-3 text-xs leading-relaxed text-[var(--color-ink)]">
-                {canShareFiles
-                  ? `Text and Email send your words only — your ${files.length === 1 ? "attachment won't" : "attachments won't"} go with them. Share opens Messages or Mail with the files on; send it to ${state.phone} or ${state.email}.`
-                  : `Text and Email send your words only — your ${files.length === 1 ? "attachment won't" : "attachments won't"} go with them. Attach the files in the app once it opens.`}
+              <p className="mt-1 border-l-2 border-[var(--color-accent)] pl-3 text-xs leading-relaxed text-[var(--color-ink)]">
+                Text and Email send your words only — your{" "}
+                {files.length === 1 ? "attachment won't" : "attachments won't"} go with them. Send
+                to Jacob above to include them.
               </p>
             )}
-            {files.length === 0 && (
-              <p className="mt-2 text-xs leading-relaxed text-[var(--color-ink-mute)]">
-                On a desktop the text link may not open anywhere; use email.
-              </p>
-            )}
-            {shareError && <p className="text-xs text-[var(--color-accent)]">{shareError}</p>}
           </div>
         )}
       </div>

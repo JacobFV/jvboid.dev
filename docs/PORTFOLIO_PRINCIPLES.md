@@ -125,11 +125,13 @@ What went wrong? What would I do differently? One short paragraph.
   `content/experience/*.mdx`.
 - **Contact** — the home `AskInput` pill is always reachable. The green
   phone button opens `CallSheet`, the orange arrow opens `TextSheet`, and
-  `+` attaches files (sent through the system share sheet where the
-  browser supports it). There is no captcha: opening a sheet fetches the
-  phone (`CONTACT_PHONE`) or email (`CONTACT_EMAIL`) from a server action.
-  The number and email never enter the client bundle. See
-  `src/lib/contact-actions.ts`.
+  `+` attaches files. "Send to Jacob" posts the message and its files to
+  the `workers/contact` Cloudflare Worker, which emails them via Email
+  Routing behind a per-IP Durable Object rate limit; texting or emailing
+  it yourself remains as a words-only fallback. There is no captcha:
+  opening a sheet fetches the phone (`CONTACT_PHONE`) or email
+  (`CONTACT_EMAIL`) from a server action. The number and email never enter
+  the client bundle. See `src/lib/contact-actions.ts`.
 - **Email** — `jacobfv123@gmail.com`, configured via the `CONTACT_EMAIL`
   env var on Vercel. The TextSheet falls back to `mailto:` when SMS isn't
   available (i.e. desktop).

@@ -26,5 +26,5 @@
     ".next/types/**/*.ts",
     ".velite"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "workers"]
 }

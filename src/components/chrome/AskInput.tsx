@@ -30,8 +30,9 @@ declare global {
 // "Ask me anything" contact prompt.
 //   [+] [text input grows] [mic] [submit]
 // `+` attaches files. Submit morphs between phone (nothing to send →
-// CallSheet) and arrow-up (text or files → TextSheet, which offers text,
-// email, and — for files — the system share sheet).
+// CallSheet) and arrow-up (text or files → TextSheet, which sends it by
+// email through the contact Worker, files and all, or hands it to the
+// visitor's own texting or mail app).
 export function AskInput({
   className,
   style,
@@ -215,6 +216,10 @@ export function AskInput({
         message={value}
         files={files}
         onRemoveFile={(index) => setFiles((prev) => prev.filter((_, i) => i !== index))}
+        onSent={() => {
+          setValue("");
+          setFiles([]);
+        }}
         onClose={() => setTextOpen(false)}
       />
     </>
