@@ -142,7 +142,18 @@ function Tweet({ post }: { post: XPostData }) {
   const paragraphs = post.text ? post.text.split(/\n{2,}/) : [];
 
   return (
-    <figure className="m-0 grid w-full max-w-[34rem] grid-cols-[auto_1fr] gap-x-3 gap-y-2 self-start justify-self-center rounded-2xl border border-[color-mix(in_srgb,var(--color-ink)_15%,transparent)] p-4">
+    <figure className="relative m-0 grid w-full max-w-[34rem] grid-cols-[auto_1fr] gap-x-3 gap-y-2 self-start justify-self-center rounded-2xl border border-[color-mix(in_srgb,var(--color-ink)_15%,transparent)] p-4 transition-colors hover:border-[color-mix(in_srgb,var(--color-ink)_40%,transparent)]">
+      {/* The whole card is the link to the post: a stretched anchor under
+          everything, rather than an <a> around it, because the text keeps
+          its own links (URLs, @handles) and anchors cannot nest. Those sit
+          above it on `relative z-[1]`. */}
+      <a
+        href={post.url}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`${name}'s post on X${post.date ? `, ${post.date}` : ""}`}
+        className="absolute inset-0 z-0 rounded-2xl"
+      />
       {post.avatar ? (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
@@ -219,7 +230,7 @@ function Tweet({ post }: { post: XPostData }) {
             href={post.url}
             target="_blank"
             rel="noreferrer"
-            className="text-inherit no-underline transition-colors hover:text-[var(--color-accent)]"
+            className="relative z-[1] text-inherit no-underline transition-colors hover:text-[var(--color-accent)]"
           >
             {post.date}
             {post.truncated && " · read the rest on X"} ↗
@@ -285,14 +296,20 @@ function Linkified({ text }: { text: string }) {
       {text.split(TOKEN).map((part, i) => {
         if (/^https?:\/\//.test(part)) {
           return (
-            <a key={i} href={part} target="_blank" rel="noreferrer">
+            <a key={i} href={part} target="_blank" rel="noreferrer" className="relative z-[1]">
               {part.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
             </a>
           );
         }
         if (/^@[A-Za-z0-9_]{1,15}$/.test(part)) {
           return (
-            <a key={i} href={`https://x.com/${part.slice(1)}`} target="_blank" rel="noreferrer">
+            <a
+              key={i}
+              href={`https://x.com/${part.slice(1)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="relative z-[1]"
+            >
               {part}
             </a>
           );
