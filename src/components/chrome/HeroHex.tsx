@@ -47,7 +47,9 @@ import { HEX_CLIP, HEX_RATIO, hexUnitWidth, type HexSize } from "@/lib/hex-layou
 // bio nowhere to go.)
 export const HERO_SIZE: HexSize = 4;
 const GAP = 0.014;
-const PFP_W = hexUnitWidth(HERO_SIZE, 1, GAP);
+// A shade under a full 1× tile, so the portrait sits clear of the frame's
+// flat top with a little air above it instead of pressing into the edge.
+const PFP_W = hexUnitWidth(HERO_SIZE, 1, GAP) * 0.84;
 
 const HEX_ASPECT = `1 / ${HEX_RATIO}`;
 const PFP_SIZES = "(min-width: 1024px) 220px, 160px";
@@ -59,7 +61,8 @@ const PFP_SIZES = "(min-width: 1024px) 220px, 160px";
 // is HexFit's first lever when the column outgrows the frame — see
 // `fitHeight`. It is 1 whenever everything fits.
 const gap = (pctOfWidth: number) => `calc(var(--hex-squeeze, 1) * ${pctOfWidth}%)`;
-const GAP_NAME = gap(2.8);
+// The name sits close under the portrait — it captions it.
+const GAP_NAME = gap(1.1);
 const GAP_ASK = gap(2.2);
 const GAP_LINKS = gap(1.7);
 const GAP_BIO = gap(2.8);

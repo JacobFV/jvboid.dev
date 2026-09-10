@@ -68,8 +68,9 @@ const SCALE_STEP = 0.02;
 /** Below this the taper is not worth a float. */
 const MIN_TAPER_PX = 1.5;
 
-/** Keeps the column off the flat top and bottom of the frame. */
-const VPAD = 0.02;
+/** Keeps the column off the flat top and bottom of the frame — enough that
+ *  the portrait never sits flush against the top edge. */
+const VPAD = 0.045;
 
 /** How far the gaps between rows may be squeezed before the portrait gives. */
 const MIN_SQUEEZE = 0.15;
