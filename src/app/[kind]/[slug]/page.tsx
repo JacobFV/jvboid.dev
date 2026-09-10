@@ -64,7 +64,6 @@ export default async function NodePage({ params }: { params: Params }) {
             postId={node.id}
             postedDate={posted}
             currentTitle={node.title}
-            summary={node.summary}
             currentBody={node.body}
             revisions={postRevisions}
           />

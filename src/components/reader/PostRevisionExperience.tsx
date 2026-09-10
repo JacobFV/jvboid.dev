@@ -9,8 +9,6 @@ type PostRevisionExperienceProps = {
   postId: string;
   postedDate: string;
   currentTitle: string;
-  /** The standfirst: one sentence under the title, from frontmatter. */
-  summary?: string;
   currentBody: string;
   revisions: PostRevision[];
 };
@@ -43,7 +41,6 @@ export function PostRevisionExperience({
   postId,
   postedDate,
   currentTitle,
-  summary,
   currentBody,
   revisions,
 }: PostRevisionExperienceProps) {
@@ -94,8 +91,10 @@ export function PostRevisionExperience({
 
   return (
     <>
-      {/* Title, then the standfirst, then a rule: the magazine opener.
-          The dateline stays at the foot of the page. */}
+      {/* Title, then a rule, then the prose. No standfirst: the summary
+          between them was friction, a sentence to get through before the
+          piece begins. It still serves cards, search and the page's meta
+          description. The dateline stays at the foot of the page. */}
       <header
         style={{ viewTransitionName: `node-${postId}` }}
         className="mt-14 mb-14 sm:mt-20"
@@ -103,7 +102,6 @@ export function PostRevisionExperience({
         <h1 data-page-title className="display-title">
           {title}
         </h1>
-        {summary && <p className="standfirst mt-8">{summary}</p>}
         <hr className="rule mt-10" />
       </header>
 
