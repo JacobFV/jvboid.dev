@@ -62,7 +62,14 @@ export function SocialLinks({
 
   return (
     <Row
-      className={["text-center", hex ? "" : "mx-auto max-w-2xl", className ?? ""].join(" ")}
+      // `social-more-open` is a hook for the hero, which cuts its bio
+      // short while the long row is showing — see globals.css.
+      className={[
+        "text-center",
+        hex ? "" : "mx-auto max-w-2xl",
+        open ? "social-more-open" : "",
+        className ?? "",
+      ].join(" ")}
       style={{
         // The air between wrapped link lines is padding like any other,
         // so it rides HexFit's first lever: 2.1 at rest, tightening to

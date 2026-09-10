@@ -82,7 +82,7 @@ export type HeroContent = {
 
 export function HeroHex({ name, bio, socials, moreSocials, pfp }: HeroContent) {
   return (
-    <div className="relative h-full w-full" style={{ containerType: "inline-size" }}>
+    <div data-hex-hero="" className="relative h-full w-full" style={{ containerType: "inline-size" }}>
       <HexFrame />
       <HexFit className="absolute inset-0 flex flex-col items-center justify-center text-center [&>*]:max-w-[56%]">
         <div
@@ -136,7 +136,7 @@ export function HeroHex({ name, bio, socials, moreSocials, pfp }: HeroContent) {
 
         <HexShaped
           as="p"
-          className="w-full text-pretty text-[var(--color-ink-dim)]"
+          className="hero-bio w-full text-pretty text-[var(--color-ink-dim)]"
           style={{ marginTop: GAP_BIO, fontSize: BIO_TYPE, lineHeight: 1.55 }}
         >
           {bio}

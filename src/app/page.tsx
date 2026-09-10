@@ -194,27 +194,16 @@ export default function HomePage() {
           moreSocials: moreSocialGroups,
           bio: (
             <>
-              Currently working on{" "}
-              <a
-                href="https://commandagi.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-              >
-                CommandAGI
-              </a>
-              . Most recently API/Integration Architect at{" "}
-              <a
-                href="https://agi.app"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-              >
-                AGI, Inc.
-              </a>
-              , shipping APIs, integrations, and agent infrastructure for on-device mobile AI
-              agents. Earlier: Breezy, Deepshard, Motio, and UTA research labs. BS Computer Science
-              from UT Arlington. I love science and engineering and people
+              Training <BioLink href="https://sc-wbd.pages.dev/">SC-WBD-00X</BioLink> +{" "}
+              <BioLink href="https://jacobfv.github.io/IBM-1/">IBM</BioLink> brain prediction and
+              decoding models for{" "}
+              <BioLink href="https://supercognitionlabs.com/">SuperCognition Labs</BioLink>. Building
+              Agentic + Robotics Infrastructure at{" "}
+              <BioLink href="https://commandagi.com">CommandAGI.com</BioLink>. API/Integration
+              Architect at <BioLink href="https://agi.app">AGI, Inc.</BioLink>, shipping APIs,
+              integrations, and agent infrastructure for on-device mobile AI agents. Earlier: Breezy,
+              Deepshard, Motio, and UTA research labs. BS Computer Science from UT Arlington. I love
+              science and engineering and people
             </>
           ),
         }}
@@ -301,6 +290,20 @@ export default function HomePage() {
         </Section>
       )}
     </main>
+  );
+}
+
+// A link inside the hero bio: body ink, a quiet underline that warms on hover.
+function BioLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
+    >
+      {children}
+    </a>
   );
 }
 
