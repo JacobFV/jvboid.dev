@@ -34,7 +34,21 @@ export function ReaderImage(p: ImgHTMLAttributes<HTMLImageElement>) {
           p.className,
         )}
       />
-      {alt && <span className="reader-caption">{alt}</span>}
+      {alt && <span className="reader-caption">{linkify(alt)}</span>}
     </span>
+  );
+}
+
+// A caption is plain alt text, so a credit can only name its source as a
+// bare URL. Draw any such URL as a link, shown without its scheme.
+function linkify(text: string) {
+  return text.split(/(https?:\/\/[^\s)]+)/g).map((part, i) =>
+    i % 2 ? (
+      <a key={i} href={part} target="_blank" rel="noreferrer">
+        {part.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+      </a>
+    ) : (
+      part
+    ),
   );
 }
