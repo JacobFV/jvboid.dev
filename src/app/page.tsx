@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { type HeroSocial, type HeroSocialGroup } from "@/components/chrome/HeroHex";
 import { CoverGallery } from "@/components/chrome/CoverGallery";
@@ -7,6 +8,7 @@ import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsB
 import { getGraph, isListedNode, nodeHref, nodeLinkHref, type Lane, type Node } from "@/lib/graph";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
+import { imageRefsForNode } from "@/lib/project-face";
 
 const laneBg: Record<Lane, string> = {
   research: "bg-[var(--color-lane-research)]",
@@ -17,6 +19,11 @@ const laneBg: Record<Lane, string> = {
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const pad2 = (n: number) => String(n).padStart(2, "0");
+// A post is dated by the last time it changed: its latest revision, or
+// the day it went up if it has never been revised.
+const latestDate = (node: Node) => getPostRevisionSummary(node.id).updatedDate ?? fmtDate(node.date);
+// The image optimizer only takes local rasters; anything else is served as-is.
+const unoptimizable = (src: string) => !src.startsWith("/") || /\.(?:svg|gif)(?:[?#]|$)/i.test(src);
 // Contact row inside the hero hexagon, in the order it reads. Kept to the
 // accounts worth interrupting someone for — the long tail lives in
 // `moreSocialGroups`, behind the row's `> more` toggle.
@@ -158,16 +165,11 @@ export default function HomePage() {
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .slice(0, 8);
 
-  // The issue's contents: the sections below in reading order, with
-  // their counts. Projects and posts are on this page; the two shelves
-  // link through to their indexes as well.
-  const contents = [
-    { n: 1, label: "Projects", href: "#projects", count: allProjects.length },
-    { n: 2, label: "Writing", href: "#posts", count: listedNodes.filter((n) => n.kind === "post").length },
-    { n: 3, label: "Readings", href: "/readings", count: listedNodes.filter((n) => n.kind === "reading").length },
-    { n: 4, label: "Writings", href: "/papers", count: recentPapers.length },
-  ];
   const [feature, ...restPosts] = recentPosts;
+  // The feature's picture: its hero if it names one, else the first image
+  // its body places — whichever post happens to be the latest.
+  const featureImage = feature ? imageRefsForNode(feature)[0] : undefined;
+  const featureDate = feature ? latestDate(feature) : undefined;
 
   return (
     <main className="mx-auto max-w-5xl px-6 pt-10 pb-32">
@@ -218,53 +220,40 @@ export default function HomePage() {
         }}
       />
 
-      {/* ---- Contents ---- */}
-      {/* The table of contents: the page's sections, numbered, with what
-          each holds. It is the one place the whole issue is laid out in a
-          line. */}
-      <nav aria-label="Contents" className="mt-32">
-        <div className="rule-label">Contents</div>
-        <ol className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-          {contents.map((c) => (
-            <li key={c.n}>
-              <a href={c.href} className="group block no-underline">
-                <span className="numeral">{pad2(c.n)}</span>
-                <span className="mt-1 block font-block text-2xl font-extrabold tracking-tight text-[var(--color-ink)] underline-offset-[6px] decoration-[var(--color-rule)] group-hover:underline">
-                  {c.label}
-                </span>
-                <span className="mt-1 block font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
-                  {c.count} {c.count === 1 ? "entry" : "entries"}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-
       {/* ---- Feature ---- */}
       {/* The issue's one feature spread: the latest essay, set as large
-          as a page title, with its standfirst beside it. */}
+          as a page title, with its picture and standfirst stacked beside
+          it. */}
       {feature && (
-        <section id="posts" className="mt-40 scroll-mt-20">
-          <div className="rule-label">
-            <span>Feature</span>
-          </div>
+        <section id="posts" className="mt-32 scroll-mt-20">
           <Link
             href={nodeHref(feature)}
-            className="group mt-10 grid gap-8 no-underline lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14"
+            className="group grid gap-8 no-underline lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14"
           >
             <div>
               <div className="flex items-baseline gap-3">
                 <span className="numeral">{pad2(1)}</span>
                 <span className="font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
-                  <time dateTime={fmtDate(feature.date)}>{fmtDate(feature.date)}</time>
+                  <time dateTime={featureDate}>{featureDate}</time>
                 </span>
               </div>
               <h2 className="display-title mt-4 transition-colors duration-500 group-hover:text-[var(--color-ink-dim)]">
                 {feature.title}
               </h2>
             </div>
-            <div className="lg:pt-10">
+            <div className={featureImage ? "lg:pt-1" : "lg:pt-10"}>
+              {featureImage && (
+                <div className="relative mb-7 aspect-[4/3] overflow-hidden bg-[var(--color-bg-1)]">
+                  <Image
+                    src={featureImage.src}
+                    alt={featureImage.alt}
+                    fill
+                    sizes="(min-width: 1024px) 26rem, 100vw"
+                    unoptimized={unoptimizable(featureImage.src)}
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  />
+                </div>
+              )}
               <p className="standfirst">{feature.summary}</p>
               <span className="mt-6 inline-block font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-brass)] uppercase">
                 Read the essay
@@ -275,30 +264,39 @@ export default function HomePage() {
       )}
 
       {/* ---- Recent posts ---- */}
-      <Section
-        title="Writing"
-        link={{ href: "/posts", label: "all posts" }}
-        tight
-      >
-        <ol className="flex flex-col">
-          {restPosts.map((n, i) => (
-            <li key={n.id} className="border-t border-[var(--color-rule)] last:border-b">
-              <RowLink node={n} n={i + 2} of={recentPosts.length} />
-            </li>
-          ))}
-        </ol>
-      </Section>
+      {/* The rest of the latest writing runs straight on from the
+          feature, numbered after it, and closes on the way into the whole
+          index. */}
+      {restPosts.length > 0 && (
+        <section className="mt-16">
+          <ol className="flex flex-col">
+            {restPosts.map((n, i) => (
+              <li key={n.id} className="border-t border-[var(--color-rule)] last:border-b">
+                <RowLink node={n} n={i + 2} of={recentPosts.length} />
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8 text-center">
+            <Link
+              href="/posts"
+              className="font-[family-name:var(--font-mono)] text-[0.68rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase no-underline hover:text-[var(--color-ink)]"
+            >
+              All
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* ---- Readings ---- */}
       {recentReadings.length > 0 && (
-        <Section title="Readings" link={{ href: "/readings", label: "all readings" }}>
+        <Section title="Readings" link={{ href: "/readings", label: "all" }}>
           <ReadingCoverRail nodes={recentReadings} />
         </Section>
       )}
 
       {/* ---- Papers ---- */}
       {recentPapers.length > 0 && (
-        <Section title="Writings" link={{ href: "/papers", label: "all writings" }}>
+        <Section title="Writings" link={{ href: "/papers", label: "all" }}>
           <CoverRail nodes={recentPapers} variant="paper" />
         </Section>
       )}
@@ -312,21 +310,18 @@ function Section({
   link,
   children,
   id,
-  tight,
 }: {
   eyebrow?: string;
   title: string;
   link?: { href: string; label: string };
   children: React.ReactNode;
   id?: string;
-  /** Pulls the section up close to the one above it. */
-  tight?: boolean;
 }) {
   // The heading sits on the rule, small and letterspaced, with the
   // section's link at the far end of the same line: the running head of
   // a magazine section rather than a heading above a card.
   return (
-    <section id={id} className={`${tight ? "mt-20" : "mt-40"} scroll-mt-20`}>
+    <section id={id} className="mt-40 scroll-mt-20">
       <div className="rule-label mb-10">
         <h2 className="font-[inherit] text-[inherit] tracking-[inherit] uppercase">
           {eyebrow ? `${eyebrow} · ${title}` : title}
@@ -389,11 +384,10 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
   );
 }
 
-// A numbered contents row: "02 / 06", the title in the serif, the dates
-// on the right. Rules above and below come from the list.
+// A numbered contents row: "02 / 06", the title in the serif, the latest
+// date on the right. Rules above and below come from the list.
 function RowLink({ node, n, of }: { node: Node; n: number; of: number }) {
-  const postedDate = fmtDate(node.date);
-  const { updatedDate } = getPostRevisionSummary(node.id);
+  const date = latestDate(node);
   return (
     <Link
       href={nodeHref(node)}
@@ -407,12 +401,7 @@ function RowLink({ node, n, of }: { node: Node; n: number; of: number }) {
         {node.title}
       </span>
       <span className="col-start-2 font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase sm:col-start-3 sm:text-right">
-        <time dateTime={postedDate}>{postedDate}</time>
-        {updatedDate && (
-          <span className="block">
-            rev. <time dateTime={updatedDate}>{updatedDate}</time>
-          </span>
-        )}
+        <time dateTime={date}>{date}</time>
       </span>
     </Link>
   );

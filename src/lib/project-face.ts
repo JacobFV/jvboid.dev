@@ -186,7 +186,8 @@ export function tileIconKey(project: { tags: string[]; lane: Lane; video?: strin
   return "wrench";
 }
 
-function imageRefsForNode(n: Node): FaceImage[] {
+/** Every image a node references: its hero first, then the body's, in order. */
+export function imageRefsForNode(n: Node): FaceImage[] {
   const refs: FaceImage[] = [];
   if (n.hero?.src) refs.push({ src: n.hero.src, alt: n.hero.alt });
 
