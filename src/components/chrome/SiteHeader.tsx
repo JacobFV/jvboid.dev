@@ -274,13 +274,16 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
                 <TriangleIcon open={moreOpen} />
               </button>
               {moreOpen && (
+                // Square, ruled and tight: a hairline box of hairline rows,
+                // mono caps, and a hover that inverts the row outright
+                // rather than tinting a pill.
                 <div
                   role="menu"
-                  className="absolute top-full right-0 mt-2 grid w-44 gap-1 rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-0)] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.18)]"
+                  className="absolute top-full right-0 mt-3 w-48 border border-[var(--color-rule)] bg-[var(--color-bg-0)] shadow-[0_14px_32px_-14px_rgba(0,0,0,0.4)]"
                 >
                   {MORE_NAV.map((item) => {
                     const cls =
-                      "rounded-md px-3 py-2 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink)] no-underline hover:bg-[var(--color-bg-1)] hover:text-[var(--color-accent)]";
+                      "flex items-center justify-between border-t border-[var(--color-rule)] px-3.5 py-2.5 font-[family-name:var(--font-mono)] text-[0.68rem] tracking-[0.14em] text-[var(--color-ink-dim)] uppercase no-underline transition-colors duration-100 first:border-t-0 hover:bg-[var(--color-ink)] hover:text-[var(--color-bg-0)] focus-visible:bg-[var(--color-ink)] focus-visible:text-[var(--color-bg-0)] focus-visible:outline-none";
                     return item.external ? (
                       <a
                         key={item.href}
@@ -291,10 +294,17 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
                         onClick={() => setMoreOpen(false)}
                         className={cls}
                       >
-                        {item.label} ↗
+                        <span>{item.label}</span>
+                        <span aria-hidden>↗</span>
                       </a>
                     ) : (
-                      <Link key={item.href} href={item.href} role="menuitem" className={cls}>
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        role="menuitem"
+                        onClick={() => setMoreOpen(false)}
+                        className={cls}
+                      >
                         {item.label}
                       </Link>
                     );
