@@ -244,29 +244,6 @@ body {
 }
 
 /* ---- Colophon ---- */
-.colophon-text {
-  max-width: 44em;
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 18;
-  font-size: 0.92rem;
-  line-height: 1.55;
-  color: var(--color-ink-mute);
-  text-wrap: pretty;
-}
-.colophon-text em {
-  font-style: italic;
-  color: var(--color-ink-dim);
-}
-.colophon-text a {
-  color: var(--color-ink-dim);
-  text-decoration: underline;
-  text-decoration-color: var(--color-rule);
-  text-underline-offset: 0.2em;
-}
-.colophon-text a:hover {
-  color: var(--color-ink);
-  text-decoration-color: var(--color-ink);
-}
 .colophon-mark {
   font-family: var(--font-mono);
   font-size: 0.66rem;

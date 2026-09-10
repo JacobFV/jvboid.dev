@@ -71,8 +71,8 @@ does it, all in `globals.css`:
 - **Pace** — links settle over ~420ms on a long ease-out; routes
   cross-fade through `app/template.tsx` (`.page-turn`), the title arriving
   a beat after the page.
-- **Colophon** — every route closes on `components/chrome/Colophon.tsx`,
-  crediting the type.
+- **Colophon** — every route closes on `components/chrome/Colophon.tsx`:
+  an ornamented rule and the maker's mark, nothing more.
 
 ## Grid & spacing
 
