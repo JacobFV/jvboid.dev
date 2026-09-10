@@ -28,10 +28,10 @@ declare global {
 }
 
 // "Ask me anything" contact prompt.
-//   [text input grows] [mic] [submit]
-// Submit morphs between phone (empty → CallSheet) and arrow-up
-// (has text → TextSheet which gates the reveal of phone/email with the
-// same captcha CallSheet uses).
+//   [+] [text input grows] [mic] [submit]
+// `+` attaches files. Submit morphs between phone (nothing to send →
+// CallSheet) and arrow-up (text or files → TextSheet, which offers text,
+// email, and — for files — the system share sheet).
 export function AskInput({
   className,
   style,
@@ -40,15 +40,17 @@ export function AskInput({
   style?: React.CSSProperties;
 }) {
   const [value, setValue] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [callOpen, setCallOpen] = useState(false);
   const [textOpen, setTextOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const [sttSupported, setSttSupported] = useState(true);
   const recRef = useRef<SRInstance | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   // Text the user has typed before this dictation chunk started, plus a
   // trailing space if needed. We append interim/final transcript to this.
   const baseTextRef = useRef("");
-  const hasText = value.trim().length > 0;
+  const hasText = value.trim().length > 0 || files.length > 0;
 
   // Lazy-construct one SpeechRecognition. Some browsers throw if start()
   // is called on a finished recognizer, so we re-use a single instance.
@@ -118,8 +120,34 @@ export function AskInput({
           stacked hero and inside the hexagon on the packed one. */}
       <div
         style={style}
-        className={`mx-auto flex w-full max-w-xl items-center gap-1 rounded-full bg-[var(--color-bg-1)] py-2 pr-2 pl-5 shadow-[var(--shadow-soft),var(--ring-soft)] focus-within:shadow-[var(--shadow-soft),inset_0_0_0_1px_var(--color-accent)] ${className ?? ""}`}
+        className={`mx-auto flex w-full max-w-xl items-center gap-1 rounded-full bg-[var(--color-bg-1)] py-2 pr-2 pl-2 shadow-[var(--shadow-soft),var(--ring-soft)] focus-within:shadow-[var(--shadow-soft),inset_0_0_0_1px_var(--color-accent)] ${className ?? ""}`}
       >
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          aria-label={files.length ? `${files.length} attached — add more files` : "Attach files"}
+          title={files.length ? files.map((f) => f.name).join(", ") : "Attach files"}
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-ink-dim)] transition-colors hover:bg-[var(--color-bg-2)] hover:text-[var(--color-ink)]"
+        >
+          <PlusIcon />
+          {files.length > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--color-accent)] px-1 font-[family-name:var(--font-mono)] text-[9px] leading-none text-white">
+              {files.length}
+            </span>
+          )}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          multiple
+          hidden
+          onChange={(e) => {
+            const picked = Array.from(e.target.files ?? []);
+            if (picked.length) setFiles((prev) => [...prev, ...picked]);
+            // Clear it so picking the same file again still fires.
+            e.target.value = "";
+          }}
+        />
         <input
           type="text"
           value={value}
@@ -181,8 +209,31 @@ export function AskInput({
       </div>
 
       <CallSheet open={callOpen} onClose={() => setCallOpen(false)} />
-      <TextSheet open={textOpen} message={value} onClose={() => setTextOpen(false)} />
+      <TextSheet
+        open={textOpen}
+        message={value}
+        files={files}
+        onRemoveFile={(index) => setFiles((prev) => prev.filter((_, i) => i !== index))}
+        onClose={() => setTextOpen(false)}
+      />
     </>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
   );
 }
 

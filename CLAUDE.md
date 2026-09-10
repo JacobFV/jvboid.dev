@@ -27,8 +27,10 @@ editing this repo.
   links don't break. Don't re-surface them; see
   [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#updates-are-delisted).
 - **Contact details live in env, never in code.** `CONTACT_PHONE` and
-  `CONTACT_EMAIL` go through `revealContact()` server action behind a
-  math captcha. Don't hard-code or expose them in client bundles.
+  `CONTACT_EMAIL` reach the browser only through the `getCallNumber()` /
+  `getContact()` server actions, when someone opens the call or message
+  sheet. There is no captcha in front of them any more — Jacob removed it
+  on purpose — but don't hard-code them or put them in client bundles.
 - **Client-safe imports.** `src/lib/graph-types.ts` holds the pure types
   + `nodeHref`. `src/lib/graph.ts` holds `getGraph()` and pulls in
   `node:fs`. Client components import from `graph-types`. Don't merge

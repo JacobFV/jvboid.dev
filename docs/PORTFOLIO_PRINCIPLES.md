@@ -124,10 +124,12 @@ What went wrong? What would I do differently? One short paragraph.
 - **CV** — `/resume` is in the home nav pills, generated from
   `content/experience/*.mdx`.
 - **Contact** — the home `AskInput` pill is always reachable. The green
-  phone button opens `CallSheet`, the orange arrow opens `TextSheet`. Both
-  gate on a math captcha and reveal the phone (`CONTACT_PHONE`) or email
-  (`CONTACT_EMAIL`) only after verification. The number and email never
-  enter the client bundle. See `src/lib/contact-actions.ts`.
+  phone button opens `CallSheet`, the orange arrow opens `TextSheet`, and
+  `+` attaches files (sent through the system share sheet where the
+  browser supports it). There is no captcha: opening a sheet fetches the
+  phone (`CONTACT_PHONE`) or email (`CONTACT_EMAIL`) from a server action.
+  The number and email never enter the client bundle. See
+  `src/lib/contact-actions.ts`.
 - **Email** — `jacobfv123@gmail.com`, configured via the `CONTACT_EMAIL`
   env var on Vercel. The TextSheet falls back to `mailto:` when SMS isn't
   available (i.e. desktop).
@@ -151,7 +153,7 @@ When adding a new project or reviewing site changes, ask:
 - [ ] Are collaborators credited (link to `/friends/...`)?
 - [ ] Are talks / conferences linked from `/events/...`?
 - [ ] Is `/resume` reflecting the latest experience?
-- [ ] Does the contact flow still go through `revealContact()` (not static)?
+- [ ] Does the contact flow still go through `getCallNumber()` / `getContact()` (not static)?
 
 ---
 
@@ -161,7 +163,7 @@ Re-read this doc and re-audit when:
 
 - The number of pinned projects in `pickFeatured` would exceed 6.
 - A new node kind is added that needs a dedicated index or visual treatment.
-- The contact-reveal flow changes shape (e.g. swapping the captcha).
+- The contact flow changes shape (e.g. real attachment delivery by email).
 - A new visual layer (planetoids, orbits, …) is introduced — make sure it
   also follows the "real graphics, no letters" rule baked into
   `OrbitDecor.tsx` / `Planetoids.tsx`.
