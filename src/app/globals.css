@@ -243,6 +243,61 @@ body {
   filter: none;
 }
 
+/* ---- The IBM-1 reel (content/projects/ibm-1.mdx) ----
+   The site's strip of the body moving, set as a contact sheet: looping
+   clips and stills straight on the page, each with its title, its number
+   and what the number means. Wider than the prose column where there is
+   room, like the two-up tweet groups. */
+.prose-mdx .ibm-reel {
+  display: grid;
+  gap: 1.75rem 1.25rem;
+  margin-block: 2rem;
+}
+@media (min-width: 40rem) {
+  .prose-mdx .ibm-reel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .prose-mdx .ibm-reel {
+    --x-wide: min(64rem, calc(100vw - 3rem));
+    width: var(--x-wide);
+    margin-inline-start: calc(50% - var(--x-wide) / 2);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.prose-mdx .ibm-reel figure {
+  margin: 0;
+}
+.prose-mdx .ibm-reel video,
+.prose-mdx .ibm-reel img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+  margin: 0;
+  border-radius: 3px;
+}
+.prose-mdx .ibm-reel figcaption {
+  margin-top: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--color-ink-mute);
+}
+.prose-mdx .ibm-reel figcaption strong {
+  display: block;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.prose-mdx .ibm-reel figcaption .cap {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-ink-dim);
+}
+
 /* ---- Hero bio, cut short (HeroHex.tsx) ----
    Opening the contact row's "more" pours a directory of links into the
    hexagon, and the bio under it no longer fits. It keeps its first lines

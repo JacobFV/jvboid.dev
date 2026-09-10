@@ -1,0 +1,170 @@
+---
+title: IBM-1
+date: 2026-09-04
+lane: research
+tags: [neuroscience, foundation-models, eeg, meg, embodied-ai, musculoskeletal, python]
+summary: "The Implicit Brain Model: a multimodal foundation model of whole-brain state and dynamics, lazily materialized into explicit maps — image-to-EEG retrieval at 127× chance, a cortex that holds a musculoskeletal body upright, and fifty-one claims withdrawn in public."
+resume_description: "implicit brain model: one 3.84M kernel lazily materialized into 16 explicit models across EEG, MEG, vision and an embodied musculoskeletal body; 63.5% image→EEG retrieval (127× chance), with every withdrawn claim ledgered. python, mne, opensim."
+datePrecision: day
+hero:
+  src: "/assets/media/ibm-1/embodied_3d_final_frame.png"
+  alt: "Cortex in the loop, beside cortex severed: one body upright at 1.019 m, the other fallen at 0.590 m"
+threadImages:
+  - src: "/assets/media/ibm-1/embodied_3d_final_frame.png"
+    alt: "Cortex in the loop, beside cortex severed"
+  - src: "/assets/media/ibm-1/final-4-prompt.png"
+    alt: "Asking the brain what it is seeing: image-to-EEG retrieval"
+  - src: "/assets/media/ibm-1/app-1-ring.png"
+    alt: "The materialization ring"
+  - src: "/assets/media/ibm-1/skin-bioelectricity.png"
+    alt: "Skin bioelectricity: 1,326 innervated patches"
+links:
+  github: https://github.com/JacobFV/IBM-1
+  site: https://jacobfv.github.io/IBM-1/
+influences: [sc-wbd, brain-model]
+realizes: []
+critiques: []
+---
+
+The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be [lazily](https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization) [materialized](https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization) into [explicit maps](https://jacobfv.github.io/IBM-1/#programme) for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine.
+
+<LiveDemo
+  url="https://jacobfv.github.io/IBM-1/"
+  title="IBM-1"
+  caption="The substrate and its materializations: pick one on the ring to see its inputs and outputs."
+/>
+
+## The body, moving
+
+<div className="ibm-reel">
+  <figure>
+    <video src="/assets/media/ibm-1/anatomical_crawl.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="the real anatomy crawling" />
+    <figcaption><strong>the real anatomy crawling</strong><span className="cap">16.0 s · 0.920 m · worst joint excursion 11.5°</span>3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain. Worst excursion past a declared joint range is 11.5°, against 145° for an earlier attempt withdrawn for folding the ankles back on themselves.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/anatomical_gait_muscle.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="1,047 bone and muscle surfaces" />
+    <figcaption><strong>1,047 bone and muscle surfaces</strong><span className="cap">a full measured gait cycle</span>Real Rajagopal joint coordinates from a walking subject, imposed on the anatomy. The anatomy travels up to 2,234 mm; the body's own canonical run moves 6.35 mm across 30 s.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/tissue_prone_drop_three_arms.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="117 tissue force elements" />
+    <figcaption><strong>117 tissue force elements</strong><span className="cap">three arms — the middle is a negative result</span>105 ligaments and 12 joint capsules as Blankevoort elements, attachments derived from the per-vertex vote the segment binding is built from. The middle arm is all 105 and it makes the plant WORSE than bare — the derived ACL reads 77% strain at 90° of knee flexion against a 17.1% ultimate, because a straight line between attachment centroids is not a cruciate's path.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/anatomical_cortex_in_loop.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="cortex in the loop" />
+    <figcaption><strong>cortex in the loop</strong><span className="cap">0.17 mm COM drift under a 5 N push</span>The trained 1024-site cortical kernel holding the body upright. The control matters: a kernel with its site rows permuted holds it just as well, so this shows the cortex is the motor owner and says nothing about whether its learned content contributes.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/video_prediction.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="video prediction, and it does not work" />
+    <figcaption><strong>video prediction, and it does not work</strong><span className="cap">−0.25 skill against persistence</span>Truth left, prediction right, at t+8. It looks plausible because frame t+8 resembles frame t. Measured against copying the previous frame it is worse, and at a negative window where appearance is useless the model sits at exactly chance loss for 3,000 steps. The video term was matching appearance, not predicting.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/cortex_severed.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="cortex in the loop, beside cortex severed" />
+    <figcaption><strong>cortex in the loop, beside cortex severed</strong><span className="cap">upright at 1.019 m · fallen at 0.590 m</span>Severed, the body is on the floor with 499 mm of COM drift and the recording ends at 2.90 s. Severing removes the dynamics, not the learning.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/anatomical_gait_skin.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="one step, with skin" />
+    <figcaption><strong>one step, with skin</strong><span className="cap">foot airborne at 0.14% body weight</span>Clears 1.8 cm, advances 17.1 cm, lands on measured contact — then pitches forward. One genuine step by the harness's own strict criterion, and then a fall.</figcaption>
+  </figure>
+  <figure>
+    <video src="/assets/media/ibm-1/gait_one_step.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="the 22-segment scaffold" />
+    <figcaption><strong>the 22-segment scaffold</strong><span className="cap">what the anatomy is posed from</span>The crude body the engine actually integrates: 22 rigid bodies, 80 muscles, 33 coordinates. It has always been a scaffold with a planned disposal — its jobs move to the real body, contact first, then actuation.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/embodied_3d_final_frame.png" alt="cortex in the loop, beside cortex severed" loading="lazy" />
+    <figcaption><strong>cortex in the loop, beside cortex severed</strong><span className="cap">1.019 m upright · 0.590 m fallen</span>Rendered from the OpenSim model with segment colour set by force-weighted mean muscle excitation. 22 bodies, 20 segments, 98 muscles; no limb length is assumed and the geometry is read from model.osim.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/acquired-anatomy-and-flow.png" alt="the acquired atlas" loading="lazy" />
+    <figcaption><strong>the acquired atlas</strong><span className="cap">2,229 surfaces, ~350 MB, ~28 s to load</span>BodyParts3D 4.0 surfaces as measured, before the display promotion registered another 1,768 structures from other datasets onto them.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/native-multisystem-physiology.png" alt="multisystem physiology" loading="lazy" />
+    <figcaption><strong>multisystem physiology</strong><span className="cap">the body state the brain reads</span>Digestive, circulatory, respiratory and renal state integrated by the native engine — the substrate the 15 visceral afferent channels are transduced from.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/cardiopulmonary.png" alt="cardiopulmonary" loading="lazy" />
+    <figcaption><strong>cardiopulmonary</strong><span className="cap">the loop that does not stop</span>Heart and lung mechanics running continuously beneath everything else. The vagal afferents that report it are ~80% afferent by declaration, and their unmyelinated C arm carries two thirds of the interoceptive signal.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/skin-bioelectricity.png" alt="skin bioelectricity" loading="lazy" />
+    <figcaption><strong>skin bioelectricity</strong><span className="cap">1,326 patches, 100.00% of the exterior</span>Every patch innervated: 1,199 carry a spinal root, 127 are trigeminal territory with no dermatome because the face is cranial. 29 of 30 spinal levels — C1 is absent because it has no cutaneous territory in life.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/app-1-ring.png" alt="the materialization ring" loading="lazy" />
+    <figcaption><strong>the materialization ring</strong><span className="cap">every unmeasured path reads “not measured”</span>151 edges from the live brain graph. Arrow width IS the measured magnitude, so a dead path looks dead — the 0.05% cortical hop draws 0.6 px against 14 px for a measured one. A unit test enforces that unmeasured edges stay unlabelled.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/app-3-contribution.png" alt="what a materialization contributes" loading="lazy" />
+    <figcaption><strong>what a materialization contributes</strong><span className="cap">and what it does not</span>Clicking an annotation shows the signals feeding the highlighted system, with the corrected motor statement in full: a permuted kernel recovers the same push, so the cortex is the motor owner and the trained content is not shown to contribute.</figcaption>
+  </figure>
+  <figure>
+    <img src="/assets/media/ibm-1/final-4-prompt.png" alt="asking the brain what it is seeing" loading="lazy" />
+    <figcaption><strong>asking the brain what it is seeing</strong><span className="cap">63.5% top-1, 127× chance</span>Nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the THINGS-EEG2 designated test set. Flagged RETRIEVAL · NOT A GENERATION, with the chance level and the note that bar length is a normalised cosine and not a probability.</figcaption>
+  </figure>
+</div>
+
+## §1 design
+
+- **fields** — `F = { x(q) : q ∈ Ω }` — state variables on a support. a component is a physical quantity, never an encoding. supports are not shared: the cortical sheet, the vascular tree and a sensor array are different domains.
+- **anatomy** — `a(q) ∈ [0,1]ᵏ` — soft membership of a position in named partitions. an atlas is evidence about where things are, not a coordinate system.
+- **topologies** — `T(i, j)` — which state variables may interact, through what. all spatial structure lives here; there is no universal spatial operator.
+- **processes** — `P = (I, O, T, f, θ)` — dynamics over a topology. (f, θ) is implementation; implementations compete for a process rather than redefining it.
+
+`M = materialize(R, r, B, F, A, T, P)`
+
+an explicit model names regions *R*, a resolution *r(q)* and a bandwidth *B(q)*; [dependency tracing instantiates only what is reachable from the target](https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md). the same field can sit at 1 mm across the brain and 50 µm around an electrode at once. the forty entries in the library differ only in *R*, *r* and *B*, and each carries provenance: which implementation ran, which parameters evidence moved, and where a process ran outside its regime.
+
+## §2 research
+
+| claim | measured | outcome |
+| --- | --- | --- |
+| the shared cortex is load-bearing | bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. *load-bearing is not the same as better than a purpose-built baseline* — see §2b | **held** |
+| cross-modal association is learned | occipito-temporal edges at 4.4× the random-pair baseline — and severing those exact edges costs **−0.06%**. magnitude is not contribution | **withdrawn** |
+| band-limited fusion is exact | real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16 | **held** |
+| the thalamocortical resonance is alpha | 13.45 Hz, a spindle; held-out +5503 nats/night, p = 7.2e-11 | **prior moved** |
+| the slow oscillation sits at the band edge | 1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it | **fitted** |
+| the paired MEG encoder beats baseline | after the target units were fixed: skill −0.07 to +0.14. the +0.90 to +0.99 reported before measured the target scale | **at chance** |
+| a positive association kernel is enough | eight applications are eight rounds of averaging: rank 1.57 → 1.01, loss diverging. signed fixed it | **failed** |
+| the neurovascular chain predicts BOLD | r = −0.11, permutation p = 0.38 | **failed** |
+| Grubb's law holds | slope 0.066 against a declared 0.38 | **failed** |
+| MEG resolves finer sources than EEG | 49.8% vs 63.0% per channel, p = 0.0033 | **failed** |
+| the capillary bed carries most of the resistance | 6–27% of dissipation; 85% of the length | **wrong** |
+| tractography is reliable edge by edge | recovery 0.456, FDR 0.725; thresholding does not help | **no** |
+
+## §2b status
+
+Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give *different orderings* and are never quoted interchangeably.
+
+| what runs | measured | against |
+| --- | --- | --- |
+| one implicit kernel, published | fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. recovers **88.7%** of a task-specific kernel on the task that kernel was trained for | 0% for random |
+| 16 materializations, one 3.84M kernel | trained simultaneously to step 32,000, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual\_eeg **30.4%** top-1, optic\_nerve **22.8%**, ten per-subject terms mean **15.4%**. two of the sixteen — video and audio\_visual — sit at *negative* skill against persistence and are reported as failures, not omitted | 0.5% chance |
+| image → cortex → EEG retrieval | **63.5%** top-1 on the designated test set, 200 images, median rank 1 | 127× chance |
+| a declared optic nerve into occipital cortex | three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved. displacing the port to a random region of equal size collapses retrieval to **0.44%** | 8.69% in place |
+| the substrate resolution has an interior optimum | controlled sweep, resolution the only variable: 128 → 19.4%, **512 → 23.0%**, 2048 → 23.0%, 8192 → 21.7% | both tails worse |
+| the sheet delivers between disjoint regions | image → occipital → sheet → a *precentral-only* readout (ports verified disjoint) reaches **48.4×** chance on real THINGS-EEG2, against a severed sheet at **1.00×** — severed has across-image variance of exactly zero and effective rank 1.0. a positive control that permutes only the readout columns, which cannot change the answer, reads 48.6× | severed = chance |
+| cortical dynamics hold a body upright | 250 exchanges, five seconds, 5 N pelvis push: **0.17 mm** COM displacement. severed, the body is on the floor at 2.90 s at 499 mm | held |
+
+And what does not work, stated with the same weight:
+
+| claim | what the control said | outcome |
+| --- | --- | --- |
+| the cortex beats a dynamics-free encoder | matched selection on the designated test set: control **66.5%** against the cortex model's 63.5%. indistinguishable, and the direction is gone | **withdrawn** |
+| the kernel's learned content carries perception between regions | a kernel with its site rows *permuted* reads **50.8×** against the trained kernel's 48.4× — indistinguishable, with amplitude, effective rank, train loss and train top-1 all preserved. transport is a property of the graph and the weight statistics, not of what was learned | **withdrawn** |
+| the kernel's learned content drives movement | a kernel with its site rows permuted recovers the same push. the *dynamics* are load-bearing; what they learned from vision and audio is not | **withdrawn** |
+| next-frame video training shapes cortical wiring | pairing each frame with a *random* frame still transfers 83–86% of the 91.5%. only ~5 points depend on prediction | **withdrawn** |
+| sharing one kernel helps the terms that share it | one subject trained solo for the same own-steps reaches **17.4%** against the shared run's 15.4% | **neutral** |
+| video continuation predicts motion | 25% worse than emitting the previous frame unchanged. the clips looked sharp because at horizon 8 frame t+8 resembles frame t | **withdrawn** |
+| the body walks | three independent CMA searches each produce *one* genuine step — swing foot unloaded below 2% of body weight, 3.5–6.4 cm clearance, 4.6–10.3 cm advance, landing on measured contact — and then fall. the pelvis travels **0.2–5.8 mm** while the foot advances 46–103 mm: the body steps in place, so the landing leg brakes a centre of mass that never moved, and the COM collapses 18–20 cm | **one step** |
+| the cortex can route sensation to motor cortex | **0.03–0.07%** of the driven signal reaches the disjoint motor region, and the ratio scales linearly with association gain rather than compounding | **structural** |
+
+**Fifty-one claims have been withdrawn.** Not one was a modelling error. Every one was a quantity computed correctly and then compared against the wrong thing — the wrong population, the wrong units, the wrong split, the wrong point in time, or no baseline at all. The worst flattered itself by 280× while never beating a zero baseline; the largest was an image–EEG pairing that was 99.94% wrong and produced three hours of confident negative results about a corpus that was fine. [The ledger keeps every one](https://github.com/JacobFV/IBM-1/blob/main/docs/LOG.md), with the check that caught it.
+
+## §4 releases
+
+- **forward models** — `av_meg_predictor`, `av_predictor`, `meg_encoder`, `visual_evoked`, `eeg_forward`, `meg_forward`, `bold_forward`, `fnirs_forward`, `ecog_forward` (all WIP)
+- **decoding** — `meg_to_text`, `speech_envelope`, `eeg_to_image`, `inner_speech` (all WIP)
+- **stimulation** — `tms_response`, `tes_response`, `tfus_response`, `dbs_response`, `tms_eeg_tep` (all WIP)
+- **state and disorder** — `sleep_dynamics`, `anesthesia`, `seizure_propagation`, `pharmaco` (all WIP)
+- **the embodied loop** — `invasive_bci`, `handwriting_bci`, `motor_mapping` (all WIP)
+- **surrogates** — `macro_surrogate`, `connectome_gnn`, `encoding_model`, `resting_state_fc` (all WIP)

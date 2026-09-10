@@ -58,6 +58,8 @@ const hexSizeById: Record<string, HexSize> = {
   // of its own, and its artwork — the connectome with the mark over it — is the
   // one image here that is actually worth a tile this size.
   "sc-wbd": 3,
+  // Its sibling: the implicit brain model, the other half of the brain work.
+  "ibm-1": 2,
   "cookie-baker-3d-printer": 2,
   "chem-0": 2,
   "canvas-engineering": 2,

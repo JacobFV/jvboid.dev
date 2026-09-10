@@ -18,12 +18,14 @@ import hexTiles from "../../public/_generated/hex-tiles.json";
 const tileArtById = hexTiles as Record<string, TileArt>;
 
 const initialProjectAdjacency = [
+  ["sc-wbd", "ibm-1"],
   ["phys-0", "chem-0"],
   ["windows-web-next", "macos-web-next"],
 ] as const;
 
 const featuredProjectOrder = [
   "sc-wbd",
+  "ibm-1",
   "chem-0",
   "trash-sorter",
   "lunar-rover",
