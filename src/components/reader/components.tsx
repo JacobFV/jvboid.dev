@@ -23,6 +23,7 @@ import { TensorAtmosphere } from "./TensorAtmosphere";
 import { CinemaAtmosphere } from "./CinemaAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
+import { SideMedia } from "./SideMedia";
 import { EchoBottlenecks } from "./echo/EchoBottlenecks";
 import { EchoLoop } from "./echo/EchoLoop";
 import { EchoCompletion } from "./echo/EchoCompletion";
@@ -231,6 +232,8 @@ export const readerComponents: MDXComponents = {
   // Magazine pull quote. Floats into the page margin where there is one, so
   // a body places it *before* the paragraph it should sit beside.
   PullQuote,
+  // Media in a column beside the prose, floated like a pull quote.
+  SideMedia,
   // The figures of "Can an Echo Become a Voice Again?" — inline canvas and
   // SVG rather than <img>, so they follow the theme and can move.
   EchoBottlenecks,

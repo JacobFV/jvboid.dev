@@ -372,6 +372,38 @@ Below 64rem there is no margin to float into, so it stacks full-width and
 only the type size sets it apart. Keep quotes short: 8-20 words holds a
 sensible line length in a 19rem column.
 
+## Side media
+
+Media that should sit *beside* the prose rather than across it — the
+photograph and demo video a post opens on, a tweet or two it answers —
+goes in a `<SideMedia>` column. It floats like a pull quote, so the
+paragraphs after it run alongside; placed first in a body, a reader
+landing on the page sees the prose and the media together. One caption
+sits under the whole stack, never between its pieces.
+
+```mdx
+<SideMedia
+  image={{ src: "/assets/img/chem-0/cover-team-photo.jpeg", alt: "Chem-0 team with the robot arm lab setup" }}
+  video="https://www.youtube.com/embed/j6YFMdZmq-E"
+  caption="The Chem-0 team with the robot arm lab setup, and the demo."
+/>
+
+<SideMedia side="left">
+  <XPost urls={["https://x.com/…/status/1", "https://x.com/…/status/2"]} />
+</SideMedia>
+```
+
+| Prop       | Default   | What it does                                                    |
+| ---------- | --------- | --------------------------------------------------------------- |
+| `side`     | `"right"` | Which margin the column floats into.                             |
+| `image`    | —         | `{ src, alt }`; opens in the lightbox like any body image.       |
+| `video`    | —         | An embeddable URL, set 16:9 under the image.                     |
+| `caption`  | —         | One line under everything in the column.                         |
+| `children` | —         | Anything else to stack, e.g. an `<XPost>` (one per line).        |
+
+Below 64rem there is no margin for a column, so it is a full-width block
+where it stands.
+
 ## Authoring rules
 
 - Every new node gets at least one `influences` entry. Empty influence lists are a red flag.
