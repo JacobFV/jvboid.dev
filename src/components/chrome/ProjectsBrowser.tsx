@@ -12,6 +12,7 @@
 // it (zoomed in at first, settling to 1× as the mask opens), and the
 // tile artwork cross-fades out on top.
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +41,8 @@ export type ProjectItem = {
   lane: Lane;
   /** List view only — the honeycomb never shows one, so it omits them. */
   summary?: string;
+  /** List view only: the project's other images, fanned behind its hexagon. */
+  deck?: string[];
   /** Caption glyph, resolved from tags server-side. */
   glyph: IconKey;
   /**
@@ -86,6 +89,22 @@ const HEX_TARGET_W = 168;
 // List-view icons are hexagons too, at a fixed size. Flat-top, so the
 // fixed dimension is the width and the height follows.
 const LIST_HEX_W = 104;
+// The deck behind a list-view hexagon: the box it is drawn in, the size
+// of one slide, and where each slide sits relative to the hexagon's
+// centre (px, px, degrees) before a per-project jitter. The first four
+// peek out of the hexagon's cut corners; the fifth rides up the top.
+const DECK_BOX_W = 136;
+const DECK_BOX_H = 116;
+const DECK_CARD_W = 64;
+const DECK_CARD_H = 48;
+const DECK_MIN = 3;
+const DECK_SLOTS = [
+  { x: -30, y: -24, r: -14 },
+  { x: 33, y: -20, r: 11 },
+  { x: -29, y: 26, r: 9 },
+  { x: 31, y: 27, r: -7 },
+  { x: 3, y: -35, r: 4 },
+] as const;
 
 const laneBg: Record<Lane, string> = {
   research: "bg-[var(--color-lane-research)]",
@@ -523,19 +542,29 @@ function ProjectRow({ project }: { project: ProjectItem }) {
     >
       <span className="flex gap-4">
         <span
-          data-hex-face
-          className="relative mt-1 block shrink-0 overflow-hidden bg-[var(--color-bg-1)] transition-transform duration-200 ease-out group-hover:scale-[1.04]"
-          style={{
-            width: LIST_HEX_W,
-            height: LIST_HEX_W * HEX_RATIO,
-            clipPath: HEX_CLIP,
-            filter: "drop-shadow(0 1px 3px color-mix(in srgb, var(--color-ink) 18%, transparent))",
-          }}
+          className="relative block shrink-0"
+          style={{ width: DECK_BOX_W, height: DECK_BOX_H }}
         >
-          <IconFace project={project} />
-          <HexEdge />
+          <ProjectDeck project={project} />
+          <span
+            data-hex-face
+            className="absolute block overflow-hidden bg-[var(--color-bg-1)] transition-transform duration-200 ease-out group-hover:scale-[1.04]"
+            style={{
+              left: (DECK_BOX_W - LIST_HEX_W) / 2,
+              top: (DECK_BOX_H - LIST_HEX_W * HEX_RATIO) / 2,
+              width: LIST_HEX_W,
+              height: LIST_HEX_W * HEX_RATIO,
+              clipPath: HEX_CLIP,
+              filter: "drop-shadow(0 1px 3px color-mix(in srgb, var(--color-ink) 18%, transparent))",
+            }}
+          >
+            <IconFace project={project} />
+            <HexEdge />
+          </span>
         </span>
-        <span className="min-w-0 flex-1">
+        {/* Positioned so it paints over any slide a hovered deck fans
+            into the text column. */}
+        <span className="relative min-w-0 flex-1">
           <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <span className="flex items-baseline gap-3">
               <span
@@ -556,6 +585,72 @@ function ProjectRow({ project }: { project: ProjectItem }) {
         </span>
       </span>
     </Link>
+  );
+}
+
+// A small, stable number per project in [-1, 1), so each deck is
+// scattered its own way and stays that way across renders.
+function jitter(id: string, salt: number): number {
+  let h = 2166136261 ^ salt;
+  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);
+  h = Math.imul(h ^ (h >>> 15), 2246822507);
+  return ((h ^ (h >>> 13)) >>> 0) / 2 ** 31 - 1;
+}
+
+// The slides under a list-view hexagon, so the row reads as a stack of
+// material still to be unpacked. A project with too few pictures still
+// gets DECK_MIN slides: the missing ones are blank, lane-tinted stock.
+function ProjectDeck({ project }: { project: ProjectItem }) {
+  const srcs = project.deck ?? [];
+  const count = Math.min(DECK_SLOTS.length, Math.max(DECK_MIN, srcs.length));
+  return (
+    <>
+      {DECK_SLOTS.slice(0, count).map((slot, i) => {
+        const src = srcs[i];
+        const x = slot.x + jitter(project.id, i * 3) * 4;
+        const y = slot.y + jitter(project.id, i * 3 + 1) * 4;
+        const r = slot.r + jitter(project.id, i * 3 + 2) * 4;
+        return (
+          <span
+            key={i}
+            aria-hidden
+            className="deck-card absolute top-1/2 left-1/2 block rounded-[2px] bg-[var(--color-bg-1)] p-[2px]"
+            style={
+              {
+                width: DECK_CARD_W,
+                height: DECK_CARD_H,
+                "--dx": `${x.toFixed(1)}px`,
+                "--dy": `${y.toFixed(1)}px`,
+                "--r": `${r.toFixed(1)}deg`,
+                boxShadow:
+                  "0 1px 2px color-mix(in srgb, var(--color-ink) 16%, transparent), 0 3px 8px color-mix(in srgb, var(--color-ink) 10%, transparent)",
+              } as React.CSSProperties
+            }
+          >
+            <span
+              className="relative block h-full w-full overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, color-mix(in srgb, var(--color-lane-${project.lane}) 22%, var(--color-bg-2)), var(--color-bg-2))`,
+              }}
+            >
+              {src && (
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  sizes={`${DECK_CARD_W}px`}
+                  // The optimizer only takes local rasters; anything else
+                  // is fetched as-is.
+                  unoptimized={!src.startsWith("/") || /\.(?:svg|gif)(?:[?#]|$)/i.test(src)}
+                  draggable={false}
+                  className="object-cover"
+                />
+              )}
+            </span>
+          </span>
+        );
+      })}
+    </>
   );
 }
 

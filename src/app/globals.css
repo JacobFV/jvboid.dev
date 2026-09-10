@@ -405,6 +405,24 @@ body {
   }
 }
 
+/* ---- Project deck (ProjectsBrowser list view) ----
+   The slides fanned behind a project's hexagon: each sits at its own
+   offset and tilt, and a hovered row pulls them further out, as if the
+   stack were being spread open. */
+.deck-card {
+  transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) rotate(var(--r));
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .deck-card {
+  transform: translate(-50%, -50%) translate(calc(var(--dx) * 1.35), calc(var(--dy) * 1.3))
+    rotate(calc(var(--r) * 1.45));
+}
+@media (prefers-reduced-motion: reduce) {
+  .deck-card {
+    transition: none;
+  }
+}
+
 /* The deck under it: one sentence, larger and lighter than the body,
    set in the serif so it reads as the editor's voice rather than a
    summary field. */

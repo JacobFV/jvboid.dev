@@ -2,9 +2,12 @@ import type { Node } from "@/lib/graph-types";
 import type { ProjectItem } from "@/components/chrome/ProjectsBrowser";
 import {
   faceGroundFor,
+  facePlanImages,
+  imageRefsForNode,
   projectFacePlan,
   projectHexSize,
   tileIconKey,
+  type FacePlan,
   type TileArt,
 } from "@/lib/project-face";
 // Baked hexagon faces, written by scripts/generate-hex-tiles.ts after
@@ -84,6 +87,37 @@ export function withAdjacentProjects(projects: Node[]): Node[] {
   return ordered;
 }
 
+// How many slides the list view fans out behind a hexagon, at most.
+const DECK_MAX = 5;
+const DECK_IMAGE = /\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i;
+
+const youtubeId = (url: string) =>
+  /(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([\w-]{11})/.exec(url)?.[1];
+
+// The list view's deck: the project's other media, as slides stacked
+// behind its hexagon. Pictures the face doesn't show come first, then the
+// demo video's poster, then the face's own art — a mosaic cell or a lone
+// hero is a crop on the hexagon, and a slide shows the whole frame. Most
+// projects have one picture or none, so their decks run short and the
+// browser pads them out with blank slides.
+function deckFor(n: Node, plan: FacePlan): string[] {
+  const onFace = new Set(facePlanImages(plan).map((img) => img.src));
+  const seen = new Set<string>();
+  const srcs = [...(n.threadImages ?? []), ...imageRefsForNode(n)]
+    .map((img) => img.src)
+    .filter((src) => {
+      if (seen.has(src) || !DECK_IMAGE.test(src)) return false;
+      seen.add(src);
+      return true;
+    });
+  const video = n.video ? youtubeId(n.video) : undefined;
+  return [
+    ...srcs.filter((s) => !onFace.has(s)),
+    ...(video ? [`https://i.ytimg.com/vi/${video}/hqdefault.jpg`] : []),
+    ...srcs.filter((s) => onFace.has(s)),
+  ].slice(0, DECK_MAX);
+}
+
 /**
  * The client-side shape of a project tile. Everything the honeycomb draws
  * is resolved here, on the server: the face art (down to one baked image
@@ -93,9 +127,9 @@ export function withAdjacentProjects(projects: Node[]): Node[] {
  * low tens of kilobytes instead of the high fifties.
  *
  * `summaries` is the one thing the two call sites disagree about: the
- * honeycomb never shows a summary, and the home page has no list view to
- * switch to, so it leaves them behind. `/projects` does have one and asks
- * for them.
+ * honeycomb never shows a summary or a deck, and the home page has no
+ * list view to switch to, so it leaves both behind. `/projects` does have
+ * one and asks for them.
  */
 export function projectItemsFromNodes(
   projects: Node[],
@@ -110,7 +144,7 @@ export function projectItemsFromNodes(
       title: n.title,
       date: n.date,
       lane: n.lane,
-      ...(summaries ? { summary: n.summary } : {}),
+      ...(summaries ? { summary: n.summary, deck: deckFor(n, plan) } : {}),
       glyph: tileIconKey(n),
       ...(faceGroundFor(plan) ? { ground: faceGroundFor(plan) } : {}),
       // The plan only crosses to the browser when there is no baked tile
