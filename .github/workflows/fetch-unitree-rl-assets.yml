@@ -1,0 +1,53 @@
+name: fetch official Unitree RL assets
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/fetch-unitree-rl-assets.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fetch-unitree-rl-assets.yml"
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch exact official Unitree locomotion repositories
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+          mkdir -p /tmp/unitree_official
+          cd /tmp/unitree_official
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_rl_gym.git
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_rl_mjlab.git
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_mujoco.git
+          for repo in unitree_rl_gym unitree_rl_mjlab unitree_mujoco; do
+            git -C "$repo" rev-parse HEAD > "${repo}-commit.txt"
+            git -C "$repo" lfs pull || true
+          done
+          find . -type f \( -name '*.pt' -o -name '*.onnx' -o -name '*.pth' -o -name '*.yaml' -o -name '*.xml' \) -printf '%s %p\n' | sort -n > asset-index.txt
+          tar -czf /tmp/unitree-official-rl-assets.tar.gz \
+            unitree_rl_gym unitree_rl_mjlab unitree_mujoco \
+            unitree_rl_gym-commit.txt unitree_rl_mjlab-commit.txt unitree_mujoco-commit.txt asset-index.txt
+          sha256sum /tmp/unitree-official-rl-assets.tar.gz > /tmp/unitree-official-rl-assets.tar.gz.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-official-rl-assets
+          path: |
+            /tmp/unitree-official-rl-assets.tar.gz
+            /tmp/unitree-official-rl-assets.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

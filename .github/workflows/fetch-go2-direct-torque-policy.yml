@@ -1,0 +1,45 @@
+name: fetch Go2 direct-torque policy foundation
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/fetch-go2-direct-torque-policy.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fetch-go2-direct-torque-policy.yml"
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch published direct-torque Go2 checkpoint and environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+          cd /tmp
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://huggingface.co/cagataydev/sac-unitree-go2-mujoco go2-direct-torque
+          git -C go2-direct-torque lfs pull || true
+          git -C go2-direct-torque rev-parse HEAD > go2-direct-torque-commit.txt
+          find go2-direct-torque -type f -printf '%s %p\n' | sort -n > go2-direct-torque-index.txt
+          tar -czf go2-direct-torque-policy.tar.gz go2-direct-torque go2-direct-torque-commit.txt go2-direct-torque-index.txt
+          sha256sum go2-direct-torque-policy.tar.gz > go2-direct-torque-policy.tar.gz.sha256
+          du -sh go2-direct-torque go2-direct-torque-policy.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: go2-direct-torque-policy
+          path: |
+            /tmp/go2-direct-torque-policy.tar.gz
+            /tmp/go2-direct-torque-policy.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
