@@ -79,25 +79,15 @@ export function LocalGraph({ focusId }: { focusId: string }) {
   }));
 
   return (
-    <section className="mt-16 border-t border-[var(--color-bg-2)]/50 pt-8">
-      <div className="mb-4">
-        <p className="font-[family-name:var(--font-mono)] text-xs tracking-[0.16em] text-[var(--color-ink-mute)] uppercase">
-          Neighborhood
-        </p>
-        <h2
-          className="mt-1 font-[family-name:var(--font-display)] text-xl text-[var(--color-ink)]"
-          style={{ fontVariationSettings: '"opsz" 96' }}
-        >
-          Related
-        </h2>
-      </div>
+    <section className="mt-16">
+      <h2 className="rule-label mb-6">Related</h2>
 
       <div className="-mx-2 sm:mx-0">
         <NeighborhoodOrbit
           nodes={orbitNodes}
           edges={orbitEdges}
           focusId={focusId}
-          label="Local graph: this node, its direct neighbors, and their neighbors. Drag to orbit."
+          label="Related: this page, the pages it links to, and theirs. Drag to orbit, scroll or pinch to zoom."
         />
       </div>
     </section>

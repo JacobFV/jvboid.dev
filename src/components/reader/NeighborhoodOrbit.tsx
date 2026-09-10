@@ -1,6 +1,6 @@
 "use client";
 
-// The neighborhood, seen through the front of an old TV set.
+// Related pages, seen through the front of an old TV set.
 //
 // The panel is a squircle (superellipse, n≈4) cut out of a bezel — the
 // shape a CRT tube actually is, not a rounded rectangle — and behind the
@@ -14,8 +14,14 @@
 // and overlap, and the starfield behind parallaxes against it. The RAF
 // loop writes attributes straight onto refs; React renders the scene once
 // (positioned for the SSR frame) and then keeps out of the way.
+//
+// It is meant to be read, not just watched: any interaction — a hover, a
+// drag, a zoom — holds the idle spin for PAUSE_MS so labels stay put;
+// scroll or pinch zooms toward the pointer; the button in the corner
+// takes it fullscreen; and a tap on a star goes to that page.
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { EdgeKind, Lane } from "@/lib/graph-types";
 
 export type OrbitNode = {
@@ -55,7 +61,21 @@ const PITCH_0 = -0.22;
 const IDLE_SPIN = 0.00022; // rad/ms, the slow unattended drift
 const PITCH_LIMIT = 0.95;
 
+// How long the idle spin holds after the last interaction, so whatever
+// was being read is still where it was.
+const PAUSE_MS = 12000;
+const ZOOM_MIN = 0.6;
+const ZOOM_MAX = 5;
+// A plain scroll wheel only zooms once the pointer has rested on the panel
+// this long — otherwise scrolling the page past it would get hijacked.
+// Pinch (ctrl+wheel), a click into the panel, or fullscreen arm it at once.
+const WHEEL_DWELL = 700;
+
 const NODE_R: Record<0 | 1 | 2, number> = { 0: 7, 1: 5, 2: 3.4 };
+const LABEL_SIZE: Record<0 | 1 | 2, number> = { 0: 10, 1: 9, 2: 8 };
+// The phone rule below sets every label at 15px; the collision boxes
+// have to be measured at the size actually drawn.
+const LABEL_SIZE_PHONE = 15;
 
 const laneColor: Record<Lane, string> = {
   research: "#6FA8DC",
@@ -72,6 +92,7 @@ const dashFor: Record<EdgeKind, string | undefined> = {
 };
 
 type Vec3 = { x: number; y: number; z: number };
+type View = { zoom: number; panX: number; panY: number };
 
 // --- deterministic noise -------------------------------------------------
 // Every position has to come out identical on the server and on the
@@ -193,15 +214,19 @@ function shortTitle(title: string, max: number) {
   return title.length > max ? `${title.slice(0, max - 1)}…` : title;
 }
 
-// A camera rotation applied to one world point.
-function project(p: Vec3, cosY: number, sinY: number, cosP: number, sinP: number) {
+// A camera rotation applied to one world point, then the view's zoom and
+// pan on the flat screen.
+function project(p: Vec3, cosY: number, sinY: number, cosP: number, sinP: number, v: View) {
   const x1 = p.x * cosY + p.z * sinY;
   const z1 = -p.x * sinY + p.z * cosY;
   const y2 = p.y * cosP - z1 * sinP;
   const z2 = p.y * sinP + z1 * cosP;
   const k = FOCAL / (FOCAL - z2);
-  return { x: CX + x1 * k, y: CY + y2 * k, z: z2, k };
+  return { x: CX + v.panX + x1 * k * v.zoom, y: CY + v.panY + y2 * k * v.zoom, z: z2, k };
 }
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const REST: View = { zoom: 1, panX: 0, panY: 0 };
 
 export function NeighborhoodOrbit({
   nodes,
@@ -214,7 +239,15 @@ export function NeighborhoodOrbit({
   focusId: string;
   label: string;
 }) {
+  const router = useRouter();
   const positions = useMemo(() => shellLayout(nodes, edges, focusId), [nodes, edges, focusId]);
+  const labels = useMemo(
+    () =>
+      new Map(
+        nodes.map((n) => [n.id, shortTitle(n.title, n.ring === 0 ? 32 : n.ring === 1 ? 28 : 22)]),
+      ),
+    [nodes],
+  );
 
   const stars = useMemo(() => {
     const rand = mulberry32(0x5eed ^ focusId.length);
@@ -242,18 +275,63 @@ export function NeighborhoodOrbit({
   const nodeLayer = useRef<SVGGElement | null>(null);
   const hintRef = useRef<SVGTextElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
 
   // Camera state lives in a ref: the loop writes DOM, never React state.
-  const cam = useRef({ yaw: YAW_0, pitch: PITCH_0, vYaw: 0, vPitch: 0 });
-  const drag = useRef<{ id: number | null; x: number; y: number; moved: number }>({
-    id: null,
-    x: 0,
-    y: 0,
-    moved: 0,
-  });
+  const cam = useRef({ yaw: YAW_0, pitch: PITCH_0, vYaw: 0, vPitch: 0, ...REST });
+  const drag = useRef({ id: null as number | null, x: 0, y: 0, moved: 0, captured: false });
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  // Finger spread at the last pinch frame; null when not pinching.
+  const pinch = useRef<number | null>(null);
+  const lastInteract = useRef(-Infinity);
+  const wheelArmedAt = useRef(Infinity);
+
+  const [full, setFull] = useState(false);
+  const fullRef = useRef(false);
+  const nativeFull = useRef(false);
+
+  const touch = useCallback(() => {
+    lastInteract.current = performance.now();
+  }, []);
+
+  const hideHint = () => {
+    if (hintRef.current) hintRef.current.style.opacity = "0";
+  };
+
+  // Client pixels → viewBox units, allowing for the letterboxing the
+  // fullscreen layout adds around the 720×400 screen.
+  const toViewBox = useCallback((clientX: number, clientY: number) => {
+    const r = svgRef.current?.getBoundingClientRect();
+    if (!r || !r.width) return { x: CX, y: CY, s: 1 };
+    const s = Math.min(r.width / W, r.height / H) || 1;
+    return {
+      x: (clientX - r.left - (r.width - W * s) / 2) / s,
+      y: (clientY - r.top - (r.height - H * s) / 2) / s,
+      s,
+    };
+  }, []);
+
+  // Zoom by `factor`, keeping the point under (clientX, clientY) fixed.
+  const zoomAt = useCallback(
+    (factor: number, clientX?: number, clientY?: number) => {
+      const c = cam.current;
+      const pt =
+        clientX === undefined || clientY === undefined
+          ? { x: CX + c.panX, y: CY + c.panY }
+          : toViewBox(clientX, clientY);
+      const next = clamp(c.zoom * factor, ZOOM_MIN, ZOOM_MAX);
+      const f = next / c.zoom;
+      c.panX = clamp(pt.x - CX - (pt.x - CX - c.panX) * f, (-W / 2) * next, (W / 2) * next);
+      c.panY = clamp(pt.y - CY - (pt.y - CY - c.panY) * f, (-H / 2) * next, (H / 2) * next);
+      c.zoom = next;
+      hideHint();
+    },
+    [toViewBox],
+  );
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const phone = window.matchMedia("(max-width: 640px)");
     let raf = 0;
     let last = performance.now();
     let order: string[] = [];
@@ -262,18 +340,20 @@ export function NeighborhoodOrbit({
       const dt = Math.min(64, now - last);
       last = now;
       const c = cam.current;
+      const paused = now - lastInteract.current < PAUSE_MS;
 
       if (drag.current.id === null) {
-        // Inertia, then the idle drift once it has bled off.
+        // Inertia, then the idle drift once it has bled off — unless
+        // someone has been reading it recently.
         c.yaw += c.vYaw * dt;
         c.pitch += c.vPitch * dt;
         const decay = Math.exp(-dt / 260);
         c.vYaw *= decay;
         c.vPitch *= decay;
         if (Math.abs(c.vYaw) < IDLE_SPIN && !reduced) c.vYaw = 0;
-        if (!reduced && Math.abs(c.vYaw) < 1e-6) c.yaw += IDLE_SPIN * dt;
+        if (!reduced && !paused && Math.abs(c.vYaw) < 1e-6) c.yaw += IDLE_SPIN * dt;
       }
-      c.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, c.pitch));
+      c.pitch = clamp(c.pitch, -PITCH_LIMIT, PITCH_LIMIT);
 
       const cosY = Math.cos(c.yaw);
       const sinY = Math.sin(c.yaw);
@@ -307,7 +387,7 @@ export function NeighborhoodOrbit({
       const screen = new Map<string, { x: number; y: number; z: number; k: number }>();
       for (const n of nodes) {
         const p = positions.get(n.id);
-        if (p) screen.set(n.id, project(p, cosY, sinY, cosP, sinP));
+        if (p) screen.set(n.id, project(p, cosY, sinY, cosP, sinP, c));
       }
 
       for (let i = 0; i < edges.length; i++) {
@@ -323,28 +403,66 @@ export function NeighborhoodOrbit({
         el.setAttribute("y2", b.y.toFixed(2));
         const depth = (a.k + b.k) / 2;
         const base = e.onFocus ? 0.72 : 0.3;
-        el.setAttribute("opacity", (base * Math.max(0.35, Math.min(1.25, depth ** 2))).toFixed(3));
+        el.setAttribute("opacity", (base * clamp(depth ** 2, 0.35, 1.25)).toFixed(3));
       }
 
+      // Zooming spreads the cloud out a lot faster than it grows the
+      // stars, so there is room between them to read.
+      const zs = Math.sqrt(c.zoom);
       for (const n of nodes) {
         const el = nodeRefs.current.get(n.id);
         const p = screen.get(n.id);
         if (!el || !p) continue;
         el.setAttribute(
           "transform",
-          `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) scale(${p.k.toFixed(3)})`,
+          `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) scale(${(p.k * zs).toFixed(3)})`,
         );
-        const depth = Math.max(0.3, Math.min(1.3, p.k ** 1.6));
+        const depth = clamp(p.k ** 1.6, 0.3, 1.3);
         const opacity = n.ring === 0 ? 1 : n.ring === 1 ? 0.95 * depth : 0.62 * depth;
         el.setAttribute("opacity", Math.min(1, opacity).toFixed(3));
+      }
+
+      // Labels: as many as fit without colliding. The focus claims its
+      // space first, then direct neighbors nearest the glass first, then
+      // the second ring — which only competes once the view is zoomed in
+      // or a star has swung right up close. A label that would land on
+      // one already placed stays hidden until the view turns.
+      const placed: [number, number, number, number][] = [];
+      const base = phone.matches ? LABEL_SIZE_PHONE : 0;
+      const ranked = [...nodes].sort(
+        (a, b) => a.ring - b.ring || (screen.get(b.id)?.z ?? 0) - (screen.get(a.id)?.z ?? 0),
+      );
+      for (const n of ranked) {
         const lab = labelRefs.current.get(n.id);
-        if (lab) {
-          // Names surface only as a node swings right up against the
-          // glass; 2° stays anonymous until hovered, or the panel is just
-          // a wall of type.
-          const vis = n.ring === 0 ? 1 : n.ring === 1 ? Math.max(0, (p.k - 1.05) * 9) : 0;
-          lab.setAttribute("opacity", Math.min(1, vis).toFixed(3));
+        const p = screen.get(n.id);
+        if (!lab || !p) continue;
+        let o = 0;
+        if (n.ring < 2 || c.zoom >= 1.35 || p.k > 1.08) {
+          const s = p.k * zs;
+          const fs = (base || LABEL_SIZE[n.ring]) * s;
+          const w = (labels.get(n.id)?.length ?? 0) * fs * 0.62;
+          const cy = p.y - (NODE_R[n.ring] + 6) * s - fs * 0.35;
+          const box: [number, number, number, number] = [
+            p.x - w / 2 - 3,
+            cy - fs * 0.6 - 2,
+            p.x + w / 2 + 3,
+            cy + fs * 0.6 + 2,
+          ];
+          const onScreen = box[0] > 6 && box[2] < W - 6 && box[1] > 6 && box[3] < H - 6;
+          const clear = placed.every(
+            (q) => box[2] < q[0] || box[0] > q[2] || box[3] < q[1] || box[1] > q[3],
+          );
+          if (n.ring === 0 || (onScreen && clear)) {
+            placed.push(box);
+            o =
+              n.ring === 0
+                ? 1
+                : n.ring === 1
+                  ? clamp(0.6 + 0.5 * (p.k - 0.8), 0.45, 1)
+                  : clamp(0.45 + 0.6 * (p.k - 0.8), 0.3, 0.85);
+          }
         }
+        lab.setAttribute("opacity", o.toFixed(3));
       }
 
       // Painter's order — far nodes behind near ones. Only touch the DOM
@@ -374,34 +492,131 @@ export function NeighborhoodOrbit({
 
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [nodes, edges, positions, stars]);
+  }, [nodes, edges, positions, stars, labels]);
 
-  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (e.button !== 0 && e.pointerType === "mouse") return;
-    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: 0 };
-    cam.current.vYaw = 0;
-    cam.current.vPitch = 0;
-    if (hintRef.current) hintRef.current.style.opacity = "0";
-    // Capture keeps the orbit going when the pointer leaves the glass. It
-    // can throw for a pointer the browser no longer knows about; a lost
-    // capture is survivable, a thrown handler is not.
-    try {
-      svgRef.current?.setPointerCapture(e.pointerId);
-    } catch {
-      /* no capture — drag still tracks while the pointer is over the panel */
+  // Wheel and trackpad zoom. Registered by hand because React's wheel
+  // listener is passive, and a zoom that also scrolls the page is useless.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      const now = performance.now();
+      if (!(e.ctrlKey || fullRef.current || now >= wheelArmedAt.current)) {
+        // Still scrolling the page past the panel: let it, and keep the
+        // wheel disarmed until the pointer actually rests here.
+        wheelArmedAt.current = now + WHEEL_DWELL;
+        return;
+      }
+      e.preventDefault();
+      touch();
+      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      zoomAt(Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.002)), e.clientX, e.clientY);
+    };
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", onWheel);
+  }, [touch, zoomAt]);
+
+  // Fullscreen: the real Fullscreen API where there is one, and a fixed
+  // overlay either way, so a phone without it still gets the whole screen.
+  useEffect(() => {
+    fullRef.current = full;
+    if (!full) return;
+    const root = document.documentElement;
+    const overflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFull(false);
+    };
+    const onChange = () => {
+      if (!document.fullscreenElement && nativeFull.current) {
+        nativeFull.current = false;
+        setFull(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => {
+      root.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("fullscreenchange", onChange);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      nativeFull.current = false;
+    };
+  }, [full]);
+
+  const toggleFull = () => {
+    touch();
+    if (full) {
+      setFull(false);
+      return;
+    }
+    setFull(true);
+    const el = wrapRef.current;
+    if (el?.requestFullscreen) {
+      el.requestFullscreen()
+        .then(() => {
+          nativeFull.current = true;
+        })
+        .catch(() => {
+          /* no Fullscreen API permission — the overlay still covers the page */
+        });
     }
   };
 
+  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    touch();
+    wheelArmedAt.current = 0;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      // Two fingers zoom; they neither orbit nor count as a tap.
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = Math.hypot(a.x - b.x, a.y - b.y);
+      drag.current.id = null;
+      drag.current.moved = 99;
+      return;
+    }
+    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: 0, captured: false };
+    cam.current.vYaw = 0;
+    cam.current.vPitch = 0;
+  };
+
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    touch();
+    if (wheelArmedAt.current === Infinity) wheelArmedAt.current = performance.now() + WHEEL_DWELL;
+    if (pointers.current.has(e.pointerId)) {
+      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    if (pinch.current !== null && pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const spread = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch.current > 0) zoomAt(spread / pinch.current, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      pinch.current = spread;
+      return;
+    }
     if (drag.current.id !== e.pointerId) return;
     const dx = e.clientX - drag.current.x;
     const dy = e.clientY - drag.current.y;
     drag.current.x = e.clientX;
     drag.current.y = e.clientY;
     drag.current.moved += Math.abs(dx) + Math.abs(dy);
-    // Scale by the rendered width so a drag turns the same amount of sky
+    // Capture only once this is clearly a drag. Capturing on press
+    // retargets the click to the <svg>, which is why a tap on a star
+    // used to go nowhere.
+    if (!drag.current.captured && drag.current.moved > 4) {
+      drag.current.captured = true;
+      hideHint();
+      // It can throw for a pointer the browser no longer knows about; a
+      // lost capture is survivable, a thrown handler is not.
+      try {
+        svgRef.current?.setPointerCapture(e.pointerId);
+      } catch {
+        /* no capture — drag still tracks while the pointer is over the panel */
+      }
+    }
+    // Scale by the rendered size so a drag turns the same amount of sky
     // whatever size the panel is laid out at.
-    const k = W / (svgRef.current?.getBoundingClientRect().width || W);
+    const k = 1 / toViewBox(e.clientX, e.clientY).s;
     const yaw = dx * k * 0.006;
     const pitch = dy * k * 0.005;
     cam.current.yaw += yaw;
@@ -410,14 +625,27 @@ export function NeighborhoodOrbit({
     cam.current.vPitch = pitch / 16;
   };
 
-  const endDrag = (e: React.PointerEvent<SVGSVGElement>) => {
+  const endPointer = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
     if (drag.current.id !== e.pointerId) return;
     drag.current.id = null;
-    try {
-      svgRef.current?.releasePointerCapture(e.pointerId);
-    } catch {
-      /* nothing held it */
+    if (drag.current.captured) {
+      try {
+        svgRef.current?.releasePointerCapture(e.pointerId);
+      } catch {
+        /* nothing held it */
+      }
     }
+  };
+
+  const onPointerLeave = () => {
+    if (!fullRef.current) wheelArmedAt.current = Infinity;
+  };
+
+  const resetView = () => {
+    Object.assign(cam.current, REST);
+    touch();
   };
 
   const onKeyDown = (e: React.KeyboardEvent<SVGSVGElement>) => {
@@ -426,18 +654,30 @@ export function NeighborhoodOrbit({
     else if (e.key === "ArrowRight") cam.current.yaw += step;
     else if (e.key === "ArrowUp") cam.current.pitch -= step;
     else if (e.key === "ArrowDown") cam.current.pitch += step;
+    else if (e.key === "+" || e.key === "=") zoomAt(1.25);
+    else if (e.key === "-" || e.key === "_") zoomAt(1 / 1.25);
+    else if (e.key === "0") resetView();
     else return;
     e.preventDefault();
-    if (hintRef.current) hintRef.current.style.opacity = "0";
+    touch();
+    hideHint();
   };
 
-  // A drag that ends on a node must not follow the link.
+  // A drag that ends on a star must not follow its link; a tap should,
+  // and through the router, so it is a page turn rather than a reload.
   const onClickCapture = (e: React.MouseEvent<SVGSVGElement>) => {
     if (drag.current.moved > 6) {
       e.preventDefault();
       e.stopPropagation();
       drag.current.moved = 0;
+      return;
     }
+    const link = (e.target as Element).closest?.("a.orbit-link");
+    const href = link?.getAttribute("href");
+    if (!href || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    setFull(false);
+    router.push(href);
   };
 
   const cosY = Math.cos(YAW_0);
@@ -447,20 +687,21 @@ export function NeighborhoodOrbit({
   const initial = new Map(
     nodes.map((n) => {
       const p = positions.get(n.id) ?? { x: 0, y: 0, z: 0 };
-      return [n.id, project(p, cosY, sinY, cosP, sinP)];
+      return [n.id, project(p, cosY, sinY, cosP, sinP, REST)];
     }),
   );
 
   return (
-    <div className="neighborhood-tv">
+    <div ref={wrapRef} className="neighborhood-tv" data-full={full ? "" : undefined}>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
+        preserveAspectRatio="xMidYMid meet"
         style={{
           display: "block",
-          height: "auto",
-          touchAction: "pan-y",
+          height: full ? "100%" : "auto",
+          touchAction: full ? "none" : "pan-y",
           cursor: "grab",
           userSelect: "none",
           WebkitUserSelect: "none",
@@ -471,8 +712,10 @@ export function NeighborhoodOrbit({
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerUp={endPointer}
+        onPointerCancel={endPointer}
+        onPointerLeave={onPointerLeave}
+        onDoubleClick={resetView}
         onKeyDown={onKeyDown}
         onClickCapture={onClickCapture}
       >
@@ -513,28 +756,43 @@ export function NeighborhoodOrbit({
         </defs>
 
         <style>{`
+          .neighborhood-tv { position: relative; }
           .neighborhood-tv svg { outline: none; }
+          /* Fullscreen: the whole viewport, deep space around the glass. */
+          .neighborhood-tv[data-full] {
+            position: fixed; inset: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            background: #03050b;
+          }
+          .neighborhood-tv[data-full] svg { width: 100%; height: 100%; }
           /* Keyboard focus is shown by lighting the glass, not by drawing a
              rectangle around a shape that isn't one. */
           .neighborhood-tv svg:focus-visible .orbit-focus-ring { opacity: 0.9; }
           .neighborhood-tv svg:active { cursor: grabbing; }
-          .orbit-link { text-decoration: none; }
+          .orbit-link { text-decoration: none; cursor: pointer; }
           .orbit-body { transition: transform 140ms ease; transform-box: fill-box; transform-origin: center; }
           .orbit-link:hover .orbit-body,
           .orbit-link:focus-visible .orbit-body { transform: scale(1.45); }
           .orbit-link:hover .orbit-label,
           .orbit-link:focus-visible .orbit-label { opacity: 1 !important; fill: #FFFFFF !important; }
-          .orbit-label { paint-order: stroke; stroke: #04060c; stroke-width: 3px; stroke-linejoin: round; }
+          .orbit-label { paint-order: stroke; stroke: #04060c; stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
           .orbit-scanlines { animation: orbit-scan 5s linear infinite; }
           .orbit-hint { transition: opacity 400ms ease; }
+          .orbit-full {
+            position: absolute; top: 7%; right: 4.5%;
+            display: grid; place-items: center; width: 30px; height: 30px;
+            border-radius: 999px; border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(8,12,23,0.62); color: #C6CEDD;
+            transition: color 160ms ease, border-color 160ms ease;
+          }
+          .orbit-full:hover, .orbit-full:focus-visible { color: #fff; border-color: rgba(255,255,255,0.45); }
+          .neighborhood-tv[data-full] .orbit-full { top: 16px; right: 16px; }
           /* The panel scales down with the column, so type set in user
              units gets tiny on a phone. Bump it back up — a CSS
              font-size beats the presentation attribute. */
           @media (max-width: 640px) {
-            .orbit-label { font-size: 15px; }
+            .orbit-label { font-size: ${LABEL_SIZE_PHONE}px; }
             .orbit-caption { font-size: 13px; }
-            /* Two captions won't fit on a phone; the affordance wins. */
-            .orbit-caption-tag { display: none; }
           }
           @keyframes orbit-scan { from { transform: translateY(0); } to { transform: translateY(4px); } }
           @media (prefers-reduced-motion: reduce) { .orbit-scanlines { animation: none; } }
@@ -613,10 +871,15 @@ export function NeighborhoodOrbit({
                       <circle r={r} fill={laneColor[n.lane]} stroke="#FF6B35" strokeWidth={2} />
                     </g>
                   ) : (
-                    <g className="orbit-body">
-                      <title>{n.title}</title>
-                      <circle r={r} fill={laneColor[n.lane]} />
-                    </g>
+                    <>
+                      {/* A fingertip-sized target: the stars themselves
+                          are a few pixels across. */}
+                      <circle r={Math.max(12, r * 2.4)} fill="#000" fillOpacity={0} />
+                      <g className="orbit-body">
+                        <title>{n.title}</title>
+                        <circle r={r} fill={laneColor[n.lane]} />
+                      </g>
+                    </>
                   )}
                   <text
                     ref={(el) => {
@@ -626,12 +889,12 @@ export function NeighborhoodOrbit({
                     className="orbit-label"
                     y={n.ring === 0 ? -r - 11 : -r - 6}
                     textAnchor="middle"
-                    fontSize={n.ring === 0 ? 10 : n.ring === 1 ? 9 : 8}
+                    fontSize={LABEL_SIZE[n.ring]}
                     fontFamily="var(--font-mono)"
                     fill={n.ring === 0 ? "#F4F1EB" : n.ring === 1 ? "#C6CEDD" : "#98A2B6"}
                     opacity={n.ring === 0 ? 1 : 0}
                   >
-                    {shortTitle(n.title, n.ring === 0 ? 32 : n.ring === 1 ? 28 : 24)}
+                    {labels.get(n.id)}
                   </text>
                 </g>
               );
@@ -682,19 +945,6 @@ export function NeighborhoodOrbit({
           />
 
           <text
-            x={CX + 246}
-            y={CY + SB - 42}
-            textAnchor="end"
-            className="orbit-caption orbit-caption-tag"
-            fontSize="8"
-            fontFamily="var(--font-mono)"
-            letterSpacing="0.18em"
-            fill="#6F7B92"
-            pointerEvents="none"
-          >
-            2° NEIGHBORHOOD
-          </text>
-          <text
             ref={hintRef}
             className="orbit-hint orbit-caption"
             x={CX}
@@ -706,10 +956,36 @@ export function NeighborhoodOrbit({
             fill="#8A97AE"
             pointerEvents="none"
           >
-            DRAG TO ORBIT
+            DRAG TO ORBIT · SCROLL OR PINCH TO ZOOM
           </text>
         </g>
       </svg>
+
+      <button
+        type="button"
+        className="orbit-full"
+        onClick={toggleFull}
+        aria-label={full ? "Exit full screen" : "Full screen"}
+        aria-pressed={full}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          {full ? (
+            <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+          ) : (
+            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+          )}
+        </svg>
+      </button>
     </div>
   );
 }
