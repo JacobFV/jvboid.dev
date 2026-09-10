@@ -201,9 +201,13 @@ export default function HomePage() {
               Agentic + Robotics Infrastructure at{" "}
               <BioLink href="https://commandagi.com">CommandAGI.com</BioLink>. API/Integration
               Architect at <BioLink href="https://agi.app">AGI, Inc.</BioLink>, shipping APIs,
-              integrations, and agent infrastructure for on-device mobile AI agents. Earlier: Breezy,
-              Deepshard, Motio, and UTA research labs. BS Computer Science from UT Arlington. I love
-              science and engineering and people
+              integrations, and agent infrastructure for on-device mobile AI agents. Earlier:{" "}
+              <BioLink href="https://www.getbreezy.app">Breezy</BioLink>,{" "}
+              <BioLink href="https://deepshard.org">Deepshard</BioLink>,{" "}
+              <BioLink href="https://motio.com">Motio</BioLink>, and{" "}
+              <BioLink href="https://itlab.uta.edu">UTA research labs</BioLink>. BS Computer Science
+              from <BioLink href="https://www.uta.edu">UT Arlington</BioLink>. I love science and
+              engineering and people
             </>
           ),
         }}
