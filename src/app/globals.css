@@ -297,6 +297,114 @@ body {
   text-wrap: balance;
   color: var(--color-ink);
 }
+/* ---- The /posts title (SlopTitle.tsx) ----
+   One sentence at four sizes. "slop" is the big word, and it is wet:
+   solid slime green, with drips hanging off its baseline that a goo
+   filter melts into the letters so they read as one poured shape. */
+.slop-title {
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 1.6rem + 4.6vw, 6.5rem);
+  line-height: 0.92;
+  color: var(--color-ink);
+}
+.slop-title-small {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 48;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.4em;
+  color: var(--color-ink-dim);
+}
+.slop-title-brand {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.74em;
+  letter-spacing: -0.035em;
+}
+.slop-title-mark {
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.12em;
+  vertical-align: -0.02em;
+}
+.slop-word {
+  --slime: #67c21f;
+  --slime-deep: #2f6a0b;
+  position: relative;
+  display: inline-block;
+  font-size: 1.7em;
+  line-height: 0.8;
+  color: var(--slime);
+  filter: url(#slop-goo) drop-shadow(0 0.03em 0 var(--slime-deep));
+}
+.slop-drip {
+  position: absolute;
+  top: 0.66em;
+  width: 0.075em;
+  height: var(--len);
+  border-radius: 0 0 999px 999px;
+  background: currentColor;
+  transform-origin: top;
+  animation: slop-ooze var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+/* The bead at the end of each drip, a little fatter than the strand. */
+.slop-drip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.04em;
+  width: 0.12em;
+  height: 0.13em;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  background: currentColor;
+  transform: translateX(-50%);
+}
+/* One drop lets go, falls, and fades, on a slow loop. */
+.slop-drop {
+  position: absolute;
+  top: 0.66em;
+  width: 0.09em;
+  height: 0.11em;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  background: currentColor;
+  opacity: 0;
+  animation: slop-fall 5.5s cubic-bezier(0.55, 0, 1, 0.45) 1.2s infinite;
+}
+@keyframes slop-ooze {
+  from {
+    transform: scaleY(0.55);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes slop-fall {
+  0%,
+  55% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0.3em);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(1.4em);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slop-drip {
+    animation: none;
+  }
+  .slop-drop {
+    display: none;
+  }
+}
+
 /* The deck under it: one sentence, larger and lighter than the body,
    set in the serif so it reads as the editor's voice rather than a
    summary field. */

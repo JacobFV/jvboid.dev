@@ -11,6 +11,7 @@ import {
 } from "@/lib/graph";
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { CollectionTitle } from "@/components/chrome/CollectionTitle";
+import { SlopTitle } from "@/components/chrome/SlopTitle";
 import { CoverArt } from "@/components/chrome/CoverArt";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
@@ -98,10 +99,16 @@ export default async function KindIndexPage({ params }: { params: Params }) {
   return (
     <main className="mx-auto max-w-3xl px-6 pt-10 pb-16">
       <header className={bare ? "mt-14 mb-14" : "mt-14 mb-16"}>
-        <h1 data-page-title className="display-title">
-          {KIND_TITLE[nodeKind]}
-        </h1>
-        {!bare && <p className="standfirst mt-8">{KIND_DESCRIPTION[nodeKind]}</p>}
+        {nodeKind === "post" ? (
+          <SlopTitle />
+        ) : (
+          <>
+            <h1 data-page-title className="display-title">
+              {KIND_TITLE[nodeKind]}
+            </h1>
+            {!bare && <p className="standfirst mt-8">{KIND_DESCRIPTION[nodeKind]}</p>}
+          </>
+        )}
       </header>
 
       {/* No cards. An index is a list of things to read, so it is set as
