@@ -29,8 +29,13 @@ export function SlopTitle() {
           <feComposite in="SourceGraphic" in2="goo" operator="atop" />
         </filter>
       </svg>
-      <span className="slop-title-small">some of the</span>{" "}
-      <span className="slop-word">
+      {/* Each word stacks above the ones before it, so where the title
+          wraps, the drips hanging off "slop" run *behind* the line under
+          it instead of across "ChatGPT". */}
+      <span className="slop-title-small" style={{ position: "relative", zIndex: 1 }}>
+        some of the
+      </span>{" "}
+      <span className="slop-word" style={{ zIndex: 2 }}>
         slop
         {DRIPS.map((d) => (
           <span
@@ -49,8 +54,8 @@ export function SlopTitle() {
         ))}
         <span aria-hidden className="slop-drop" style={{ left: "36.5%" }} />
       </span>{" "}
-      <span>i feed</span>{" "}
-      <span className="whitespace-nowrap">
+      <span style={{ position: "relative", zIndex: 3 }}>i feed</span>{" "}
+      <span className="whitespace-nowrap" style={{ position: "relative", zIndex: 4 }}>
         <ChatGPTMark />
         <span className="slop-title-brand">ChatGPT</span>
       </span>
