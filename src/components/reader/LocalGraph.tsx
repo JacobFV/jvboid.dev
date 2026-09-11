@@ -1,7 +1,8 @@
-// 2nd-degree neighborhood for a node.
+// 3rd-degree neighborhood for a node.
 //
 // Includes: the focus node, every direct neighbor (1°), every neighbor of
-// those (2°), and all edges connecting any pair within that set. This file
+// those (2°), the closest of theirs (3°), and all edges connecting any pair
+// within that set. This file
 // is the server half — it pulls the subgraph out of the graph and hands a
 // client-safe slice to NeighborhoodOrbit, which draws it as a starfield
 // behind the glass of a CRT (see components/reader/NeighborhoodOrbit.tsx).
@@ -13,10 +14,17 @@ import {
   type OrbitNode,
 } from "@/components/reader/NeighborhoodOrbit";
 
+// How many links out from the page the view reaches.
+const MAX_DEPTH = 3;
+// From a well-connected page the third ring can take in much of the
+// graph, so it keeps only the nodes with the most ties back into the
+// second — the ones that are actually near, not merely reachable.
+const MAX_OUTER = 40;
+
 function neighborhood(focusId: string): {
   nodes: Node[];
   edges: Edge[];
-  rings: Map<string, 0 | 1 | 2>;
+  rings: Map<string, 0 | 1 | 2 | 3>;
 } {
   const { byId, edges } = getGraph();
   const focus = byId.get(focusId);
@@ -32,22 +40,27 @@ function neighborhood(focusId: string): {
     );
   });
 
-  const rings = new Map<string, 0 | 1 | 2>();
+  const rings = new Map<string, 0 | 1 | 2 | 3>();
   rings.set(focusId, 0);
 
-  // 1° neighbors
-  for (const e of visibleEdges) {
-    if (e.source === focusId) rings.set(e.target, 1);
-    else if (e.target === focusId) rings.set(e.source, 1);
-  }
-  // 2° neighbors (any node adjacent to a 1° neighbor that isn't already
-  // in the set)
-  const oneRing = Array.from(rings.entries())
-    .filter(([, r]) => r === 1)
-    .map(([id]) => id);
-  for (const e of visibleEdges) {
-    if (oneRing.includes(e.source) && !rings.has(e.target)) rings.set(e.target, 2);
-    if (oneRing.includes(e.target) && !rings.has(e.source)) rings.set(e.source, 2);
+  // Breadth-first, one ring at a time: each ring is every node adjacent to
+  // the ring before it that isn't already in the set, counted by how many
+  // ties it has into that ring.
+  let frontier = new Set([focusId]);
+  for (let depth = 1; depth <= MAX_DEPTH; depth++) {
+    const ties = new Map<string, number>();
+    for (const e of visibleEdges) {
+      if (frontier.has(e.source) && !rings.has(e.target)) ties.set(e.target, (ties.get(e.target) ?? 0) + 1);
+      if (frontier.has(e.target) && !rings.has(e.source)) ties.set(e.source, (ties.get(e.source) ?? 0) + 1);
+    }
+    let ids = [...ties.keys()];
+    if (depth === MAX_DEPTH && ids.length > MAX_OUTER) {
+      ids = ids
+        .sort((a, b) => (ties.get(b) ?? 0) - (ties.get(a) ?? 0) || a.localeCompare(b))
+        .slice(0, MAX_OUTER);
+    }
+    for (const id of ids) rings.set(id, depth as 1 | 2 | 3);
+    frontier = new Set(ids);
   }
 
   const ids = new Set(rings.keys());

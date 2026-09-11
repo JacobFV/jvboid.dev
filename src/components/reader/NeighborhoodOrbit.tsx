@@ -29,8 +29,10 @@ export type OrbitNode = {
   title: string;
   lane: Lane;
   href: string;
-  ring: 0 | 1 | 2;
+  ring: Ring;
 };
+
+type Ring = 0 | 1 | 2 | 3;
 
 export type OrbitEdge = {
   source: string;
@@ -51,6 +53,7 @@ const SB = H / 2;
 const FOCAL = 520;
 const R1 = 88; // 1° shell radius
 const R2 = 158; // 2° shell radius
+const R3 = 222; // 3° shell radius
 const Y_SQUASH = 0.6; // flatten the cloud into a disc — galaxy, not ball
 const STAR_COUNT = 120;
 const STAR_X = 400;
@@ -71,8 +74,12 @@ const ZOOM_MAX = 5;
 // Pinch (ctrl+wheel), a click into the panel, or fullscreen arm it at once.
 const WHEEL_DWELL = 700;
 
-const NODE_R: Record<0 | 1 | 2, number> = { 0: 7, 1: 5, 2: 3.4 };
-const LABEL_SIZE: Record<0 | 1 | 2, number> = { 0: 10, 1: 9, 2: 8 };
+const NODE_R: Record<Ring, number> = { 0: 7, 1: 5, 2: 3.4, 3: 2.6 };
+const LABEL_SIZE: Record<Ring, number> = { 0: 10, 1: 9, 2: 8, 3: 7.5 };
+// Each ring out is fainter, so the far ones read as context, not clutter.
+const RING_ALPHA: Record<Ring, number> = { 0: 1, 1: 0.95, 2: 0.62, 3: 0.42 };
+const LABEL_FILL: Record<Ring, string> = { 0: "#F4F1EB", 1: "#C6CEDD", 2: "#98A2B6", 3: "#7D879B" };
+const LABEL_MAX: Record<Ring, number> = { 0: 32, 1: 28, 2: 22, 3: 20 };
 // The phone rule below sets every label at 15px; the collision boxes
 // have to be measured at the size actually drawn.
 const LABEL_SIZE_PHONE = 15;
@@ -161,20 +168,25 @@ function shellLayout(nodes: OrbitNode[], edges: OrbitEdge[], focusId: string) {
     pos.set(n.id, { x: u.x * r, y: u.y * r * Y_SQUASH, z: u.z * r });
   });
 
-  const ring1Ids = new Set(ring1.map((n) => n.id));
+  // Each outer ring hangs off the ring inside it, the same way.
+  for (const [ring, shell] of [
+    [2, R2],
+    [3, R3],
+  ] as const) {
+  const innerIds = new Set(nodes.filter((n) => n.ring === ring - 1).map((n) => n.id));
   const parentOf = new Map<string, string>();
   for (const e of edges) {
-    if (ring1Ids.has(e.source) && !parentOf.has(e.target)) {
+    if (innerIds.has(e.source) && !parentOf.has(e.target)) {
       parentOf.set(e.target, e.source);
     }
-    if (ring1Ids.has(e.target) && !parentOf.has(e.source)) {
+    if (innerIds.has(e.target) && !parentOf.has(e.source)) {
       parentOf.set(e.source, e.target);
     }
   }
 
-  const ring2 = nodes.filter((n) => n.ring === 2);
-  const fallback = fibonacciSphere(ring2.length);
-  ring2.forEach((n, i) => {
+  const outer = nodes.filter((n) => n.ring === ring);
+  const fallback = fibonacciSphere(outer.length);
+  outer.forEach((n, i) => {
     const parent = parentOf.get(n.id);
     const anchor = parent ? pos.get(parent) : undefined;
     const u = anchor ? norm(anchor) : fallback[i];
@@ -190,9 +202,10 @@ function shellLayout(nodes: OrbitNode[], edges: OrbitEdge[], focusId: string) {
       y: u.y * Math.cos(tilt) + (e1.y * Math.cos(ang) + e2.y * Math.sin(ang)) * st,
       z: u.z * Math.cos(tilt) + (e1.z * Math.cos(ang) + e2.z * Math.sin(ang)) * st,
     });
-    const r = R2 * (0.82 + 0.34 * hash01(n.id, 4));
+    const r = shell * (0.82 + 0.34 * hash01(n.id, 4));
     pos.set(n.id, { x: dir.x * r, y: dir.y * r * Y_SQUASH, z: dir.z * r });
   });
+  }
 
   return pos;
 }
@@ -243,9 +256,7 @@ export function NeighborhoodOrbit({
   const positions = useMemo(() => shellLayout(nodes, edges, focusId), [nodes, edges, focusId]);
   const labels = useMemo(
     () =>
-      new Map(
-        nodes.map((n) => [n.id, shortTitle(n.title, n.ring === 0 ? 32 : n.ring === 1 ? 28 : 22)]),
-      ),
+      new Map(nodes.map((n) => [n.id, shortTitle(n.title, LABEL_MAX[n.ring])])),
     [nodes],
   );
 
@@ -418,7 +429,7 @@ export function NeighborhoodOrbit({
           `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) scale(${(p.k * zs).toFixed(3)})`,
         );
         const depth = clamp(p.k ** 1.6, 0.3, 1.3);
-        const opacity = n.ring === 0 ? 1 : n.ring === 1 ? 0.95 * depth : 0.62 * depth;
+        const opacity = n.ring === 0 ? 1 : RING_ALPHA[n.ring] * depth;
         el.setAttribute("opacity", Math.min(1, opacity).toFixed(3));
       }
 
@@ -437,7 +448,11 @@ export function NeighborhoodOrbit({
         const p = screen.get(n.id);
         if (!lab || !p) continue;
         let o = 0;
-        if (n.ring < 2 || c.zoom >= 1.35 || p.k > 1.08) {
+        const eligible =
+          n.ring < 2 ||
+          (n.ring === 2 && (c.zoom >= 1.35 || p.k > 1.08)) ||
+          (n.ring === 3 && (c.zoom >= 1.9 || p.k > 1.14));
+        if (eligible) {
           const s = p.k * zs;
           const fs = (base || LABEL_SIZE[n.ring]) * s;
           const w = (labels.get(n.id)?.length ?? 0) * fs * 0.62;
@@ -459,7 +474,9 @@ export function NeighborhoodOrbit({
                 ? 1
                 : n.ring === 1
                   ? clamp(0.6 + 0.5 * (p.k - 0.8), 0.45, 1)
-                  : clamp(0.45 + 0.6 * (p.k - 0.8), 0.3, 0.85);
+                  : n.ring === 2
+                    ? clamp(0.45 + 0.6 * (p.k - 0.8), 0.3, 0.85)
+                    : clamp(0.35 + 0.5 * (p.k - 0.8), 0.25, 0.7);
           }
         }
         lab.setAttribute("opacity", o.toFixed(3));
@@ -863,7 +880,7 @@ export function NeighborhoodOrbit({
                     }
                   }}
                   transform={`translate(${(p?.x ?? CX).toFixed(2)} ${(p?.y ?? CY).toFixed(2)}) scale(${(p?.k ?? 1).toFixed(3)})`}
-                  opacity={n.ring === 0 ? 1 : n.ring === 1 ? 0.95 : 0.62}
+                  opacity={RING_ALPHA[n.ring]}
                 >
                   {n.ring === 0 ? (
                     <g className="orbit-body">
@@ -891,7 +908,7 @@ export function NeighborhoodOrbit({
                     textAnchor="middle"
                     fontSize={LABEL_SIZE[n.ring]}
                     fontFamily="var(--font-mono)"
-                    fill={n.ring === 0 ? "#F4F1EB" : n.ring === 1 ? "#C6CEDD" : "#98A2B6"}
+                    fill={LABEL_FILL[n.ring]}
                     opacity={n.ring === 0 ? 1 : 0}
                   >
                     {labels.get(n.id)}
