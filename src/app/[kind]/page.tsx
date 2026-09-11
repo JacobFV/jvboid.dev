@@ -12,7 +12,7 @@ import {
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { CollectionTitle } from "@/components/chrome/CollectionTitle";
 import { SlopTitle } from "@/components/chrome/SlopTitle";
-import { PostThumb } from "@/components/chrome/PostThumb";
+import { PostThumb, postThumbImage } from "@/components/chrome/PostThumb";
 import { CoverArt } from "@/components/chrome/CoverArt";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
@@ -127,8 +127,11 @@ export default async function KindIndexPage({ params }: { params: Params }) {
             const href = nodeLinkHref(node);
             const offsite = /^https?:/i.test(href);
             const withCover = COVER_KINDS.has(node.kind);
-            // Posts carry a thumbnail in place of the numeral.
-            const withThumb = node.kind === "post";
+            // Posts carry their own picture in place of the numeral; a post
+            // without one is set as text alone.
+            const thumb = node.kind === "post" ? postThumbImage(node) : undefined;
+            const withThumb = Boolean(thumb);
+            const plainPost = node.kind === "post" && !thumb;
             return (
               <li key={node.id} className="border-t border-[var(--color-rule)] last:border-b">
                 <Link
@@ -140,16 +143,18 @@ export default async function KindIndexPage({ params }: { params: Params }) {
                       ? "group flex items-start gap-5 py-7 no-underline"
                       : withThumb
                         ? "group grid grid-cols-[6rem_1fr] items-start gap-x-5 py-7 no-underline sm:grid-cols-[8rem_1fr] sm:gap-x-6"
-                        : "group grid grid-cols-[3.5rem_1fr] gap-x-4 py-7 no-underline sm:grid-cols-[5rem_1fr]"
+                        : plainPost
+                          ? "group block py-7 no-underline"
+                          : "group grid grid-cols-[3.5rem_1fr] gap-x-4 py-7 no-underline sm:grid-cols-[5rem_1fr]"
                   }
                 >
-                  {withThumb && (
+                  {thumb && (
                     <PostThumb
-                      node={node}
+                      image={thumb}
                       className="mt-1 transition-transform duration-200 group-hover:scale-[1.02]"
                     />
                   )}
-                  {!withCover && !withThumb && (
+                  {!withCover && !withThumb && !plainPost && (
                     <span className="numeral pt-1">
                       {String(i + 1).padStart(2, "0")}
                     </span>
