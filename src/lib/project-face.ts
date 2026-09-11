@@ -35,6 +35,8 @@ const imageSrcPattern = /src:\s*["']([^"']+\.(?:avif|gif|heic|jpe?g|png|svg|webp
 const projectMosaicCols: Record<string, number> = {
   "canvas-engineering": 3,
   "chem-0": 3,
+  // The brain render in the middle, the body and its systems around it.
+  "ibm-1": 3,
   "lunar-rover": 3,
   limboid: 3,
   // The Cookie Baker gantry has exactly one surviving photograph, so a
