@@ -20,8 +20,9 @@ import { HeroHex, HeroStack, HERO_SIZE, type HeroContent } from "@/components/ch
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane } from "@/lib/graph-types";
 import {
+  FACE_OUTLINES,
   SQUARE_CLIP,
-  SQUARE_GEOMETRY,
+  faceOutline,
   type SquareShape,
   type FacePlan,
   type IconKey,
@@ -94,8 +95,14 @@ const PROJECT_VIEW_STORAGE_KEY = "jacobfv:projects:view";
 // columns by `packHoneycomb` (src/lib/hex-layout.ts), which also owns
 // HEX_RATIO and the clip. HEX_GAP is the "slight margin": it is carried by
 // the collision shape, not the drawn one, so the packing stays a true
-// honeycomb.
-const HEX_GAP = 10;
+// honeycomb. Kept small — half what it was — but not smaller: at 5px the
+// settle comes out with no overlaps on the real projects, while at 4px a
+// tile placed in an exact-fit pocket can wedge once it leans (and at zero
+// several did; see the settle in hex-layout.ts).
+const HEX_GAP = 5;
+// How far a hovered tile's neighbors may be shoved aside, independent of
+// the margin now that the margin is this thin.
+const JOSTLE_MAX = 9;
 const HEX_TARGET_W = 168;
 // List-view icons are hexagons too, at a fixed size. Flat-top, so the
 // fixed dimension is the width and the height follows.
@@ -681,7 +688,6 @@ const faceClip = (project: ProjectItem) => (project.shape ? SQUARE_CLIP[project.
 // so the line stays a hairline while a hovered tile scales up.
 function HexEdge({ shape }: { shape?: SquareShape }) {
   const h = 100 * HEX_RATIO;
-  const side = shape ? SQUARE_GEOMETRY[shape].side * 100 : 0;
   return (
     <svg
       viewBox={`0 0 100 ${h}`}
@@ -691,12 +697,12 @@ function HexEdge({ shape }: { shape?: SquareShape }) {
       focusable="false"
     >
       {shape ? (
-        <rect
-          x={(100 - side) / 2}
-          y={(h - side) / 2}
-          width={side}
-          height={side}
-          rx={SQUARE_GEOMETRY[shape].radius * 100}
+        // The face's own outline, finely chorded so the hairline reads as
+        // a curve at any tile size.
+        <polygon
+          points={faceOutline(shape, 8)
+            .map(([x, y]) => `${(50 + x * 100).toFixed(2)},${(h / 2 + y * 100).toFixed(2)}`)
+            .join(" ")}
           fill="none"
           stroke="var(--color-bg-2)"
           strokeWidth={2}
@@ -902,7 +908,7 @@ function jostleOffsets(
     // Everything is shoved radially outward, so two tiles only close on
     // each other by the *difference* of their pushes. Capping any single
     // push below HEX_GAP therefore keeps the comb from ever self-overlapping.
-    const push = Math.min(JOSTLE_PUSH * fade * mass, HEX_GAP * 0.9);
+    const push = Math.min(JOSTLE_PUSH * fade * mass, JOSTLE_MAX);
     out.set(combId(cell.item), { x: (dx * push) / dist, y: (dy * push) / dist });
   }
 
@@ -1018,7 +1024,7 @@ function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: 
           shapeOf: (item) => (item.kind !== "hero" && item.shape ? item.shape : "hex"),
           // The hero holds the page's copy: it neither moves nor turns.
           isFixed: (item) => item.kind === "hero",
-          squares: SQUARE_GEOMETRY,
+          faces: FACE_OUTLINES,
         },
       ),
     [items, measured, hexW],

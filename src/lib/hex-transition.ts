@@ -92,13 +92,15 @@ function navigationSettled(targetPath: string, timeout = 2500): Promise<void> {
   });
 }
 
-// The app-icon tiles' rounded square centered on (cx, cy), half-side `h`,
-// corner radius `r`, all px. `xywh()` rather than `inset()` because the
-// final square is far larger than the viewport, which `inset()` would
-// need negative lengths to describe.
-function squareClip(cx: number, cy: number, h: number, r: number): string {
+// A non-hexagon face's box centered on (cx, cy): half-width `hw`,
+// half-height `hh`, corner radius `r`, all px. `xywh()` rather than
+// `inset()` because the final box is far larger than the viewport, which
+// `inset()` would need negative lengths to describe. The TV's squircle
+// opens as a rounded box of its own proportions — close enough while it
+// is growing past the edges.
+function boxClip(cx: number, cy: number, hw: number, hh: number, r: number): string {
   const px = (v: number) => `${v.toFixed(2)}px`;
-  return `xywh(${px(cx - h)} ${px(cy - h)} ${px(2 * h)} ${px(2 * h)} round ${px(r)})`;
+  return `xywh(${px(cx - hw)} ${px(cy - hh)} ${px(2 * hw)} ${px(2 * hh)} round ${px(r)})`;
 }
 
 function transitionStyles(
@@ -219,12 +221,16 @@ export function hexExpandNavigate({
   let thumbTo = r1 / r0;
   const square = face.dataset.tileShape as SquareShape | undefined;
   if (square && SQUARE_GEOMETRY[square]) {
-    const h0 = (rect.width * SQUARE_GEOMETRY[square].side) / 2;
-    const rad0 = rect.width * SQUARE_GEOMETRY[square].radius;
-    const h1 = far * 1.5;
-    clipFrom = squareClip(cx, cy, h0 / ZOOM, rad0 / ZOOM);
-    clipTo = squareClip(cx, cy, h1, rad0 * (h1 / h0));
-    thumbTo = h1 / h0;
+    const g = SQUARE_GEOMETRY[square];
+    const hw0 = (rect.width * g.w) / 2;
+    const hh0 = (rect.width * g.h) / 2;
+    const rad0 = rect.width * g.radius;
+    // Grown by the same factor on both axes, far enough that the shorter
+    // one still clears the farthest corner.
+    const grow = (far * 1.5) / Math.min(hw0, hh0);
+    clipFrom = boxClip(cx, cy, hw0 / ZOOM, hh0 / ZOOM, rad0 / ZOOM);
+    clipTo = boxClip(cx, cy, hw0 * grow, hh0 * grow, rad0 * grow);
+    thumbTo = grow;
   }
 
   running = true;

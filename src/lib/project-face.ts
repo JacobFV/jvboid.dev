@@ -125,37 +125,111 @@ const appIconIds = new Set([
 // Papers and libraries that read better as a plain square page.
 const squareIds = new Set(["bsbr", "jnumpy", "tensor-computer", "tensacode"]);
 
-export type TileShape = "hex" | "app" | "square";
+// The animations, framed as what they were made to be watched on.
+const tvIds = new Set(["polonius-as-a-fool", "the-right-night-light", "looking-for-princess-suzzane"]);
+
+export type TileShape = "hex" | "app" | "square" | "tv";
+/** Every face that is not the hexagon. */
 export type SquareShape = Exclude<TileShape, "hex">;
 
 export function projectTileShape(id: string): TileShape {
-  return appIconIds.has(id) ? "app" : squareIds.has(id) ? "square" : "hex";
+  if (appIconIds.has(id)) return "app";
+  if (squareIds.has(id)) return "square";
+  if (tvIds.has(id)) return "tv";
+  return "hex";
 }
 
-// The two square faces, as fractions of the cell's width W (the cell is the
-// flat-top hexagon's box, W × W·√3/2). Each is the largest of its kind the
-// hexagon holds, so the packing is unchanged and neither reaches into a
-// neighbour's cell:
-//   app    — side 0.72W, corner radius 0.158W; the corner arcs just touch
-//            the hexagon's diagonals.
-//   square — side 0.634W, corners barely softened; its sharp corners sit
-//            on the diagonals, which is why it is smaller than the app icon.
-export const SQUARE_GEOMETRY: Record<SquareShape, { side: number; radius: number }> = {
-  app: { side: 0.72, radius: 0.158 },
-  square: { side: 0.634, radius: 0.012 },
+// The faces that are not the hexagon, as fractions of the cell's width W
+// (the cell is the flat-top hexagon's box, W × W·√3/2). Each is the largest
+// of its kind the hexagon holds, so the packing is unchanged and none
+// reaches into a neighbour's cell:
+//   app    — a 0.72W square, corner radius 0.158W; the corner arcs just
+//            touch the hexagon's diagonals.
+//   square — a 0.634W square, corners barely softened; its sharp corners
+//            sit on the diagonals, which is why it is smaller than the app.
+//   tv     — a 4:3 squircle (superellipse, n = 4), the shape of an old CRT
+//            screen, like the Related viewer's; 0.80 × 0.60W, just inside
+//            the 0.8085 × 0.6064W at which it touches the diagonals.
+// `radius` is what the page transition rounds a face's box by as it opens.
+export const SQUARE_GEOMETRY: Record<
+  SquareShape,
+  { w: number; h: number; radius: number; squircle?: number }
+> = {
+  app: { w: 0.72, h: 0.72, radius: 0.158 },
+  square: { w: 0.634, h: 0.634, radius: 0.012 },
+  tv: { w: 0.8, h: 0.6, radius: 0.13, squircle: 4 },
 };
-export const APP_ICON_SIDE = SQUARE_GEOMETRY.app.side;
+export const APP_ICON_SIDE = SQUARE_GEOMETRY.app.w;
 export const APP_ICON_RADIUS = SQUARE_GEOMETRY.app.radius;
 const CELL_H = Math.sqrt(3) / 2;
 const pctOf = (v: number) => `${(v * 100).toFixed(2)}%`;
-const squareClip = ({ side, radius }: { side: number; radius: number }) =>
-  `inset(${pctOf((CELL_H - side) / 2 / CELL_H)} ${pctOf((1 - side) / 2)} round ${pctOf(
-    radius,
-  )} / ${pctOf(radius / CELL_H)})`;
-/** Each square face as a clip-path on the cell — clips hit-testing too. */
+
+/**
+ * A face's outline in units of the cell's width, centred on the cell — the
+ * one shape its clip, its hairline edge and its collision body are all cut
+ * from. `detail` is the chords per rounded corner (the squircle gets
+ * eight times as many points in all).
+ */
+export function faceOutline(shape: SquareShape, detail = 3): [number, number][] {
+  const { w, h, radius, squircle } = SQUARE_GEOMETRY[shape];
+  const pts: [number, number][] = [];
+  if (squircle) {
+    const steps = detail * 8 * 2;
+    for (let i = 0; i < steps; i++) {
+      const t = (i / steps) * Math.PI * 2;
+      const c = Math.cos(t);
+      const s = Math.sin(t);
+      pts.push([
+        (w / 2) * Math.sign(c) * Math.abs(c) ** (2 / squircle),
+        (h / 2) * Math.sign(s) * Math.abs(s) ** (2 / squircle),
+      ]);
+    }
+    return pts;
+  }
+  const steps = radius > 0.03 ? detail : 1;
+  const cx = w / 2 - radius;
+  const cy = h / 2 - radius;
+  const corners: [number, number, number][] = [
+    [cx, -cy, -Math.PI / 2],
+    [cx, cy, 0],
+    [-cx, cy, Math.PI / 2],
+    [-cx, -cy, Math.PI],
+  ];
+  for (const [ox, oy, start] of corners) {
+    for (let k = 0; k <= steps; k++) {
+      const t = start + (k / steps) * (Math.PI / 2);
+      pts.push([ox + radius * Math.cos(t), oy + radius * Math.sin(t)]);
+    }
+  }
+  return pts;
+}
+
+/** Collision outlines for the settle, one per non-hexagon face — coarser
+ *  than the drawn ones, since every contact test walks every vertex. */
+export const FACE_OUTLINES: Record<SquareShape, [number, number][]> = {
+  app: faceOutline("app"),
+  square: faceOutline("square"),
+  tv: faceOutline("tv", 1),
+};
+
+// A rounded square is a clean `inset()`; the squircle has no CSS primitive,
+// so it is its own outline as a polygon.
+const faceClip = (shape: SquareShape) => {
+  const g = SQUARE_GEOMETRY[shape];
+  if (g.squircle) {
+    return `polygon(${faceOutline(shape, 6)
+      .map(([x, y]) => `${pctOf(0.5 + x)} ${pctOf(0.5 + y / CELL_H)}`)
+      .join(", ")})`;
+  }
+  return `inset(${pctOf((CELL_H - g.h) / 2 / CELL_H)} ${pctOf((1 - g.w) / 2)} round ${pctOf(
+    g.radius,
+  )} / ${pctOf(g.radius / CELL_H)})`;
+};
+/** Each face as a clip-path on the cell — clips hit-testing too. */
 export const SQUARE_CLIP: Record<SquareShape, string> = {
-  app: squareClip(SQUARE_GEOMETRY.app),
-  square: squareClip(SQUARE_GEOMETRY.square),
+  app: faceClip("app"),
+  square: faceClip("square"),
+  tv: faceClip("tv"),
 };
 
 export type FaceImage = { src: string; alt: string };

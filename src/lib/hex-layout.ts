@@ -430,8 +430,9 @@ export function packHoneycomb<T>({
 // Deterministic — same input, same output — so the server-rendered frame
 // and the client's agree.
 
-export type SettleShape = "hex" | "app" | "square";
-export type SquareGeometry = Record<Exclude<SettleShape, "hex">, { side: number; radius: number }>;
+export type SettleShape = "hex" | "app" | "square" | "tv";
+/** Each non-hexagon face's outline, in units of its cell's width, centred on the cell. */
+export type FaceOutlines = Record<Exclude<SettleShape, "hex">, [number, number][]>;
 
 type Body = {
   cx: number;
@@ -461,7 +462,7 @@ type Body = {
 const SETTLE_STEPS = 120;
 const SETTLE_ITERS = 3;
 const RELAX_STEPS = 32;
-const FIX_STEPS = 40;
+const FIX_STEPS = 120;
 // Gravity at the start of the settle, in 1× tile widths per step.
 const GRAVITY = 0.02;
 // How hard a compressed margin pushes back, per iteration.
@@ -516,7 +517,7 @@ export function tileOutline(
   shape: SettleShape,
   w: number,
   h: number,
-  squares: SquareGeometry,
+  faces: FaceOutlines,
 ): [number, number][] {
   if (shape === "hex") {
     return [
@@ -528,26 +529,11 @@ export function tileOutline(
       [-w / 4, h / 2],
     ];
   }
-  // A square, its corner arcs as short chords — close enough that a
-  // neighbor nests into the corner the way the drawn one allows.
-  const side = squares[shape].side * w;
-  const radius = squares[shape].radius * w;
-  const c = side / 2 - radius;
-  const steps = radius > 0.03 * w ? 3 : 1;
-  const verts: [number, number][] = [];
-  const corners: [number, number, number][] = [
-    [c, -c, -Math.PI / 2],
-    [c, c, 0],
-    [-c, c, Math.PI / 2],
-    [-c, -c, Math.PI],
-  ];
-  for (const [ox, oy, start] of corners) {
-    for (let k = 0; k <= steps; k++) {
-      const t = start + (k / steps) * (Math.PI / 2);
-      verts.push([ox + radius * Math.cos(t), oy + radius * Math.sin(t)]);
-    }
-  }
-  return verts;
+  // Every other face is drawn from one outline (see faceOutline in
+  // project-face.ts), rounded corners and squircle sides as short chords —
+  // close enough that a neighbor nests into a corner the way the drawn one
+  // allows.
+  return faces[shape].map(([x, y]) => [x * w, y * w]);
 }
 
 function worldOutline(b: Body): [number, number][] {
@@ -650,19 +636,19 @@ export function settleComb<T>(
     gap,
     shapeOf,
     isFixed,
-    squares,
+    faces,
   }: {
     containerWidth: number;
     unitWidth: number;
     gap: number;
     shapeOf: (item: T) => SettleShape;
     isFixed: (item: T) => boolean;
-    squares: SquareGeometry;
+    faces: FaceOutlines;
   },
 ): HexLayout<T> {
   const unitArea = unitWidth * unitWidth * HEX_RATIO;
   const bodies: Body[] = layout.cells.map((cell) => {
-    const verts = tileOutline(shapeOf(cell.item), cell.width, cell.height, squares);
+    const verts = tileOutline(shapeOf(cell.item), cell.width, cell.height, faces);
     const fixed = isFixed(cell.item);
     const m = fixed ? Infinity : (cell.width * cell.height) / unitArea;
     const inv = fixed ? 0 : 1 / m;
@@ -711,6 +697,9 @@ export function settleComb<T>(
   // body does either about that point — unless `rotate` is off, when the
   // whole correction is a push.
   const solve = (soft: number, floor: number, rotate = true) => {
+    // How many contacts this pass actually corrected; the final passes
+    // stop on the first that corrects none.
+    let moved = 0;
     resort();
     for (let oi = 0; oi < order.length; oi++) {
       const a = bodies[order[oi]];
@@ -726,6 +715,7 @@ export function settleComb<T>(
         const { d, nx, ny, px, py } = contactOf(a, b);
         if (d >= gap) continue;
         const push = soft * (gap - d) + (d < floor ? floor - d : 0);
+        if (push > 0.01) moved++;
         const ia = rotate ? a.invI : 0;
         const ib = rotate ? b.invI : 0;
         const ca = (px - a.cx) * ny - (py - a.cy) * nx;
@@ -762,6 +752,7 @@ export function settleComb<T>(
         body.world = worldOutline(body);
       }
     }
+    return moved;
   };
 
   for (let step = 0; step < SETTLE_STEPS; step++) {
@@ -782,7 +773,10 @@ export function settleComb<T>(
   // leaning tile is wedged between two others. With rotation off, every
   // correction is a push that lands in full, so these passes are what make
   // "nothing closer than MIN_GAP of the margin" true rather than likely.
-  for (let step = 0; step < FIX_STEPS; step++) solve(0, gap * MIN_GAP, false);
+  // They run until a pass corrects nothing, up to FIX_STEPS.
+  for (let step = 0; step < FIX_STEPS; step++) {
+    if (solve(0, gap * MIN_GAP, false) === 0) break;
+  }
 
   let height = 0;
   const cells = layout.cells.map((cell, i) => {
