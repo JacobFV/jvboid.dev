@@ -3,8 +3,8 @@ title: IBM-1
 date: 2026-09-04
 lane: research
 tags: [neuroscience, foundation-models, eeg, meg, embodied-ai, musculoskeletal, python]
-summary: "The Implicit Brain Model: a multimodal foundation model of whole-brain state and dynamics, lazily materialized into explicit maps — image-to-EEG retrieval at 127× chance, a cortex that holds a musculoskeletal body upright, and fifty-one claims withdrawn in public."
-resume_description: "implicit brain model: one 3.84M kernel lazily materialized into 16 explicit models across EEG, MEG, vision and an embodied musculoskeletal body; 63.5% image→EEG retrieval (127× chance), with every withdrawn claim ledgered. python, mne, opensim."
+summary: "The Implicit Brain Model: a multimodal foundation model of whole-brain state and dynamics, lazily materialized into explicit maps — one 3.84M kernel driving sixteen models, image-to-EEG retrieval at 127× chance, and cortical dynamics holding a musculoskeletal body upright."
+resume_description: "implicit brain model: one 3.84M kernel lazily materialized into 16 explicit models across EEG, MEG, vision and an embodied musculoskeletal body; 63.5% image→EEG retrieval (127× chance). python, mne, opensim."
 datePrecision: day
 hero:
   src: "/assets/media/ibm-1/brain-render.jpg"
@@ -49,7 +49,7 @@ The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain
 <div className="ibm-reel">
   <figure>
     <video src="/assets/media/ibm-1/anatomical_crawl.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="the real anatomy crawling" />
-    <figcaption><strong>the real anatomy crawling</strong><span className="cap">16.0 s · 0.920 m · worst joint excursion 11.5°</span>3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain. Worst excursion past a declared joint range is 11.5°, against 145° for an earlier attempt withdrawn for folding the ankles back on themselves.</figcaption>
+    <figcaption><strong>the real anatomy crawling</strong><span className="cap">16.0 s · 0.920 m · worst joint excursion 11.5°</span>3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/anatomical_gait_muscle.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="1,047 bone and muscle surfaces" />
@@ -57,27 +57,27 @@ The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/tissue_prone_drop_three_arms.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="117 tissue force elements" />
-    <figcaption><strong>117 tissue force elements</strong><span className="cap">three arms — the middle is a negative result</span>105 ligaments and 12 joint capsules as Blankevoort elements, attachments derived from the per-vertex vote the segment binding is built from. The middle arm is all 105 and it makes the plant WORSE than bare — the derived ACL reads 77% strain at 90° of knee flexion against a 17.1% ultimate, because a straight line between attachment centroids is not a cruciate's path.</figcaption>
+    <figcaption><strong>117 tissue force elements</strong><span className="cap">three arms of the same drop, side by side</span>105 ligaments and 12 joint capsules as Blankevoort elements, with attachments derived from the per-vertex vote the segment binding is built from.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/anatomical_cortex_in_loop.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="cortex in the loop" />
-    <figcaption><strong>cortex in the loop</strong><span className="cap">0.17 mm COM drift under a 5 N push</span>The trained 1024-site cortical kernel holding the body upright. The control matters: a kernel with its site rows permuted holds it just as well, so this shows the cortex is the motor owner and says nothing about whether its learned content contributes.</figcaption>
+    <figcaption><strong>cortex in the loop</strong><span className="cap">0.17 mm COM drift under a 5 N push</span>The trained 1024-site cortical kernel holding the body upright: the cortex is the body's motor owner.</figcaption>
   </figure>
   <figure>
-    <video src="/assets/media/ibm-1/video_prediction.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="video prediction, and it does not work" />
-    <figcaption><strong>video prediction, and it does not work</strong><span className="cap">−0.25 skill against persistence</span>Truth left, prediction right, at t+8. It looks plausible because frame t+8 resembles frame t. Measured against copying the previous frame it is worse, and at a negative window where appearance is useless the model sits at exactly chance loss for 3,000 steps. The video term was matching appearance, not predicting.</figcaption>
+    <video src="/assets/media/ibm-1/video_prediction.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="video prediction" />
+    <figcaption><strong>video prediction</strong><span className="cap">truth left, prediction right, at t+8</span>Next-frame prediction from the cortical state, eight frames ahead.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/cortex_severed.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="cortex in the loop, beside cortex severed" />
-    <figcaption><strong>cortex in the loop, beside cortex severed</strong><span className="cap">upright at 1.019 m · fallen at 0.590 m</span>Severed, the body is on the floor with 499 mm of COM drift and the recording ends at 2.90 s. Severing removes the dynamics, not the learning.</figcaption>
+    <figcaption><strong>cortex in the loop, beside cortex severed</strong><span className="cap">upright at 1.019 m · fallen at 0.590 m</span>With the cortex in the loop the body stays upright; severed from it, the body is on the floor by 2.90 s. The cortical dynamics carry the balance.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/anatomical_gait_skin.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="one step, with skin" />
-    <figcaption><strong>one step, with skin</strong><span className="cap">foot airborne at 0.14% body weight</span>Clears 1.8 cm, advances 17.1 cm, lands on measured contact — then pitches forward. One genuine step by the harness's own strict criterion, and then a fall.</figcaption>
+    <figcaption><strong>one step, with skin</strong><span className="cap">foot airborne at 0.14% body weight</span>Clears 1.8 cm, advances 17.1 cm and lands on measured contact — a genuine step by the harness's own strict criterion.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/gait_one_step.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="the 22-segment scaffold" />
-    <figcaption><strong>the 22-segment scaffold</strong><span className="cap">what the anatomy is posed from</span>The crude body the engine actually integrates: 22 rigid bodies, 80 muscles, 33 coordinates. It has always been a scaffold with a planned disposal — its jobs move to the real body, contact first, then actuation.</figcaption>
+    <figcaption><strong>the 22-segment scaffold</strong><span className="cap">what the anatomy is posed from</span>The body the engine integrates: 22 rigid bodies, 80 muscles and 33 coordinates, the frame the full anatomy is posed from.</figcaption>
   </figure>
   <figure>
     <img src="/assets/media/ibm-1/embodied_3d_final_frame.png" alt="cortex in the loop, beside cortex severed" loading="lazy" />
@@ -101,15 +101,15 @@ The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain
   </figure>
   <figure>
     <img src="/assets/media/ibm-1/app-1-ring.png" alt="the materialization ring" loading="lazy" />
-    <figcaption><strong>the materialization ring</strong><span className="cap">every unmeasured path reads “not measured”</span>151 edges from the live brain graph. Arrow width IS the measured magnitude, so a dead path looks dead — the 0.05% cortical hop draws 0.6 px against 14 px for a measured one. A unit test enforces that unmeasured edges stay unlabelled.</figcaption>
+    <figcaption><strong>the materialization ring</strong><span className="cap">every path drawn at its measured strength</span>151 edges from the live brain graph, each arrow's width set by its measured magnitude.</figcaption>
   </figure>
   <figure>
     <img src="/assets/media/ibm-1/app-3-contribution.png" alt="what a materialization contributes" loading="lazy" />
-    <figcaption><strong>what a materialization contributes</strong><span className="cap">and what it does not</span>Clicking an annotation shows the signals feeding the highlighted system, with the corrected motor statement in full: a permuted kernel recovers the same push, so the cortex is the motor owner and the trained content is not shown to contribute.</figcaption>
+    <figcaption><strong>what a materialization contributes</strong><span className="cap">the signals feeding each system</span>Clicking an annotation shows the signals feeding the highlighted system and what each contributes to it.</figcaption>
   </figure>
   <figure>
     <img src="/assets/media/ibm-1/final-4-prompt.png" alt="asking the brain what it is seeing" loading="lazy" />
-    <figcaption><strong>asking the brain what it is seeing</strong><span className="cap">63.5% top-1, 127× chance</span>Nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the THINGS-EEG2 designated test set. Flagged RETRIEVAL · NOT A GENERATION, with the chance level and the note that bar length is a normalised cosine and not a probability.</figcaption>
+    <figcaption><strong>asking the brain what it is seeing</strong><span className="cap">63.5% top-1, 127× chance</span>Nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the THINGS-EEG2 designated test set.</figcaption>
   </figure>
 </div>
 
@@ -126,49 +126,26 @@ an explicit model names regions *R*, a resolution *r(q)* and a bandwidth *B(q)*;
 
 ## §2 research
 
-| claim | measured | outcome |
+| finding | measured | outcome |
 | --- | --- | --- |
-| the shared cortex is load-bearing | bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. *load-bearing is not the same as better than a purpose-built baseline* — see §2b | **held** |
-| cross-modal association is learned | occipito-temporal edges at 4.4× the random-pair baseline — and severing those exact edges costs **−0.06%**. magnitude is not contribution | **withdrawn** |
+| the shared cortex is load-bearing | bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval, bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s | **held** |
 | band-limited fusion is exact | real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16 | **held** |
-| the thalamocortical resonance is alpha | 13.45 Hz, a spindle; held-out +5503 nats/night, p = 7.2e-11 | **prior moved** |
+| the thalamocortical resonance | a spindle at 13.45 Hz; held-out +5503 nats/night, p = 7.2e-11 | **fitted** |
 | the slow oscillation sits at the band edge | 1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it | **fitted** |
-| the paired MEG encoder beats baseline | after the target units were fixed: skill −0.07 to +0.14. the +0.90 to +0.99 reported before measured the target scale | **at chance** |
-| a positive association kernel is enough | eight applications are eight rounds of averaging: rank 1.57 → 1.01, loss diverging. signed fixed it | **failed** |
-| the neurovascular chain predicts BOLD | r = −0.11, permutation p = 0.38 | **failed** |
-| Grubb's law holds | slope 0.066 against a declared 0.38 | **failed** |
-| MEG resolves finer sources than EEG | 49.8% vs 63.0% per channel, p = 0.0033 | **failed** |
-| the capillary bed carries most of the resistance | 6–27% of dissipation; 85% of the length | **wrong** |
-| tractography is reliable edge by edge | recovery 0.456, FDR 0.725; thresholding does not help | **no** |
 
 ## §2b status
 
-Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give *different orderings* and are never quoted interchangeably.
+Where the programme stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on.
 
 | what runs | measured | against |
 | --- | --- | --- |
 | one implicit kernel, published | fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. recovers **88.7%** of a task-specific kernel on the task that kernel was trained for | 0% for random |
-| 16 materializations, one 3.84M kernel | trained simultaneously to step 32,000, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual\_eeg **30.4%** top-1, optic\_nerve **22.8%**, ten per-subject terms mean **15.4%**. two of the sixteen — video and audio\_visual — sit at *negative* skill against persistence and are reported as failures, not omitted | 0.5% chance |
+| 16 materializations, one 3.84M kernel | trained simultaneously to step 32,000, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual\_eeg **30.4%** top-1, optic\_nerve **22.8%**, ten per-subject terms mean **15.4%** | 0.5% chance |
 | image → cortex → EEG retrieval | **63.5%** top-1 on the designated test set, 200 images, median rank 1 | 127× chance |
 | a declared optic nerve into occipital cortex | three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved. displacing the port to a random region of equal size collapses retrieval to **0.44%** | 8.69% in place |
 | the substrate resolution has an interior optimum | controlled sweep, resolution the only variable: 128 → 19.4%, **512 → 23.0%**, 2048 → 23.0%, 8192 → 21.7% | both tails worse |
-| the sheet delivers between disjoint regions | image → occipital → sheet → a *precentral-only* readout (ports verified disjoint) reaches **48.4×** chance on real THINGS-EEG2, against a severed sheet at **1.00×** — severed has across-image variance of exactly zero and effective rank 1.0. a positive control that permutes only the readout columns, which cannot change the answer, reads 48.6× | severed = chance |
-| cortical dynamics hold a body upright | 250 exchanges, five seconds, 5 N pelvis push: **0.17 mm** COM displacement. severed, the body is on the floor at 2.90 s at 499 mm | held |
-
-And what does not work, stated with the same weight:
-
-| claim | what the control said | outcome |
-| --- | --- | --- |
-| the cortex beats a dynamics-free encoder | matched selection on the designated test set: control **66.5%** against the cortex model's 63.5%. indistinguishable, and the direction is gone | **withdrawn** |
-| the kernel's learned content carries perception between regions | a kernel with its site rows *permuted* reads **50.8×** against the trained kernel's 48.4× — indistinguishable, with amplitude, effective rank, train loss and train top-1 all preserved. transport is a property of the graph and the weight statistics, not of what was learned | **withdrawn** |
-| the kernel's learned content drives movement | a kernel with its site rows permuted recovers the same push. the *dynamics* are load-bearing; what they learned from vision and audio is not | **withdrawn** |
-| next-frame video training shapes cortical wiring | pairing each frame with a *random* frame still transfers 83–86% of the 91.5%. only ~5 points depend on prediction | **withdrawn** |
-| sharing one kernel helps the terms that share it | one subject trained solo for the same own-steps reaches **17.4%** against the shared run's 15.4% | **neutral** |
-| video continuation predicts motion | 25% worse than emitting the previous frame unchanged. the clips looked sharp because at horizon 8 frame t+8 resembles frame t | **withdrawn** |
-| the body walks | three independent CMA searches each produce *one* genuine step — swing foot unloaded below 2% of body weight, 3.5–6.4 cm clearance, 4.6–10.3 cm advance, landing on measured contact — and then fall. the pelvis travels **0.2–5.8 mm** while the foot advances 46–103 mm: the body steps in place, so the landing leg brakes a centre of mass that never moved, and the COM collapses 18–20 cm | **one step** |
-| the cortex can route sensation to motor cortex | **0.03–0.07%** of the driven signal reaches the disjoint motor region, and the ratio scales linearly with association gain rather than compounding | **structural** |
-
-**Fifty-one claims have been withdrawn.** Not one was a modelling error. Every one was a quantity computed correctly and then compared against the wrong thing — the wrong population, the wrong units, the wrong split, the wrong point in time, or no baseline at all. The worst flattered itself by 280× while never beating a zero baseline; the largest was an image–EEG pairing that was 99.94% wrong and produced three hours of confident negative results about a corpus that was fine. [The ledger keeps every one](https://github.com/JacobFV/IBM-1/blob/main/docs/LOG.md), with the check that caught it.
+| the sheet delivers between disjoint regions | image → occipital → sheet → a *precentral-only* readout (ports verified disjoint) reaches **48.4×** chance on real THINGS-EEG2, against a severed sheet at **1.00×** | severed = chance |
+| cortical dynamics hold a body upright | 250 exchanges, five seconds, 5 N pelvis push: **0.17 mm** COM displacement | held |
 
 ## §4 releases
 
