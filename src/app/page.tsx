@@ -199,9 +199,9 @@ export default function HomePage() {
               decoding models for{" "}
               <BioLink href="https://supercognitionlabs.com/">SuperCognition Labs</BioLink>. Building
               Agentic + Robotics Infrastructure at{" "}
-              <BioLink href="https://commandagi.com">CommandAGI.com</BioLink>. API/Integration
+              <BioLink href="https://commandagi.com">CommandAGI.com</BioLink>. Prev: API/Integration
               Architect at <BioLink href="https://agi.app">AGI, Inc.</BioLink>, shipping APIs,
-              integrations, and agent infrastructure for on-device mobile AI agents. Earlier:{" "}
+              integrations, and agent infrastructure for on-device mobile AI agents.{" "}
               <BioLink href="https://www.getbreezy.app">Breezy</BioLink>,{" "}
               <BioLink href="https://deepshard.org">Deepshard</BioLink>,{" "}
               <BioLink href="https://motio.com">Motio</BioLink>, and{" "}
