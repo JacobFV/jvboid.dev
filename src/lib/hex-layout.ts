@@ -394,3 +394,256 @@ export function packHoneycomb<T>({
 
   return { cells, height };
 }
+
+// ---- Settling ---------------------------------------------------------
+// Bottom-left fill is exact one tile at a time and greedy across them: a
+// tile takes the best spot *given what is already down*, and never
+// revisits it. So pockets it could not see coming stay open — a 2× tile
+// that lands before the small ones that would have nested around it, a
+// row that closes over a hole. And it packs every tile as the hexagon
+// its cell is, including the app icons that only draw a rounded square
+// inside that cell, so their neighbors stop a whole hexagon away.
+//
+// `settleComb` takes the fill as a starting position and lets it fall.
+// Every tile is a rigid body shaped like what it actually draws — the
+// hexagon, or the app icon's rounded square — collided by the separating
+// axis theorem, so a hexagon can nest into the corner an app icon leaves.
+// Gravity pulls everything toward the top of the comb, easing off to zero;
+// the container's sides and top are walls; the hero is fixed and the
+// tiles pack against it. Heavier (bigger) tiles give way less.
+//
+// The gap between tiles is a spring rather than a wall: inside it, a
+// contact pushes back only in proportion to how far it is compressed, so
+// while the comb is settling the tiles can crowd into one another's
+// margin — down to MIN_GAP of it, never further — and shoulder through
+// into space that a rigid margin would have left locked. Once gravity is
+// gone the springs relax back out to the full gap wherever there is room.
+//
+// Deterministic — same input, same output — so the server-rendered frame
+// and the client's agree.
+
+export type SettleShape = "hex" | "app";
+
+type Body = {
+  cx: number;
+  cy: number;
+  w: number;
+  h: number;
+  // Inverse mass; 0 for a fixed body.
+  inv: number;
+  // Broad-phase radius: nothing outside it can touch this body.
+  r: number;
+  verts: [number, number][];
+  axes: [number, number][];
+};
+
+const SETTLE_STEPS = 120;
+const SETTLE_ITERS = 3;
+const RELAX_STEPS = 32;
+// Gravity at the start of the settle, in 1× tile widths per step.
+const GRAVITY = 0.02;
+// How hard a compressed margin pushes back, per iteration.
+const SOFT = 0.3;
+// How much of the margin a contact may give up while settling.
+const MIN_GAP = 0.75;
+
+function polygonAxes(verts: [number, number][]): [number, number][] {
+  const axes: [number, number][] = [];
+  for (let i = 0; i < verts.length; i++) {
+    const [x0, y0] = verts[i];
+    const [x1, y1] = verts[(i + 1) % verts.length];
+    const len = Math.hypot(x1 - x0, y1 - y0) || 1;
+    let nx = (y1 - y0) / len;
+    let ny = -(x1 - x0) / len;
+    // An axis and its opposite are the same test; keep one of each.
+    if (nx < -TOL || (Math.abs(nx) <= TOL && ny < 0)) {
+      nx = -nx;
+      ny = -ny;
+    }
+    if (!axes.some(([ax, ay]) => Math.abs(ax - nx) < 1e-6 && Math.abs(ay - ny) < 1e-6)) {
+      axes.push([nx, ny]);
+    }
+  }
+  return axes;
+}
+
+function bodyOutline(
+  shape: SettleShape,
+  w: number,
+  h: number,
+  appIcon: { side: number; radius: number },
+): [number, number][] {
+  if (shape === "hex") {
+    return [
+      [-w / 2, 0],
+      [-w / 4, -h / 2],
+      [w / 4, -h / 2],
+      [w / 2, 0],
+      [w / 4, h / 2],
+      [-w / 4, h / 2],
+    ];
+  }
+  // The rounded square, its corner arcs as short chords — close enough
+  // that a neighbor nests into the corner the way the drawn one allows.
+  const side = appIcon.side * w;
+  const radius = appIcon.radius * w;
+  const c = side / 2 - radius;
+  const verts: [number, number][] = [];
+  const corners: [number, number, number][] = [
+    [c, -c, -Math.PI / 2],
+    [c, c, 0],
+    [-c, c, Math.PI / 2],
+    [-c, -c, Math.PI],
+  ];
+  for (const [ox, oy, start] of corners) {
+    for (let k = 0; k <= 3; k++) {
+      const a = start + (k / 3) * (Math.PI / 2);
+      verts.push([ox + radius * Math.cos(a), oy + radius * Math.sin(a)]);
+    }
+  }
+  return verts;
+}
+
+// Separating-axis test between two convex bodies. `d` is the largest gap
+// along any axis — positive when they are apart, negative (the shallowest
+// overlap) when they are not — and `n` is that axis, pointing from a to b.
+function separation(a: Body, b: Body): { d: number; nx: number; ny: number } {
+  let best = -Infinity;
+  let nx = 0;
+  let ny = 0;
+  const test = (ax: number, ay: number) => {
+    const ca = a.cx * ax + a.cy * ay;
+    const cb = b.cx * ax + b.cy * ay;
+    let aMin = Infinity;
+    let aMax = -Infinity;
+    for (const [vx, vy] of a.verts) {
+      const p = ca + vx * ax + vy * ay;
+      if (p < aMin) aMin = p;
+      if (p > aMax) aMax = p;
+    }
+    let bMin = Infinity;
+    let bMax = -Infinity;
+    for (const [vx, vy] of b.verts) {
+      const p = cb + vx * ax + vy * ay;
+      if (p < bMin) bMin = p;
+      if (p > bMax) bMax = p;
+    }
+    const ahead = bMin - aMax;
+    const behind = aMin - bMax;
+    if (ahead > best) {
+      best = ahead;
+      nx = ax;
+      ny = ay;
+    }
+    if (behind > best) {
+      best = behind;
+      nx = -ax;
+      ny = -ay;
+    }
+  };
+  for (const [ax, ay] of a.axes) test(ax, ay);
+  for (const [ax, ay] of b.axes) test(ax, ay);
+  return { d: best, nx, ny };
+}
+
+export function settleComb<T>(
+  layout: HexLayout<T>,
+  {
+    containerWidth,
+    unitWidth,
+    gap,
+    shapeOf,
+    isFixed,
+    appIcon,
+  }: {
+    containerWidth: number;
+    unitWidth: number;
+    gap: number;
+    shapeOf: (item: T) => SettleShape;
+    isFixed: (item: T) => boolean;
+    appIcon: { side: number; radius: number };
+  },
+): HexLayout<T> {
+  const unitArea = unitWidth * unitWidth * HEX_RATIO;
+  const bodies: Body[] = layout.cells.map((cell) => {
+    const verts = bodyOutline(shapeOf(cell.item), cell.width, cell.height, appIcon);
+    return {
+      cx: cell.left + cell.width / 2,
+      cy: cell.top + cell.height / 2,
+      w: cell.width,
+      h: cell.height,
+      inv: isFixed(cell.item) ? 0 : unitArea / (cell.width * cell.height),
+      r: cell.width / 2,
+      verts,
+      axes: polygonAxes(verts),
+    };
+  });
+
+  // Sweep and prune: bodies kept sorted by their left reach, so each one
+  // only meets the few whose horizontal extents overlap its own instead of
+  // all seventy-odd. Positions move a little per pass, so an insertion
+  // sort over the previous order is close to linear.
+  const order = bodies.map((_, i) => i).sort((p, q) => bodies[p].cx - bodies[q].cx);
+  const resort = () => {
+    for (let i = 1; i < order.length; i++) {
+      const cur = order[i];
+      const key = bodies[cur].cx - bodies[cur].r;
+      let j = i - 1;
+      while (j >= 0 && bodies[order[j]].cx - bodies[order[j]].r > key) {
+        order[j + 1] = order[j];
+        j--;
+      }
+      order[j + 1] = cur;
+    }
+  };
+
+  // One pass over every pair in reach. `soft` is how much of a margin
+  // shortfall to take back per pass; anything closer than `floor` is taken
+  // back outright.
+  const solve = (soft: number, floor: number) => {
+    resort();
+    for (let oi = 0; oi < order.length; oi++) {
+      const a = bodies[order[oi]];
+      const right = a.cx + a.r + gap;
+      for (let oj = oi + 1; oj < order.length; oj++) {
+        const b = bodies[order[oj]];
+        if (b.cx - b.r > right) break;
+        const wsum = a.inv + b.inv;
+        if (wsum === 0) continue;
+        const reach = a.r + b.r + gap;
+        const dx = b.cx - a.cx;
+        const dy = b.cy - a.cy;
+        if (dx * dx + dy * dy > reach * reach) continue;
+        const { d, nx, ny } = separation(a, b);
+        if (d >= gap) continue;
+        const push = soft * (gap - d) + (d < floor ? floor - d : 0);
+        a.cx -= nx * push * (a.inv / wsum);
+        a.cy -= ny * push * (a.inv / wsum);
+        b.cx += nx * push * (b.inv / wsum);
+        b.cy += ny * push * (b.inv / wsum);
+      }
+    }
+    for (const body of bodies) {
+      if (body.inv === 0) continue;
+      body.cx = Math.min(Math.max(body.cx, body.w / 2), containerWidth - body.w / 2);
+      body.cy = Math.max(body.cy, body.h / 2);
+    }
+  };
+
+  for (let step = 0; step < SETTLE_STEPS; step++) {
+    const g = GRAVITY * unitWidth * (1 - step / SETTLE_STEPS);
+    for (const body of bodies) if (body.inv > 0) body.cy -= g;
+    for (let k = 0; k < SETTLE_ITERS; k++) solve(SOFT, gap * MIN_GAP);
+  }
+  // Gravity off: the springs ease back out to the full margin wherever
+  // there is room, and nothing is left closer than MIN_GAP of it.
+  for (let step = 0; step < RELAX_STEPS; step++) solve(SOFT, gap * MIN_GAP);
+
+  let height = 0;
+  const cells = layout.cells.map((cell, i) => {
+    const body = bodies[i];
+    height = Math.max(height, body.cy + body.h / 2);
+    return { ...cell, left: body.cx - body.w / 2, top: body.cy - body.h / 2 };
+  });
+  return { cells, height };
+}

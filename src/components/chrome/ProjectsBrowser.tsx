@@ -36,6 +36,7 @@ import {
   hexSeparation,
   hexWidthForColumns,
   packHoneycomb,
+  settleComb,
   type HexCell,
   type HexSize,
 } from "@/lib/hex-layout";
@@ -961,9 +962,21 @@ function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: 
     const el = wrapRef.current;
     if (!el) return;
     setWidth(el.getBoundingClientRect().width);
-    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    // The settle is a hundred-odd milliseconds of physics, so a window
+    // being dragged wider re-packs once it comes to rest rather than on
+    // every frame of the drag. The first measurement above still lands
+    // before paint.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      const next = entry.contentRect.width;
+      clearTimeout(timer);
+      timer = setTimeout(() => setWidth(next), 140);
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
   }, []);
 
   // Pre-measurement (SSR and the first client render) assume a desktop
@@ -981,15 +994,28 @@ function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: 
     [hero, projects],
   );
 
+  // Bottom-left fill for a starting position, then a physical settle:
+  // gravity toward the top, rigid tiles shaped like what they draw, and a
+  // springy margin between them — see `settleComb`.
   const layout = useMemo(
     () =>
-      packHoneycomb({
-        items,
-        sizeOf: combSize,
-        containerWidth: measured,
-        unitWidth: hexW,
-        gap: HEX_GAP,
-      }),
+      settleComb(
+        packHoneycomb({
+          items,
+          sizeOf: combSize,
+          containerWidth: measured,
+          unitWidth: hexW,
+          gap: HEX_GAP,
+        }),
+        {
+          containerWidth: measured,
+          unitWidth: hexW,
+          gap: HEX_GAP,
+          shapeOf: (item) => (item.kind !== "hero" && item.shape === "app" ? "app" : "hex"),
+          isFixed: (item) => item.kind === "hero",
+          appIcon: { side: APP_ICON_SIDE, radius: APP_ICON_RADIUS },
+        },
+      ),
     [items, measured, hexW],
   );
 
