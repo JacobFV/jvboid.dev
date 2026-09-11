@@ -318,6 +318,19 @@ body {
   color: var(--color-ink-dim);
 }
 
+/* ---- Contact links (SocialLinks.tsx) ----
+   Each link reads its colour from --social-tint, which the row sets per
+   cluster once "more" is open; closed, there is no tint and it is the dim
+   ink. A plain class rather than a Tailwind arbitrary value, whose
+   fallback comma Tailwind would not generate. */
+.social-link {
+  color: var(--social-tint, var(--color-ink-dim));
+}
+.social-link:hover,
+.social-link:focus-visible {
+  color: var(--color-accent);
+}
+
 /* ---- Hero bio, cut short (HeroHex.tsx) ----
    Opening the contact row's "more" pours a directory of links into the
    hexagon, and the bio under it no longer fits. It keeps its first lines

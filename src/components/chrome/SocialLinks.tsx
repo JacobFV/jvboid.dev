@@ -168,7 +168,7 @@ const CLUSTER_HUES = [25, 75, 145, 220, 285, 340];
 function tint(cluster: number, muted = false): string {
   const hue = CLUSTER_HUES[cluster % CLUSTER_HUES.length];
   const ink = muted ? "var(--color-ink-mute)" : "var(--color-ink-dim)";
-  return `color-mix(in oklch, ${ink} 78%, oklch(0.64 0.2 ${hue}))`;
+  return `color-mix(in oklch, ${ink} 62%, oklch(0.64 0.2 ${hue}))`;
 }
 
 function SocialLink({
@@ -186,10 +186,10 @@ function SocialLink({
       href={social.href}
       target={external ? "_blank" : undefined}
       rel={external ? "noreferrer" : undefined}
-      // Through a variable rather than an inline colour, so the hover
-      // accent still wins over the tint.
+      // Through a variable read by `.social-link` (globals.css) rather than
+      // an inline colour, so the hover accent still wins over the tint.
       style={color ? ({ "--social-tint": color } as React.CSSProperties) : undefined}
-      className={`group inline-flex items-center gap-1 align-middle font-[family-name:var(--font-mono)] whitespace-nowrap text-[var(--social-tint,var(--color-ink-dim))] no-underline hover:text-[var(--color-accent)] ${className ?? ""}`}
+      className={`social-link group inline-flex items-center gap-1 align-middle font-[family-name:var(--font-mono)] whitespace-nowrap no-underline ${className ?? ""}`}
     >
       <SocialGlyph name={social.glyph} />
       <span className="underline-offset-4 group-hover:underline">{social.label}</span>
