@@ -80,15 +80,16 @@ export function SocialLinks({
       }}
     >
       {socials.map((social) => (
-        <SocialLink key={social.href} social={social} className={item} />
+        <SocialLink key={social.href} social={social} className={item} tint={open ? tint(0) : undefined} />
       ))}
 
       {open ? (
         <span id={listId} className="contents">
-          {more.map((group) => (
+          {more.map((group, g) => (
             <Fragment key={group.title}>
               <span
                 className={`inline-flex items-center gap-1 align-middle whitespace-nowrap text-[var(--color-ink-mute)] ${item}`}
+                style={{ color: tint(g + 1, true) }}
               >
                 <span aria-hidden className="opacity-40">
                   ·
@@ -98,7 +99,7 @@ export function SocialLinks({
                 </span>
               </span>
               {group.items.map((social) => (
-                <SocialLink key={social.href} social={social} className={item} />
+                <SocialLink key={social.href} social={social} className={item} tint={tint(g + 1)} />
               ))}
             </Fragment>
           ))}
@@ -157,14 +158,38 @@ function Caret({ open }: { open: boolean }) {
   );
 }
 
-function SocialLink({ social, className }: { social: HeroSocial; className?: string }) {
+// With the row opened out, each cluster — the short set, then each
+// directory group — takes its own tint. Still mostly the text colour, so
+// the row reads as type rather than as a legend, but pulled a fifth of
+// the way toward a hue that walks the colour wheel cluster by cluster:
+// near-black with a cast in the light theme, near-white with one in the
+// dark. The group captions get the same cast at the muted ink.
+const CLUSTER_HUES = [25, 75, 145, 220, 285, 340];
+function tint(cluster: number, muted = false): string {
+  const hue = CLUSTER_HUES[cluster % CLUSTER_HUES.length];
+  const ink = muted ? "var(--color-ink-mute)" : "var(--color-ink-dim)";
+  return `color-mix(in oklch, ${ink} 78%, oklch(0.64 0.2 ${hue}))`;
+}
+
+function SocialLink({
+  social,
+  className,
+  tint: color,
+}: {
+  social: HeroSocial;
+  className?: string;
+  tint?: string;
+}) {
   const external = social.href.startsWith("http");
   return (
     <a
       href={social.href}
       target={external ? "_blank" : undefined}
       rel={external ? "noreferrer" : undefined}
-      className={`group inline-flex items-center gap-1 align-middle font-[family-name:var(--font-mono)] whitespace-nowrap text-[var(--color-ink-dim)] no-underline hover:text-[var(--color-accent)] ${className ?? ""}`}
+      // Through a variable rather than an inline colour, so the hover
+      // accent still wins over the tint.
+      style={color ? ({ "--social-tint": color } as React.CSSProperties) : undefined}
+      className={`group inline-flex items-center gap-1 align-middle font-[family-name:var(--font-mono)] whitespace-nowrap text-[var(--social-tint,var(--color-ink-dim))] no-underline hover:text-[var(--color-accent)] ${className ?? ""}`}
     >
       <SocialGlyph name={social.glyph} />
       <span className="underline-offset-4 group-hover:underline">{social.label}</span>
