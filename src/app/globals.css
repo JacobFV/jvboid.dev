@@ -89,9 +89,29 @@
   font-variation-settings: "opsz" 72;
 }
 
+/* Dusk: where the page ground ends up at the foot of the document. The
+   ground eases a few percent toward it over the full scroll — darker the
+   further down in light mode, lighter in dark — so the bottom of a long
+   page feels further along than the top without anything changing hue.
+   Built from --color-bg-0, so a world that paints its own ground gets its
+   own dusk. */
+:root {
+  --page-dusk: color-mix(in srgb, var(--color-bg-0) 93%, #ffffff);
+}
+:root[data-theme="light"] {
+  --page-dusk: color-mix(in srgb, var(--color-bg-0) 93%, #000000);
+}
+
 html {
-  /* Base canvas color — also covers the overscroll/rubber-band area. */
-  background: var(--color-bg-0);
+  /* Base canvas colour — also covers the overscroll/rubber-band area —
+     with the dusk gradient over it. On `html` rather than `body`: the
+     root's background is sized to the whole document, so the gradient
+     spans the full scroll, and it paints beneath the fixed backdrop layers
+     (`.biolume`, `.home-field`, the paper grain) instead of over them. */
+  min-height: 100%;
+  background-color: var(--color-bg-0);
+  background-image: linear-gradient(to bottom, var(--color-bg-0), var(--page-dusk));
+  background-repeat: no-repeat;
 }
 
 body {
