@@ -28,7 +28,7 @@
 // Browsers without View Transitions, and anyone who asked for reduced
 // motion, get a plain push.
 
-import { APP_ICON_RADIUS, APP_ICON_SIDE } from "@/lib/project-face";
+import { SQUARE_GEOMETRY, type SquareShape } from "@/lib/project-face";
 
 const DURATION = 600;
 // Deliberately not a plain ease-out. The hexagon has to travel ~10× its
@@ -209,17 +209,18 @@ export function hexExpandNavigate({
   );
   const r1 = (far / HEX_APOTHEM) * 1.04;
 
-  // The shape that grows is the shape that was clicked. An app tile's
-  // rounded square opens as a rounded square: from its own size (divided
+  // The shape that grows is the shape that was clicked. A square tile —
+  // app icon or page — opens as its square: from its own size (divided
   // by ZOOM, like the hexagon, because the clip lives in the zoomed page's
   // space) to one whose rounded corners still clear the farthest viewport
   // corner — at 1.5× the reach, with the radius scaled in proportion.
   let clipFrom = hexClip(cx, cy, r0 / ZOOM);
   let clipTo = hexClip(cx, cy, r1);
   let thumbTo = r1 / r0;
-  if (face.dataset.tileShape === "app") {
-    const h0 = (rect.width * APP_ICON_SIDE) / 2;
-    const rad0 = rect.width * APP_ICON_RADIUS;
+  const square = face.dataset.tileShape as SquareShape | undefined;
+  if (square && SQUARE_GEOMETRY[square]) {
+    const h0 = (rect.width * SQUARE_GEOMETRY[square].side) / 2;
+    const rad0 = rect.width * SQUARE_GEOMETRY[square].radius;
     const h1 = far * 1.5;
     clipFrom = squareClip(cx, cy, h0 / ZOOM, rad0 / ZOOM);
     clipTo = squareClip(cx, cy, h1, rad0 * (h1 / h0));

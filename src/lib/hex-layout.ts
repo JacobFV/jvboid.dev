@@ -96,6 +96,8 @@ export type HexCell<T> = {
   top: number;
   width: number;
   height: number;
+  // Rotation about the cell's centre, in radians, once settled.
+  angle?: number;
 };
 
 export type HexLayout<T> = {
@@ -398,19 +400,25 @@ export function packHoneycomb<T>({
 // ---- Settling ---------------------------------------------------------
 // Bottom-left fill is exact one tile at a time and greedy across them: a
 // tile takes the best spot *given what is already down*, and never
-// revisits it. So pockets it could not see coming stay open — a 2× tile
-// that lands before the small ones that would have nested around it, a
-// row that closes over a hole. And it packs every tile as the hexagon
-// its cell is, including the app icons that only draw a rounded square
+// revisits it. It also packs every tile as the hexagon its cell is,
+// including the app icons and square pages that draw something smaller
 // inside that cell, so their neighbors stop a whole hexagon away.
 //
-// `settleComb` takes the fill as a starting position and lets it fall.
-// Every tile is a rigid body shaped like what it actually draws — the
-// hexagon, or the app icon's rounded square — collided by the separating
-// axis theorem, so a hexagon can nest into the corner an app icon leaves.
+// `settleComb` takes the fill as a starting position and lets it fall, as
+// 2D rigid bodies: position *and* rotation. Every tile is shaped like what
+// it actually draws — the hexagon, the app icon's rounded square, the
+// square page — and collided by the separating axis theorem against its
+// neighbors' rotated outlines. Each contact is resolved at the point where
+// the two shapes actually meet, so a push that lands off-centre turns the
+// tile as well as moving it, weighted by its moment of inertia: a small
+// tile resting on a neighbor's slanted edge rocks into the pocket beside
+// it instead of sitting on the corner. A slow pull back toward upright,
+// and a cap on how far any tile may tilt, keep that to a lean.
+//
 // Gravity pulls everything toward the top of the comb, easing off to zero;
-// the container's sides and top are walls; the hero is fixed and the
-// tiles pack against it. Heavier (bigger) tiles give way less.
+// the container's sides and top are walls; the hero is fixed — it neither
+// moves nor turns — and the tiles pack against it. Heavier (bigger) tiles
+// give way less.
 //
 // The gap between tiles is a spring rather than a wall: inside it, a
 // contact pushes back only in proportion to how far it is compressed, so
@@ -422,37 +430,57 @@ export function packHoneycomb<T>({
 // Deterministic — same input, same output — so the server-rendered frame
 // and the client's agree.
 
-export type SettleShape = "hex" | "app";
+export type SettleShape = "hex" | "app" | "square";
+export type SquareGeometry = Record<Exclude<SettleShape, "hex">, { side: number; radius: number }>;
 
 type Body = {
   cx: number;
   cy: number;
+  // Rotation in radians, and its cosine and sine, kept in step.
+  a: number;
+  cos: number;
+  sin: number;
   w: number;
   h: number;
-  // Inverse mass; 0 for a fixed body.
+  // Inverse mass and inverse moment of inertia; both 0 for a fixed body.
   inv: number;
+  invI: number;
   // Broad-phase radius: nothing outside it can touch this body.
   r: number;
+  // Outline and edge normals in the body's own frame.
   verts: [number, number][];
   axes: [number, number][];
+  // The outline where the body is now, rebuilt only when it moves or turns.
+  world: [number, number][];
 };
 
 const SETTLE_STEPS = 120;
 const SETTLE_ITERS = 3;
 const RELAX_STEPS = 32;
+const FIX_STEPS = 40;
 // Gravity at the start of the settle, in 1× tile widths per step.
 const GRAVITY = 0.02;
 // How hard a compressed margin pushes back, per iteration.
 const SOFT = 0.3;
 // How much of the margin a contact may give up while settling.
 const MIN_GAP = 0.75;
+// Each step a tile keeps this much of its tilt: the slow pull upright.
+const UPRIGHT = 0.985;
+// And no tile leans further than this.
+const MAX_TILT = (14 * Math.PI) / 180;
+// A regular hexagon's moment of inertia about its centre is 5/64 · m · w²
+// (w corner to corner); close enough for the squares too.
+const INERTIA = 5 / 64;
+// Vertices within this many px of a contact plane share the contact.
+const CONTACT_TOL = 0.75;
 
 function polygonAxes(verts: [number, number][]): [number, number][] {
   const axes: [number, number][] = [];
   for (let i = 0; i < verts.length; i++) {
     const [x0, y0] = verts[i];
     const [x1, y1] = verts[(i + 1) % verts.length];
-    const len = Math.hypot(x1 - x0, y1 - y0) || 1;
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    if (len < 1e-6) continue;
     let nx = (y1 - y0) / len;
     let ny = -(x1 - x0) / len;
     // An axis and its opposite are the same test; keep one of each.
@@ -467,11 +495,12 @@ function polygonAxes(verts: [number, number][]): [number, number][] {
   return axes;
 }
 
-function bodyOutline(
+/** A tile's collision outline in its own frame — also what tests check against. */
+export function tileOutline(
   shape: SettleShape,
   w: number,
   h: number,
-  appIcon: { side: number; radius: number },
+  squares: SquareGeometry,
 ): [number, number][] {
   if (shape === "hex") {
     return [
@@ -483,11 +512,12 @@ function bodyOutline(
       [-w / 4, h / 2],
     ];
   }
-  // The rounded square, its corner arcs as short chords — close enough
-  // that a neighbor nests into the corner the way the drawn one allows.
-  const side = appIcon.side * w;
-  const radius = appIcon.radius * w;
+  // A square, its corner arcs as short chords — close enough that a
+  // neighbor nests into the corner the way the drawn one allows.
+  const side = squares[shape].side * w;
+  const radius = squares[shape].radius * w;
   const c = side / 2 - radius;
+  const steps = radius > 0.03 * w ? 3 : 1;
   const verts: [number, number][] = [];
   const corners: [number, number, number][] = [
     [c, -c, -Math.PI / 2],
@@ -496,54 +526,91 @@ function bodyOutline(
     [-c, -c, Math.PI],
   ];
   for (const [ox, oy, start] of corners) {
-    for (let k = 0; k <= 3; k++) {
-      const a = start + (k / 3) * (Math.PI / 2);
-      verts.push([ox + radius * Math.cos(a), oy + radius * Math.sin(a)]);
+    for (let k = 0; k <= steps; k++) {
+      const t = start + (k / steps) * (Math.PI / 2);
+      verts.push([ox + radius * Math.cos(t), oy + radius * Math.sin(t)]);
     }
   }
   return verts;
 }
 
-// Separating-axis test between two convex bodies. `d` is the largest gap
-// along any axis — positive when they are apart, negative (the shallowest
-// overlap) when they are not — and `n` is that axis, pointing from a to b.
-function separation(a: Body, b: Body): { d: number; nx: number; ny: number } {
+function worldOutline(b: Body): [number, number][] {
+  return b.verts.map(([x, y]) => [b.cx + x * b.cos - y * b.sin, b.cy + x * b.sin + y * b.cos]);
+}
+
+function turn(b: Body, by: number) {
+  b.a = Math.max(-MAX_TILT, Math.min(MAX_TILT, b.a + by));
+  b.cos = Math.cos(b.a);
+  b.sin = Math.sin(b.a);
+}
+
+// Separating-axis test between two rotated convex bodies. `d` is the
+// largest gap along any axis — positive when they are apart, negative (the
+// shallowest overlap) when they are not — `n` is that axis, pointing from
+// a to b, and `p` is where they meet: the average of the features of each
+// that face the other along it.
+function contactOf(
+  a: Body,
+  b: Body,
+): { d: number; nx: number; ny: number; px: number; py: number } {
+  const wa = a.world;
+  const wb = b.world;
   let best = -Infinity;
   let nx = 0;
   let ny = 0;
-  const test = (ax: number, ay: number) => {
-    const ca = a.cx * ax + a.cy * ay;
-    const cb = b.cx * ax + b.cy * ay;
+  const test = (lx: number, ly: number, owner: Body) => {
+    const ax = lx * owner.cos - ly * owner.sin;
+    const ay = lx * owner.sin + ly * owner.cos;
     let aMin = Infinity;
     let aMax = -Infinity;
-    for (const [vx, vy] of a.verts) {
-      const p = ca + vx * ax + vy * ay;
+    for (const [x, y] of wa) {
+      const p = x * ax + y * ay;
       if (p < aMin) aMin = p;
       if (p > aMax) aMax = p;
     }
     let bMin = Infinity;
     let bMax = -Infinity;
-    for (const [vx, vy] of b.verts) {
-      const p = cb + vx * ax + vy * ay;
+    for (const [x, y] of wb) {
+      const p = x * ax + y * ay;
       if (p < bMin) bMin = p;
       if (p > bMax) bMax = p;
     }
-    const ahead = bMin - aMax;
-    const behind = aMin - bMax;
-    if (ahead > best) {
-      best = ahead;
+    if (bMin - aMax > best) {
+      best = bMin - aMax;
       nx = ax;
       ny = ay;
     }
-    if (behind > best) {
-      best = behind;
+    if (aMin - bMax > best) {
+      best = aMin - bMax;
       nx = -ax;
       ny = -ay;
     }
   };
-  for (const [ax, ay] of a.axes) test(ax, ay);
-  for (const [ax, ay] of b.axes) test(ax, ay);
-  return { d: best, nx, ny };
+  for (const [lx, ly] of a.axes) test(lx, ly, a);
+  for (const [lx, ly] of b.axes) test(lx, ly, b);
+
+  let aTop = -Infinity;
+  for (const [x, y] of wa) aTop = Math.max(aTop, x * nx + y * ny);
+  let bBottom = Infinity;
+  for (const [x, y] of wb) bBottom = Math.min(bBottom, x * nx + y * ny);
+  let sx = 0;
+  let sy = 0;
+  let count = 0;
+  for (const [x, y] of wa) {
+    if (x * nx + y * ny >= aTop - CONTACT_TOL) {
+      sx += x;
+      sy += y;
+      count++;
+    }
+  }
+  for (const [x, y] of wb) {
+    if (x * nx + y * ny <= bBottom + CONTACT_TOL) {
+      sx += x;
+      sy += y;
+      count++;
+    }
+  }
+  return { d: best, nx, ny, px: sx / count, py: sy / count };
 }
 
 export function settleComb<T>(
@@ -554,30 +621,38 @@ export function settleComb<T>(
     gap,
     shapeOf,
     isFixed,
-    appIcon,
+    squares,
   }: {
     containerWidth: number;
     unitWidth: number;
     gap: number;
     shapeOf: (item: T) => SettleShape;
     isFixed: (item: T) => boolean;
-    appIcon: { side: number; radius: number };
+    squares: SquareGeometry;
   },
 ): HexLayout<T> {
   const unitArea = unitWidth * unitWidth * HEX_RATIO;
   const bodies: Body[] = layout.cells.map((cell) => {
-    const verts = bodyOutline(shapeOf(cell.item), cell.width, cell.height, appIcon);
+    const verts = tileOutline(shapeOf(cell.item), cell.width, cell.height, squares);
+    const fixed = isFixed(cell.item);
+    const inv = fixed ? 0 : unitArea / (cell.width * cell.height);
     return {
       cx: cell.left + cell.width / 2,
       cy: cell.top + cell.height / 2,
+      a: 0,
+      cos: 1,
+      sin: 0,
       w: cell.width,
       h: cell.height,
-      inv: isFixed(cell.item) ? 0 : unitArea / (cell.width * cell.height),
+      inv,
+      invI: fixed ? 0 : inv / (INERTIA * cell.width * cell.width),
       r: cell.width / 2,
       verts,
       axes: polygonAxes(verts),
+      world: [],
     };
   });
+  for (const body of bodies) body.world = worldOutline(body);
 
   // Sweep and prune: bodies kept sorted by their left reach, so each one
   // only meets the few whose horizontal extents overlap its own instead of
@@ -599,8 +674,11 @@ export function settleComb<T>(
 
   // One pass over every pair in reach. `soft` is how much of a margin
   // shortfall to take back per pass; anything closer than `floor` is taken
-  // back outright.
-  const solve = (soft: number, floor: number) => {
+  // back outright. Each correction is an impulse at the contact point, so
+  // it is split between moving and turning each body by how easily that
+  // body does either about that point — unless `rotate` is off, when the
+  // whole correction is a push.
+  const solve = (soft: number, floor: number, rotate = true) => {
     resort();
     for (let oi = 0; oi < order.length; oi++) {
       const a = bodies[order[oi]];
@@ -608,42 +686,67 @@ export function settleComb<T>(
       for (let oj = oi + 1; oj < order.length; oj++) {
         const b = bodies[order[oj]];
         if (b.cx - b.r > right) break;
-        const wsum = a.inv + b.inv;
-        if (wsum === 0) continue;
+        if (a.inv + b.inv === 0) continue;
         const reach = a.r + b.r + gap;
         const dx = b.cx - a.cx;
         const dy = b.cy - a.cy;
         if (dx * dx + dy * dy > reach * reach) continue;
-        const { d, nx, ny } = separation(a, b);
+        const { d, nx, ny, px, py } = contactOf(a, b);
         if (d >= gap) continue;
         const push = soft * (gap - d) + (d < floor ? floor - d : 0);
-        a.cx -= nx * push * (a.inv / wsum);
-        a.cy -= ny * push * (a.inv / wsum);
-        b.cx += nx * push * (b.inv / wsum);
-        b.cy += ny * push * (b.inv / wsum);
+        const ia = rotate ? a.invI : 0;
+        const ib = rotate ? b.invI : 0;
+        const ca = (px - a.cx) * ny - (py - a.cy) * nx;
+        const cb = (px - b.cx) * ny - (py - b.cy) * nx;
+        const wsum = a.inv + ia * ca * ca + b.inv + ib * cb * cb;
+        const lambda = push / wsum;
+        a.cx -= nx * lambda * a.inv;
+        a.cy -= ny * lambda * a.inv;
+        b.cx += nx * lambda * b.inv;
+        b.cy += ny * lambda * b.inv;
+        if (ia) turn(a, -ia * ca * lambda);
+        if (ib) turn(b, ib * cb * lambda);
+        a.world = worldOutline(a);
+        b.world = worldOutline(b);
       }
     }
     for (const body of bodies) {
       if (body.inv === 0) continue;
-      body.cx = Math.min(Math.max(body.cx, body.w / 2), containerWidth - body.w / 2);
-      body.cy = Math.max(body.cy, body.h / 2);
+      const cx = Math.min(Math.max(body.cx, body.w / 2), containerWidth - body.w / 2);
+      const cy = Math.max(body.cy, body.h / 2);
+      if (cx !== body.cx || cy !== body.cy) {
+        body.cx = cx;
+        body.cy = cy;
+        body.world = worldOutline(body);
+      }
     }
   };
 
   for (let step = 0; step < SETTLE_STEPS; step++) {
     const g = GRAVITY * unitWidth * (1 - step / SETTLE_STEPS);
-    for (const body of bodies) if (body.inv > 0) body.cy -= g;
+    for (const body of bodies) {
+      if (body.inv === 0) continue;
+      body.cy -= g;
+      turn(body, body.a * (UPRIGHT - 1));
+      body.world = worldOutline(body);
+    }
     for (let k = 0; k < SETTLE_ITERS; k++) solve(SOFT, gap * MIN_GAP);
   }
   // Gravity off: the springs ease back out to the full margin wherever
-  // there is room, and nothing is left closer than MIN_GAP of it.
+  // there is room.
   for (let step = 0; step < RELAX_STEPS; step++) solve(SOFT, gap * MIN_GAP);
+  // Then the guarantee. A correction that would turn a tile past MAX_TILT
+  // loses the turning part, so a contact can be left short — worst where a
+  // leaning tile is wedged between two others. With rotation off, every
+  // correction is a push that lands in full, so these passes are what make
+  // "nothing closer than MIN_GAP of the margin" true rather than likely.
+  for (let step = 0; step < FIX_STEPS; step++) solve(0, gap * MIN_GAP, false);
 
   let height = 0;
   const cells = layout.cells.map((cell, i) => {
     const body = bodies[i];
     height = Math.max(height, body.cy + body.h / 2);
-    return { ...cell, left: body.cx - body.w / 2, top: body.cy - body.h / 2 };
+    return { ...cell, left: body.cx - body.w / 2, top: body.cy - body.h / 2, angle: body.a };
   });
   return { cells, height };
 }

@@ -20,9 +20,9 @@ import { HeroHex, HeroStack, HERO_SIZE, type HeroContent } from "@/components/ch
 import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane } from "@/lib/graph-types";
 import {
-  APP_CLIP,
-  APP_ICON_RADIUS,
-  APP_ICON_SIDE,
+  SQUARE_CLIP,
+  SQUARE_GEOMETRY,
+  type SquareShape,
   type FacePlan,
   type IconKey,
   type TileArt,
@@ -74,8 +74,8 @@ export type ProjectItem = {
   face?: FacePlan;
   // Honeycomb tile size, in multiples of the base hexagon. Defaults to 1.
   size?: HexSize;
-  /** "app": an app icon's rounded square inside the hexagon cell. */
-  shape?: "app";
+  /** A square face inside the hexagon cell: an app icon, or a plain page. */
+  shape?: SquareShape;
 };
 
 // What the packer lays out: the hero is a tile like any other, it just
@@ -666,9 +666,10 @@ function ProjectDeck({ project }: { project: ProjectItem }) {
   );
 }
 
-// A tile's mask: the hexagon, or for projects that were apps, an app
-// icon's rounded square inside the same cell.
-const faceClip = (project: ProjectItem) => (project.shape === "app" ? APP_CLIP : HEX_CLIP);
+// A tile's mask: the hexagon, or a square face inside the same cell — an
+// app icon's rounded square for projects that were apps, a plain square
+// for the ones that read as pages.
+const faceClip = (project: ProjectItem) => (project.shape ? SQUARE_CLIP[project.shape] : HEX_CLIP);
 
 // The hairline around a tile. A clip-path has no border, so the edge is
 // drawn as a shape on top of the artwork — the same shape the clip cuts,
@@ -678,9 +679,9 @@ const faceClip = (project: ProjectItem) => (project.shape === "app" ? APP_CLIP :
 // The stroke straddles the path, and the outer half is cut away by the
 // clip on the parent, so it is set to twice the line we want. Non-scaling,
 // so the line stays a hairline while a hovered tile scales up.
-function HexEdge({ shape }: { shape?: "app" }) {
+function HexEdge({ shape }: { shape?: SquareShape }) {
   const h = 100 * HEX_RATIO;
-  const side = APP_ICON_SIDE * 100;
+  const side = shape ? SQUARE_GEOMETRY[shape].side * 100 : 0;
   return (
     <svg
       viewBox={`0 0 100 ${h}`}
@@ -689,13 +690,13 @@ function HexEdge({ shape }: { shape?: "app" }) {
       aria-hidden
       focusable="false"
     >
-      {shape === "app" ? (
+      {shape ? (
         <rect
           x={(100 - side) / 2}
           y={(h - side) / 2}
           width={side}
           height={side}
-          rx={APP_ICON_RADIUS * 100}
+          rx={SQUARE_GEOMETRY[shape].radius * 100}
           fill="none"
           stroke="var(--color-bg-2)"
           strokeWidth={2}
@@ -773,7 +774,10 @@ function HexTile({
         top,
         width,
         height,
-        transform: `translate3d(${nudge.x.toFixed(2)}px, ${nudge.y.toFixed(2)}px, 0)`,
+        // The settle leaves each tile at a slight lean; it keeps it.
+        transform: `translate3d(${nudge.x.toFixed(2)}px, ${nudge.y.toFixed(2)}px, 0) rotate(${(
+          cell.angle ?? 0
+        ).toFixed(4)}rad)`,
         // Neighbors settle slower than they shove, so the comb springs
         // back gently. The popped tile's own slide instead runs on the
         // pop's clock — it is the contact response to that growth, and
@@ -1011,9 +1015,10 @@ function ProjectHoneycomb({ projects, hero }: { projects: ProjectItem[]; hero?: 
           containerWidth: measured,
           unitWidth: hexW,
           gap: HEX_GAP,
-          shapeOf: (item) => (item.kind !== "hero" && item.shape === "app" ? "app" : "hex"),
+          shapeOf: (item) => (item.kind !== "hero" && item.shape ? item.shape : "hex"),
+          // The hero holds the page's copy: it neither moves nor turns.
           isFixed: (item) => item.kind === "hero",
-          appIcon: { side: APP_ICON_SIDE, radius: APP_ICON_RADIUS },
+          squares: SQUARE_GEOMETRY,
         },
       ),
     [items, measured, hexW],

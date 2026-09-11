@@ -114,27 +114,47 @@ const appIconIds = new Set([
   "yt2ctx",
   "dash",
   "mln-dashboard",
+  // The OS simulations are apps in the dock's sense too.
+  "macos-web-next",
+  "browser-os",
+  "windows-web-next",
 ]);
 
-export type TileShape = "hex" | "app";
+// Papers and libraries that read better as a plain square page.
+const squareIds = new Set(["bsbr", "jnumpy", "tensor-computer", "tensacode"]);
+
+export type TileShape = "hex" | "app" | "square";
+export type SquareShape = Exclude<TileShape, "hex">;
 
 export function projectTileShape(id: string): TileShape {
-  return appIconIds.has(id) ? "app" : "hex";
+  return appIconIds.has(id) ? "app" : squareIds.has(id) ? "square" : "hex";
 }
 
-// The app icon's rounded square, as fractions of the cell's width W (the
-// cell is the flat-top hexagon's box, W × W·√3/2). Side 0.72W with a 0.158W
-// corner radius is the largest such square the hexagon holds: its corner
-// arcs just touch the hexagon's diagonals, so the packing is unchanged and
-// an app tile never reaches into a neighbour's cell.
-export const APP_ICON_SIDE = 0.72;
-export const APP_ICON_RADIUS = 0.158;
+// The two square faces, as fractions of the cell's width W (the cell is the
+// flat-top hexagon's box, W × W·√3/2). Each is the largest of its kind the
+// hexagon holds, so the packing is unchanged and neither reaches into a
+// neighbour's cell:
+//   app    — side 0.72W, corner radius 0.158W; the corner arcs just touch
+//            the hexagon's diagonals.
+//   square — side 0.634W, corners barely softened; its sharp corners sit
+//            on the diagonals, which is why it is smaller than the app icon.
+export const SQUARE_GEOMETRY: Record<SquareShape, { side: number; radius: number }> = {
+  app: { side: 0.72, radius: 0.158 },
+  square: { side: 0.634, radius: 0.012 },
+};
+export const APP_ICON_SIDE = SQUARE_GEOMETRY.app.side;
+export const APP_ICON_RADIUS = SQUARE_GEOMETRY.app.radius;
 const CELL_H = Math.sqrt(3) / 2;
 const pctOf = (v: number) => `${(v * 100).toFixed(2)}%`;
-/** The rounded square as a clip-path on the cell — clips hit-testing too. */
-export const APP_CLIP = `inset(${pctOf((CELL_H - APP_ICON_SIDE) / 2 / CELL_H)} ${pctOf(
-  (1 - APP_ICON_SIDE) / 2,
-)} round ${pctOf(APP_ICON_RADIUS)} / ${pctOf(APP_ICON_RADIUS / CELL_H)})`;
+const squareClip = ({ side, radius }: { side: number; radius: number }) =>
+  `inset(${pctOf((CELL_H - side) / 2 / CELL_H)} ${pctOf((1 - side) / 2)} round ${pctOf(
+    radius,
+  )} / ${pctOf(radius / CELL_H)})`;
+/** Each square face as a clip-path on the cell — clips hit-testing too. */
+export const SQUARE_CLIP: Record<SquareShape, string> = {
+  app: squareClip(SQUARE_GEOMETRY.app),
+  square: squareClip(SQUARE_GEOMETRY.square),
+};
 
 export type FaceImage = { src: string; alt: string };
 
