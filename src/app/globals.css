@@ -318,6 +318,17 @@ body {
   color: var(--color-ink-dim);
 }
 
+/* ---- Code (src/lib/rehype-shiki.ts) ----
+   Highlighted at build time with both themes' colours on every token; the
+   active theme picks one. Dark is the default, as it is for the site. The
+   block keeps the reader's own ground rather than Shiki's. */
+.prose-mdx pre.shiki span {
+  color: var(--shiki-dark);
+}
+:root[data-theme="light"] .prose-mdx pre.shiki span {
+  color: var(--shiki-light);
+}
+
 /* ---- Contact links (SocialLinks.tsx) ----
    Each link reads its colour from --social-tint, which the row sets per
    cluster once "more" is open; closed, there is no tint and it is the dim

@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { remarkDecodeMathEntities } from "./src/lib/remark-decode-math-entities";
 import { remarkImageGrid } from "./src/lib/remark-image-grid";
+import { rehypeShiki } from "./src/lib/rehype-shiki";
 
 // Shared shape for graph nodes. Frontmatter validation. See docs/CONTENT_MODEL.md.
 const lane = s.enum(["research", "building", "writing", "personal"]);
@@ -44,7 +45,7 @@ const baseFields = {
   body: s.mdx({
     copyLinkedFiles: false,
     remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
-    rehypePlugins: [rehypeKatex],
+    rehypePlugins: [rehypeShiki, rehypeKatex],
   }),
 };
 
@@ -85,7 +86,7 @@ const postRevisions = defineCollection({
     body: s.mdx({
       copyLinkedFiles: false,
       remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
-      rehypePlugins: [rehypeKatex],
+      rehypePlugins: [rehypeShiki, rehypeKatex],
     }),
   }),
 });
@@ -288,7 +289,7 @@ const loop = defineCollection({
       body: s.mdx({
         copyLinkedFiles: false,
         remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
-        rehypePlugins: [rehypeKatex],
+        rehypePlugins: [rehypeShiki, rehypeKatex],
       }),
     })
     .transform((d) => ({ ...d, kind: "loop" as const })),
