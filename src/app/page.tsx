@@ -18,7 +18,6 @@ const laneBg: Record<Lane, string> = {
 };
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
-const pad2 = (n: number) => String(n).padStart(2, "0");
 // A post is dated by the last time it changed: its latest revision, or
 // the day it went up if it has never been revised.
 const latestDate = (node: Node) => getPostRevisionSummary(node.id).updatedDate ?? fmtDate(node.date);
@@ -224,11 +223,8 @@ export default function HomePage() {
             className="group grid gap-8 no-underline lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14"
           >
             <div>
-              <div className="flex items-baseline gap-3">
-                <span className="numeral">{pad2(1)}</span>
-                <span className="font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
-                  <time dateTime={featureDate}>{featureDate}</time>
-                </span>
+              <div className="font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase">
+                <time dateTime={featureDate}>{featureDate}</time>
               </div>
               <h2 className="display-title mt-4 transition-colors duration-500 group-hover:text-[var(--color-ink-dim)]">
                 {feature.title}
@@ -263,9 +259,9 @@ export default function HomePage() {
       {restPosts.length > 0 && (
         <section className="mt-16">
           <ol className="flex flex-col">
-            {restPosts.map((n, i) => (
+            {restPosts.map((n) => (
               <li key={n.id} className="border-t border-[var(--color-rule)] last:border-b">
-                <RowLink node={n} n={i + 2} of={recentPosts.length} />
+                <RowLink node={n} />
               </li>
             ))}
           </ol>
@@ -391,23 +387,20 @@ function CoverCard({ node, variant }: { node: Node; variant: "reading" | "paper"
   );
 }
 
-// A numbered contents row: "02 / 06", the title in the serif, the latest
-// date on the right. Rules above and below come from the list.
-function RowLink({ node, n, of }: { node: Node; n: number; of: number }) {
+// A contents row: the title in the blockface, the latest date on the
+// right. Rules above and below come from the list.
+function RowLink({ node }: { node: Node }) {
   const date = latestDate(node);
   return (
     <Link
       href={nodeHref(node)}
-      className="group grid grid-cols-[auto_1fr] items-baseline gap-x-5 gap-y-1 py-5 no-underline sm:grid-cols-[5rem_1fr_auto]"
+      className="group grid grid-cols-1 items-baseline gap-x-5 gap-y-1 py-5 no-underline sm:grid-cols-[1fr_auto]"
     >
-      <span className="numeral">
-        {pad2(n)} <span className="text-[var(--color-ink-mute)]">/ {pad2(of)}</span>
-      </span>
       <span className="font-block text-xl font-extrabold leading-snug tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-2xl">
         <span className={`mr-3 inline-block h-1.5 w-1.5 rounded-full align-middle ${laneBg[node.lane]}`} aria-hidden />
         {node.title}
       </span>
-      <span className="col-start-2 font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase sm:col-start-3 sm:text-right">
+      <span className="font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase sm:text-right">
         <time dateTime={date}>{date}</time>
       </span>
     </Link>
