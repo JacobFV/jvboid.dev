@@ -442,9 +442,13 @@ type Body = {
   sin: number;
   w: number;
   h: number;
-  // Inverse mass and inverse moment of inertia; both 0 for a fixed body.
+  // Mass in 1× tiles (Infinity for a fixed body), its inverse, and the
+  // inverse moment of inertia; the inverses are 0 for a fixed body.
+  m: number;
   inv: number;
   invI: number;
+  // How hard gravity pulls this body, relative to a 1× tile.
+  pull: number;
   // Broad-phase radius: nothing outside it can touch this body.
   r: number;
   // Outline and edge normals in the body's own frame.
@@ -473,6 +477,18 @@ const MAX_TILT = (14 * Math.PI) / 180;
 const INERTIA = 5 / 64;
 // Vertices within this many px of a contact plane share the contact.
 const CONTACT_TOL = 0.75;
+// Heavier tiles fall harder: gravity scales with mass to this power,
+// within PULL_MIN..PULL_MAX of a 1× tile's. Big tiles rise through the
+// small ones and come to rest against each other — dense things settle
+// first in a jar.
+const PULL_EXP = 0.4;
+const PULL_MIN = 0.6;
+const PULL_MAX = 2.2;
+// How far, per pass, a contact turns a tile to lie flush along the face it
+// is touching — scaled by the lighter body's weight, m² / (m² + 1), so two
+// big tiles square up to each other almost completely, a pair of 1× tiles
+// half-heartedly, and a small tile hardly at all and keeps its lean.
+const ALIGN = 0.3;
 
 function polygonAxes(verts: [number, number][]): [number, number][] {
   const axes: [number, number][] = [];
@@ -536,6 +552,19 @@ export function tileOutline(
 
 function worldOutline(b: Body): [number, number][] {
   return b.verts.map(([x, y]) => [b.cx + x * b.cos - y * b.sin, b.cy + x * b.sin + y * b.cos]);
+}
+
+// The turn that would bring the body's nearest face normal parallel to
+// (nx, ny). Normals are undirected, so the error wraps into ±90°.
+function faceError(b: Body, nx: number, ny: number): number {
+  const target = Math.atan2(ny, nx);
+  let best = Infinity;
+  for (const [lx, ly] of b.axes) {
+    let e = target - (Math.atan2(ly, lx) + b.a);
+    e = ((((e + Math.PI / 2) % Math.PI) + Math.PI) % Math.PI) - Math.PI / 2;
+    if (Math.abs(e) < Math.abs(best)) best = e;
+  }
+  return best === Infinity ? 0 : best;
 }
 
 function turn(b: Body, by: number) {
@@ -635,7 +664,8 @@ export function settleComb<T>(
   const bodies: Body[] = layout.cells.map((cell) => {
     const verts = tileOutline(shapeOf(cell.item), cell.width, cell.height, squares);
     const fixed = isFixed(cell.item);
-    const inv = fixed ? 0 : unitArea / (cell.width * cell.height);
+    const m = fixed ? Infinity : (cell.width * cell.height) / unitArea;
+    const inv = fixed ? 0 : 1 / m;
     return {
       cx: cell.left + cell.width / 2,
       cy: cell.top + cell.height / 2,
@@ -644,8 +674,10 @@ export function settleComb<T>(
       sin: 0,
       w: cell.width,
       h: cell.height,
+      m,
       inv,
       invI: fixed ? 0 : inv / (INERTIA * cell.width * cell.width),
+      pull: fixed ? 0 : Math.min(PULL_MAX, Math.max(PULL_MIN, m ** PULL_EXP)),
       r: cell.width / 2,
       verts,
       axes: polygonAxes(verts),
@@ -706,6 +738,16 @@ export function settleComb<T>(
         b.cy += ny * lambda * b.inv;
         if (ia) turn(a, -ia * ca * lambda);
         if (ib) turn(b, ib * cb * lambda);
+        if (rotate) {
+          // Lie flat. The contact normal is a face normal of one of the
+          // two (that is what the separating axis is), so turning each
+          // body's nearest face toward it lays the pair edge to edge — as
+          // hard as the lighter of the two is heavy.
+          const lighter = Math.min(a.m, b.m);
+          const weight = lighter === Infinity ? 1 : (lighter * lighter) / (lighter * lighter + 1);
+          if (a.invI) turn(a, ALIGN * weight * faceError(a, nx, ny));
+          if (b.invI) turn(b, ALIGN * weight * faceError(b, nx, ny));
+        }
         a.world = worldOutline(a);
         b.world = worldOutline(b);
       }
@@ -726,7 +768,7 @@ export function settleComb<T>(
     const g = GRAVITY * unitWidth * (1 - step / SETTLE_STEPS);
     for (const body of bodies) {
       if (body.inv === 0) continue;
-      body.cy -= g;
+      body.cy -= g * body.pull;
       turn(body, body.a * (UPRIGHT - 1));
       body.world = worldOutline(body);
     }
