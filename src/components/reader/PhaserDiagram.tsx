@@ -4,23 +4,20 @@ import { EchoFigure } from "./echo/figure";
  * The PHASER signal path, top to bottom, in the hairline style of the
  * echo essay's figures (the `.echo-svg` classes): a laser encodes xₜ
  * through M_in, drops through a partially reflective coupler into the
- * chamber, circulates between the two couplers through the programmable
- * M_step planes, and a sample leaves through the readout coupler, M_out
+ * chamber, bounces up and down between the two couplers through the
+ * programmable M_step planes, and a sample leaves through the readout coupler, M_out
  * and a lens onto the CCD as yₜ. Vertical, so it fits the prose column
  * at any width instead of scrolling sideways.
  */
 
 const W = 440;
 const H = 708;
-const IN_X = 165; // input column, and the forward lane
-const OUT_X = 275; // return lane, and the output column
+const IN_X = 165; // input column
+const OUT_X = 275; // output column
 const PLANES = [246, 312, 378];
-
-// The circulating beam as one closed loop, drawn in its direction of
-// travel so the animated dashes run the right way round.
-const LOOP =
-  `M ${IN_X} 206 V 454 Q ${IN_X} 468 ${IN_X + 14} 468 L ${OUT_X - 14} 468 Q ${OUT_X} 468 ${OUT_X} 454 ` +
-  `V 206 Q ${OUT_X} 192 ${OUT_X - 14} 192 L ${IN_X + 14} 192 Q ${IN_X} 192 ${IN_X} 206 Z`;
+// Where the in-chamber arrows start and stop: just clear of each coupler.
+const BOUNCE_TOP = 194;
+const BOUNCE_BOTTOM = 466;
 
 function Plate({ x, y, w }: { x: number; y: number; w: number }) {
   const ticks = [];
@@ -52,11 +49,11 @@ function Beam({ x, y1, y2 }: { x: number; y1: number; y2: number }) {
 export function PhaserDiagram() {
   return (
     <EchoFigure
-      label="The PHASER signal path, top to bottom. A laser's input passes through the input modulator M_in and a partially reflective coupler into the recurrent photon chamber. Inside, the beam circulates down one lane and back up the other, crossing three programmable M_step planes on every pass. A sample leaves through the readout coupler, the output modulator M_out and a lens onto a CCD as the output."
+      label="The PHASER signal path, top to bottom. A laser's input passes through the input modulator M_in and a partially reflective coupler into the recurrent photon chamber. Inside, the beam bounces up and down between the two couplers, crossing three programmable M_step planes on every pass. A sample leaves through the readout coupler, the output modulator M_out and a lens onto a CCD as the output."
       caption={
         <>
           Signal flow shown schematically: xₜ is encoded by M_in; the optical state h recirculates
-          through the programmable M_step planes, down one lane and back up the other; M_out couples a
+          through the programmable M_step planes, bouncing up and down between the couplers; M_out couples a
           sample through the focusing lens onto the CCD as yₜ.
         </>
       }
@@ -64,6 +61,11 @@ export function PhaserDiagram() {
       <svg viewBox={`0 0 ${W} ${H}`} className="echo-svg" style={{ maxWidth: W, margin: "0 auto" }} aria-hidden="true">
         <defs>
           <marker id="phaser-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0.8 L7,4 L0,7.2" fill="none" stroke="var(--color-accent)" strokeWidth="1.1" />
+          </marker>
+          {/* The same head, mirrored at a line's start, for the arrows
+              that point both ways inside the chamber. */}
+          <marker id="phaser-arrow-both" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M0,0.8 L7,4 L0,7.2" fill="none" stroke="var(--color-accent)" strokeWidth="1.1" />
           </marker>
         </defs>
@@ -105,17 +107,25 @@ export function PhaserDiagram() {
           M_step
         </text>
 
-        <path d={LOOP} className="echo-line echo-line-accent" style={{ strokeWidth: 1.1 }} opacity={0.55} />
-        <path d={LOOP} className="echo-flow" />
+        {[IN_X, OUT_X].map((x) => (
+          <line
+            key={x}
+            x1={x}
+            x2={x}
+            y1={BOUNCE_TOP}
+            y2={BOUNCE_BOTTOM}
+            className="echo-line echo-line-accent"
+            style={{ strokeWidth: 1.4 }}
+            markerStart="url(#phaser-arrow-both)"
+            markerEnd="url(#phaser-arrow-both)"
+          />
+        ))}
         {PLANES.flatMap((y) => [
           <circle key={`i${y}`} cx={IN_X} cy={y + 4.5} r={2.6} className="echo-accent" />,
           <circle key={`o${y}`} cx={OUT_X} cy={y + 4.5} r={2.6} className="echo-accent" />,
         ])}
         <text x={IN_X - 10} y={284} className="echo-text-small" textAnchor="end">
-          forward · hₜ
-        </text>
-        <text x={OUT_X + 10} y={350} className="echo-text-small">
-          return · hₜ₋₁
+          bounces · hₜ
         </text>
 
         {/* readout */}
