@@ -40,6 +40,7 @@ const NAV = [
 // take an absolute URL, but it would also prefetch it and treat it as an
 // app route, so external entries render as a plain <a> in a new tab.
 const MORE_NAV: { label: string; href: string; external?: boolean }[] = [
+  { label: "Story", href: "/visions/introduction" },
   { label: "Readings", href: "/readings" },
   { label: "Writings", href: "/papers" },
   { label: "Resume", href: "/resume" },
