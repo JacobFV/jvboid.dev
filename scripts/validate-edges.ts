@@ -161,7 +161,6 @@ const NON_NODE_PREFIXES = new Set([
   "about",
   "introduction",
   "visions",
-  "hello",
   "experience",
   "eeg-acquisition-chain",
   "canvas-engineering",

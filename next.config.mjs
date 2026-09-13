@@ -119,9 +119,6 @@ const nextConfig = {
       { source: "/visions/", destination: "/thoughts", permanent: false },
       { source: "/visions/:slug", destination: "/thoughts/:slug", permanent: false },
       { source: "/visions/:slug/", destination: "/thoughts/:slug", permanent: false },
-      // They sat at /hello for a few minutes before settling on /thoughts.
-      ...dual("/hello", "/thoughts"),
-      ...dual("/hello/:slug", "/thoughts/:slug"),
 
       // --- Blog index & taxonomy (before the generic /blog/:slug rule) ---
       ...dual("/blog", "/posts"),
