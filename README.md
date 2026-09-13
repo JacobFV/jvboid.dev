@@ -46,7 +46,8 @@ Primary pages:
 - `/readings` - readings index
 - `/skills` - skills index
 - `/friends` - friends index
-- `/visions` - visions index
+- `/hello` - bio-level essays index (`/visions` redirects here for now)
+- `/story` - the introduction, set without a hero
 - `/experiences` - experience index
 - `/t` - timeline view
 - `/loop` - A Beautiful Loop reader
@@ -66,9 +67,11 @@ Every content node has one canonical URL:
 /skills/:slug
 /friends/:slug
 /events/:slug
-/visions/:slug
+/hello/:slug
 /experiences/:slug
 ```
+
+The one exception is the introduction, which reads at `/story`.
 
 There is intentionally no `/list` catch-all index page, no standalone `/graph` page, and no flat-slug fallback. The local graph belongs at the bottom of content pages. `next.config.mjs` still contains explicit 301 redirects from old Jekyll paths such as `/blog/:year/:slug/`, `/projects/:slug/`, and `/bio/:slug/`.
 
@@ -86,7 +89,7 @@ Collections:
 - `skills`
 - `friends`
 - `events`
-- `visions`
+- `visions` (source files in `content/hello/`)
 - `experience`
 - `loop`
 

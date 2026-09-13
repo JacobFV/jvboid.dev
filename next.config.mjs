@@ -35,7 +35,7 @@ const nextConfig = {
   //   /blog/, /blog/page/:n/, /blog/:year/,        /posts
   //     /blog/category/:c/, /blog/tag/:t/      →   /posts
   //   /projects/:slug/   (underscore / MixedCase) → /projects/:id
-  //   /bio/:slug/                              →   /visions/:id
+  //   /bio/:slug/                              →   /hello/:id
   //   /jobs/:slug/, /experience/               →   /resume
   //   /news/:slug/                             →   /updates
   //   /feed/                                   →   /feed.xml
@@ -103,11 +103,22 @@ const nextConfig = {
       ...renamedPosts,
       ...projectRedirects,
       // Bio essays whose slug changed; the rest fall through to /bio/:slug.
-      ...dual("/bio/life-story", "/visions/background"),
+      ...dual("/bio/life-story", "/hello/background"),
       ...dual(
         "/bio/describe-your-greatest-engineering-accomplishment",
-        "/visions/describe-some-technical-accomplishments-youre-proud-of",
+        "/hello/describe-some-technical-accomplishments-youre-proud-of",
       ),
+
+      // --- Visions → hello ---
+      // The bio-level essays moved to /hello and the introduction reads at
+      // /story. Temporary on purpose: /visions is being kept for ideas, and
+      // a cached 308 would stop that path ever being handed back.
+      { source: "/visions/introduction", destination: "/story", permanent: false },
+      { source: "/visions/introduction/", destination: "/story", permanent: false },
+      { source: "/visions", destination: "/hello", permanent: false },
+      { source: "/visions/", destination: "/hello", permanent: false },
+      { source: "/visions/:slug", destination: "/hello/:slug", permanent: false },
+      { source: "/visions/:slug/", destination: "/hello/:slug", permanent: false },
 
       // --- Blog index & taxonomy (before the generic /blog/:slug rule) ---
       ...dual("/blog", "/posts"),
@@ -120,9 +131,10 @@ const nextConfig = {
       ...dual("/blog/:year(\\d{4})/:slug", "/posts/:slug"),
       ...dual("/blog/:slug", "/posts/:slug"),
 
-      // --- Bio essays → visions ---
-      ...dual("/bio", "/visions"),
-      ...dual("/bio/:slug", "/visions/:slug"),
+      // --- Bio essays → hello ---
+      ...dual("/bio/introduction", "/story"),
+      ...dual("/bio", "/hello"),
+      ...dual("/bio/:slug", "/hello/:slug"),
 
       // --- Jobs / experience → resume ---
       ...dual("/jobs/:slug", "/resume"),
@@ -137,9 +149,9 @@ const nextConfig = {
       ...dual("/feed", "/feed.xml"),
       ...dual("/repositories", "/projects"),
       ...dual("/repos", "/projects"),
-      ...dual("/about", "/visions/introduction"),
+      ...dual("/about", "/story"),
       // The homepage briefly linked the flat /introduction path; keep it alive.
-      ...dual("/introduction", "/visions/introduction"),
+      ...dual("/introduction", "/story"),
 
       // Static EEG acquisition-chain research tool, published from its own
       // repository through GitHub Pages. Keep the portfolio-owned URL stable.

@@ -140,6 +140,7 @@ type BodyLink = { href: string; origin: string; line: number; hint?: string };
 const NON_NODE_PREFIXES = new Set([
   // pages
   "resume",
+  "story",
   "t",
   "feed.xml",
   // public/ directories
@@ -159,6 +160,7 @@ const NON_NODE_PREFIXES = new Set([
   "repos",
   "about",
   "introduction",
+  "visions",
   "experience",
   "eeg-acquisition-chain",
   "canvas-engineering",
@@ -176,7 +178,7 @@ const KIND_PREFIXES = new Set([
   "skills",
   "friends",
   "events",
-  "visions",
+  "hello",
 ]);
 
 async function loadBodyLinks(): Promise<BodyLink[]> {

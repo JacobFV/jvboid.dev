@@ -1226,6 +1226,38 @@ a:hover {
   color: var(--color-ink);
 }
 
+/* ---- The /story opener ----
+   The story has no hero, so its first sentence does the hero's job: the
+   T is the blockface, sunk three lines, and the rest of that first line
+   runs in letterspaced capitals. `initial-letter` sinks the cap exactly
+   where it is supported; elsewhere a float approximates it. */
+.story-opener > p:first-of-type {
+  display: flow-root;
+}
+.story-opener > p:first-of-type::first-line {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.story-opener > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-block);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
+  font-size: 4.9em;
+  line-height: 0.8;
+  padding: 0.04em 0.08em 0 0;
+  color: var(--color-ink);
+}
+@supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+  .story-opener > p:first-of-type::first-letter {
+    float: none;
+    padding: 0;
+    margin-right: 0.08em;
+    -webkit-initial-letter: 3;
+    initial-letter: 3;
+  }
+}
+
 /* ---- Figures in the serif column ----
    An image's caption is its alt, set small and italic. Where the page
    has a margin the caption steps out into it beside the picture, the

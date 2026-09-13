@@ -19,7 +19,7 @@ What every node looks like and how to write one.
 | `skill`      | `content/skills/`     | Evidence-backed professional capabilities                                |
 | `friend`     | `content/friends/`    | Public friend/collaborator pages                                         |
 | `event`      | `content/events/`     | Conferences, talks, trips, launches, and upcoming plans                  |
-| `vision`     | `content/visions/`    | Bio-level statements: focus, 5-year outlook, "what makes AI interesting" |
+| `vision`     | `content/hello/`      | Bio-level statements at `/hello`; the introduction reads at `/story`     |
 | `experience` | `content/experience/` | A role, residency, education entry                                       |
 
 Slugs are filenames minus extension. Treat them as permanent — they're the URL and the graph id.

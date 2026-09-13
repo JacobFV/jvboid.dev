@@ -267,7 +267,8 @@ const events = defineCollection({
 
 const visions = defineCollection({
   name: "Vision",
-  pattern: "visions/**/*.mdx",
+  // Served at /hello; `/visions` is being kept for ideas.
+  pattern: "hello/**/*.mdx",
   schema: s
     .object({
       ...baseFields,

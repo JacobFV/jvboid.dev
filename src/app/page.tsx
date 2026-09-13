@@ -208,7 +208,7 @@ export default function HomePage() {
               from <BioLink href="https://www.uta.edu">UT Arlington</BioLink>. I love science and
               engineering and people.{" "}
               <Link
-                href="/visions/introduction"
+                href="/story"
                 className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
               >
                 More
