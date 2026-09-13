@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // `/t` (timeline) is unlisted for now: no nav entry, no command-menu
     // action, noindex on the route itself. It stays reachable by URL.
     { url: `${BASE}/resume`, priority: 0.5, changeFrequency: "monthly" as const },
+    { url: `${BASE}/contact`, priority: 0.5, changeFrequency: "yearly" as const },
   ];
 
   // `isListedNode` keeps external link-outs in the site's own listings —
