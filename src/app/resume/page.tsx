@@ -88,8 +88,32 @@ export default async function ResumePage({
         </div>
       </div>
 
+      {/* Embedded PDF preview ------------------------------------------- */}
+      {/* The paper comes first: it already carries the name, headline and
+          contact line, so the page opens on the resume itself. */}
+      <section className="mb-12">
+        <div className="overflow-hidden rounded-xl border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-[var(--ring-soft)]">
+          <object
+            data={`${variantPdfHref(variant)}#view=FitH`}
+            type="application/pdf"
+            className="block h-[80vh] w-full"
+            aria-label={`${variant} resume PDF preview`}
+          >
+            <div className="p-6 text-sm text-[var(--color-ink-dim)]">
+              Your browser can&rsquo;t embed PDFs.{" "}
+              <a
+                href={variantPdfHref(variant)}
+                className="text-[var(--color-accent)] underline"
+              >
+                Open the PDF in a new tab.
+              </a>
+            </div>
+          </object>
+        </div>
+      </section>
+
       {/* Header ---------------------------------------------------------- */}
-      <header className="mb-10">
+      <header className="mb-12">
         <h1 className="font-block text-4xl font-extrabold tracking-tight text-[var(--color-ink)]">
           {contact.name}
         </h1>
@@ -115,31 +139,6 @@ export default async function ResumePage({
           <span>{contact.location}</span>
         </div>
       </header>
-
-      {/* Embedded PDF preview ------------------------------------------- */}
-      <section className="mb-12">
-        <h2 className="mb-3 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          PDF preview
-        </h2>
-        <div className="overflow-hidden rounded-xl border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-[var(--ring-soft)]">
-          <object
-            data={`${variantPdfHref(variant)}#view=FitH`}
-            type="application/pdf"
-            className="block h-[80vh] w-full"
-            aria-label={`${variant} resume PDF preview`}
-          >
-            <div className="p-6 text-sm text-[var(--color-ink-dim)]">
-              Your browser can&rsquo;t embed PDFs.{" "}
-              <a
-                href={variantPdfHref(variant)}
-                className="text-[var(--color-accent)] underline"
-              >
-                Open the PDF in a new tab.
-              </a>
-            </div>
-          </object>
-        </div>
-      </section>
 
       {/* Highlights ------------------------------------------------------ */}
       <section className="mb-12">
