@@ -430,7 +430,8 @@ export function ProjectsBrowser({
   // a text list would have nowhere to put it.
   hero?: HeroContent;
 }) {
-  const [view, setView] = useState<View>("grid");
+  // List is the default; a visitor's own pick, once made, is remembered.
+  const [view, setView] = useState<View>("list");
   // The hexagon needs a wide comb before its interior can hold the bio at
   // a readable size, so below `lg` the hero stacks above the comb instead
   // and drops out of the packing. Matching Tailwind's breakpoint exactly
@@ -438,7 +439,7 @@ export function ProjectsBrowser({
   const [packHero, setPackHero] = useState(true);
 
   useEffect(() => {
-    setView(readStoredValue(PROJECT_VIEW_STORAGE_KEY, "grid", isView));
+    setView(readStoredValue(PROJECT_VIEW_STORAGE_KEY, "list", isView));
   }, []);
 
   useEffect(() => {
