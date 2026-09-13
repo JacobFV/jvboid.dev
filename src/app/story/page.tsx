@@ -4,7 +4,7 @@ import { MDXContent } from "@/lib/mdx";
 import { LocalGraph } from "@/components/reader/LocalGraph";
 
 // The introduction node, read as the site's story. It keeps its content
-// in content/hello/introduction.mdx, but unlike every other node it opens
+// in content/thoughts/introduction.mdx, but unlike every other node it opens
 // with no hero — no title, standfirst, date or rule — straight onto its
 // first sentence, which `.story-opener` sets as a blockface drop cap.
 const STORY_ID = "introduction";

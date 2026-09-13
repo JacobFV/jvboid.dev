@@ -28,7 +28,7 @@ const KIND_TITLE: Record<NodeKind, string> = {
   skill: "Skills",
   friend: "Friends",
   event: "Events",
-  vision: "Hello",
+  vision: "Thoughts",
 };
 
 const KIND_DESCRIPTION: Record<NodeKind, string> = {
@@ -40,7 +40,7 @@ const KIND_DESCRIPTION: Record<NodeKind, string> = {
   skill: "Capabilities, practice areas, and supporting evidence.",
   friend: "People and collaborators in the graph.",
   event: "Conferences, talks, trips, launches, and other dated events.",
-  vision: "Who I am: background, focus, and the longer application essays.",
+  vision: "Short, interview-style entries: background, focus, and where I'm headed.",
 };
 
 // Writings and readings carry their title alone: the standfirst under the

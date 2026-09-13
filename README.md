@@ -46,7 +46,7 @@ Primary pages:
 - `/readings` - readings index
 - `/skills` - skills index
 - `/friends` - friends index
-- `/hello` - bio-level essays index (`/visions` redirects here for now)
+- `/thoughts` - short interview-style entries index (`/visions` redirects here for now)
 - `/story` - the introduction, set without a hero
 - `/experiences` - experience index
 - `/t` - timeline view
@@ -67,7 +67,7 @@ Every content node has one canonical URL:
 /skills/:slug
 /friends/:slug
 /events/:slug
-/hello/:slug
+/thoughts/:slug
 /experiences/:slug
 ```
 
@@ -89,7 +89,7 @@ Collections:
 - `skills`
 - `friends`
 - `events`
-- `visions` (source files in `content/hello/`)
+- `visions` (source files in `content/thoughts/`)
 - `experience`
 - `loop`
 

@@ -161,6 +161,7 @@ const NON_NODE_PREFIXES = new Set([
   "about",
   "introduction",
   "visions",
+  "hello",
   "experience",
   "eeg-acquisition-chain",
   "canvas-engineering",
@@ -178,7 +179,7 @@ const KIND_PREFIXES = new Set([
   "skills",
   "friends",
   "events",
-  "hello",
+  "thoughts",
 ]);
 
 async function loadBodyLinks(): Promise<BodyLink[]> {

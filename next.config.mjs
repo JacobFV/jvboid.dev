@@ -35,7 +35,7 @@ const nextConfig = {
   //   /blog/, /blog/page/:n/, /blog/:year/,        /posts
   //     /blog/category/:c/, /blog/tag/:t/      →   /posts
   //   /projects/:slug/   (underscore / MixedCase) → /projects/:id
-  //   /bio/:slug/                              →   /hello/:id
+  //   /bio/:slug/                              →   /thoughts/:id
   //   /jobs/:slug/, /experience/               →   /resume
   //   /news/:slug/                             →   /updates
   //   /feed/                                   →   /feed.xml
@@ -103,22 +103,25 @@ const nextConfig = {
       ...renamedPosts,
       ...projectRedirects,
       // Bio essays whose slug changed; the rest fall through to /bio/:slug.
-      ...dual("/bio/life-story", "/hello/background"),
+      ...dual("/bio/life-story", "/thoughts/background"),
       ...dual(
         "/bio/describe-your-greatest-engineering-accomplishment",
-        "/hello/describe-some-technical-accomplishments-youre-proud-of",
+        "/thoughts/describe-some-technical-accomplishments-youre-proud-of",
       ),
 
-      // --- Visions → hello ---
-      // The bio-level essays moved to /hello and the introduction reads at
+      // --- Visions → thoughts ---
+      // The short interview-style entries moved to /thoughts and the introduction reads at
       // /story. Temporary on purpose: /visions is being kept for ideas, and
       // a cached 308 would stop that path ever being handed back.
       { source: "/visions/introduction", destination: "/story", permanent: false },
       { source: "/visions/introduction/", destination: "/story", permanent: false },
-      { source: "/visions", destination: "/hello", permanent: false },
-      { source: "/visions/", destination: "/hello", permanent: false },
-      { source: "/visions/:slug", destination: "/hello/:slug", permanent: false },
-      { source: "/visions/:slug/", destination: "/hello/:slug", permanent: false },
+      { source: "/visions", destination: "/thoughts", permanent: false },
+      { source: "/visions/", destination: "/thoughts", permanent: false },
+      { source: "/visions/:slug", destination: "/thoughts/:slug", permanent: false },
+      { source: "/visions/:slug/", destination: "/thoughts/:slug", permanent: false },
+      // They sat at /hello for a few minutes before settling on /thoughts.
+      ...dual("/hello", "/thoughts"),
+      ...dual("/hello/:slug", "/thoughts/:slug"),
 
       // --- Blog index & taxonomy (before the generic /blog/:slug rule) ---
       ...dual("/blog", "/posts"),
@@ -131,10 +134,10 @@ const nextConfig = {
       ...dual("/blog/:year(\\d{4})/:slug", "/posts/:slug"),
       ...dual("/blog/:slug", "/posts/:slug"),
 
-      // --- Bio essays → hello ---
+      // --- Bio essays → thoughts ---
       ...dual("/bio/introduction", "/story"),
-      ...dual("/bio", "/hello"),
-      ...dual("/bio/:slug", "/hello/:slug"),
+      ...dual("/bio", "/thoughts"),
+      ...dual("/bio/:slug", "/thoughts/:slug"),
 
       // --- Jobs / experience → resume ---
       ...dual("/jobs/:slug", "/resume"),

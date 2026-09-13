@@ -110,7 +110,7 @@ Transitions:
 
 ## 3D vision room
 
-Separate r3f scene mounted only on `/hello/[slug]` for nodes with `kind="vision"`. Other nodes render as plain MDX. Scene structure:
+Separate r3f scene mounted only on `/thoughts/[slug]` for nodes with `kind="vision"`. Other nodes render as plain MDX. Scene structure:
 
 ```
 <Canvas>

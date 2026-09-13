@@ -126,8 +126,8 @@ export const KIND_PREFIX: Record<NodeKind, string> = {
   skill: "skills",
   friend: "friends",
   event: "events",
-  // `/visions` is being kept for ideas; the bio-level essays say hello.
-  vision: "hello",
+  // `/visions` is being kept for ideas; the short interview-style entries are thoughts.
+  vision: "thoughts",
 };
 
 export const KIND_FROM_PREFIX: Record<string, NodeKind> = Object.fromEntries(

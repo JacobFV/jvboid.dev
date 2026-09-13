@@ -56,7 +56,7 @@ const SECTION: Partial<Record<NodeKind, { label: string; href: string }>> = {
   skill: { label: "Skills", href: "/skills" },
   friend: { label: "Friends", href: "/friends" },
   event: { label: "Events", href: "/events" },
-  vision: { label: "Hello", href: "/hello" },
+  vision: { label: "Thoughts", href: "/thoughts" },
 };
 
 function sectionFor(kind: NodeKind): { label: string; href: string } {
