@@ -276,15 +276,14 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
               </button>
               {moreOpen && (
                 // Square, ruled and tight: a hairline box of hairline rows,
-                // mono caps, and a hover that inverts the row outright
-                // rather than tinting a pill.
+                // mono caps, and a hover that only warms the row's ground.
                 <div
                   role="menu"
                   className="absolute top-full right-0 mt-3 w-48 border border-[var(--color-rule)] bg-[var(--color-bg-0)] shadow-[0_14px_32px_-14px_rgba(0,0,0,0.4)]"
                 >
                   {MORE_NAV.map((item) => {
                     const cls =
-                      "flex items-center justify-between border-t border-[var(--color-rule)] px-3.5 py-2.5 font-[family-name:var(--font-mono)] text-[0.68rem] tracking-[0.14em] text-[var(--color-ink-dim)] uppercase no-underline transition-colors duration-100 first:border-t-0 hover:bg-[var(--color-ink)] hover:text-[var(--color-bg-0)] focus-visible:bg-[var(--color-ink)] focus-visible:text-[var(--color-bg-0)] focus-visible:outline-none";
+                      "flex items-center justify-between border-t border-[var(--color-rule)] px-3.5 py-2.5 font-[family-name:var(--font-mono)] text-[0.68rem] tracking-[0.14em] text-[var(--color-ink-dim)] uppercase no-underline transition-colors duration-150 first:border-t-0 hover:bg-[var(--color-bg-1)] hover:text-[var(--color-ink)] active:bg-[var(--color-bg-2)] focus-visible:bg-[var(--color-bg-1)] focus-visible:text-[var(--color-ink)] focus-visible:outline-none";
                     return item.external ? (
                       <a
                         key={item.href}
