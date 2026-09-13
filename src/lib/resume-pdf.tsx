@@ -30,7 +30,9 @@ const colors = {
 const styles = StyleSheet.create({
   page: {
     paddingTop: 38,
-    paddingBottom: 38,
+    // Deeper than the top, so the last line on a page stops well short of
+    // the paper's edge.
+    paddingBottom: 56,
     paddingHorizontal: 44,
     fontFamily: "Helvetica",
     fontSize: 9,
@@ -102,9 +104,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: "uppercase",
   },
-  projCols: { flexDirection: "row", gap: 14 },
-  projCol: { flex: 1 },
-  projItem: { flexDirection: "row", marginBottom: 2.4 },
+  projRow: { flexDirection: "row", gap: 14 },
+  projItem: { flex: 1, flexDirection: "row", marginBottom: 2.4 },
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
@@ -121,37 +122,46 @@ const styles = StyleSheet.create({
   },
 });
 
-function splitColumns<T>(items: T[]): [T[], T[]] {
-  const mid = Math.ceil(items.length / 2);
-  return [items.slice(0, mid), items.slice(mid)];
-}
-
-function ProjectColumn({ items }: { items: Node[] }) {
+function ProjectItem({ n }: { n: Node }) {
   return (
-    <View style={styles.projCol}>
-      {items.map((n) => (
-        <View key={n.id} style={styles.projItem} wrap={false}>
-          <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
-          <Text style={styles.projText}>
-            <Text style={styles.projTitle}>{n.title}</Text>
-            {resumeBlurb(n) ? <Text> — {resumeBlurb(n)}</Text> : null}
-          </Text>
-        </View>
-      ))}
+    <View style={styles.projItem}>
+      <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
+      <Text style={styles.projText}>
+        <Text style={styles.projTitle}>{n.title}</Text>
+        {resumeBlurb(n) ? <Text> — {resumeBlurb(n)}</Text> : null}
+      </Text>
     </View>
   );
 }
 
+// Two across, set as rows of pairs rather than two tall columns. react-pdf
+// cannot break a flex row across pages: two columns side by side are one
+// row, so whatever ran past the page was drawn in a heap at its foot and
+// through the bottom margin. A row per pair is an ordinary block, and
+// rows break between pages cleanly.
 function ProjectGroup({ label, items }: { label: string; items: Node[] }) {
   if (items.length === 0) return null;
-  const [a, b] = splitColumns(items);
+  const rows: Node[][] = [];
+  for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2));
+  const renderRow = (row: Node[]) => (
+    <View key={row[0].id} style={styles.projRow} wrap={false}>
+      {row.map((n) => (
+        <ProjectItem key={n.id} n={n} />
+      ))}
+      {row.length === 1 && <View style={{ flex: 1 }} />}
+    </View>
+  );
+  const [first, ...rest] = rows;
   return (
     <View>
-      <Text style={styles.projGroupLabel}>{label}</Text>
-      <View style={styles.projCols}>
-        <ProjectColumn items={a} />
-        <ProjectColumn items={b} />
+      {/* The headings travel with the first row, so they are never left
+          alone at the foot of a page with their projects overleaf. */}
+      <View wrap={false}>
+        <Text style={styles.sectionLabel}>Projects</Text>
+        <Text style={styles.projGroupLabel}>{label}</Text>
+        {renderRow(first)}
       </View>
+      {rest.map(renderRow)}
     </View>
   );
 }
@@ -230,7 +240,6 @@ export function ResumeDocument({
           ))}
         </View>
 
-        <Text style={styles.sectionLabel}>Projects</Text>
         <ProjectGroup label={focusLabel} items={focused} />
 
         <View style={styles.footer} fixed>
