@@ -27,3 +27,27 @@ from 2017 hyperlab to 2019-2021 limboid to uta library assembly to quitting firs
 - artifacts: cad, github, photos, videos, bom, uta pictures.
 - ending: online, by contrast, i could create consequences almost instantly — usually without understanding what consequences i was creating.
 */}
+
+<Draft>
+
+Limboid did not begin as "Limboid." There is a line back to HyperLab around 2017, when I was already imagining a general fabrication / robotics environment much larger than whatever I could actually execute. [embed: 2017 HyperLab artifact] Then by 2019–2021 the humanoid started becoming a concrete machine, and at some point the machine acquired the name Limboid—the same stupid `-boid` joke that later became `jvboid`. On July 8, 2024 I literally described it as my "humanoid robot kit: Limboid." [link/embed post]
+
+The ambition was aggressive: a roughly $1000 full-scale general-purpose humanoid. That number should immediately tell you the design philosophy. I was not trying to win by buying the same components as everybody else and accepting the prevailing BOM. The entire problem was to decompose a humanoid until the expensive assumptions became visible and then replace them. Structure, actuation, pumps, power electronics, control electronics, fabrication, software. Could the body be designed around processes accessible to one person? Could enough parts be commodity? Could the mechanical architecture tolerate lower precision because the control system compensated? Could the whole stack be legible enough that a small team—or me being insane—could iterate it?
+
+There is a very specific scene of assembling robot hardware at the UTA library that I need to write in full once I recover the photos and dates. [embed: UTA library assembly] I love it because it captures the absurdity of physical building. Software can disappear inside a laptop and everybody around you assumes you're doing homework. A humanoid leaks into space. Parts are on tables. Tools exist. Wires exist. You become a small temporary manufacturing problem everywhere you go.
+
+I eventually quit my first SWE job for it. That is the kind of sentence that sounds either visionary or fucking stupid depending on what happened afterward, and what happened afterward is: it never had a clean ending. There was progress. The skeleton was finished. The pump was finished. Power electronics got finished. Digital electronics and firmware were partially there. [embed: build checklist / videos] I stopped pitching for a while to focus on hardware and later explicitly called that a mistake. The project kept existing, but momentum thinned.
+
+This is important because I have a tendency to narrate projects in binary terms: built / not built, succeeded / failed. Physical projects often die by gradient. There is no meeting where everyone votes that the humanoid is over. You just touch it less. Another project starts consuming the scarce hours. A missing component creates a week of friction. The workspace changes. Money matters. You realize one interface requires redesigning three others. The machine is still THERE, so psychologically you haven't quit, but the derivative is approaching zero.
+
+Limboid taught me how much integration debt lives outside software. In code, changing an interface can be painful, but you can refactor thousands of call sites in a day if the system is tractable. In hardware, the old interface may have been machined into aluminum. The mating part may already exist. The wire harness may assume a connector location. Thermal constraints, tolerances, fasteners, tool access, assembly order—reality stores your previous decisions everywhere. A humanoid is a pile of coupled state.
+
+It also taught me that I LOVE this. Not every second; a stripped screw is not spiritually enriching. But the full-stackness of robotics hits exactly the old builder circuitry. CAD becomes geometry, geometry becomes parts, parts become mechanisms, sensors become state, controllers become motion. The loop from model to world is long enough to hurt and short enough to watch.
+
+[embed: old HyperLab material] [embed: Limboid CAD] [embed: build videos] [link: posts / checklists] [photos: UTA library]
+
+There is no definitive ending to this chapter because there was no definitive ending to Limboid. It faded, came back in fragments, reappeared under Human Robots, became connected to later simulator/factory ideas. That incompleteness is part of the truth. I could make ambitious things, but I had not yet learned how reliably I could finish systems whose scope kept expanding with my imagination.
+
+Online, meanwhile, I was developing an almost opposite skill: finishing sentences before I had modeled what they would do to people.
+
+</Draft>

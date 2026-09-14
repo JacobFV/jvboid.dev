@@ -32,6 +32,10 @@ number orders the chapters and drops out of the URL — `03-two-of-us.mdx`
 reads at `/bio/two-of-us` — so reordering is a rename that moves no link.
 The `/bio` index lists every numbered file; nothing is hand-maintained.
 
+A chapter can hold a stand-in draft wrapped in `<Draft>`, which sets it grey
+under a note that ChatGPT wrote it and it still needs rewriting in Jacob's
+voice. To rewrite a chapter, replace the whole block.
+
 A chapter whose body is only `{/* notes */}` is unwritten: it is listed
 dimmed, renders "Not written yet.", is noindexed, and stays out of the
 sitemap. MDX comments never reach the rendered page, but they are in the

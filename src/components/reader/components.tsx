@@ -24,6 +24,7 @@ import { CinemaAtmosphere } from "./CinemaAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
+import { Draft } from "./Draft";
 import { PhaserDiagram } from "./PhaserDiagram";
 import { EchoBottlenecks } from "./echo/EchoBottlenecks";
 import { EchoLoop } from "./echo/EchoLoop";
@@ -235,6 +236,8 @@ export const readerComponents: MDXComponents = {
   PullQuote,
   // Media in a column beside the prose, floated like a pull quote.
   SideMedia,
+  // A /bio chapter still in ChatGPT's words, set grey until it's rewritten.
+  Draft,
   // The figures of "Can an Echo Become a Voice Again?" — inline canvas and
   // SVG rather than <img>, so they follow the theme and can move.
   EchoBottlenecks,
