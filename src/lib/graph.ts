@@ -207,3 +207,20 @@ export function getGraph(): Graph {
   };
   return cached;
 }
+
+/**
+ * Where a node's MDX actually lives, relative to the repo root.
+ *
+ * Velite's `s.path()` slug is already the path inside `content/` with the
+ * extension dropped — `projects/20q`, `posts/arxiv-notes` — so this is the
+ * whole of the mapping. It is how the in-browser editor turns a node id into
+ * a file to commit, and the reason the editor takes an id from the browser
+ * and never a path: the path is derived here, from content the build knows
+ * about, so there is nothing to traverse out of.
+ *
+ * Not to be confused with `nodeSourceHref`, which is the off-site PDF or
+ * publisher page a paper or reading points at.
+ */
+export function nodeContentPath(node: { slug: string }): string {
+  return `content/${node.slug}.mdx`;
+}

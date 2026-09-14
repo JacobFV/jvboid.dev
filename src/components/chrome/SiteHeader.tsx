@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { KIND_FROM_PREFIX, type NodeKind } from "@/lib/graph-types";
+import { useEditor } from "./EditProvider";
 
 // The search palette is the heaviest thing the chrome can pull in — cmdk,
 // its dialog primitives, fuse.js — and most visits never open it. So it
@@ -72,6 +73,12 @@ export type NodeTitles = Record<string, string>;
 
 export function SiteHeader({ titles }: { titles: NodeTitles }) {
   const pathname = usePathname();
+  // The edit controls. `target` is null on every page that doesn't offer a
+  // body to edit, which is most of them, so the pencil is doing double duty
+  // as "you're signed in" and "this page is editable".
+  const editor = useEditor();
+  const canEdit = editor.signedIn && editor.target !== null;
+  const busy = editor.mode === "loading" || editor.mode === "saving";
   const [docked, setDocked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -314,6 +321,29 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
             <IconButton label="Search (⌘K)" onClick={openSearch}>
               <SearchIcon />
             </IconButton>
+            {canEdit && editor.mode !== "editing" && editor.mode !== "saving" && (
+              <IconButton
+                label={busy ? "Opening the editor…" : `Edit ${editor.target?.title ?? "this page"}`}
+                onClick={editor.begin}
+                disabled={busy}
+              >
+                <PencilIcon />
+              </IconButton>
+            )}
+            {canEdit && (editor.mode === "editing" || editor.mode === "saving") && (
+              <>
+                <IconButton
+                  label={busy ? "Committing…" : "Save and commit"}
+                  onClick={editor.save}
+                  disabled={busy}
+                >
+                  <SaveIcon />
+                </IconButton>
+                <IconButton label="Discard this edit" onClick={editor.cancel} disabled={busy}>
+                  <CloseIcon />
+                </IconButton>
+              </>
+            )}
             {/* `data-theme-toggle` lets a page that forces its own theme hide
                 this rather than leave a control that visibly does nothing —
                 see `data-page-theme` in globals.css. */}
@@ -337,6 +367,22 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
             <BarsIcon open={menuOpen} />
           </button>
         </nav>
+
+        {/* What the last save did. A commit can't change the page in place —
+            the body on screen was compiled at build time — so this says so
+            rather than leaving the edit looking like it didn't take. */}
+        {editor.status && (
+          <div
+            role="status"
+            className="mx-auto max-w-5xl px-6 pb-2 font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.1em]"
+            style={{
+              color:
+                editor.status.kind === "error" ? "var(--color-accent)" : "var(--color-ink-dim)",
+            }}
+          >
+            {editor.status.text}
+          </div>
+        )}
 
         {/* Mobile dropdown — always mounted so it can slide/fade both
             ways; `.mobile-menu` in globals.css drives the transition. */}
@@ -405,6 +451,47 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
               <span style={{ width: 16, textAlign: "center" }}>{themeGlyph}</span>{" "}
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  if (editor.mode === "editing") editor.save();
+                  else if (editor.mode === "idle") editor.begin();
+                }}
+                disabled={busy}
+                tabIndex={menuOpen ? undefined : -1}
+                className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)] disabled:opacity-40"
+              >
+                <span style={{ width: 16, textAlign: "center" }} aria-hidden>
+                  {editor.mode === "editing" || editor.mode === "saving" ? "↓" : "✎"}
+                </span>{" "}
+                {editor.mode === "saving"
+                  ? "Committing…"
+                  : editor.mode === "editing"
+                    ? "Save and commit"
+                    : editor.mode === "loading"
+                      ? "Opening…"
+                      : "Edit this page"}
+              </button>
+            )}
+            {canEdit && (editor.mode === "editing" || editor.mode === "saving") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  editor.cancel();
+                }}
+                disabled={busy}
+                tabIndex={menuOpen ? undefined : -1}
+                className="flex items-center gap-2 rounded-md px-3 py-2.5 text-left font-[family-name:var(--font-mono)] text-sm text-[var(--color-ink)] hover:bg-[var(--color-bg-2)] disabled:opacity-40"
+              >
+                <span style={{ width: 16, textAlign: "center" }} aria-hidden>
+                  ✕
+                </span>{" "}
+                Discard
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -479,6 +566,63 @@ function TriangleIcon({ open }: { open: boolean }) {
       style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
     >
       <path d="M1.2 3.2h7.6L5 7.1 1.2 3.2z" />
+    </svg>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function SaveIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+      <path d="M17 21v-8H7v8" />
+      <path d="M7 3v5h8" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <line x1="5" y1="5" x2="19" y2="19" />
+      <line x1="19" y1="5" x2="5" y2="19" />
     </svg>
   );
 }

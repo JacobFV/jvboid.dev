@@ -4,6 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MDXContent } from "@/lib/mdx";
 import { diffLines, type DiffLine } from "@/lib/line-diff";
 import type { PostRevision } from "@/lib/post-revision-types";
+import { EditableBody } from "@/components/chrome/EditableBody";
+import { useEditor } from "@/components/chrome/EditProvider";
+import type { EditTarget } from "@/lib/edit-types";
 
 type PostRevisionExperienceProps = {
   postId: string;
@@ -11,6 +14,13 @@ type PostRevisionExperienceProps = {
   currentTitle: string;
   currentBody: string;
   revisions: PostRevision[];
+  /**
+   * Offers this post to the header's edit control. While it is being edited
+   * the prose becomes a textarea and the title and dateline stay where they
+   * are; the revision menu hides, because picking an older revision to look
+   * at while typing into the current one is a way to save the wrong thing.
+   */
+  editable?: EditTarget;
 };
 
 const dateOnly = (iso: string) => iso.slice(0, 10);
@@ -43,7 +53,13 @@ export function PostRevisionExperience({
   currentTitle,
   currentBody,
   revisions,
+  editable,
 }: PostRevisionExperienceProps) {
+  const editor = useEditor();
+  const beingEdited =
+    !!editable &&
+    editor.target?.id === editable.id &&
+    (editor.mode === "editing" || editor.mode === "saving");
   const latest = revisions.at(-1) ?? null;
   const latestCommit = latest?.commit ?? null;
   const [selectedCommit, setSelectedCommit] = useState(latestCommit);
@@ -106,11 +122,15 @@ export function PostRevisionExperience({
       </header>
 
       <div className="prose-mdx prose-lede">
-        {highlightChanges && selected ? (
-          <PostRevisionDiff previous={previous} selected={selected} />
-        ) : (
-          <MDXContent code={body} />
-        )}
+        {(() => {
+          const prose =
+            highlightChanges && selected ? (
+              <PostRevisionDiff previous={previous} selected={selected} />
+            ) : (
+              <MDXContent code={body} />
+            );
+          return editable ? <EditableBody {...editable}>{prose}</EditableBody> : prose;
+        })()}
       </div>
 
       {/* The dateline reads as an endnote, not a headline: a post opens on
@@ -121,7 +141,7 @@ export function PostRevisionExperience({
         <span>
           posted: <time dateTime={postedDate}>{postedDate}</time>
         </span>
-        {revisions.length > 1 && latest && (
+        {!beingEdited && revisions.length > 1 && latest && (
           <>
             <span aria-hidden>·</span>
             <PostRevisionMenu

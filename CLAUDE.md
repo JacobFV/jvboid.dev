@@ -39,6 +39,29 @@ editing this repo.
   Vercel, and its destination is the `TO_ADDRESS` secret, not config. It
   only accepts the origins in its `ALLOWED_ORIGINS` var, so a Vercel
   preview URL cannot send. It is excluded from the site's `tsc`.
+- **`/login` is Jacob's way in, and nothing links to it.** One password,
+  no username. Nothing surfaces it: no nav entry, no ⌘K action, not in
+  the sitemap, `Disallow: /login` in `robots.ts`. It is a public URL like
+  every other — don't pretend otherwise, and don't "fix" its obscurity by
+  adding a link to it. The thing actually protecting it is
+  `workers/auth`, a second Cloudflare Worker that owns the password,
+  emails Jacob about every attempt, and writes `login:enabled = off` in
+  KV after five failures in a UTC day. Nothing on the site can undo that
+  lockout; Jacob flips the key back by hand in the Cloudflare dashboard.
+  Deployed separately, like `workers/contact` — see
+  [workers/auth/README.md](workers/auth/README.md).
+- **The pencil edits bodies, never frontmatter.** When Jacob is signed in
+  the header grows a ✎ beside the theme toggle on any page that rendered
+  an `<EditableBody>`; it swaps the prose for a textarea and commits to
+  `main` through the GitHub API, which triggers the usual Vercel
+  rebuild. `src/lib/content-actions.ts` splits the `---` block off on the
+  way out and re-attaches it from a fresh read on the way in, so no
+  amount of typing can produce a file velite refuses — on a site that
+  rebuilds on every push, a bad frontmatter field is a failed deploy, not
+  a bad paragraph. The browser sends a *kind and an id*, never a path;
+  the path is derived server-side from the content registry
+  (`nodeContentPath` / `chapterContentPath`), so there is nothing to
+  traverse out of.
 - **Client-safe imports.** `src/lib/graph-types.ts` holds the pure types
   + `nodeHref`. `src/lib/graph.ts` holds `getGraph()` and pulls in
   `node:fs`. Client components import from `graph-types`. Don't merge
@@ -59,7 +82,12 @@ editing this repo.
   `nodeLinkHref(node)`, not `nodeHref(node)`. See
   [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#paper).
 - **Auto-deploy.** Pushing to `main` triggers a Vercel build. There is
-  no separate deploy step. Env vars are managed in the Vercel dashboard.
+  no separate deploy step. Env vars are managed in the Vercel dashboard. The
+  editor needs six of them there: `SESSION_SECRET` (signs the session
+  cookie), `AUTH_WORKER_URL` + `AUTH_SHARED_KEY` (must match the auth
+  Worker's `SHARED_KEY`), `GITHUB_TOKEN` (fine-grained PAT, Contents:
+  read/write), and optionally `GITHUB_REPO` / `GITHUB_BRANCH`, which
+  default to `JacobFV/jvboid.dev` and `main`.
 - **Commit *and push* your own work. Don't ask.** When a piece of work
   is finished and validated, commit it and push it — you do not need
   permission for either, and you should not end a turn leaving the tree

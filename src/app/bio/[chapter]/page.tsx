@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { EditableBody } from "@/components/chrome/EditableBody";
 import { MDXContent } from "@/lib/mdx";
 import { getAllChapters, getChapter, getChapters } from "@/lib/bio";
 
@@ -47,13 +48,17 @@ export default async function ChapterPage({ params }: { params: Params }) {
           <hr className="rule mt-10" />
         </header>
 
-        {c.written ? (
-          <div className="prose-mdx chapter-opener">
-            <MDXContent code={c.body} />
-          </div>
-        ) : (
-          <p className="text-[var(--color-ink-dim)]">Not written yet.</p>
-        )}
+        {/* Unwritten chapters are editable too — an empty chapter is the
+            one most worth being able to start from a phone. */}
+        <EditableBody scope="bio" id={c.id} title={c.title}>
+          {c.written ? (
+            <div className="prose-mdx chapter-opener">
+              <MDXContent code={c.body} />
+            </div>
+          ) : (
+            <p className="text-[var(--color-ink-dim)]">Not written yet.</p>
+          )}
+        </EditableBody>
 
         <nav
           aria-label="Chapters"

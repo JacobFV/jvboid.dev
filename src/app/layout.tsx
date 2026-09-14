@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Big_Shoulders, Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { Bioluminescence } from "@/components/chrome/Bioluminescence";
 import { Colophon } from "@/components/chrome/Colophon";
+import { EditProvider } from "@/components/chrome/EditProvider";
 import { SiteHeader, type NodeTitles } from "@/components/chrome/SiteHeader";
 import { Lightbox } from "@/components/reader/Lightbox";
 import { getGraph, isListedNode } from "@/lib/graph";
@@ -113,8 +114,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             tinted moving texture across the full viewport — including
             the reading column. See components/chrome/Bioluminescence.tsx. */}
         <Bioluminescence />
-        <SiteHeader titles={titles} />
-        {children}
+        {/* The header's pencil drives a textarea inside the page, so both
+            sides need one piece of shared state. It is a client context with
+            no server data in it — nothing here makes a page dynamic; whether
+            anyone is signed in is decided in the browser, from a cookie. */}
+        <EditProvider>
+          <SiteHeader titles={titles} />
+          {children}
+        </EditProvider>
         <Colophon />
         {/* Page-wide fullscreen image viewer; renders null until a
             reader image is clicked. */}

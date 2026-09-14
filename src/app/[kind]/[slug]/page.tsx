@@ -2,6 +2,7 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { getGraph, isExternalRedirect, KIND_PREFIX, nodeHref, nodeSourceHref } from "@/lib/graph";
 import { MDXContent } from "@/lib/mdx";
 import { getPostRevisions } from "@/lib/post-revisions";
+import { EditableBody } from "@/components/chrome/EditableBody";
 import { Hero } from "@/components/reader/Hero";
 import { LocalGraph } from "@/components/reader/LocalGraph";
 import { PostRevisionExperience } from "@/components/reader/PostRevisionExperience";
@@ -66,13 +67,19 @@ export default async function NodePage({ params }: { params: Params }) {
             currentTitle={node.title}
             currentBody={node.body}
             revisions={postRevisions}
+            editable={{ scope: "node", id: node.id, title: node.title }}
           />
         ) : (
           <>
             <Hero node={node} />
-            <div className="prose-mdx">
-              <MDXContent code={node.body} />
-            </div>
+            {/* Offered to the header's pencil when Jacob is signed in; an
+                ordinary <div> to everyone else. The hero stays put — only
+                the prose becomes a textarea. */}
+            <EditableBody scope="node" id={node.id} title={node.title}>
+              <div className="prose-mdx">
+                <MDXContent code={node.body} />
+              </div>
+            </EditableBody>
           </>
         )}
 
