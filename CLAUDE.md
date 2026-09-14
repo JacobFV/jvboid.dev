@@ -49,7 +49,9 @@ editing this repo.
   KV after five failures in a UTC day. Nothing on the site can undo that
   lockout; Jacob flips the key back by hand in the Cloudflare dashboard.
   Deployed separately, like `workers/contact` — see
-  [workers/auth/README.md](workers/auth/README.md).
+  [workers/auth/README.md](workers/auth/README.md), and
+  [docs/LOGIN_SETUP.md](docs/LOGIN_SETUP.md) for the one-time setup that
+  has to happen before any of it works.
 - **The pencil edits bodies, never frontmatter.** When Jacob is signed in
   the header grows a ✎ beside the theme toggle on any page that rendered
   an `<EditableBody>`; it swaps the prose for a textarea and commits to
