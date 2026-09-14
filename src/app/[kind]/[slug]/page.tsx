@@ -30,11 +30,6 @@ export default async function NodePage({ params }: { params: Params }) {
   // real kind — keeps each node canonically reachable at exactly one URL.
   if (!node || KIND_PREFIX[node.kind] !== kind) notFound();
 
-  // A node with a route of its own (the introduction, at /story) is read
-  // there, not here.
-  const href = nodeHref(node);
-  if (href !== `/${kind}/${slug}`) permanentRedirect(href);
-
   // This node carries no page of its own, just a pointer.
   if (node.redirect) {
     // Off-site: the piece is published elsewhere and this is the stub

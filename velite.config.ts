@@ -296,6 +296,39 @@ const loop = defineCollection({
     .transform((d) => ({ ...d, kind: "loop" as const })),
 });
 
+// The /bio chapters. Not graph nodes: a book, read in order. The number on
+// the filename is the chapter's place — `03-two-of-us.mdx` is the third
+// chapter, at /bio/two-of-us — so reordering is a rename that never moves a
+// URL. A dotfile (`.old.mdx`) has no number: it still reads at /bio/.old,
+// but the index leaves it out. fast-glob skips dotfiles unless the pattern
+// names the dot itself, hence the second pattern.
+const bio = defineCollection({
+  name: "BioChapter",
+  pattern: ["bio/*.mdx", "bio/.*.mdx"],
+  schema: s
+    .object({
+      title: s.string().max(140),
+      summary: s.string().max(400).optional(),
+      slug: s.path(),
+      body: s.mdx({
+        copyLinkedFiles: false,
+        remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
+        rehypePlugins: [rehypeShiki, rehypeKatex],
+      }),
+    })
+    .transform((d, { meta }) => {
+      const file = d.slug.split("/").pop() ?? d.slug;
+      const numbered = /^(\d+)-(.+)$/.exec(file);
+      return {
+        ...d,
+        id: numbered ? numbered[2] : file,
+        order: numbered ? Number(numbered[1]) : null,
+        // A chapter holding nothing but its `{/* notes */}` isn't written yet.
+        written: String(meta.content ?? "").replace(/\{\/\*[\s\S]*?\*\/\}/g, "").trim().length > 0,
+      };
+    }),
+});
+
 export default defineConfig({
   root: "content",
   output: {
@@ -317,6 +350,7 @@ export default defineConfig({
     events,
     visions,
     loop,
+    bio,
   },
 });
 

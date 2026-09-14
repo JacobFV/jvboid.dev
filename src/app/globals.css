@@ -1226,19 +1226,19 @@ a:hover {
   color: var(--color-ink);
 }
 
-/* ---- The /story opener ----
-   The story has no hero, so its first sentence does the hero's job: the
-   T is the blockface, sunk three lines, and the rest of that first line
-   runs in letterspaced capitals. `initial-letter` sinks the cap exactly
-   where it is supported; elsewhere a float approximates it. */
-.story-opener > p:first-of-type {
+/* ---- The /bio chapter opener ----
+   Each chapter opens like a book's: the first letter is the blockface,
+   sunk three lines, and the rest of that first line runs in letterspaced
+   capitals. `initial-letter` sinks the cap exactly where it is supported;
+   elsewhere a float approximates it. */
+.chapter-opener > p:first-of-type {
   display: flow-root;
 }
-.story-opener > p:first-of-type::first-line {
+.chapter-opener > p:first-of-type::first-line {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.story-opener > p:first-of-type::first-letter {
+.chapter-opener > p:first-of-type::first-letter {
   float: left;
   font-family: var(--font-block);
   font-variation-settings: "opsz" 72;
@@ -1249,7 +1249,7 @@ a:hover {
   color: var(--color-ink);
 }
 @supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
-  .story-opener > p:first-of-type::first-letter {
+  .chapter-opener > p:first-of-type::first-letter {
     float: none;
     padding: 0;
     margin-right: 0.08em;

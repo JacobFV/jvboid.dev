@@ -47,7 +47,7 @@ Primary pages:
 - `/skills` - skills index
 - `/friends` - friends index
 - `/thoughts` - short interview-style entries index (`/visions` redirects here for now)
-- `/story` - the introduction, set without a hero
+- `/bio` - the story in chapters, one MDX file each in `content/bio/`
 - `/experiences` - experience index
 - `/t` - timeline view
 - `/loop` - A Beautiful Loop reader
@@ -71,9 +71,7 @@ Every content node has one canonical URL:
 /experiences/:slug
 ```
 
-The one exception is the introduction, which reads at `/story`.
-
-There is intentionally no `/list` catch-all index page, no standalone `/graph` page, and no flat-slug fallback. The local graph belongs at the bottom of content pages. `next.config.mjs` still contains explicit 301 redirects from old Jekyll paths such as `/blog/:year/:slug/`, `/projects/:slug/`, and `/bio/:slug/`.
+There is intentionally no `/list` catch-all index page, no standalone `/graph` page, and no flat-slug fallback. The local graph belongs at the bottom of content pages. `next.config.mjs` still contains explicit 301 redirects from old Jekyll paths such as `/blog/:year/:slug/`, `/projects/:slug/`, and the old `/bio/:slug/` essays.
 
 ## Content Model
 
@@ -92,6 +90,7 @@ Collections:
 - `visions` (source files in `content/thoughts/`)
 - `experience`
 - `loop`
+- `bio` (chapters of `/bio`)
 
 Most graph-backed collections share these frontmatter fields:
 
@@ -106,6 +105,8 @@ Most graph-backed collections share these frontmatter fields:
 Kind-specific fields are defined in `velite.config.ts`. Examples include project `status`, project `links`, paper `authors`, update embeds, skill evidence, event metadata, vision `sceneId`, and experience `org`.
 
 Loop chapters are separate from the graph-backed node collections and use `title`, `order`, `summary`, and body content.
+
+Bio chapters are also outside the graph. See [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#bio-chapters).
 
 ## Graph Data
 

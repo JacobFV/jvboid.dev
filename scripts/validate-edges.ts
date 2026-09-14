@@ -140,7 +140,7 @@ type BodyLink = { href: string; origin: string; line: number; hint?: string };
 const NON_NODE_PREFIXES = new Set([
   // pages
   "resume",
-  "story",
+  "bio",
   "t",
   "feed.xml",
   // public/ directories
@@ -152,7 +152,7 @@ const NON_NODE_PREFIXES = new Set([
   "_generated",
   // legacy shapes with redirects in next.config.mjs
   "blog",
-  "bio",
+  "story",
   "jobs",
   "news",
   "feed",

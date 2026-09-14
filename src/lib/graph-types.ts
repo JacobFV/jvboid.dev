@@ -134,15 +134,8 @@ export const KIND_FROM_PREFIX: Record<string, NodeKind> = Object.fromEntries(
   Object.entries(KIND_PREFIX).map(([kind, prefix]) => [prefix, kind as NodeKind]),
 );
 
-// The exceptions to /{prefix}/{id}: nodes read at a route of their own.
-// The introduction is the site's story, and /story sets it without a hero.
-// Keyed by `${kind}/${id}`; the [kind]/[slug] route bounces here.
-const NODE_ROUTES: Record<string, string> = {
-  "vision/introduction": "/story",
-};
-
 export function nodeHref(node: { kind: NodeKind; id: string }): string {
-  return NODE_ROUTES[`${node.kind}/${node.id}`] ?? `/${KIND_PREFIX[node.kind]}/${node.id}`;
+  return `/${KIND_PREFIX[node.kind]}/${node.id}`;
 }
 
 /**

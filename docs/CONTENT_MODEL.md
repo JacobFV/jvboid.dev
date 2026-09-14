@@ -19,10 +19,25 @@ What every node looks like and how to write one.
 | `skill`      | `content/skills/`     | Evidence-backed professional capabilities                                |
 | `friend`     | `content/friends/`    | Public friend/collaborator pages                                         |
 | `event`      | `content/events/`     | Conferences, talks, trips, launches, and upcoming plans                  |
-| `vision`     | `content/thoughts/`      | Short interview-style entries at `/thoughts`; the introduction reads at `/story`     |
+| `vision`     | `content/thoughts/`   | Short interview-style entries at `/thoughts`                             |
 | `experience` | `content/experience/` | A role, residency, education entry                                       |
 
 Slugs are filenames minus extension. Treat them as permanent — they're the URL and the graph id.
+
+## Bio chapters
+
+`/bio` is not a node kind. It is a book: one `content/bio/NN-slug.mdx` per
+chapter, with only `title` (and optionally `summary`) in frontmatter. The
+number orders the chapters and drops out of the URL — `03-two-of-us.mdx`
+reads at `/bio/two-of-us` — so reordering is a rename that moves no link.
+The `/bio` index lists every numbered file; nothing is hand-maintained.
+
+A chapter whose body is only `{/* notes */}` is unwritten: it is listed
+dimmed, renders "Not written yet.", is noindexed, and stays out of the
+sitemap. MDX comments never reach the rendered page, but they are in the
+repository. A dotfile (`.old.mdx`, the introduction that used to read at
+`/story`) has no number, so the index leaves it out; it still reads at
+`/bio/.old`.
 
 ## Frontmatter
 

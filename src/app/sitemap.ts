@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getChapters } from "@/lib/bio";
 import { getGraph, isListedNode, KIND_PREFIX, nodeHref, nodeSourceHref } from "@/lib/graph";
 
 const BASE = "https://jacobfv.com";
@@ -20,6 +21,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // action, noindex on the route itself. It stays reachable by URL.
     { url: `${BASE}/resume`, priority: 0.5, changeFrequency: "monthly" as const },
     { url: `${BASE}/contact`, priority: 0.5, changeFrequency: "yearly" as const },
+    { url: `${BASE}/bio`, priority: 0.6, changeFrequency: "monthly" as const },
+    // Only chapters with something in them; a title alone isn't a page.
+    ...getChapters()
+      .filter((c) => c.written)
+      .map((c) => ({
+        url: `${BASE}/bio/${c.id}`,
+        priority: 0.5,
+        changeFrequency: "monthly" as const,
+      })),
   ];
 
   // `isListedNode` keeps external link-outs in the site's own listings —
