@@ -83,7 +83,7 @@ export type HeroContent = {
   pfp: { src: string; alt: string };
 };
 
-export function HeroHex({ name, bio, socials, pfp }: HeroContent) {
+export function HeroHex({ name, bio, socials, moreSocials, pfp }: HeroContent) {
   return (
     <div data-hex-hero="" className="relative h-full w-full" style={{ containerType: "inline-size" }}>
       <HexFrame />
@@ -133,12 +133,9 @@ export function HeroHex({ name, bio, socials, pfp }: HeroContent) {
             hexagon's full width where they sit and floats the diagonals
             back in, so the links and the copy wrap to the real walls
             rather than to a box drawn inside them. */}
-        {/* The short row only: no `> more` inside the hexagon. The long
-            directory is still reachable from the stacked hero, but in
-            here it costs the bio its lines and the portrait its air. */}
         <SocialLinks
           socials={socials}
-          more={[]}
+          more={moreSocials}
           variant="hex"
           className="w-full"
           style={{ marginTop: GAP_LINKS, fontSize: LINK_TYPE }}

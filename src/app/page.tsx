@@ -206,13 +206,7 @@ export default function HomePage() {
               <BioLink href="https://motio.com">Motio</BioLink>, and{" "}
               <BioLink href="https://itlab.uta.edu">UTA research labs</BioLink>. BS Computer Science
               from <BioLink href="https://www.uta.edu">UT Arlington</BioLink>. I love science and
-              engineering and people.{" "}
-              <Link
-                href="/bio"
-                className="text-[var(--color-ink)] underline decoration-[var(--color-ink-mute)] underline-offset-2 hover:decoration-[var(--color-accent)]"
-              >
-                More
-              </Link>
+              engineering and people.
             </>
           ),
         }}
