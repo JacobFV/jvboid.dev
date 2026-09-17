@@ -51,6 +51,8 @@ export function SocialLinks({
 }) {
   const [open, setOpen] = useState(false);
   const listId = useId();
+  // No toggle without a tail to reveal.
+  const showMore = more.length > 0;
   const hex = variant === "hex";
   // The hexagon's row is tighter than the stacked hero's. `leading` is
   // the gap between wrapped lines now that this is inline flow.
@@ -83,7 +85,7 @@ export function SocialLinks({
         <SocialLink key={social.href} social={social} className={item} tint={open ? tint(0) : undefined} />
       ))}
 
-      {open ? (
+      {showMore && open ? (
         <span id={listId} className="contents">
           {more.map((group, g) => (
             <Fragment key={group.title}>
@@ -110,7 +112,10 @@ export function SocialLinks({
 
       {/* Always the last thing in the row — closed it ends the short set,
           open it ends the long one, so the control never moves out from
-          under the links it just added. */}
+          under the links it just added. Absent entirely when there is
+          nothing behind it, which is how the hexagon hero asks for the
+          short row alone. */}
+      {showMore && (
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -121,6 +126,7 @@ export function SocialLinks({
         <Caret open={open} />
         <span className="underline-offset-4 group-hover:underline">{open ? "hide" : "more"}</span>
       </button>
+      )}
     </Row>
   );
 }
