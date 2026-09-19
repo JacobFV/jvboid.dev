@@ -133,6 +133,8 @@ const projects = defineCollection({
           demo: s.string().optional(),
           site: s.string().optional(),
           pypi: s.string().optional(),
+          npm: s.string().optional(),
+          docs: s.string().optional(),
           paper: s.string().optional(),
         })
         .optional(),
