@@ -1,0 +1,370 @@
+---
+title: "Computerworld"
+date: 2026-09-17
+resume_description: "deterministic multi-machine computer world for training and evaluating computer-use agents: filesystems, shells, desktops and a synthetic internet in one rust engine that ships native, on pypi and on npm with cross-platform state and pixel parity. rust, wasm, pyo3, wasm-bindgen, cpu rasterizer, simulation."
+lane: building
+tags: [computer-use, agents, simulation, determinism, rust, wasm, rl, synthetic-data, renderer]
+summary: "A deterministic computer world for training and evaluating computer-use agents: several machines with real filesystems, shells, applications and a browser, joined by a synthetic internet, inside one Rust engine that runs natively, from Python, and as WebAssembly. A run is a pure function of (engine, world, seed, action sequence, viewport) — replay it on any platform and get the same bytes."
+hero:
+  src: "/assets/img/projects/computerworld-macos-github.jpg"
+  alt: "A simulated macOS desktop showing a pull request on github.com, rendered by Computerworld's own rasterizer with no browser engine involved"
+  fit: cover
+threadImages:
+  - src: "/assets/img/projects/computerworld-macos-github.jpg"
+    alt: "A synthetic github.com pull request rendered by Computerworld"
+  - src: "/assets/img/projects/computerworld-world-console.png"
+    alt: "The world console: live topology, an attached macOS desktop, and the world state hash"
+  - src: "/assets/img/projects/computerworld-vscode-breakpoint.jpg"
+    alt: "Visual Studio Code paused on a breakpoint inside a simulated machine"
+  - src: "/assets/img/projects/computerworld-windows-multiwindow.png"
+    alt: "The Windows 11 shell with PowerShell, a browser and Notepad open at once"
+links:
+  github: https://github.com/JacobFV/computerworld
+  site: https://jacobfv.github.io/computerworld/
+  docs: https://jacobfv.github.io/computerworld/docs/
+  pypi: https://pypi.org/project/computerworld/
+  npm: https://www.npmjs.com/package/computerworld
+influences: [synthux, computatrum]
+realizes: []
+critiques: [synthux]
+---
+
+Computerworld is a deterministic computer world for training and evaluating
+computer-use agents. Several machines with real filesystems, shells, applications and
+a browser, joined by a synthetic internet of services, inside one Rust engine that
+runs natively, from Python, and as WebAssembly in Node and the browser.
+
+The whole design turns on one sentence: **a run is a pure function of (engine, world,
+seed, action sequence, viewport)**. Everything else on this page is either a
+consequence of that promise or a limit the promise cost.
+
+![A synthetic github.com pull request, rendered by Computerworld's own rasterizer inside a simulated macOS desktop](/assets/img/projects/computerworld-macos-github.jpg)
+
+That screenshot has no browser in it. There is no Chromium process, no DOM, no
+JavaScript engine laying out that page. A synthetic GitHub service produced a
+structured page, the engine's own layout and text shaping turned it into a scene, and
+a CPU rasterizer wrote the RGBA. The same call in Python, in Node and in Rust produces
+the same bytes.
+
+## Problem
+
+Computer-use agents are trained and evaluated against real computers, and real
+computers are not reproducible. A VM's clock moves, its DNS answers change, a website
+redesigns, a font is missing, a race lands differently. So an episode is not an object
+you can hand to someone else: a benchmark score is a claim about a machine that no
+longer exists, a regression is a story rather than a rerun, and a bug report is
+"it did something weird on Tuesday."
+
+The usual escape is to make the environment smaller — a DOM mock, a scripted website,
+a fixture. That buys reproducibility and spends the thing you were measuring. A mock
+whose buttons do not mutate any state trains an agent to produce plausible-looking
+clicks, and an evaluation on it measures whether the agent can recognise a mock.
+
+<PullQuote>A mock whose buttons do not mutate any state trains an agent to produce plausible-looking clicks.</PullQuote>
+
+The third problem is cost. Branching a real VM to try three futures means three VMs.
+Tree search, counterfactual rollouts and RL all want to fork the world cheaply, and
+an environment that costs hundreds of megabytes and a boot to copy quietly forbids
+the algorithms you would most like to run in it.
+
+## Solution
+
+One Rust engine that owns the whole stack — filesystem, processes, shell, window
+manager, applications, DNS, HTTP, services, layout, text shaping and rasterization —
+with no host capabilities at all. No host filesystem, socket, clock, entropy or
+network unless the owner explicitly wires in an adapter.
+
+Because nothing in the engine reads the outside world, the world's entire future is
+determined by its inputs, and three things follow immediately:
+
+- **Verification, not vibes.** An episode, a benchmark result or a bug report *is* a
+  world, a seed and an action list. Anyone replays it exactly, on Linux, macOS,
+  Windows or a browser tab, and the state hashes agree.
+- **Cheap branching.** Snapshots are copy-on-write. Fork a world at any step, run
+  several futures, keep the best — tree search and RL rollouts without virtual
+  machines.
+- **Free labels.** `scene(w, h)` returns every window, widget and text run with its
+  bounds *before* rasterization, so a rendered frame arrives with its own ground
+  truth. No annotation pass, and no annotation error.
+
+<LiveDemo
+  url="https://jacobfv.github.io/computerworld/"
+  title="Computerworld running in the page"
+  caption="The engine itself, compiled to WebAssembly and running in this frame — machines, desktops and the synthetic internet, with no backend."
+/>
+
+## How
+
+### The world is data
+
+`WorldDefinition` is JSON. The engine has no built-in company, no default machines and
+no fixture imports in the kernel — those were explicitly removed from the predecessor
+designs, where the kernel knew about the catalog. The reference world,
+`worlds/company-2026`, is five computers on three OS profiles, 93 service instances
+built from 23 service kinds, and 87 seed files describing a browsable public web:
+search engines, webmail, a video site, social feeds, forums, shops, an encyclopedia,
+an AI assistant.
+
+Every address in it sits in a range IANA reserves for documentation —
+`203.0.113.0/24`, `198.51.100.0/24`, `192.0.2.0/24` — so no simulated host resembles a
+real one, and names ending `.internal` and `.example` resolve only inside the declared
+synthetic network.
+
+Those sites are one world, not a pile of fixtures. Bob files issue #14 on the internal
+Git host, asks about it on the synthetic Stack Overflow ("Why does my BFS shortest-path
+test fail only on Windows?", linking the issue), Priya answers, opens the pull request
+in the hero image ("Sort refs before iterating in BFS", closing #14), and writes it up
+on the forum thread further down this page. Same people, same incident, four services,
+one causally consistent world in which `HashMap` iteration order is genuinely the bug.
+
+### Machines are machines
+
+`cw-computer` models an inode filesystem with identity, links, symlinks, ownership,
+modes and case-aware path resolution, over copy-on-write backing. Trusted internal
+accessors are deliberately distinct from permission-checked `read_as` / `write_as`, so
+"the kernel can read it" and "this synthetic user can read it" are different questions
+in the type system rather than in a reviewer's head.
+
+`ProcessTable` models spawn, exit, signals, sleep, file descriptors and listener
+cleanup against logical time. The shell interprets documented subsets of POSIX and
+PowerShell through an explicit `ShellHost` capability; no command launches a host
+subprocess. Real Python and JavaScript run through embedded interpreters — and a
+program in the world can be debugged from Visual Studio Code, in the world.
+
+![Visual Studio Code paused on a breakpoint in a Python program running inside a simulated machine, with the call stack, watch expressions and an integrated terminal](/assets/img/projects/computerworld-vscode-breakpoint.jpg)
+
+Git is content-addressed commits and trees with a canonical SHA-256 JSON protocol for
+remote transfer. That is honestly not Git: not the pack format, not smart HTTP, not
+SHA-1 object identity. Clone, commit, push and fetch across world machines work;
+pointing it at an existing `.git` directory does not. The documentation says so in
+those words, which is the pattern throughout — **unsupported operations fail
+explicitly rather than approximately**.
+
+### The network is the only way through
+
+The path is application → URL → source-aware DNS → route and gateway checks →
+listener → HTTP response → browser page. A browser cannot short-circuit it by reading
+the backing service's state, which is the property that makes an information-transfer
+task meaningful: when Bob's machine sees Alice's edit, it saw it because a request
+travelled.
+
+DNS cache expiry and link latency are logical microseconds; configured packet loss
+draws from seeded simulation state. Internet nodes sit behind an edge router and three
+points of presence, so a distant site costs milliseconds where the LAN costs ten
+microseconds — the latency structure an agent would learn from is present, without a
+packet-level TCP emulation pretending to be there.
+
+Egress is denied by default, and the denial has teeth: **an unknown domain is an
+error, not permission to consult the host's resolver.** Real outbound traffic needs
+both a policy allowance and a separately supplied capability adapter. The owner calls
+`begin_external` with an explicit address set, an adapter performs the I/O, and
+`complete_external` returns it with generation, deadline and response-size checks. The
+shipped `NativeHttpAdapter` lives behind its own feature flag, pins authorized
+addresses, disables proxy discovery and automatic redirects, and refuses caller `Host`
+overrides; a redirect must be reauthorized as a new effect rather than followed. And a
+world holding an unresolved live effect is *rejected* by `try_snapshot`, because a
+checkpoint that depends on the outside world is not a checkpoint.
+
+`scripts/check-boundaries.py` enforces the rule the rest of the design rests on: pure
+simulation crates may parse IP addresses with `std::net` value types, and may not open
+sockets, spawn processes, read host files or time, or draw host random bytes. It runs
+in CI. It is a development guard, not a formal capability proof, and the docs say that
+too.
+
+### Determinism is a mechanism, not a hope
+
+Time is unsigned logical microseconds. `Clock` rejects backward movement and checks
+overflow. Scheduled work orders by due time, then phase, then insertion sequence.
+Neither executing a command nor observing a frame consults wall time.
+
+Randomness is `sha256-named-splitmix64-v1`: each *named* stream derives from the seed
+and the stream name, so drawing from one subsystem cannot perturb another. That detail
+is what makes the world editable — adding a coin flip to the mail service does not
+reshuffle the renderer. ID counters are namespaced, deterministic and overflow-checked.
+Streams, counters and queued work are all serializable state.
+
+Applications only do work inside steps. A video export advances by one bounded unit
+per `step()` through `NativeApp::background`, so how far it has got is a function of
+the steps taken. A playing timeline derives its position from the logical time playback
+started — never from the host.
+
+### Rendering without a browser
+
+The pipeline is semantic application state → native page → layout → scene → optional
+RGBA. Structured-only observations stop before rasterization and cost nothing.
+
+A `Scene` is stable node IDs, integer bounds, twelve primitives (`Box`, `RoundedBox`,
+`UiText`, `UiTextBold`, `Text`, `AssetImage`, `Shadow`, `Image`, `Path`, `Symbol`,
+`Backdrop`, `Region`), affine transforms in 1/1024 units, z-order, opacity, clipping,
+and the semantic role, label and value of each node. Hit testing runs on that
+structure — transformed coordinates, clipping, disabled state, z-order — without
+generating a single pixel.
+
+Text is the part that usually gives determinism away, so it is the part that is most
+carefully owned: 35 font files embedded rather than looked up on the host, plus an
+on-demand font pack for CJK and emoji that native builds embed and the Wasm build
+fetches. `rustybuzz` shaping, Unicode bidirectional reordering, Arabic joining and
+lam-alef, Indic conjuncts, Thai and Hebrew mark attachment, emoji ZWJ and skin-tone
+ligatures, CJK line breaking with kinsoku. Colour emoji are painted from Noto Color
+Emoji's COLRv1 tables by the renderer's own deterministic COLR rasterizer — gradients,
+clip boxes, composites — identically native and in Wasm.
+
+Crucially, **scene metrics and the renderer share one layout implementation**, so the
+measured width that decided a wrap or an ellipsis is exactly the width that gets drawn.
+A measurement path that disagrees with the drawing path is how "the label said it fit"
+becomes a mystery pixel diff on another platform.
+
+![The Windows 11 shell with PowerShell, a browser and Notepad open simultaneously, each drawn by the same scene and rasterizer](/assets/img/projects/computerworld-windows-multiwindow.png)
+
+Five shell styles — macOS, Windows 11, Ubuntu 24, iOS 18, Android 12 — are scene
+descriptions over the same primitives, not five renderers.
+
+### The agent's handle is smaller than the world
+
+Three layers stay distinct on purpose:
+
+1. **Simulation state** — everything that exists, including hidden service state.
+2. **An actor session** — selected machines, action families and observation channels.
+3. **An evaluator** — private objectives and predicates, outside actor observations.
+
+An owner holds `World`: topology, inspection, snapshots, device lifecycle. An agent
+holds `Environment`: its machines, its action families, its observation channels,
+nothing else. Actions are extensible envelopes rather than a model-specific token
+schema:
+
+```json
+{"family": "terminal.v1", "op": "execute", "machine": "alice-mac",
+ "payload": {"command": "cat launch.txt"}}
+```
+
+The families are `terminal.v1`, `filesystem.v1`, `http.v1`, `browser.v1`,
+`application.v1`, `keyboard.v1` and `pointer.v1`; observations are `semantic.v1` and
+`pixels.v1`, with rendering authorized but never automatic. `step` takes an ordered
+batch — not an atomic transaction — and returns per-action success, value or error.
+
+Pointer input goes through real hit testing at scene coordinates. It does **not**
+accept a semantic target ID, which would have been much easier and would have quietly
+turned "the agent clicked the button" into "the agent named the button." Drag and
+resize are down/move/up sequences. A GUI terminal can run commands through keyboard
+input even when direct terminal access is not granted — installed applications are
+part of the capability surface, and pretending otherwise would be a hole in the grant
+model.
+
+![A simulated Android phone browsing a synthetic forum thread about the same HashMap iteration bug as the pull request above](/assets/img/projects/computerworld-android-forum.jpg)
+
+### One engine, three languages
+
+Python (`pip install computerworld`, PyO3 wheels, CPython 3.9+ abi3), JavaScript
+(`npm install computerworld`, one package for Node and browsers) and Rust call the same
+code. Neither binding reimplements a command, a service or a rendering rule; the Python
+package does not start Node.
+
+The release workflow is the enforcement: it builds every candidate, **refuses to
+continue unless Linux, macOS, Windows and Node/Wasm agree on the state and pixel
+hashes**, then creates the tag and release with `SHA256SUMS` and publishes the files it
+downloads back from that release and re-checks against those sums. Both registries use
+trusted publishers over OIDC — no tokens exist to leak — and npm publishes with
+provenance.
+
+crates.io is the one place this does not reach: fifty-odd crates with path dependencies
+and a renderer whose embedded fonts and wallpapers are four times the per-crate limit.
+Rust consumers pin the Git tag, and the README says why rather than leaving a gap.
+
+## Tests
+
+`scripts/test-all.sh` is the gate: `cargo fmt`, the pure-core boundary check, strict
+workspace Clippy, the native test suite, and a release `wasm32-unknown-unknown` build.
+The recorded acceptance pass is **178 passing test executions, zero failures**.
+
+The behaviour tests are the interesting half, because they test the promises rather
+than the functions: two-computer communication through DNS and HTTP, a mutation made on
+one machine becoming visible to another *through its own request*, blocked outbound
+access, filesystem and process isolation between machines, seeded initialization,
+replay, portable checkpoints, fork isolation, actor/evaluator separation, event and
+packet traces, structured observation without rasterization, hit testing, and
+deterministic direct rendering.
+
+Cross-language parity is its own harness. `scripts/smoke-bindings.sh` makes Node and
+Python agree on checkpoints and hashes; native and Wasm rendering matched the golden
+RGBA hash `01455c4e…3595ec6`. And `scripts/test-browser.mjs` drives a real Chromium
+through an episode — pointer and keyboard input, terminal execution, reset,
+checkpoint, fork, adding and removing a phone — and records **zero host network
+requests during the episode** once the static assets have loaded. That report is
+regenerated by the script, so the number in the docs and the number in the artifact
+cannot drift apart.
+
+## Results
+
+The engine ships. `pip install computerworld` and `npm install computerworld` both
+work, across five wheel platforms and one npm package, with the parity gate in front
+of each release.
+
+![The world console: live topology on the left, an attached macOS desktop on the right, and the world state hash along the bottom — the whole engine running in one browser tab](/assets/img/projects/computerworld-world-console.png)
+
+That console is the engine compiled to WebAssembly in a single browser tab: seven
+devices, live topology, a monitor preview per machine, snapshot / restore / fork
+controls, and the world state hash printed at the bottom. Host internet: blocked.
+
+Measured on a quiet ARM64 host, in the rich reference world with full journaling:
+
+| Workload | p50 |
+|---|---:|
+| Terminal command, full actor step | 4.78 µs |
+| File write + read, two actor actions | 7.54 µs |
+| Virtual HTTP, full actor step | 82.9 µs |
+| Structured actor observation | 34.4 µs |
+| Desktop scene, no raster | 93.2 µs |
+| Dirty same-seed reset | 4.54 µs |
+| Fork from a snapshot | 265 µs |
+
+Profiling found node rasterization eating about 95% of full-frame wall time, and that
+identical old and new damage rectangles were painting the same area twice — which is
+why a 100% incremental update was *slower* than a full render. Caching nonzero text
+spans, specializing identity text and opaque rectangles, and coalescing damage moved
+full 1280×720 frames **3.11×** and 100% patch rendering **7.21×**, with the golden
+frames unchanged.
+
+The prettiest result is one somebody else got. Because a frame is an exact function of
+its inputs, the text an agent types is also a *label* for the pixels that text
+produces: walk the scene, crop the frame at the same viewport, and `(crop, string)`
+pairs fall out at whatever volume you are willing to render, varying theme, viewport
+and typeface. One consumer trained an OCR model on its own agent's typed text and moved
+held-out-font accuracy from **0.668 to 0.794**.
+
+## Lessons
+
+**The honest benchmark is the one that keeps its negative results.** The performance
+document records that the proposed 3× predecessor capture target was *not* met, that
+the same Chromium screenshot API was slower for canvas than for DOM in the final run,
+and that no general renderer-only speedup over Chromium has been established. It
+carries a stale-data warning over its own sections after the world definition grew
+26× and the shell was overhauled. A benchmark page that only contains wins is a
+marketing page, and everyone reading it knows.
+
+**Determinism has a shelf life, and it should be stated.** Pixel output is not stable
+across engine versions — the shell work changed it — so a dataset has to keep the
+version that made it. Snapshots and state hashes name the engine that wrote them, and
+restoring an alpha snapshot on 0.1.0 is refused rather than silently reinterpreted.
+Refusing is the feature.
+
+**The predecessors' bugs were the specification.** Eleven repositories were read
+before a line was written, pinned by commit in `research/sources.json`, and the
+[provenance matrix](https://github.com/JacobFV/computerworld/blob/main/docs/provenance.md)
+records subsystem by subsystem what should survive and what should not: an internet
+stub that was three dictionaries; a host-socket HTTP façade whose allowlist checked
+the initial URL while redirects escaped it; mocks whose display controls never mutated
+state and whose counters were reported as though they had; a global `Date` patch; a
+sorted-list event cursor with a reproduced ordering defect. Reuse here is algorithms,
+causal behaviour and regression cases reexpressed in Rust — not files. That is also
+why an engine this size landed in days rather than months: the hard part had already
+been worked out five times, in the open, badly enough to learn from.
+
+**Bounded fidelity, declared per subsystem, beats unbounded fidelity implied.**
+POSIX and PowerShell subsets. Synthetic Git over HTTP rather than packfile
+compatibility. Native pages rather than arbitrary HTML and JavaScript. Bundled
+deterministic fonts rather than full browser typography. Transport that is causal
+rather than packet-level. Registered native extensions that are trusted code in the
+same process — restricted handles prevent accidental state leakage, not hostile
+memory access, and the security document says exactly that instead of implying a
+sandbox. Every one of those is a smaller promise than "it's like a real computer,"
+and every one of them is a promise that can actually be kept.
