@@ -54,6 +54,8 @@ const moreSocialGroups: HeroSocialGroup[] = [
     title: "Code & Q&A",
     items: [
       { label: "gitlab", href: "https://gitlab.com/jacobfv123", glyph: "gitlab" },
+      { label: "npm", href: "https://www.npmjs.com/~jacobfv123", glyph: "npm" },
+      { label: "pypi", href: "https://pypi.org/user/jacobfv123/", glyph: "pypi" },
       {
         label: "stack overflow",
         href: "https://stackoverflow.com/users/14971315",

@@ -1,5 +1,6 @@
 import {
   Box,
+  Boxes,
   LayoutGrid,
   Mail,
   MailX,
@@ -28,7 +29,11 @@ import {
 // Three of these have no Simple Icons entry at all (Onshape, Are.na,
 // F6S), so they fall through to a lucide glyph chosen for what the
 // service *is* rather than for its logo — a CAD box, a grid of channels,
-// a rocket.
+// a rocket. PyPI is the one that has a mark and still falls through:
+// its logo is an isometric stack of two dozen little cubes, and at the
+// ~15px this row renders at, every white seam between them closes and
+// it turns into a smudge. Lucide's stacked boxes keep the same idea at
+// a weight that survives the size.
 export type SocialGlyphName =
   | "email"
   | "junk"
@@ -44,6 +49,8 @@ export type SocialGlyphName =
   | "stackexchange"
   | "stackoverflow"
   | "gitlab"
+  | "npm"
+  | "pypi"
   | "quora"
   | "medium"
   | "substack"
@@ -73,6 +80,7 @@ const BRAND_PATHS: Partial<Record<SocialGlyphName, string>> = {
     "M15.725 0l-1.72 1.277 6.39 8.588 1.716-1.277L15.725 0zm-3.94 3.418l-1.369 1.644 8.225 6.85 1.369-1.644-8.225-6.85zm-3.15 4.465l-.905 1.94 9.702 4.517.904-1.94-9.701-4.517zm-1.85 4.86l-.44 2.093 10.473 2.201.44-2.092-10.473-2.203zM1.89 15.47V24h19.19v-8.53h-2.133v6.397H4.021v-6.396H1.89zm4.265 2.133v2.13h10.66v-2.13H6.154Z",
   gitlab:
     "m23.6004 9.5927-.0337-.0862L20.3.9814a.851.851 0 0 0-.3362-.405.8748.8748 0 0 0-.9997.0539.8748.8748 0 0 0-.29.4399l-2.2055 6.748H7.5375l-2.2057-6.748a.8573.8573 0 0 0-.29-.4412.8748.8748 0 0 0-.9997-.0537.8585.8585 0 0 0-.3362.4049L.4332 9.5015l-.0325.0862a6.0657 6.0657 0 0 0 2.0119 7.0105l.0113.0087.03.0213 4.976 3.7264 2.462 1.8633 1.4995 1.1321a1.0085 1.0085 0 0 0 1.2197 0l1.4995-1.1321 2.4619-1.8633 5.006-3.7489.0125-.01a6.0682 6.0682 0 0 0 2.0094-7.003z",
+  npm: "M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z",
   quora:
     "M7.3799.9483A11.9628 11.9628 0 0 1 21.248 19.5397l2.4096 2.4225c.7322.7362.21 1.9905-.8272 1.9905l-10.7105.01a12.52 12.52 0 0 1-.304 0h-.02A11.9628 11.9628 0 0 1 7.3818.9503Zm7.3217 4.428a7.1717 7.1717 0 1 0-5.4873 13.2512 7.1717 7.1717 0 0 0 5.4883-13.2511Z",
   medium:
@@ -98,6 +106,7 @@ const LUCIDE_GLYPHS = {
   feedback: MessageSquare,
   link: Link2,
   onshape: Box,
+  pypi: Boxes,
   arena: LayoutGrid,
   f6s: Rocket,
 } as const;
