@@ -21,6 +21,7 @@ import { readStoredValue, writeStoredValue } from "@/lib/browser-storage";
 import { nodeHref, type Lane } from "@/lib/graph-types";
 import {
   FACE_OUTLINES,
+  faceBand,
   SQUARE_CLIP,
   faceOutline,
   type SquareShape,
@@ -758,6 +759,14 @@ function HexTile({
   // dropping the meta row and sitting higher up the hexagon, where the
   // diagonals have not yet closed in on the text.
   const mini = size < 1;
+  // The caption and its scrim are laid out against the face, not the
+  // cell — see faceBand. A hexagon's face *is* its cell, so nothing
+  // moves there; a short face's caption stops falling off the bottom of
+  // it. The 4.5% is the gap above the face's own lower edge, in cell
+  // height so it reads the same on every shape, and it is a floor: the
+  // taller faces already clear the 14% the hexagon uses and keep it.
+  const band = faceBand(project.shape);
+  const captionBottom = Math.max(mini ? 0.2 : 0.14, band.bottom + 0.045);
 
   return (
     <Link
@@ -809,8 +818,10 @@ function HexTile({
             mini caption sits higher, so its scrim has to reach higher too. */}
         <span
           aria-hidden
-          className={`pointer-events-none absolute inset-x-0 bottom-0 ${mini ? "h-full" : "h-[62%]"}`}
+          className="pointer-events-none absolute inset-x-0"
           style={{
+            bottom: `${(band.bottom * 100).toFixed(2)}%`,
+            height: `${(band.height * (mini ? 100 : 62)).toFixed(2)}%`,
             background: mini
               ? "linear-gradient(to top, color-mix(in srgb, var(--color-bg-0) 92%, transparent) 40%, color-mix(in srgb, var(--color-bg-0) 55%, transparent) 74%, transparent 96%)"
               : "linear-gradient(to top, color-mix(in srgb, var(--color-bg-0) 94%, transparent) 26%, color-mix(in srgb, var(--color-bg-0) 60%, transparent) 58%, transparent 92%)",
@@ -818,8 +829,9 @@ function HexTile({
         />
         <span
           className={`pointer-events-none absolute inset-x-0 flex flex-col items-center gap-0.5 text-center ${
-            mini ? "bottom-[20%] px-[12%]" : "bottom-[14%] px-[19%]"
+            mini ? "px-[12%]" : "px-[19%]"
           }`}
+          style={{ bottom: `${(captionBottom * 100).toFixed(2)}%` }}
         >
           <span
             className="line-clamp-2 leading-tight text-[var(--color-ink)] group-hover:text-[var(--color-accent)]"

@@ -247,6 +247,23 @@ const faceClip = (shape: SquareShape) => {
     g.radius,
   )} / ${pctOf(g.radius / CELL_H)})`;
 };
+/**
+ * Where a face sits inside its cell, vertically, as fractions of the
+ * cell's *height* — `bottom` is its lower edge, `height` its own.
+ *
+ * The comb writes a tile's caption into the tile, because a honeycomb has
+ * no room between cells for one. It sits a little up from the bottom of
+ * the cell, which is right for a hexagon: that is its narrow bottom edge.
+ * A face shorter than the cell ends higher than that, and a caption laid
+ * out against the cell lands on the part the clip throws away — which is
+ * why the caption and its scrim are placed against this instead.
+ */
+export function faceBand(shape?: SquareShape): { bottom: number; height: number } {
+  if (!shape) return { bottom: 0, height: 1 };
+  const h = SQUARE_GEOMETRY[shape].h / CELL_H;
+  return { bottom: (1 - h) / 2, height: h };
+}
+
 /** Each face as a clip-path on the cell — clips hit-testing too. */
 export const SQUARE_CLIP: Record<SquareShape, string> = {
   app: faceClip("app"),
