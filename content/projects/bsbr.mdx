@@ -4,17 +4,265 @@ date: 2025-03-28
 resume_description: "novel attention mechanism for near-linear processing of long sequences in transformers, using chunk-based attention with block retrieval. python, pytorch, transformers, research."
 endDate: 2025-03-29
 lane: building
-tags: [community]
-summary: "novel attention mechanism for efficient processing of long sequences in transformer architectures"
-hero: 
+tags: [attention, transformers, long-context, pytorch, python, research, benchmarks]
+summary: "Block Sparse attention with Block Retrieval: ordinary attention inside fixed-size chunks, and a meta-attention that retrieves between them from one compressed state vector per chunk — so the between-chunk term grows with n/B instead of n. A pip-installable PyTorch implementation, benchmarked against six other architectures."
+hero:
   src: /img/migrated/bsbr.jpeg
   alt: bsbr
-links: 
+links:
   github: https://github.com/JacobFV/bsbr
-  demo: https://jacobfv.github.io/bsbr/
+  docs: https://jacobfv.github.io/bsbr/
+  pypi: https://pypi.org/project/bsbr/
+influences: [attention-is-all-you-need]
+realizes: []
+critiques: []
 ---
-- "🔄 Efficient Processing: Near-linear complexity in sequence length"
-- "🧩 Chunk-Based Attention: Standard attention within chunks"
-- "🔍 Block Retrieval: Efficient information retrieval between chunks"
-- "🎯 Configurable: Adjustable chunk size and compression"
-- "💾 Memory Efficient: Optimized memory usage for long sequences"
+
+BSBR — Block Sparse attention with Block Retrieval — is an attention mechanism for
+long sequences, and a PyTorch implementation of it you can `pip install`. It keeps
+ordinary attention inside fixed-size chunks, and between chunks it retrieves from one
+compressed state vector per chunk, so the between-chunk term grows with the number of
+chunks rather than the number of tokens.
+
+It went out as a thread on 29 March 2025, which is [further down](#the-thread) in full.
+The rest of this page is what the thread says, at more length, plus the benchmark
+numbers — including the ones that did not go the way they were supposed to.
+
+## Problem
+
+Standard attention computes a score between every pair of tokens in the sequence:
+
+$$
+O = \mathrm{softmax}(QK^\top)V
+$$
+
+$QK^\top$ is $n \times n$. That is quadratic in the sequence length in both compute and
+memory, and it is the reason long context is expensive rather than merely long. Doubling
+the context quadruples the attention matrix.
+
+The field's answers mostly buy the complexity down by giving something up. Linear
+attention reassociates the matrix product to reach $O(n)$ and loses expressiveness on the
+way. Sliding-window attention restricts each token to a local neighbourhood, $O(n \cdot w)$,
+and simply cannot see past the window. Sparse patterns trade capacity for whichever
+sparsity structure you picked. The question BSBR asks is whether the local and the
+long-range parts have to be the same mechanism at all.
+
+## Solution
+
+Break the sequence into chunks of block size $B$. Then run two different things:
+
+- **Within a chunk**, ordinary softmax attention. Local context is the thing standard
+  attention is actually good at, and inside a chunk it costs $O(B^2)$ — which is a
+  constant once $B$ is fixed.
+- **Between chunks**, *retrieval*. Compress each chunk into a state vector (a flattened
+  $K^\top V$ for that chunk), then attend at the level of chunks with meta queries and
+  meta keys. There are $n/B$ chunks, so this term grows with $n/B$.
+
+Both halves land in one expression:
+
+$$
+O = Q \odot \mathrm{softmax}\!\left(RH^\top \cdot M_\text{out}\right) F.\mathrm{repeat}(B)
+\; + \; \mathrm{softmax}\!\left(QK^\top \cdot M_\text{in}\right) V
+$$
+
+The right-hand term is within-chunk attention under a within-chunk causal mask
+$M_\text{in}$. The left-hand term is the retrieval: $R$ and $H$ are the meta queries and
+keys that operate at chunk granularity, $M_\text{out}$ is the causal mask over chunks,
+$F$ holds the chunk states, and `.repeat(B)` broadcasts the retrieved chunk-level result
+back down over the $B$ tokens of the chunk it belongs to. $\odot$ is elementwise.
+
+<PullQuote>The question is whether the local and the long-range parts have to be the same mechanism at all.</PullQuote>
+
+The shape of the claim matters more than the constant: local attention stays exact, and
+the part that used to be quadratic becomes a retrieval over a summary whose length is the
+sequence divided by the block size.
+
+## How
+
+The package is on PyPI in three flavours — the core, the research extras, and the
+converters:
+
+```sh
+pip install bsbr
+pip install "bsbr[extras]"        # evaluation tools, visualisation
+pip install "bsbr[transformers]"  # pretrained-model conversion
+```
+
+A model is an ordinary `nn.Module`:
+
+```python
+import torch
+from bsbr import BSBRModel
+
+model = BSBRModel(
+    vocab_size=10000,
+    hidden_dim=512,
+    num_layers=4,
+    num_heads=8,
+    chunk_size=128,
+    ff_dim=2048,
+    dropout=0.1,
+)
+
+input_ids = torch.randint(0, 10000, (2, 256))
+attention_mask = torch.ones(2, 256)
+outputs = model(input_ids, attention_mask)
+```
+
+### The block size is the dial
+
+$B$ — `chunk_size` — is the hyperparameter the whole design turns on, and it trades three
+things against each other at once. Larger chunks hold more local context and cost more
+memory; smaller chunks are faster but put more of the sequence's relationships on the far
+side of a retrieval; and where the boundary falls decides which relationships the model
+can see exactly and which it sees through a summary. It is accepted by `BSBRModel`,
+`BSBRAttention` and `BSBRLayer` alike.
+
+### Two more knobs
+
+`compression_factor` sets how hard the chunk states are squeezed. Compressing further
+costs less memory and less time and keeps less of the fine structure of the chunk — the
+usual bargain, made explicit:
+
+```python
+model = BSBRModel(
+    chunk_size=128,
+    compression_factor=4,  # compress chunk states by 4x
+    ...
+)
+```
+
+`chunk_overlap` lets neighbouring chunks share tokens, which softens the attention
+discontinuity at a block boundary — the artefact you would expect from cutting a sequence
+into pieces and treating the cut as a wall:
+
+```python
+model = BSBRModel(
+    chunk_size=128,
+    chunk_overlap=32,  # 25% overlap between chunks
+    ...
+)
+```
+
+Beyond the attention itself the implementation reuses state across layers and specialises
+the attention masks for the autoregressive case. Streaming-first work — the case where a
+model is producing tokens for hours and the context never stops growing — is the
+direction it was pointed at, and is not done.
+
+### Converting a pretrained model
+
+A new attention mechanism with no pretrained weights is a paper, not a tool. There are no
+BSBR checkpoints; what there is instead is `bsbr_transformers`, which rebuilds a
+Hugging Face model with BSBR attention in place of its own:
+
+```python
+from transformers import GPT2LMHeadModel, AutoTokenizer
+from bsbr_transformers.gpt2_converter import convert_to_bsbr
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+original_model = GPT2LMHeadModel.from_pretrained(model_name).to(device)
+
+bsbr_model = convert_to_bsbr(model_name, chunk_size=chunk_size).to(device)
+```
+
+GPT-2 is the converter that exists. Others were planned.
+
+## Tests
+
+The comparison is seven architectures at matched hyperparameters — hidden dim 256, 4
+heads, 2 layers where applicable — run at sequence lengths 64, 128, 256, 512 and 1024, on
+an Intel Core i9 CPU, against bsbr 0.1.2: BSBR, a standard transformer, linear attention,
+DeltaNet, a sliding-window transformer, a Hopfield network and a Gated Attention Unit.
+Empirical complexity is a power-law fit to the measured inference times rather than an
+asymptotic claim.
+
+A separate evaluation converts a pretrained GPT-2 to BSBR and compares the converted
+model against the original on scaling, output similarity and next-token agreement.
+
+The docs' training, task-specific and hardware-utilisation sections are marked as
+placeholder data, and nothing from them is quoted here.
+
+## Results
+
+Inference time in seconds, CPU:
+
+| Model | n=64 | n=128 | n=256 | n=512 | n=1024 | fit |
+|---|---:|---:|---:|---:|---:|---|
+| **BSBR** | 0.462 | 0.560 | 0.753 | 1.570 | **3.092** | $O(n^{0.70})$ |
+| Standard | 0.254 | 0.334 | 0.453 | 0.908 | **2.538** | $O(n^{0.81})$ |
+| Hopfield | 0.255 | 0.365 | 0.478 | 0.937 | 2.568 | $O(n^{0.80})$ |
+| SlidingWindow | 0.514 | 0.748 | 1.289 | 2.442 | 5.568 | $O(n^{0.86})$ |
+| Linear | 1.570 | 2.742 | 4.896 | 8.879 | 17.322 | $O(n^{0.86})$ |
+| GAU | 0.488 | 0.880 | 1.950 | 5.381 | 17.649 | $O(n^{1.30})$ |
+| DeltaNet | 8.085 | 13.31 | 23.71 | 46.166 | 92.276 | $O(n^{0.88})$ |
+
+Against the other efficient-attention baselines this is a rout: BSBR is 5.6× faster than
+linear attention at n=1024, 5.7× faster than GAU, 30× faster than DeltaNet, and 1.8×
+faster than sliding-window.
+
+Against the thing it is supposed to replace, it is **not**. The standard transformer is
+faster at every length measured, and BSBR carries 6.0M parameters against the standard's
+3.6M (1.66×) and 22.83 MB of peak memory against 13.80 MB. The one number pointing the
+right way is the exponent — BSBR's 0.70 against standard's 0.81 — and n ≤ 1024 on a CPU is
+nowhere near long enough for an asymptotic advantage to pay off the constant. The
+benchmark page says so itself rather than rounding the fit up into a headline.
+
+The conversion evaluation went worse, and is worth stating plainly. Scaling came out
+*backwards*: the original transformer at $O(n^{0.34})$ against the converted BSBR at
+$O(n^{0.55})$, which the write-up flags as contrary to expectations. And the converted
+model does not behave like the model it came from — negative cosine similarity between
+their outputs and **0% agreement on next-token predictions**. Transplanting attention into
+trained weights is not a weight-shape problem; those weights learned against a particular
+attention, and swapping it out is a change the weights have not seen.
+
+So the honest summary is the one the docs give: BSBR conversion suits very long context
+where approximate outputs are acceptable, and the crossover against a standard
+transformer was not demonstrated at the lengths measured.
+
+## Lessons
+
+**A complexity class is a promise about the limit, not about your sequence length.**
+$O(n/B)$ beats $O(n^2)$ eventually, and "eventually" is a real quantity with a real value,
+and on a CPU at n=1024 that value had not arrived. The block retrieval adds parameters
+(1.66×), memory (1.65×) and per-chunk bookkeeping up front, and the asymptotics have to
+earn all of it back before the first token of advantage. Benchmarking only against the
+other efficient-attention mechanisms would have looked like a win; benchmarking against
+the plain transformer is what made the picture true.
+
+**Converted weights are not ported weights.** 0% next-token agreement is not a bug in the
+converter — it is the measurement telling you that a pretrained model's weights encode
+assumptions about the attention they were trained under. The converter is still the right
+tool to have built, because it is the only way to ask the question at all; the mistake
+would have been shipping it without the evaluation that says what it actually produces.
+
+**Publishing the negative result is the cheapest thing on this page and the most useful.**
+The benchmark tables, the backwards scaling and the 0% agreement all live in the docs
+site, next to the claim they complicate. Anyone deciding whether to spend a week on BSBR
+can find out in five minutes that the answer today is "only if your sequences are very
+long and approximate is acceptable" — which is worth more than a page of favourable
+graphs would have been.
+
+## The thread
+
+The announcement, in full.
+
+<XPost
+  caption="The BSBR announcement thread, 29 March 2025"
+  columns={2}
+  urls={[
+    "https://x.com/jvboid/status/1905931398961127820",
+    "https://x.com/jvboid/status/1906056495814307949",
+    "https://x.com/jvboid/status/1906056501719953468",
+    "https://x.com/jvboid/status/1906056508602765774",
+    "https://x.com/jvboid/status/1906056515192328598",
+    "https://x.com/jvboid/status/1906056522041582067",
+    "https://x.com/jvboid/status/1906056529008079170",
+    "https://x.com/jvboid/status/1906056531834990820",
+    "https://x.com/jvboid/status/1906056538332201129",
+    "https://x.com/jvboid/status/1906056545315536905",
+  ]}
+/>
+
+The work it starts from is Shengding Hu's
+[streaming models for efficient long-context reasoning](https://shengdinghu.github.io/blogs/streaming_model/),
+which is the post the thread ends by pointing at.
