@@ -46,6 +46,18 @@ structured page, the engine's own layout and text shaping turned it into a scene
 a CPU rasterizer wrote the RGBA. The same call in Python, in Node and in Rust produces
 the same bytes.
 
+And here are the machines themselves, not pictures of them. The frame below is
+Computerworld's own slideshow — the engine compiled to WebAssembly, running in your
+tab, with a world of its own per scene. The desktop in the middle is live and takes
+the mouse and the keyboard; the arrows and the ticks walk the rest. Nothing is
+fetched after it boots: every frame you see is rendered here.
+
+<LiveDemo
+  url="https://jacobfv.github.io/computerworld/embed.html#code-debug"
+  title="Computerworld's machines, running in this frame"
+  caption="The slideshow from computerworld's own front page, embedded. Click a machine to bring it to the middle; it boots there and takes your input."
+/>
+
 ## Problem
 
 Computer-use agents are trained and evaluated against real computers, and real
@@ -86,12 +98,6 @@ determined by its inputs, and three things follow immediately:
 - **Free labels.** `scene(w, h)` returns every window, widget and text run with its
   bounds *before* rasterization, so a rendered frame arrives with its own ground
   truth. No annotation pass, and no annotation error.
-
-<LiveDemo
-  url="https://jacobfv.github.io/computerworld/"
-  title="Computerworld running in the page"
-  caption="The engine itself, compiled to WebAssembly and running in this frame — machines, desktops and the synthetic internet, with no backend."
-/>
 
 ## How
 
