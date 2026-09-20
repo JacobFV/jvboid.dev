@@ -430,7 +430,7 @@ export function packHoneycomb<T>({
 // Deterministic — same input, same output — so the server-rendered frame
 // and the client's agree.
 
-export type SettleShape = "hex" | "app" | "square" | "tv";
+export type SettleShape = "hex" | "app" | "square" | "tv" | "screen";
 /** Each non-hexagon face's outline, in units of its cell's width, centred on the cell. */
 export type FaceOutlines = Record<Exclude<SettleShape, "hex">, [number, number][]>;
 

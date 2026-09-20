@@ -27,6 +27,10 @@ const initialProjectAdjacency = [
 const featuredProjectOrder = [
   "ibm-1",
   "sc-wbd",
+  // Straight after the brain-model pair, which `initialProjectAdjacency`
+  // keeps welded together: the third of the projects carrying the page,
+  // and the other 3× tile on the comb.
+  "computerworld",
   "chem-0",
   "trash-sorter",
   "lunar-rover",

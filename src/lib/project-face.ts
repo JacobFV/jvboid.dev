@@ -43,6 +43,11 @@ const projectMosaicCols: Record<string, number> = {
   // mosaic of it would be a mosaic of one thing. 1 falls through to the
   // plain hero face.
   "cookie-baker-3d-printer": 1,
+  // Computerworld's tile is a screen (see `screenIds`), and a screen shows
+  // one screen. A mosaic of four desktops inside a 16:10 rectangle reads as
+  // a contact sheet; the single hero reads as a machine. 1 falls through to
+  // the plain hero face.
+  computerworld: 1,
 };
 
 // Honeycomb tile size per project, in multiples of the base hexagon.
@@ -56,9 +61,12 @@ const projectMosaicCols: Record<string, number> = {
 // what decides how many pixels a face is baked at: see HEX_UNIT_W in
 // scripts/generate-hex-tiles.ts.
 const hexSizeById: Record<string, HexSize> = {
-  // The only 3× on the page: the implicit brain model, the lead project, with
-  // the rendered brain at the centre of its mosaic.
+  // The two 3× tiles on the page. IBM-1 is the implicit brain model, the lead
+  // project, with the rendered brain at the centre of its mosaic; Computerworld
+  // is the deterministic computer world, and its face is a screen — a 3× cell is
+  // the smallest one a desktop reads as a desktop rather than as a grey smear.
   "ibm-1": 3,
+  computerworld: 3,
   // Its predecessor and sibling, the whole-brain dynamics model — four public
   // checkpoints, a paper and a site of its own.
   "sc-wbd": 2,
@@ -128,7 +136,12 @@ const squareIds = new Set(["bsbr", "jnumpy", "tensor-computer", "tensacode"]);
 // The animations, framed as what they were made to be watched on.
 const tvIds = new Set(["polonius-as-a-fool", "the-right-night-light", "looking-for-princess-suzzane"]);
 
-export type TileShape = "hex" | "app" | "square" | "tv";
+// Projects whose subject is a screen. Computerworld renders desktops at
+// 16:10, and its tile is that frame at its largest — the face is a
+// machine, so the tile is the shape of one.
+const screenIds = new Set(["computerworld"]);
+
+export type TileShape = "hex" | "app" | "square" | "tv" | "screen";
 /** Every face that is not the hexagon. */
 export type SquareShape = Exclude<TileShape, "hex">;
 
@@ -136,6 +149,7 @@ export function projectTileShape(id: string): TileShape {
   if (appIconIds.has(id)) return "app";
   if (squareIds.has(id)) return "square";
   if (tvIds.has(id)) return "tv";
+  if (screenIds.has(id)) return "screen";
   return "hex";
 }
 
@@ -150,6 +164,12 @@ export function projectTileShape(id: string): TileShape {
 //   tv     — a 4:3 squircle (superellipse, n = 4), the shape of an old CRT
 //            screen, like the Related viewer's; 0.80 × 0.60W, just inside
 //            the 0.8085 × 0.6064W at which it touches the diagonals.
+//   screen — a 16:10 rectangle, the aspect the machines in Computerworld
+//            render at. A centred box of half-width a and half-height b
+//            clears the flat-top hexagon's diagonals while a ≤ W/2 − b/√3,
+//            which at 16:10 caps the width at 0.7348W; 0.73 sits just
+//            under that, and the corners are barely rounded, as a screen's
+//            are.
 // `radius` is what the page transition rounds a face's box by as it opens.
 export const SQUARE_GEOMETRY: Record<
   SquareShape,
@@ -158,6 +178,7 @@ export const SQUARE_GEOMETRY: Record<
   app: { w: 0.72, h: 0.72, radius: 0.158 },
   square: { w: 0.634, h: 0.634, radius: 0.012 },
   tv: { w: 0.8, h: 0.6, radius: 0.13, squircle: 4 },
+  screen: { w: 0.73, h: 0.456, radius: 0.016 },
 };
 export const APP_ICON_SIDE = SQUARE_GEOMETRY.app.w;
 export const APP_ICON_RADIUS = SQUARE_GEOMETRY.app.radius;
@@ -210,6 +231,7 @@ export const FACE_OUTLINES: Record<SquareShape, [number, number][]> = {
   app: faceOutline("app"),
   square: faceOutline("square"),
   tv: faceOutline("tv", 1),
+  screen: faceOutline("screen"),
 };
 
 // A rounded square is a clean `inset()`; the squircle has no CSS primitive,
@@ -230,6 +252,7 @@ export const SQUARE_CLIP: Record<SquareShape, string> = {
   app: faceClip("app"),
   square: faceClip("square"),
   tv: faceClip("tv"),
+  screen: faceClip("screen"),
 };
 
 export type FaceImage = { src: string; alt: string };

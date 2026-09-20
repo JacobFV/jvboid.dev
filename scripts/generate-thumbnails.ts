@@ -56,8 +56,11 @@ import {
   meanTint,
   projectFacePlan,
   projectHexSize,
+  projectTileShape,
+  SQUARE_GEOMETRY,
   type FaceImage,
   type FacePlan,
+  type TileShape,
   type TileArt,
 } from "../src/lib/project-face";
 import type { CoverArtSrc } from "../src/lib/cover-art";
@@ -268,6 +271,7 @@ async function bakeTile(
   plan: FacePlan,
   w: number,
   h: number,
+  shape: TileShape,
   previous: ManifestEntry | undefined,
 ): Promise<{ entry: ManifestEntry; wrote: boolean } | null> {
   const images = facePlanImages(plan);
@@ -277,7 +281,7 @@ async function bakeTile(
   if (stamps.every((s) => s === null)) return null;
 
   const key = createHash("sha1")
-    .update(JSON.stringify({ plan, w, h, webp: WEBP, stamps }))
+    .update(JSON.stringify({ plan, w, h, shape, webp: WEBP, stamps }))
     .digest("hex")
     .slice(0, 16);
 
@@ -292,13 +296,37 @@ async function bakeTile(
     return { entry: previous, wrote: false };
   }
 
+  // Most faces are drawn across the whole cell and clipped down to their
+  // shape, which crops the art — fine for an app icon, where the subject
+  // is in the middle anyway. A `screen` face is the exception: the art
+  // *is* a screen, at the same 16:10 the rectangle is, so cropping it
+  // would cut the desktop it exists to show. Draw it at the rectangle's
+  // own size and pad out transparently to the cell, and the clip lands
+  // exactly on the edges of the picture.
+  const box = shape === "screen" ? SQUARE_GEOMETRY.screen : null;
+
   const written: string[] = [];
   for (const [density, outSrc] of [
     [1, src],
     [2, src2x],
   ] as const) {
-    const face = await drawFace(plan, w * density, h * density);
+    const cellW = w * density;
+    const cellH = h * density;
+    const faceW = box ? Math.round(box.w * cellW) : cellW;
+    const faceH = box ? Math.round(box.h * cellW) : cellH;
+    let face = await drawFace(plan, faceW, faceH);
     if (!face) return null;
+    if (box) {
+      const x = cellW - faceW;
+      const y = cellH - faceH;
+      face = sharp(await face.png().toBuffer()).extend({
+        left: Math.floor(x / 2),
+        right: Math.ceil(x / 2),
+        top: Math.floor(y / 2),
+        bottom: Math.ceil(y / 2),
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      });
+    }
     const outPath = path.join(PUBLIC_DIR, outSrc);
     await mkdir(path.dirname(outPath), { recursive: true });
     await face.webp(WEBP).toFile(outPath);
@@ -433,7 +461,7 @@ async function bakeHexTiles(): Promise<string> {
     const h = Math.round(w * HEX_RATIO);
     const plan = projectFacePlan(node);
     try {
-      const baked = await bakeTile(node.id, plan, w, h, previous[node.id]);
+      const baked = await bakeTile(node.id, plan, w, h, projectTileShape(node.id), previous[node.id]);
       return baked ? ([node.id, baked] as const) : null;
     } catch (error) {
       console.warn(`[thumbs] tile ${node.id}: ${(error as Error).message}`);
