@@ -13,6 +13,17 @@
     "likes": 83,
     "replies": 18
   },
+  "1735511851465650299": {
+    "url": "https://x.com/jvboid/status/1735511851465650299",
+    "authorName": "Jacob",
+    "authorHandle": "@jvboid",
+    "avatar": "/assets/media/x/avatars/jvboid.jpg",
+    "verified": true,
+    "date": "2023-12-15",
+    "text": "The main idea of an exocortex is that it's another layer of intelligence on top of your existing layers. \n\nSee from a conceptual perspective, the brain can sometimes be viewed in terms of layers. Our neocortex is only called a neo-cortex and not neo-something-else because the",
+    "truncated": true,
+    "replies": 1
+  },
   "1752780625487036864": {
     "url": "https://x.com/jvboid/status/1752780625487036864",
     "authorName": "Jacob",
@@ -309,6 +320,20 @@
     "truncated": true,
     "photos": [
       "/assets/media/x/1906056501719953468-1.jpg"
+    ],
+    "likes": 4,
+    "replies": 1
+  },
+  "1906056508602765774": {
+    "url": "https://x.com/jvboid/status/1906056508602765774",
+    "authorName": "Jacob",
+    "authorHandle": "@jvboid",
+    "avatar": "/assets/media/x/avatars/jvboid.jpg",
+    "verified": true,
+    "date": "2025-03-29",
+    "text": "You can take advantage of these insights using the bsbr python library. Just pip install bsbr!",
+    "photos": [
+      "/assets/media/x/1906056508602765774-1.jpg"
     ],
     "likes": 4,
     "replies": 1
@@ -633,5 +658,19 @@
     "text": "(5/5): what i want to emphasize from this weekend is that the bottleneck for embodied intelligence rn is probably not “reasoning” in the abstract\n\nit’s calibration, instrumentation, feedback architecture, and the enormous hidden labor required to turn any unstructured region of",
     "truncated": true,
     "likes": 4
+  },
+  "2092617486042566911": {
+    "url": "https://x.com/jvboid/status/2092617486042566911",
+    "authorName": "Jacob",
+    "authorHandle": "@jvboid",
+    "avatar": "/assets/media/x/avatars/jvboid.jpg",
+    "verified": true,
+    "date": "2026-08-26",
+    "text": "goodbye twin brother. thank you so much for everything we’ve shared. i promise to use my time to the fullest",
+    "photos": [
+      "/assets/media/x/2092617486042566911-1.jpg"
+    ],
+    "likes": 6485,
+    "replies": 108
   }
 }
