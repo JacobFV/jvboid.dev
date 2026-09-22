@@ -191,6 +191,26 @@ const nextConfig = {
         destination: "https://commandagi.github.io/canvas-engineering/:path*",
         permanent: false,
       },
+      // IBM-1 moved to the Super-Cognition-Labs org, which moved its GitHub
+      // Pages site with it: jacobfv.github.io/IBM-1/ is a hard 404 now, and
+      // GitHub does not forward Pages across a transfer the way it forwards
+      // repository URLs. That dead URL is printed in the paper, the README and
+      // a year of links, and it arrives here as /IBM-1/ because the old domain
+      // forwards every path verbatim to jvboid.dev — so this is the rule that
+      // actually answers it. Case-sensitive on purpose: the published URL is
+      // "IBM-1", and lowercase /ibm-1 is a flat legacy route that 404s by
+      // design. Temporary, because the destination will become
+      // supercognition.dev once that exists.
+      {
+        source: "/IBM-1",
+        destination: "https://super-cognition-labs.github.io/IBM-1/",
+        permanent: false,
+      },
+      {
+        source: "/IBM-1/:path*",
+        destination: "https://super-cognition-labs.github.io/IBM-1/:path*",
+        permanent: false,
+      },
     ];
   },
 };
