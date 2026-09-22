@@ -196,7 +196,7 @@ export default function HomePage() {
           bio: (
             <>
               Training <BioLink href="https://sc-wbd.pages.dev/">SC-WBD-00X</BioLink> +{" "}
-              <BioLink href="https://jacobfv.github.io/IBM-1/">IBM</BioLink> brain prediction and
+              <BioLink href="https://super-cognition-labs.github.io/IBM-1/">IBM</BioLink> brain prediction and
               decoding models for{" "}
               <BioLink href="https://supercognitionlabs.com/">SuperCognition Labs</BioLink>. Building
               Agentic + Robotics Infrastructure at{" "}
