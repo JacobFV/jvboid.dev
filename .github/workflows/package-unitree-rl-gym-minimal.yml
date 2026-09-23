@@ -1,0 +1,63 @@
+name: package minimal Unitree RL Gym assets
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/package-unitree-rl-gym-minimal.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/package-unitree-rl-gym-minimal.yml"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone and package official pretrained locomotion runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+          cd /tmp
+          GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 https://github.com/unitreerobotics/unitree_rl_gym.git
+          git -C unitree_rl_gym lfs pull || true
+          mkdir -p /tmp/minimal/unitree_rl_gym/deploy /tmp/minimal/unitree_rl_gym/resources/robots
+          cp -a unitree_rl_gym/deploy/pre_train /tmp/minimal/unitree_rl_gym/deploy/
+          cp -a unitree_rl_gym/deploy/deploy_mujoco /tmp/minimal/unitree_rl_gym/deploy/
+          cp -a unitree_rl_gym/resources/robots/g1_description /tmp/minimal/unitree_rl_gym/resources/robots/
+          if [ -d unitree_rl_gym/resources/robots/go2_description ]; then
+            cp -a unitree_rl_gym/resources/robots/go2_description /tmp/minimal/unitree_rl_gym/resources/robots/
+          fi
+          git -C unitree_rl_gym rev-parse HEAD > /tmp/minimal/unitree_rl_gym-commit.txt
+          find /tmp/minimal -type f -printf '%s %p\n' | sort -n > /tmp/minimal/asset-index.txt
+          find /tmp/minimal -type f \( -name '*.pt' -o -name '*.onnx' -o -name '*.pth' \) -printf '%s %p\n' | sort -n > /tmp/minimal/policy-index.txt
+          cat /tmp/minimal/policy-index.txt
+          tar -czf /tmp/unitree-rl-gym-minimal.tar.gz -C /tmp/minimal .
+          sha256sum /tmp/unitree-rl-gym-minimal.tar.gz > /tmp/unitree-rl-gym-minimal.tar.gz.sha256
+          du -sh /tmp/minimal /tmp/unitree-rl-gym-minimal.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-rl-gym-minimal
+          path: |
+            /tmp/unitree-rl-gym-minimal.tar.gz
+            /tmp/unitree-rl-gym-minimal.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-rl-gym-index
+          path: |
+            /tmp/minimal/asset-index.txt
+            /tmp/minimal/policy-index.txt
+            /tmp/minimal/unitree_rl_gym-commit.txt
+          if-no-files-found: error
+          retention-days: 14

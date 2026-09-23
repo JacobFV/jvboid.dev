@@ -1,0 +1,68 @@
+name: package official Unitree Lab policy files
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/package-unitree-lab-policy-files.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/package-unitree-lab-policy-files.yml"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone and package policy-bearing files
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git-lfs rsync
+          git lfs install
+          mkdir -p /tmp/unitree-lab-src /tmp/unitree-lab-minimal
+          cd /tmp/unitree-lab-src
+          for repo in unitree_rl_lab unitree_rl_mjlab; do
+            GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 "https://github.com/unitreerobotics/${repo}.git"
+            git -C "$repo" lfs pull || true
+            git -C "$repo" rev-parse HEAD > "/tmp/unitree-lab-minimal/${repo}-commit.txt"
+            mkdir -p "/tmp/unitree-lab-minimal/$repo"
+            cd "/tmp/unitree-lab-src/$repo"
+            find . -type f \( \
+                -name '*.pt' -o -name '*.pth' -o -name '*.onnx' -o -name '*.onnx.data' \
+                -o -name '*.yaml' -o -name '*.yml' -o -name '*.xml' -o -name '*.npz' \
+                -o -name '*.py' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \
+              \) -print0 | rsync -a --from0 --files-from=- ./ "/tmp/unitree-lab-minimal/$repo/"
+            cd /tmp/unitree-lab-src
+          done
+          cd /tmp/unitree-lab-minimal
+          find . -type f -printf '%s %p\n' | sort -n > asset-index.txt
+          find . -type f \( -name '*.pt' -o -name '*.pth' -o -name '*.onnx' -o -name '*.onnx.data' \) -printf '%s %p\n' | sort -n > policy-index.txt
+          cat policy-index.txt
+          tar -czf /tmp/unitree-lab-policy-files.tar.gz .
+          sha256sum /tmp/unitree-lab-policy-files.tar.gz > /tmp/unitree-lab-policy-files.tar.gz.sha256
+          du -sh /tmp/unitree-lab-minimal /tmp/unitree-lab-policy-files.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-lab-policy-files
+          path: |
+            /tmp/unitree-lab-policy-files.tar.gz
+            /tmp/unitree-lab-policy-files.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unitree-lab-policy-index
+          path: |
+            /tmp/unitree-lab-minimal/asset-index.txt
+            /tmp/unitree-lab-minimal/policy-index.txt
+            /tmp/unitree-lab-minimal/*-commit.txt
+          if-no-files-found: error
+          retention-days: 14
