@@ -1,0 +1,54 @@
+---
+title: Tensegra
+date: 2026-09-22
+lane: research
+tags: [neurosymbolic-ai, agents, transformers, graph-learning, metacognition, pytorch]
+summary: "Making agent computation reusable, inspectable, and sensitive to cost: programmable attention geometry, explicit dependency state, and a recurrent neural–symbolic workspace for deciding what to compute, what to trust, and when to stop."
+resume_description: "research infrastructure for graph-conditioned attention, protected symbolic execution, and cost-sensitive agent control; paired experiments, counterfactual diagnostics, and audited checkpoints. python, pytorch, typed graphs, recurrent computation."
+hero:
+  src: /assets/img/projects/tensegra-crystallization.svg
+  alt: "Latent tensor components project into a faceted symbolic workspace, execute across recurrent microsteps, and return as typed information to the evolving latent state"
+  fit: contain
+links:
+  github: https://github.com/JacobFV/tensegra
+  site: https://huggingface.co/datasets/jacob-valdez/tensegra-pro6000-campaigns-03-07-archive
+influences: [multi-graph-former-project]
+---
+
+**Reliable agents need to spend computation where it changes a decision, preserve valid work across changing dependencies, and expose enough internal structure to diagnose expensive mistakes.** Tensegra targets the engineering costs behind repeated tool calls, stale intermediate results, opaque reasoning traces, and brittle task transfer. It is a research system for making attention, memory, symbolic execution, and compute allocation explicit experimental variables, with the practical objective of improving verified task utility per unit of work.
+
+[GitHub — implementation and research record](https://github.com/JacobFV/tensegra) · [Hugging Face — campaign analyses and checkpoint archive](https://huggingface.co/datasets/jacob-valdez/tensegra-pro6000-campaigns-03-07-archive)
+
+## Problem
+
+A long-running agent must distinguish information that remains applicable from information whose premises have changed. It must decide whether another inference, retrieval, probe, or exact computation is worth its cost, then carry the result into subsequent decisions. Token history alone does not provide an explicit contract for identity, dependency validity, execution authority, or stopping. Tensegra studies those contracts directly: which relations a model can read, which state it can mutate, what constitutes a valid reusable result, and how a computation changes downstream behavior. Workflow automation, dependency-aware planning, and tool-using assistants are the intended application contexts; the experimental substrate consists of controlled synthetic environments.
+
+## Solution
+
+Tensegra, formerly Topoformer, combines programmable attention geometry with a recurrent workspace and protected execution interfaces. Continuous latent state can propose a local typed computation; a guarded runtime performs an admissible transition; an encoded return becomes input to subsequent latent updates. The same workspace is refined across microsteps rather than materializing every intermediate operation as a new external token. “Crystallization” names the boundary where a diffuse candidate becomes an explicit operation with stable operands and execution semantics; “melting” names the learned reintegration of its return into distributed state.
+
+![Conceptual execution cycle: distributed latent components are projected into typed candidates, crystallize into a protected symbolic dependency graph, execute over multiple recurrent microsteps, and return to the continuing latent stream. The drawing describes the intended interface, not a measured activation trajectory.](/assets/img/projects/tensegra-crystallization.svg)
+
+## How
+
+**Attention as an interface to structure.** Runtime graphs store stable entity IDs, identity embeddings, directed relation matrices, and padding masks independently of token order. Separate query and key groundings map latent slots onto entities, including an edge-free null binding. For relation $r$, the induced token-space bias is $B_r=P_qA_rP_k^\top$; relation strengths modulate attention logits before normalization. Soft biases retain otherwise legal reads, while hard masks restrict reads to permitted edges and self-connections. Recomputing grounding from evolving residual state lets the content of a query change which symbolic neighborhood it addresses.
+
+**Local commitment and exact execution.** Candidate-local proposals separate the operation, argument references, type constraints, and readiness decision. Protected identity state and append-only execution records provide a boundary between learned matching and authoritative state transitions. A typed return adapter feeds execution results back into the recurrent workspace; downstream probes distinguish producing the right symbolic value from retaining and using that value. Explicit pointer writes, oracle traces, and learned transitions are tracked as different interventions because each supplies a different amount of computation.
+
+**Computation as a decision problem.** Later campaigns move from graph traversal and arithmetic interfaces to changing dependency graphs and partially observed strategy selection. Controllers choose among computation, retrieval, validation, reuse, probing, revision, and stopping. Task utility charges resource consumption against verified success. Stored results carry applicability information, making reuse conditional on the current dependency state rather than merely on retrieval similarity. Separate budgets and process receipts account for CPU work and the campaign-specific GPU accounting convention.
+
+## Tests
+
+The experimental harness uses paired initial weights, matched batch schedules, disjoint procedural seeds, frozen configurations, and validation-based selection. Controls remove or permute relations, replace learned grounding with explicit bindings, intervene on returns, and compare neural consumers under matched training contracts. Later diagnostics separate acquisition of a factor representation, causal use of that representation, and discrimination of situations that actually require a changed action. Counterfactual octets vary combinations of factors; flip, invariance, and near-miss populations prevent a generally more conservative policy from being mistaken for better reasoning. Independent audit scripts reconstruct reported endpoints from raw rows, with per-seed contrasts and hierarchical bootstrap intervals where specified.
+
+## Results
+
+The implementation spans structural-attention primitives, recurrent binding and execution modules, procedural worlds, training runners, and mechanism-level analysis tools. The [570-run Stage 2 study](https://github.com/JacobFV/tensegra/blob/main/research/stages/stage-02/stage2-report.md) establishes a substantial controlled evaluation surface. In [Campaign03](https://github.com/JacobFV/tensegra/blob/main/research/campaigns/extended-03/report-P1.md), imitation-trained bootstrap policies with full dependency inputs achieved 0.93–0.98 sealed IID success with near-zero invalid reuse. Those measurements concern the bootstrap endpoints and supplied applicability relations, not an end-to-end production system. The later campaigns add a diagnostic vocabulary for separating representation quality, training-induced behavior, and the actual use of explicit factors.
+
+**Current limits.** Autonomous acquisition and return reintegration remain unresolved in the recurrent execution studies; subsequent RL degraded competent bootstrap policies, and the final campaign found no consumer repair that passed its composition gate and replicated. The environments are synthetic, with supplied structural and semantic interfaces, so these results do not establish production savings or general autonomous symbolic reasoning. These boundaries are documented in the [Stage 6 report](https://github.com/JacobFV/tensegra/blob/main/research/stages/stage-06/stage6-report.md) and [Campaign07 report](https://github.com/JacobFV/tensegra/blob/main/research/campaigns/extended-07/report.md).
+
+## Lessons
+
+The engineering deliverable is a way to localize where an agent's computation earns its cost: perception into a usable representation, binding into a valid operation, execution into a correct return, and reintegration into a better decision. Each boundary has a replaceable implementation and an intervention that can test whether it matters. That makes architecture selection and training investment more concrete: compare a proposed learned controller against a strong simple strategy, measure the remaining headroom, and require a causal link between an intermediate representation and task utility before expanding the model.
+
+The [research index](https://github.com/JacobFV/tensegra/tree/main/research) connects protocols, reports, and audits to their implementation. The [public Hugging Face archive](https://huggingface.co/datasets/jacob-valdez/tensegra-pro6000-campaigns-03-07-archive) preserves the campaign03–07 analyses and checkpoint artifacts, source snapshots, and environment metadata for follow-up work.
