@@ -26,6 +26,7 @@ import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
 import { Draft } from "./Draft";
 import { PhaserDiagram } from "./PhaserDiagram";
+import { TensegraComputation } from "./TensegraComputation";
 import { EchoBottlenecks } from "./echo/EchoBottlenecks";
 import { EchoLoop } from "./echo/EchoLoop";
 import { EchoCompletion } from "./echo/EchoCompletion";
@@ -252,6 +253,7 @@ export const readerComponents: MDXComponents = {
   EchoClock,
   // The PHASER post's signal path, in the same hairline idiom.
   PhaserDiagram,
+  TensegraComputation,
   // Page-scoped dressing: the worlds. Placed by a body, like everything else
   // here — nothing is hoisted from frontmatter. The route table lives in
   // lib/worlds.ts and the shared hooks in reader/atmosphere.ts.
