@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Globe } from "lucide-react";
 import { SocialGlyph } from "@/components/chrome/SocialGlyphs";
 import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 import {
@@ -7,8 +8,9 @@ import {
   formatResumeDate,
   githubRepo,
   resumeAwards,
+  showcaseLink,
   onResume,
-  resumeBlurb,
+  resumeBlurbParts,
   resumeMeta as meta,
   resumePdfHref,
 } from "@/lib/resume-data";
@@ -202,6 +204,7 @@ export default function ResumePage() {
         <ul className="grid gap-1.5">
           {projects.map((n) => {
             const repo = githubRepo(n);
+            const showcase = showcaseLink(n);
             return (
               <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
                 <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
@@ -214,7 +217,22 @@ export default function ResumePage() {
                   >
                     {n.title}
                   </Link>
-                  : {resumeBlurb(n)}
+                  {": "}
+                  {resumeBlurbParts(n).map((part, i) =>
+                    typeof part === "string" ? (
+                      part
+                    ) : (
+                      <a
+                        key={i}
+                        href={part.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                      >
+                        {part.text}
+                      </a>
+                    ),
+                  )}
                   {resumeAwards(n).map((a) => (
                     <span key={a.href}>
                       {" "}
@@ -242,6 +260,22 @@ export default function ResumePage() {
                           <SocialGlyph name="github" />
                         </span>
                         {repo.slug}
+                      </a>
+                    </>
+                  )}
+                  {showcase && (
+                    <>
+                      {" "}
+                      <a
+                        href={showcase.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-baseline gap-1 whitespace-nowrap font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline hover:text-[var(--color-accent)]"
+                      >
+                        <span className="self-center">
+                          <Globe className="h-[0.95em] w-[0.95em]" strokeWidth={2} aria-hidden />
+                        </span>
+                        {showcase.label}
                       </a>
                     </>
                   )}

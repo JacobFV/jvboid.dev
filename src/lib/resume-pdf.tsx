@@ -12,8 +12,9 @@ import {
   formatResumeDate,
   githubRepo,
   resumeAwards,
+  showcaseLink,
   onResume,
-  resumeBlurb,
+  resumeBlurbParts,
   resumeMeta as meta,
 } from "./resume-data";
 
@@ -113,18 +114,20 @@ const styles = StyleSheet.create({
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   projAward: { color: colors.ink, fontFamily: "Helvetica-Bold", textDecoration: "underline" },
   projRepo: { color: colors.inkMute, textDecoration: "none" },
-  projRepoMark: { fontFamily: "GithubMark" },
+  projIcon: { fontFamily: "ResumeIcons" },
+  projInlineLink: { color: colors.ink, textDecoration: "underline" },
 });
 
-// The octocat as a one-glyph font (U+E000), built from the site's own
-// GitHub glyph in SocialGlyphs with fontTools. An inline <Image> can't be
-// kept on the same line as the repo name; a glyph can (see the penalty on
-// ProjectItem). Its advance width carries the gap before the name.
+// Icons are glyphs in a small font built by scripts/build-resume-icon-font.py
+// (the octocat is the site's own, from SocialGlyphs). An inline <Image> can't
+// be kept on the same line as its label; a glyph can (see the penalty on
+// ProjectItem). Each glyph's advance width carries the gap before the label.
 Font.register({
-  family: "GithubMark",
-  src: path.join(process.cwd(), "src/lib/resume-fonts/github-mark.ttf"),
+  family: "ResumeIcons",
+  src: path.join(process.cwd(), "src/lib/resume-fonts/resume-icons.ttf"),
 });
 const GITHUB_MARK = "\uE000";
+const GLOBE = "\uE001";
 
 // The layout engine reads `hyphenationPenalty` off a Text's props, but
 // @react-pdf/renderer's TextProps type doesn't declare it.
@@ -132,6 +135,7 @@ const NO_SEAM_BREAKS = { hyphenationPenalty: 10000 } as object;
 
 function ProjectItem({ n }: { n: Node }) {
   const repo = githubRepo(n);
+  const showcase = showcaseLink(n);
   return (
     <View style={styles.projItem}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
@@ -142,7 +146,18 @@ function ProjectItem({ n }: { n: Node }) {
           and an infinite penalty forbids them. */}
       <Text style={styles.projText} {...NO_SEAM_BREAKS}>
         <Text style={styles.projTitle}>{n.title}</Text>
-        {resumeBlurb(n) ? <Text>: {resumeBlurb(n)}</Text> : null}
+        <Text>
+          {": "}
+          {resumeBlurbParts(n).map((part, i) =>
+            typeof part === "string" ? (
+              part
+            ) : (
+              <Link key={i} src={part.href} style={styles.projInlineLink}>
+                {part.text}
+              </Link>
+            ),
+          )}
+        </Text>
         {resumeAwards(n).map((a) => (
           <Text key={a.href}>
             {" "}
@@ -152,8 +167,15 @@ function ProjectItem({ n }: { n: Node }) {
         {repo ? (
           <Link src={repo.href} style={styles.projRepo}>
             {" "}
-            <Text style={styles.projRepoMark}>{GITHUB_MARK}</Text>
+            <Text style={styles.projIcon}>{GITHUB_MARK}</Text>
             {repo.slug}
+          </Link>
+        ) : null}
+        {showcase ? (
+          <Link src={showcase.href} style={styles.projRepo}>
+            {" "}
+            <Text style={styles.projIcon}>{GLOBE}</Text>
+            {showcase.label}
           </Link>
         ) : null}
       </Text>

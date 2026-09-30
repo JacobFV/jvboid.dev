@@ -429,6 +429,21 @@ export function resumeBlurb(node: Pick<Node, "summary" | "resumeDescription">): 
   return node.resumeDescription ?? node.summary;
 }
 
+// The blurb split into text and links: a resume_description may carry
+// markdown links (`[text](url)`), and nothing else of markdown.
+export function resumeBlurbParts(node: Pick<Node, "summary" | "resumeDescription">): HighlightPart[] {
+  const blurb = resumeBlurb(node);
+  const parts: HighlightPart[] = [];
+  let last = 0;
+  for (const m of blurb.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)) {
+    if (m.index > last) parts.push(blurb.slice(last, m.index));
+    parts.push({ text: m[1], href: m[2] });
+    last = m.index + m[0].length;
+  }
+  if (last < blurb.length) parts.push(blurb.slice(last));
+  return parts;
+}
+
 // Prizes a project won, shown after its resume line. Resume-only, so they
 // live here rather than in the project's frontmatter.
 const RESUME_AWARDS: Record<string, { text: string; href: string }[]> = {
@@ -436,6 +451,12 @@ const RESUME_AWARDS: Record<string, { text: string; href: string }[]> = {
     {
       text: "First place ($1000) at AI Agents & MCP Hardware Hackathon",
       href: "https://luma.com/7lww915n?tk=L6nfGG",
+    },
+  ],
+  fieldratchet: [
+    {
+      text: "Finalist in AI Engineer World's Fair Hackathon 2026",
+      href: "https://cerebralvalley.ai/e/aiewf-hackathon-2026",
     },
   ],
 };
@@ -452,6 +473,19 @@ export function githubRepo(node: Pick<Node, "links">): { slug: string; href: str
   const m = href?.match(/github\.com\/([^/?#]+)\/([^/?#]+)/);
   if (!href || !m) return null;
   return { slug: `${m[1]}/${m[2].replace(/\.git$/, "")}`, href };
+}
+
+// Where a project can be seen running or read about — its demo, else its
+// site — for the globe link beside the repo. Labelled with the host, plus
+// the path when that stays short, so the reader knows where it goes.
+export function showcaseLink(node: Pick<Node, "links">): { label: string; href: string } | null {
+  const raw = node.links?.demo ?? node.links?.site;
+  if (!raw) return null;
+  const url = new URL(raw, `https://${contact.website}`);
+  const host = url.hostname.replace(/^www\./, "");
+  const path = url.pathname.replace(/\/(index\.html)?$/, "");
+  const label = `${host}${path}`.length <= 36 ? `${host}${path}` : host;
+  return { label, href: url.href };
 }
 
 export const resumePdfHref = "/resume/pdf";
