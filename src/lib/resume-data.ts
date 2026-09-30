@@ -246,7 +246,7 @@ export const experience: {
     bullets: [
       "Led safety committee and addressed employees during 30-minute monthly safety meeting",
       "Train employees on-the-job and formally",
-      "In addition to 4 years of formal education, actively used Spanish on-the-job",
+      "English and Spanish",
     ],
     tags: ["training", "team-leadership", "safety", "spanish"],
     media: [
