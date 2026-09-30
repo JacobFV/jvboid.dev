@@ -202,7 +202,7 @@ export const experience: {
     title: "Full Stack Pipeline Engineer",
     org: "FLORA",
     href: "https://flora.ai",
-    range: "Jun 2024",
+    range: "Jun 2024 – Jun 2024",
     bullets: [
       "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
     ],
@@ -342,7 +342,7 @@ const SOFTWARE_RESUME = new Set([
   "notion-vibestartup", "theagentsuite", "standup-ai", "yt2ctx", "lifelogger",
   "imgpt", "bonk", "fieldratchet", "precisionbom", "racksavant",
   // Full-stack, front-end, systems
-  "jacobfv-site", "browser-os", "macos-web-next", "windows-web-next",
+  "browser-os", "macos-web-next", "windows-web-next",
   "living-with-intelligence", "jterm", "ascii-art", "halo-prismatic",
   "microscope-viewer", "esp32-usb-webcam", "mln-dashboard", "dash",
   // Coursework and early work that still shows range
@@ -365,11 +365,11 @@ const ROBOTICS_RESUME = new Set([
 ]);
 
 // Real work, but a hiring reader gets nothing from it: music, animation,
-// games made as a teenager, the superseded portfolio site, the fund.
+// games made as a teenager, this site and the portfolio it replaced, the fund.
 const NOT_ON_RESUME = new Set([
   "ai-proverbs", "jacobs-hits-2023", "summer-break-2021-album", "tiles",
   "space-pong", "looking-for-princess-suzzane", "polonius-as-a-fool",
-  "the-right-night-light", "jacobfv-github-io", "gohuman-fund",
+  "the-right-night-light", "jacobfv-site", "jacobfv-github-io", "gohuman-fund",
 ]);
 
 // Fallback for projects added after this file was last curated. Deliberately
@@ -427,6 +427,31 @@ export function formatResumeDate(node: Pick<Node, "date" | "datePrecision">): st
 // when authored, otherwise the longer narrative summary.
 export function resumeBlurb(node: Pick<Node, "summary" | "resumeDescription">): string {
   return node.resumeDescription ?? node.summary;
+}
+
+// Prizes a project won, shown after its resume line. Resume-only, so they
+// live here rather than in the project's frontmatter.
+const RESUME_AWARDS: Record<string, { text: string; href: string }[]> = {
+  precisionbom: [
+    {
+      text: "First place ($1000) at AI Agents & MCP Hardware Hackathon",
+      href: "https://luma.com/7lww915n?tk=L6nfGG",
+    },
+  ],
+};
+
+export function resumeAwards(node: Pick<Node, "id">): { text: string; href: string }[] {
+  return RESUME_AWARDS[node.id] ?? [];
+}
+
+// The project's GitHub repo as `owner/repo`, for the link at the end of its
+// resume line. Only a link that names a repo counts — a bare profile or org
+// URL has no `owner/repo` to show.
+export function githubRepo(node: Pick<Node, "links">): { slug: string; href: string } | null {
+  const href = node.links?.github;
+  const m = href?.match(/github\.com\/([^/?#]+)\/([^/?#]+)/);
+  if (!href || !m) return null;
+  return { slug: `${m[1]}/${m[2].replace(/\.git$/, "")}`, href };
 }
 
 export const resumePdfHref = "/resume/pdf";

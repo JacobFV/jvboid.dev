@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { SocialGlyph } from "@/components/chrome/SocialGlyphs";
 import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 import {
   contact,
   experience,
   formatResumeDate,
+  githubRepo,
+  resumeAwards,
   onResume,
   resumeBlurb,
   resumeMeta as meta,
@@ -197,20 +200,55 @@ export default function ResumePage() {
           Projects ({projects.length})
         </h2>
         <ul className="grid gap-1.5">
-          {projects.map((n) => (
-            <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
-              <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
-                {formatResumeDate(n)}
-              </div>
-              <Link
-                href={nodeHref(n)}
-                className="text-sm text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
-              >
-                <span className="font-medium underline decoration-1 underline-offset-2">{n.title}</span>
-                <span className="text-[var(--color-ink-dim)]"> — {resumeBlurb(n)}</span>
-              </Link>
-            </li>
-          ))}
+          {projects.map((n) => {
+            const repo = githubRepo(n);
+            return (
+              <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
+                <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
+                  {formatResumeDate(n)}
+                </div>
+                <p className="text-sm text-[var(--color-ink-dim)]">
+                  <Link
+                    href={nodeHref(n)}
+                    className="font-medium text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                  >
+                    {n.title}
+                  </Link>
+                  : {resumeBlurb(n)}
+                  {resumeAwards(n).map((a) => (
+                    <span key={a.href}>
+                      {" "}
+                      <a
+                        href={a.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                      >
+                        {a.text}
+                      </a>
+                      .
+                    </span>
+                  ))}
+                  {repo && (
+                    <>
+                      {" "}
+                      <a
+                        href={repo.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-baseline gap-1 whitespace-nowrap font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline hover:text-[var(--color-accent)]"
+                      >
+                        <span className="self-center">
+                          <SocialGlyph name="github" />
+                        </span>
+                        {repo.slug}
+                      </a>
+                    </>
+                  )}
+                </p>
+              </li>
+            );
+          })}
         </ul>
       </section>
       {/* Skills ---------------------------------------------------------- */}

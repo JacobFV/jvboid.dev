@@ -3,12 +3,15 @@
 // node-only at our usage). Routes that need the PDF binary should call
 // `renderResumePdf()` from a route handler.
 
+import path from "node:path";
 import { Document, Page, Text, View, StyleSheet, Link, Font, renderToBuffer } from "@react-pdf/renderer";
 import type { Node } from "./graph-types";
 import {
   contact,
   experience,
   formatResumeDate,
+  githubRepo,
+  resumeAwards,
   onResume,
   resumeBlurb,
   resumeMeta as meta,
@@ -108,15 +111,51 @@ const styles = StyleSheet.create({
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
+  projAward: { color: colors.ink, fontFamily: "Helvetica-Bold", textDecoration: "underline" },
+  projRepo: { color: colors.inkMute, textDecoration: "none" },
+  projRepoMark: { fontFamily: "GithubMark" },
 });
 
+// The octocat as a one-glyph font (U+E000), built from the site's own
+// GitHub glyph in SocialGlyphs with fontTools. An inline <Image> can't be
+// kept on the same line as the repo name; a glyph can (see the penalty on
+// ProjectItem). Its advance width carries the gap before the name.
+Font.register({
+  family: "GithubMark",
+  src: path.join(process.cwd(), "src/lib/resume-fonts/github-mark.ttf"),
+});
+const GITHUB_MARK = "\uE000";
+
+// The layout engine reads `hyphenationPenalty` off a Text's props, but
+// @react-pdf/renderer's TextProps type doesn't declare it.
+const NO_SEAM_BREAKS = { hyphenationPenalty: 10000 } as object;
+
 function ProjectItem({ n }: { n: Node }) {
+  const repo = githubRepo(n);
   return (
     <View style={styles.projItem}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
-      <Text style={styles.projText}>
+      {/* react-pdf allows a line break wherever two styles meet with no space
+          between them, and charges it as a hyphenation penalty. Words are
+          never hyphenated here, so those style seams are the only such breaks
+          — the octocat against its repo name, the title against its colon —
+          and an infinite penalty forbids them. */}
+      <Text style={styles.projText} {...NO_SEAM_BREAKS}>
         <Text style={styles.projTitle}>{n.title}</Text>
-        {resumeBlurb(n) ? <Text> — {resumeBlurb(n)}</Text> : null}
+        {resumeBlurb(n) ? <Text>: {resumeBlurb(n)}</Text> : null}
+        {resumeAwards(n).map((a) => (
+          <Text key={a.href}>
+            {" "}
+            <Link src={a.href} style={styles.projAward}>{a.text}</Link>.
+          </Text>
+        ))}
+        {repo ? (
+          <Link src={repo.href} style={styles.projRepo}>
+            {" "}
+            <Text style={styles.projRepoMark}>{GITHUB_MARK}</Text>
+            {repo.slug}
+          </Link>
+        ) : null}
       </Text>
     </View>
   );
