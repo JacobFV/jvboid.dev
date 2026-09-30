@@ -27,7 +27,7 @@ export const resumeMeta: {
   strengths: string[];
   highlights: HighlightPart[][];
 } = {
-  headline: "AI systems, full-stack, data/ml engineering, architect",
+  headline: "Data/ML Engineering, Robotics, Full-Stack",
   strengths: [
     "AI agents", "schemas", "evals",
     "TypeScript", "Next.js", "React", "Python", "FastAPI",

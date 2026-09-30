@@ -12,7 +12,7 @@ import {
 
 export const metadata = {
   title: "Resume · Jacob Valdez",
-  description: "AI systems, full-stack, data/ml engineering, architect.",
+  description: "Data/ML Engineering, Robotics, Full-Stack.",
 };
 
 export default function ResumePage() {
