@@ -64,6 +64,8 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
 
+  highlights: { marginTop: 10 },
+  highlightLink: { color: colors.ink, textDecoration: "underline" },
   highlightItem: {
     position: "relative",
     marginBottom: 3,
@@ -175,29 +177,38 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>Highlights</Text>
-        <View>
-          {meta.highlights.map((h, i) => (
+        {/* No heading: the highlights follow the contact line directly. */}
+        <View style={styles.highlights}>
+          {meta.highlights.map((parts, i) => (
             <View key={i} style={styles.highlightItem} wrap={false}>
               <View style={styles.highlightBullet} />
-              <Text>{h}</Text>
+              <Text>
+                {parts.map((part, j) =>
+                  typeof part === "string" ? (
+                    part
+                  ) : (
+                    <Link key={j} src={part.href} style={styles.highlightLink}>
+                      {part.text}
+                    </Link>
+                  ),
+                )}
+              </Text>
             </View>
           ))}
         </View>
 
-        <Text style={styles.sectionLabel}>Skills</Text>
-        <Text style={styles.skillsLine}>{meta.strengths.join(", ")}</Text>
-
         <Text style={styles.sectionLabel}>Experience</Text>
         <View>
           {experience.map((e) => (
-            <View key={`${e.org}-${e.title}`} style={styles.expRow} wrap={false}>
+            <View key={`${e.org}-${e.title}-${e.range}`} style={styles.expRow} wrap={false}>
               <Text style={styles.expDate}>{e.range}</Text>
               <View style={styles.expBody}>
-                <Text>
-                  <Text style={styles.expTitle}>{e.title}</Text>
-                  <Text style={styles.expOrg}> · {e.org}</Text>
-                </Text>
+                {e.title ? (
+                  <Text>
+                    <Text style={styles.expTitle}>{e.title}</Text>
+                    <Text style={styles.expOrg}> · {e.org}</Text>
+                  </Text>
+                ) : null}
                 {e.bullets.length === 1 ? (
                   <Text style={styles.expSummary}>{e.bullets[0]}</Text>
                 ) : (
@@ -208,13 +219,18 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
                     </View>
                   ))
                 )}
-                <Text style={styles.expTags}>{e.tags.join(" · ")}</Text>
+                {e.tags.length > 0 ? <Text style={styles.expTags}>{e.tags.join(" · ")}</Text> : null}
               </View>
             </View>
           ))}
         </View>
 
         <ProjectGroup items={listed} />
+
+        <View wrap={false}>
+          <Text style={styles.sectionLabel}>Skills</Text>
+          <Text style={styles.skillsLine}>{meta.strengths.join(", ")}</Text>
+        </View>
 
         <View style={styles.footer} fixed>
           <Text>{contact.name} — resume</Text>

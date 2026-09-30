@@ -97,28 +97,27 @@ export default function ResumePage() {
         </div>
       </header>
 
-      {/* Highlights ------------------------------------------------------ */}
+      {/* Highlights — no heading; the bullets follow the header directly. */}
       <section className="mb-12">
-        <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Highlights
-        </h2>
         <ul className="grid gap-3 text-sm leading-relaxed text-[var(--color-ink-dim)]">
-          {meta.highlights.map((h) => (
-            <li key={h} className="border-l border-[var(--color-bg-2)] pl-4">
-              {h}
+          {meta.highlights.map((parts, i) => (
+            <li key={i} className="border-l border-[var(--color-bg-2)] pl-4">
+              {parts.map((part, j) =>
+                typeof part === "string" ? (
+                  part
+                ) : (
+                  <a
+                    key={j}
+                    href={part.href}
+                    className="text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                  >
+                    {part.text}
+                  </a>
+                ),
+              )}
             </li>
           ))}
         </ul>
-      </section>
-
-      {/* Skills ---------------------------------------------------------- */}
-      <section className="mb-12">
-        <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Skills
-        </h2>
-        <p className="text-sm leading-relaxed text-[var(--color-ink-dim)]">
-          {meta.strengths.join(", ")}
-        </p>
       </section>
 
       {/* Experience ------------------------------------------------------ */}
@@ -130,18 +129,20 @@ export default function ResumePage() {
           {experience.map((n) => {
             const Wrap = n.href ? Link : "div";
             return (
-              <li key={`${n.org}-${n.title}`} className="grid grid-cols-[160px_1fr] gap-4">
+              <li key={`${n.org}-${n.title}-${n.range}`} className="grid grid-cols-[160px_1fr] gap-4">
                 <div className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
                   {n.range}
                 </div>
                 <div>
-                  <Wrap
-                    href={n.href ?? "#"}
-                    className="block text-lg text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
-                  >
-                    {n.title}
-                    <span className="text-[var(--color-ink-dim)]"> · {n.org}</span>
-                  </Wrap>
+                  {n.title && (
+                    <Wrap
+                      href={n.href ?? "#"}
+                      className="block text-lg text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
+                    >
+                      {n.title}
+                      <span className="text-[var(--color-ink-dim)]"> · {n.org}</span>
+                    </Wrap>
+                  )}
                   {n.bullets.length === 1 ? (
                     <p className="mt-1 text-sm text-[var(--color-ink-dim)]">{n.bullets[0]}</p>
                   ) : (
@@ -181,13 +182,15 @@ export default function ResumePage() {
                       ))}
                     </ul>
                   )}
-                  <div className="mt-2 flex flex-wrap gap-2 font-[family-name:var(--font-mono)] text-[10px] text-[var(--color-ink-mute)]">
-                    {n.tags.map((tag) => (
-                      <span key={tag} className="rounded-full bg-[var(--color-bg-1)] px-2 py-0.5">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  {n.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2 font-[family-name:var(--font-mono)] text-[10px] text-[var(--color-ink-mute)]">
+                      {n.tags.map((tag) => (
+                        <span key={tag} className="rounded-full bg-[var(--color-bg-1)] px-2 py-0.5">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </li>
             );
@@ -216,6 +219,15 @@ export default function ResumePage() {
             </li>
           ))}
         </ul>
+      </section>
+      {/* Skills ---------------------------------------------------------- */}
+      <section className="mb-12">
+        <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
+          Skills
+        </h2>
+        <p className="text-sm leading-relaxed text-[var(--color-ink-dim)]">
+          {meta.strengths.join(", ")}
+        </p>
       </section>
     </main>
   );

@@ -17,11 +17,15 @@ export const contact = {
   location: "San Francisco, CA",
 };
 
+// A highlight is a run of plain text and links, so a bullet can link the
+// thing it names without the whole line becoming one anchor.
+export type HighlightPart = string | { text: string; href: string };
+
 export const resumeMeta: {
   headline: string;
   summary?: string;
   strengths: string[];
-  highlights: string[];
+  highlights: HighlightPart[][];
 } = {
   headline: "AI systems, full-stack, data/ml engineering, architect",
   strengths: [
@@ -34,11 +38,21 @@ export const resumeMeta: {
     "rapid prototyping",
   ],
   highlights: [
-    "Training IBM-1 + SC-WBD-00X brain prediction and decoding models for SuperCognition Labs — a lazily materialized implicit brain model driving image-to-EEG decoding and an embodied musculoskeletal body (IBM-1), and whole-brain foundation models fusing electrophysiology, hemodynamics and stimulation response (SC-WBD).",
-    "Architected and implemented production integration surfaces for mobile and web clients at AGI, Inc.",
-    "Building CommandAGI.com, an end-to-end agentic social platform for creators to build their vibestartups — computer + browser + mobile device control, robotics, sim, code/CAD/EDA and more eng automation, 43+ integrations, and more.",
-    "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
-    "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
+    [
+      "Currently developing morphology-agnostic, contact-centric robotics control policy in collaboration with ",
+      { text: "TalOS Robotics", href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics" },
+    ],
+    [
+      "Developed/trained ",
+      { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
+      " foundation model for ",
+      { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
+    ],
+    [
+      "Owned ",
+      { text: "api.agi.tech", href: "https://api.agi.tech" },
+      ", integrations architect, web and android/ios SwE for AGI Inc",
+    ],
   ],
 };
 
@@ -74,9 +88,11 @@ function media(
 // rather than rewritten — the voice is the point. Don't "improve" them without
 // asking; a previous pass paraphrased Breezy and AGI into something blander and
 // had to be reverted.
+// `title` and `org` are optional: an entry with neither (the career break)
+// renders as its date range and text alone. An empty `tags` shows no chips.
 export const experience: {
-  title: string;
-  org: string;
+  title?: string;
+  org?: string;
   href?: string;
   range: string;
   bullets: string[];
@@ -147,7 +163,7 @@ export const experience: {
     org: "Human Robots",
     range: "Jan 2023 – Sep 2024",
     bullets: [
-      'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), also 3018 diy milling if that counts. Ordered from 2 direct factory contacts in China and negotiated with several others. Did all the math in my notebook and brain before ChatGPT was useful for this!',
+      'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), 3018 mdf milling. Supplier outreach; two direct oem relationships. Did all the math in my notebook and brain before ChatGPT was useful for this!',
     ],
     tags: ["robotics", "hydraulics", "cad", "hardware", "pcb"],
     media: [
@@ -218,11 +234,9 @@ export const experience: {
     ],
   },
   {
-    title: "Career break",
-    org: "Professional development",
     range: "Apr 2020 – Jun 2021",
-    bullets: ["Pandemic + First year at University of Texas at Arlington"],
-    tags: ["career-break"],
+    bullets: ["Pandemic + first year at the University of Texas at Arlington"],
+    tags: [],
   },
   {
     title: "Crew Trainer",
@@ -252,14 +266,14 @@ export const experience: {
     bullets: [
       "CS coursework alongside heavy lab work, independent ML/robotics prototypes, and a steady research output. GPA 3.6/4.0.",
     ],
-    tags: ["education", "cs"],
+    tags: [],
   },
   {
     title: "A.A.S., Mathematics",
     org: "Navarro College",
     range: "2016 – 2018",
     bullets: ["Math associate degree taken dual-credit during high school. GPA 3.9/4.0."],
-    tags: ["education", "math"],
+    tags: [],
   },
 ];
 
