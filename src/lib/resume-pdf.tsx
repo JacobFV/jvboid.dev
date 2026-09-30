@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   expBody: { flex: 1 },
   expTitle: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
+  expOrgLink: { color: colors.inkDim, fontFamily: "Helvetica", textDecoration: "underline" },
   expPara: { marginTop: 1, fontSize: 9, color: colors.inkDim },
   expParaNext: { marginTop: 3 },
 
@@ -193,7 +194,12 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
                 {e.title ? (
                   <Text>
                     <Text style={styles.expTitle}>{e.title}</Text>
-                    <Text style={styles.expOrg}> · {e.org}</Text>
+                    <Text style={styles.expOrg}> · </Text>
+                    {e.href ? (
+                      <Link src={e.href} style={styles.expOrgLink}>{e.org}</Link>
+                    ) : (
+                      <Text style={styles.expOrg}>{e.org}</Text>
+                    )}
                   </Text>
                 ) : null}
                 {/* Paragraphs, not bullets: each entry reads as prose. */}

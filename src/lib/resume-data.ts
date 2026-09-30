@@ -94,7 +94,8 @@ function media(
 // asking; a previous pass paraphrased Breezy and AGI into something blander and
 // had to be reverted.
 // `title` and `org` are optional: an entry with neither (the career break)
-// renders as its date range and text alone.
+// renders as its date range and text alone. `href` is the org's own site;
+// the org name links to it.
 export const experience: {
   title?: string;
   org?: string;
@@ -140,6 +141,7 @@ export const experience: {
   {
     title: "Software Engineer",
     org: "Breezy",
+    href: "https://www.getbreezy.app",
     range: "Apr 2025 – Oct 2025",
     bullets: [
       "Full-stack product engineering across a rails/next.js monorepo for a prosumer (single-person business) AI receptionist platform.",
@@ -154,6 +156,7 @@ export const experience: {
   {
     title: "Applied Machine Learning Engineer",
     org: "Deepshard",
+    href: "https://itsalltruffles.com",
     range: "Sep 2024 – Dec 2024",
     bullets: [
       "Hardware and software for Truffle-1, a personal AI computer running models on-device: enclosure iteration across SLA, FDM and SLS printing against thermal constraints, alongside on-device ML work.",
@@ -162,6 +165,7 @@ export const experience: {
   {
     title: "Humanoid Robot Prototyping",
     org: "Human Robots",
+    href: "https://x.com/HumanRobotsAI",
     range: "Jan 2023 – Sep 2024",
     bullets: [
       'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), 3018 mdf milling. Supplier outreach; worked with Dakings Rapid. Did all the math in my notebook and brain before ChatGPT was useful for this!',
@@ -177,6 +181,7 @@ export const experience: {
   {
     title: "Full Stack Pipeline Engineer",
     org: "FLORA",
+    href: "https://flora.ai",
     range: "Jun 2024",
     bullets: [
       "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
@@ -185,19 +190,21 @@ export const experience: {
   {
     title: "Software Engineer",
     org: "Motio, Inc.",
+    href: "https://motio.com",
     range: "Aug 2022 – Jan 2023",
     bullets: ["Developed Soterre for Qlik Sense"],
   },
   {
     title: "Software Engineer (Intern)",
     org: "Motio, Inc.",
+    href: "https://motio.com",
     range: "Jun 2022 – Aug 2022",
     bullets: ["Developed Soterre for Qlik Sense"],
   },
   {
     title: "Software Developer",
     org: "IT Lab · UT Arlington",
-    href: "https://uta.edu",
+    href: "https://itlab.uta.edu",
     range: "Jun 2021 – May 2022",
     bullets: [
       "Flask-based statistical visualization tool CoWiz; research group collaboration",
@@ -219,7 +226,7 @@ export const experience: {
   {
     title: "Software Developer",
     org: "College of Social Work · UT Arlington",
-    href: "https://uta.edu",
+    href: "https://www.uta.edu/academics/schools-colleges/social-work",
     range: "Jun 2021 – May 2022",
     bullets: [
       "Maintain and enhance multi-platform (iOS and Android) data collecting application MyAmble using flutter and firebase and web administrator interface",
@@ -235,6 +242,7 @@ export const experience: {
   {
     title: "Crew Trainer",
     org: "McDonald's",
+    href: "https://www.mcdonalds.com",
     range: "May 2016 – Mar 2020",
     bullets: [
       "Led 30-minute monthly safety meetings",
@@ -253,7 +261,7 @@ export const experience: {
   {
     title: "B.S., Computer Science",
     org: "The University of Texas at Arlington",
-    href: "https://uta.edu",
+    href: "https://www.uta.edu",
     range: "2020 – 2022",
     bullets: [
       "CS coursework alongside heavy lab work, independent ML/robotics prototypes, and a steady research output. GPA 3.6/4.0.",
@@ -262,6 +270,7 @@ export const experience: {
   {
     title: "A.A.S., Mathematics",
     org: "Navarro College",
+    href: "https://www.navarrocollege.edu",
     range: "2016 – 2018",
     bullets: ["Math associate degree taken dual-credit during high school. GPA 3.9/4.0."],
   },

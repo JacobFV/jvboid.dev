@@ -127,7 +127,6 @@ export default function ResumePage() {
         </h2>
         <ul className="grid gap-6">
           {experience.map((n) => {
-            const Wrap = n.href ? Link : "div";
             return (
               <li key={`${n.org}-${n.title}-${n.range}`} className="grid grid-cols-[160px_1fr] gap-4">
                 <div className="font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)]">
@@ -135,13 +134,24 @@ export default function ResumePage() {
                 </div>
                 <div>
                   {n.title && (
-                    <Wrap
-                      href={n.href ?? "#"}
-                      className="block text-lg text-[var(--color-ink)] no-underline hover:text-[var(--color-accent)]"
-                    >
+                    <div className="text-lg text-[var(--color-ink)]">
                       {n.title}
-                      <span className="text-[var(--color-ink-dim)]"> · {n.org}</span>
-                    </Wrap>
+                      <span className="text-[var(--color-ink-dim)]">
+                        {" · "}
+                        {n.href ? (
+                          <a
+                            href={n.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                          >
+                            {n.org}
+                          </a>
+                        ) : (
+                          n.org
+                        )}
+                      </span>
+                    </div>
                   )}
                   {/* Paragraphs, not bullets: each entry reads as prose. */}
                   <div className="mt-1 grid gap-1.5 text-sm text-[var(--color-ink-dim)]">
