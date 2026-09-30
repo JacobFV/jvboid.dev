@@ -154,7 +154,9 @@ export const experience: {
     title: "Applied Machine Learning Engineer",
     org: "Deepshard",
     range: "Sep 2024 – Dec 2024",
-    bullets: ["the truffle computer"],
+    bullets: [
+      "Hardware and software for Truffle-1, a personal AI computer running models on-device: enclosure iteration across SLA, FDM and SLS printing against thermal constraints, alongside on-device ML work.",
+    ],
     tags: ["ml", "on-device", "research"],
   },
   {
