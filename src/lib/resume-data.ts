@@ -163,6 +163,15 @@ export const experience: {
     ],
   },
   {
+    title: "Full Stack Pipeline Engineer",
+    org: "FLORA",
+    href: "https://flora.ai",
+    range: "Jun 2024",
+    bullets: [
+      "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
+    ],
+  },
+  {
     title: "Humanoid Robot Prototyping",
     org: "Human Robots",
     href: "https://x.com/HumanRobotsAI",
@@ -176,15 +185,6 @@ export const experience: {
         "Whole body endoskeletal + hydraulic system (no actuator) prototype assembly",
       ),
       media("lobe-pump-early-iteration.jpg", 135, 180, "Early iteration of positive displacement lobe pump"),
-    ],
-  },
-  {
-    title: "Full Stack Pipeline Engineer",
-    org: "FLORA",
-    href: "https://flora.ai",
-    range: "Jun 2024",
-    bullets: [
-      "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
     ],
   },
   {
