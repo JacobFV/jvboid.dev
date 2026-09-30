@@ -128,7 +128,6 @@ export const experience: {
     href: "https://agi.app",
     range: "Oct 2025 – Jan 2026",
     bullets: [
-      "WE ARE BUILDING THE INFRASTRUCTURE FOR ARTIFICIAL GENERAL INTELLIGENCE",
       "full-stack + infrastructure engineering across agentic systems: typescript, python, react/next.js, node.js, apis, distributed systems, cloud infrastructure, aws, gcp, s3, data engineering, containers, drizzle, pg/psql, databases, queues, browser/computer use, agent runtimes, tool use, model inference, llm integrations, multimodal models, evals, automation, control planes, observability, debugging, deployment, ci/cd, production operations. shipped rapidly across the stack in a high-velocity, production-first environment.",
     ],
     tags: ["agents", "infra", "full-stack", "evals"],
