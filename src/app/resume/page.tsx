@@ -216,11 +216,16 @@ export default function ResumePage() {
       {/* Skills ---------------------------------------------------------- */}
       <section className="mb-12">
         <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Skills
+          Skills (ATS)
         </h2>
-        <p className="text-sm leading-relaxed text-[var(--color-ink-dim)]">
-          {meta.strengths.join(", ")}
-        </p>
+        <div className="grid gap-1.5 text-sm leading-relaxed text-[var(--color-ink-dim)]">
+          {meta.skills.map((g) => (
+            <p key={g.label}>
+              <span className="font-medium text-[var(--color-ink)]">{g.label}:</span>{" "}
+              {g.items.join(", ")}
+            </p>
+          ))}
+        </div>
       </section>
     </main>
   );

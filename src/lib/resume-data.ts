@@ -24,18 +24,54 @@ export type HighlightPart = string | { text: string; href: string };
 export const resumeMeta: {
   headline: string;
   summary?: string;
-  strengths: string[];
+  skills: { label: string; items: string[] }[];
   highlights: HighlightPart[][];
 } = {
   headline: "Data/ML Engineering, Robotics, Full-Stack",
-  strengths: [
-    "AI agents", "schemas", "evals",
-    "TypeScript", "Next.js", "React", "Python", "FastAPI",
-    "iOS", "on-device LLMs", "model quantization", "multimodal pipelines",
-    "Postgres", "Redis", "Vercel", "Cloudflare", "Modal",
-    "PyTorch", "JAX", "model training",
-    "robotics", "embodied AI", "world models", "sim-to-real", "LeRobot", "CAD",
-    "rapid prototyping",
+  // Grouped plain-text keywords for applicant tracking systems, which
+  // match on exact terms. Everything here is backed by the experience or
+  // projects on the resume — keep it that way rather than padding it.
+  skills: [
+    {
+      label: "Languages",
+      items: ["Python", "TypeScript", "JavaScript", "SQL", "Java", "Ruby", "Dart"],
+    },
+    {
+      label: "AI / ML",
+      items: [
+        "PyTorch", "JAX", "TensorFlow", "transformers", "foundation models",
+        "multimodal models", "diffusion models", "world models", "reinforcement learning",
+        "model training", "fine-tuning", "model quantization", "on-device inference",
+        "LLM integration", "AI agents", "tool use", "computer use", "evals",
+      ],
+    },
+    {
+      label: "Robotics & hardware",
+      items: [
+        "robot control policies", "embodied AI", "sim-to-real", "LeRobot", "CAD",
+        "FreeCAD", "KiCAD", "Blender", "PCB design", "SMT assembly", "CNC routing",
+        "3D printing (SLA, FDM, SLS)", "hydraulics", "rapid prototyping",
+      ],
+    },
+    {
+      label: "Web & backend",
+      items: [
+        "React", "Next.js", "Node.js", "FastAPI", "Flask", "Ruby on Rails", "GraphQL",
+        "REST APIs", "SDKs", "Hibernate",
+      ],
+    },
+    {
+      label: "Data & infrastructure",
+      items: [
+        "PostgreSQL", "Drizzle ORM", "Redis", "AWS", "GCP", "S3", "Cloudflare", "Vercel",
+        "Modal", "fal.ai", "containers", "distributed systems", "queues", "data engineering",
+        "CI/CD", "observability", "Git",
+      ],
+    },
+    {
+      label: "Mobile",
+      items: ["iOS", "Android", "Flutter", "Firebase"],
+    },
   ],
   highlights: [
     [

@@ -3,7 +3,7 @@
 // node-only at our usage). Routes that need the PDF binary should call
 // `renderResumePdf()` from a route handler.
 
-import { Document, Page, Text, View, StyleSheet, Link, renderToBuffer } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Link, Font, renderToBuffer } from "@react-pdf/renderer";
 import type { Node } from "./graph-types";
 import {
   contact,
@@ -13,6 +13,11 @@ import {
   resumeBlurb,
   resumeMeta as meta,
 } from "./resume-data";
+
+// Never hyphenate. A keyword split across lines ("reinforce-ment") comes out
+// of the PDF's text layer as two fragments, and ATS parsers match on the
+// text layer.
+Font.registerHyphenationCallback((word) => [word]);
 
 const colors = {
   ink: "#111111",
@@ -57,7 +62,9 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: colors.inkMute,
     fontFamily: "Helvetica-Bold",
-    letterSpacing: 2,
+    // Kept tight: wide tracking extracts as "S K I L L S", which an ATS
+    // won't recognise as a heading.
+    letterSpacing: 0.6,
     textTransform: "uppercase",
     borderBottomWidth: 0.5,
     borderBottomColor: colors.rule,
@@ -83,7 +90,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
 
-  skillsLine: { fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
+  skillsLine: { marginBottom: 2, fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
+  skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
   experience: { marginTop: 14 },
   expRow: { flexDirection: "row", marginBottom: 8 },
@@ -217,10 +225,14 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
         <ProjectGroup items={listed} />
 
         <View wrap={false}>
-          <Text style={styles.sectionLabel}>Skills</Text>
-          <Text style={styles.skillsLine}>{meta.strengths.join(", ")}</Text>
+          <Text style={styles.sectionLabel}>Skills (ATS)</Text>
+          {meta.skills.map((g) => (
+            <Text key={g.label} style={styles.skillsLine}>
+              <Text style={styles.skillsLabel}>{g.label}: </Text>
+              {g.items.join(", ")}
+            </Text>
+          ))}
         </View>
-
       </Page>
     </Document>
   );
