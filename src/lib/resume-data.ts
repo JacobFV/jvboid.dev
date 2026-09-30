@@ -50,7 +50,7 @@ export const resumeMeta: {
     [
       "Developed/trained ",
       { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
-      " foundation model for ",
+      " topologically-constrained transformer foundation model for ",
       { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
     ],
     [
