@@ -1,77 +1,34 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 import {
   contact,
   experience,
   formatResumeDate,
-  projectFocus,
+  onResume,
   resumeBlurb,
-  variantHref,
-  variantMeta,
-  variantPdfHref,
-  type ResumeVariant,
+  resumeMeta as meta,
+  resumePdfHref,
 } from "@/lib/resume-data";
 
 export const metadata = {
   title: "Resume · Jacob Valdez",
-  description: "AI systems, full-stack, data/ml engineering, architect — software and robotics resume variants.",
+  description: "AI systems, full-stack, data/ml engineering, architect.",
 };
 
-function isVariant(v: string): v is ResumeVariant {
-  return v === "software" || v === "robotics";
-}
-
-export default async function ResumePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ v?: string }>;
-}) {
-  const sp = await searchParams;
-  const raw = sp?.v ?? "software";
-  if (raw !== "software" && raw !== "robotics") {
-    redirect("/resume?v=software");
-  }
-  const variant: ResumeVariant = isVariant(raw) ? raw : "software";
-  const meta = variantMeta[variant];
-
+export default function ResumePage() {
   const { nodes } = getGraph();
-  const listed = nodes.filter(isListedNode);
-  const projects = listed
-    .filter((n) => n.kind === "project")
+  const projects = nodes
+    .filter(isListedNode)
+    .filter((n) => n.kind === "project" && onResume(n))
     .sort((a, b) => (a.date < b.date ? 1 : -1));
-
-  const focused = projects.filter((p) => projectFocus(p)[variant]);
-  const focusLabel = variant === "software" ? "Software & AI" : "Robotics & embodied AI";
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      {/* Variant switcher + actions ----------------------------------- */}
-      <div className="mb-10 flex flex-wrap items-center justify-between gap-3">
-        <div
-          role="tablist"
-          aria-label="Resume variant"
-          className="flex gap-1 rounded-full bg-[var(--color-bg-1)] p-1 font-[family-name:var(--font-mono)] text-xs"
-        >
-          {(["software", "robotics"] as const).map((v) => (
-            <Link
-              key={v}
-              href={`/resume?v=${v}`}
-              role="tab"
-              aria-selected={variant === v}
-              className={`rounded-full px-3 py-1 no-underline transition-colors ${
-                variant === v
-                  ? "bg-[var(--color-bg-0)] text-[var(--color-ink)] shadow-[var(--ring-soft)]"
-                  : "text-[var(--color-ink-mute)] hover:text-[var(--color-ink-dim)]"
-              }`}
-            >
-              {v}
-            </Link>
-          ))}
-        </div>
+      {/* Actions --------------------------------------------------------- */}
+      <div className="mb-10 flex flex-wrap items-center justify-end gap-3">
         <div className="flex gap-2 font-[family-name:var(--font-mono)] text-xs">
           <a
-            href={variantPdfHref(variant)}
+            href={resumePdfHref}
             target="_blank"
             rel="noreferrer"
             className="rounded-full bg-[var(--color-bg-1)] px-3 py-1.5 text-[var(--color-ink-dim)] no-underline hover:bg-[var(--color-bg-2)] hover:text-[var(--color-accent)]"
@@ -79,8 +36,8 @@ export default async function ResumePage({
             view pdf ↗
           </a>
           <a
-            href={variantPdfHref(variant)}
-            download={`jacob-valdez-${variant}-resume.pdf`}
+            href={resumePdfHref}
+            download="jacob-valdez-resume.pdf"
             className="rounded-full bg-[var(--color-accent)] px-3 py-1.5 text-white no-underline hover:opacity-90"
           >
             download pdf ↓
@@ -94,15 +51,15 @@ export default async function ResumePage({
       <section className="mb-12">
         <div className="overflow-hidden rounded-xl border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] shadow-[var(--ring-soft)]">
           <object
-            data={`${variantPdfHref(variant)}#view=FitH`}
+            data={`${resumePdfHref}#view=FitH`}
             type="application/pdf"
             className="block h-[80vh] w-full"
-            aria-label={`${variant} resume PDF preview`}
+            aria-label="Resume PDF preview"
           >
             <div className="p-6 text-sm text-[var(--color-ink-dim)]">
               Your browser can&rsquo;t embed PDFs.{" "}
               <a
-                href={variantPdfHref(variant)}
+                href={resumePdfHref}
                 className="text-[var(--color-accent)] underline"
               >
                 Open the PDF in a new tab.
@@ -241,10 +198,10 @@ export default async function ResumePage({
       {/* Projects -------------------------------------------------------- */}
       <section className="mb-12">
         <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Projects — {focusLabel} ({focused.length})
+          Projects ({projects.length})
         </h2>
         <ul className="grid gap-1.5">
-          {focused.map((n) => (
+          {projects.map((n) => (
             <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
               <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
                 {formatResumeDate(n)}

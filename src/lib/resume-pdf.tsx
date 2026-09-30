@@ -1,5 +1,4 @@
-// PDF document component. One `<ResumeDocument variant="..." projects={...} />`
-// covers both software and robotics. Server-only — never import from a
+// PDF document component, `<ResumeDocument projects={...} />`. Server-only — never import from a
 // client component (it pulls in @react-pdf/renderer, which is large and
 // node-only at our usage). Routes that need the PDF binary should call
 // `renderResumePdf()` from a route handler.
@@ -10,10 +9,9 @@ import {
   contact,
   experience,
   formatResumeDate,
-  projectFocus,
+  onResume,
   resumeBlurb,
-  variantMeta,
-  type ResumeVariant,
+  resumeMeta as meta,
 } from "./resume-data";
 
 const colors = {
@@ -95,15 +93,6 @@ const styles = StyleSheet.create({
   expBulletDot: { position: "absolute", left: 0, top: 5, width: 2, height: 2, borderRadius: 1, backgroundColor: colors.inkMute },
   expTags: { marginTop: 2, fontSize: 7.5, color: colors.inkMute, letterSpacing: 0.5 },
 
-  projGroupLabel: {
-    marginTop: 8,
-    marginBottom: 4,
-    fontSize: 8,
-    color: colors.ink,
-    fontFamily: "Helvetica-Bold",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
   projRow: { flexDirection: "row", gap: 14 },
   projItem: { flex: 1, flexDirection: "row", marginBottom: 2.4 },
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
@@ -139,7 +128,7 @@ function ProjectItem({ n }: { n: Node }) {
 // row, so whatever ran past the page was drawn in a heap at its foot and
 // through the bottom margin. A row per pair is an ordinary block, and
 // rows break between pages cleanly.
-function ProjectGroup({ label, items }: { label: string; items: Node[] }) {
+function ProjectGroup({ items }: { items: Node[] }) {
   if (items.length === 0) return null;
   const rows: Node[][] = [];
   for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2));
@@ -154,11 +143,10 @@ function ProjectGroup({ label, items }: { label: string; items: Node[] }) {
   const [first, ...rest] = rows;
   return (
     <View>
-      {/* The headings travel with the first row, so they are never left
-          alone at the foot of a page with their projects overleaf. */}
+      {/* The heading travels with the first row, so it is never left
+          alone at the foot of a page with its projects overleaf. */}
       <View wrap={false}>
         <Text style={styles.sectionLabel}>Projects</Text>
-        <Text style={styles.projGroupLabel}>{label}</Text>
         {renderRow(first)}
       </View>
       {rest.map(renderRow)}
@@ -166,26 +154,12 @@ function ProjectGroup({ label, items }: { label: string; items: Node[] }) {
   );
 }
 
-export function ResumeDocument({
-  variant,
-  projects,
-}: {
-  variant: ResumeVariant;
-  projects: Node[];
-}) {
-  const meta = variantMeta[variant];
-
+export function ResumeDocument({ projects }: { projects: Node[] }) {
   const sortByDateDesc = (a: Node, b: Node) => (a.date < b.date ? 1 : -1);
-  const focused = projects.filter((n) => projectFocus(n)[variant]).sort(sortByDateDesc);
-
-  const focusLabel = variant === "software" ? "Software & AI" : "Robotics & embodied AI";
+  const listed = projects.filter(onResume).sort(sortByDateDesc);
 
   return (
-    <Document
-      title={`Jacob Valdez — ${variant === "software" ? "Software" : "Robotics"} Resume`}
-      author={contact.name}
-      subject={`${variant} resume`}
-    >
+    <Document title="Jacob Valdez — Resume" author={contact.name} subject="resume">
       <Page size="LETTER" style={styles.page}>
         <View>
           <Text style={styles.name}>{contact.name}</Text>
@@ -240,10 +214,10 @@ export function ResumeDocument({
           ))}
         </View>
 
-        <ProjectGroup label={focusLabel} items={focused} />
+        <ProjectGroup items={listed} />
 
         <View style={styles.footer} fixed>
-          <Text>{contact.name} — {variant === "software" ? "Software" : "Robotics"} resume</Text>
+          <Text>{contact.name} — resume</Text>
           <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>
@@ -251,6 +225,6 @@ export function ResumeDocument({
   );
 }
 
-export async function renderResumePdf(variant: ResumeVariant, projects: Node[]): Promise<Buffer> {
-  return renderToBuffer(<ResumeDocument variant={variant} projects={projects} />);
+export async function renderResumePdf(projects: Node[]): Promise<Buffer> {
+  return renderToBuffer(<ResumeDocument projects={projects} />);
 }

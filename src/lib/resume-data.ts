@@ -1,14 +1,11 @@
 // Resume content used by both the on-page embed and the PDF renderer.
-// Two variants — `software` and `robotics` — share the same header,
-// experience block, and full project list; the variant only changes the
-// strength bullets, the highlights, and which projects land in the
-// "focus" group vs. the "adjacent work" group. The headline is one line
-// of titles and carries no separate summary under it — `summary` stays
-// optional so a variant can add one back without a schema change.
+// There is one resume. It used to come in `software` and `robotics`
+// variants; they were merged, so the skills, highlights and project list
+// below cover both. The headline is one line of titles and carries no
+// separate summary under it — `summary` stays optional so one can be added
+// back without a schema change.
 
 import type { Node } from "./graph-types";
-
-export type ResumeVariant = "software" | "robotics";
 
 export const contact = {
   name: "Jacob Valdez",
@@ -20,46 +17,29 @@ export const contact = {
   location: "San Francisco, CA",
 };
 
-export const variantMeta: Record<ResumeVariant, {
+export const resumeMeta: {
   headline: string;
   summary?: string;
   strengths: string[];
   highlights: string[];
-}> = {
-  software: {
-    headline: "AI systems, full-stack, data/ml engineering, architect",
-    strengths: [
-      "AI agents", "schemas", "evals",
-      "TypeScript", "Next.js", "React", "Python", "FastAPI",
-      "iOS", "on-device LLMs", "model quantization", "multimodal pipelines",
-      "Postgres", "Redis", "Vercel", "Cloudflare", "Modal",
-      "PyTorch", "JAX", "model training",
-      "rapid prototyping",
-    ],
-    highlights: [
-      "Training IBM-1 + SC-WBD-00X brain prediction and decoding models for SuperCognition Labs — a lazily materialized implicit brain model driving image-to-EEG decoding and an embodied musculoskeletal body (IBM-1), and whole-brain foundation models fusing electrophysiology, hemodynamics and stimulation response (SC-WBD).",
-      "Architected and implemented production integration surfaces for mobile and web clients at AGI, Inc.",
-      "Building CommandAGI.com, an end-to-end agentic social platform for creators to build their vibestartups — computer + browser + mobile device control, robotics, sim, code/CAD/EDA and more eng automation, 43+ integrations, and more.",
-    ],
-  },
-  robotics: {
-    headline: "AI systems, full-stack, data/ml engineering, architect",
-    strengths: [
-      "robotics", "CAD", "hydraulic actuation", "low-level control", "calibration",
-      "embodied AI", "world models", "multimodal perception", "sim-to-real",
-      "LeRobot", "SO-101", "ROS",
-      "CNC", "3D printing", "electronics", "lab automation", "procurement",
-      "Python", "PyTorch", "JAX",
-      "model training", "ablation design",
-      "agent control loops", "rapid prototyping",
-    ],
-    highlights: [
-      "Training IBM-1 + SC-WBD-00X brain prediction and decoding models for SuperCognition Labs — a lazily materialized implicit brain model driving image-to-EEG decoding and an embodied musculoskeletal body (IBM-1), and whole-brain foundation models fusing electrophysiology, hemodynamics and stimulation response (SC-WBD).",
-      "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
-      "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
-      "AGI, Inc. integration architect — same agent-runtime skills feed directly into robot agent control loops.",
-    ],
-  },
+} = {
+  headline: "AI systems, full-stack, data/ml engineering, architect",
+  strengths: [
+    "AI agents", "schemas", "evals",
+    "TypeScript", "Next.js", "React", "Python", "FastAPI",
+    "iOS", "on-device LLMs", "model quantization", "multimodal pipelines",
+    "Postgres", "Redis", "Vercel", "Cloudflare", "Modal",
+    "PyTorch", "JAX", "model training",
+    "robotics", "embodied AI", "world models", "sim-to-real", "LeRobot", "CAD",
+    "rapid prototyping",
+  ],
+  highlights: [
+    "Training IBM-1 + SC-WBD-00X brain prediction and decoding models for SuperCognition Labs — a lazily materialized implicit brain model driving image-to-EEG decoding and an embodied musculoskeletal body (IBM-1), and whole-brain foundation models fusing electrophysiology, hemodynamics and stimulation response (SC-WBD).",
+    "Architected and implemented production integration surfaces for mobile and web clients at AGI, Inc.",
+    "Building CommandAGI.com, an end-to-end agentic social platform for creators to build their vibestartups — computer + browser + mobile device control, robotics, sim, code/CAD/EDA and more eng automation, 43+ integrations, and more.",
+    "Built the Lunar Rover autonomy stack — LLM-routed planning + low-level control for a hackathon-grade lunar rover.",
+    "Shipped lab/hardware tooling: PrecisionBOM (procurement), Labatron (lab automation), Chem-0 (chemistry agents), Cookie-cutter CNC, Cookie-baker 3D printer.",
+  ],
 };
 
 // One media item attached to a job: the caption and (optional) description
@@ -283,7 +263,7 @@ export const experience: {
   },
 ];
 
-// Which resume a project belongs on — curated per project, not inferred.
+// Whether a project belongs on the resume — curated per project, not inferred.
 // The tag vocabulary was written for the site graph, not for a hiring
 // reader: "school", "work" and "personal" say nothing about whether a
 // piece of work belongs on a resume, and the old tag classifier answered
@@ -292,11 +272,12 @@ export const experience: {
 // become a dumpster, so the group is gone and the classification has to
 // be right on its own.
 //
-// Every published project is named exactly once below: on the software
-// resume, the robotics resume, both, or NOT_ON_RESUME for creative and
-// personal work a hiring reader has no use for. A project named in none
-// of the three falls through to the tag heuristic at the bottom, so newly
-// added work still surfaces somewhere instead of silently vanishing.
+// Every published project is named below: in one of the two groups that
+// make up the resume (they were separate software and robotics resumes
+// once, and are kept apart here only to stay readable), or in NOT_ON_RESUME
+// for creative and personal work a hiring reader has no use for. A project
+// named nowhere falls through to the tag heuristic at the bottom, so newly
+// added work still surfaces instead of silently vanishing.
 
 const SOFTWARE_RESUME = new Set([
   // AI systems, agents, world models, ML research
@@ -343,7 +324,7 @@ const NOT_ON_RESUME = new Set([
 ]);
 
 // Fallback for projects added after this file was last curated. Deliberately
-// loose — showing new work on the wrong resume beats hiding it on both.
+// loose — showing new work that doesn't belong beats hiding work that does.
 const SOFTWARE_TAGS = new Set([
   "agents", "multi-agent", "ai", "ml", "deep-learning", "framework", "python",
   "cli", "tooling", "infra", "web", "meta", "ui", "graphics", "mcp",
@@ -359,14 +340,12 @@ const ROBOTICS_TAGS = new Set([
   "physics", "hydraulics", "cad",
 ]);
 
-export function projectFocus(node: Node): { software: boolean; robotics: boolean } {
+export function onResume(node: Node): boolean {
   const id = node.id;
-  if (SOFTWARE_RESUME.has(id) || ROBOTICS_RESUME.has(id) || NOT_ON_RESUME.has(id)) {
-    return { software: SOFTWARE_RESUME.has(id), robotics: ROBOTICS_RESUME.has(id) };
-  }
+  if (SOFTWARE_RESUME.has(id) || ROBOTICS_RESUME.has(id)) return true;
+  if (NOT_ON_RESUME.has(id)) return false;
   const tags = node.tags.map((t) => t.toLowerCase());
-  const has = (set: Set<string>) => tags.some((t) => set.has(t));
-  return { software: has(SOFTWARE_TAGS), robotics: has(ROBOTICS_TAGS) };
+  return tags.some((t) => SOFTWARE_TAGS.has(t) || ROBOTICS_TAGS.has(t));
 }
 
 // Date formatting for the resume project list. The graph stores a single
@@ -401,10 +380,4 @@ export function resumeBlurb(node: Pick<Node, "summary" | "resumeDescription">): 
   return node.resumeDescription ?? node.summary;
 }
 
-export function variantHref(v: ResumeVariant): string {
-  return `/resume/${v}`;
-}
-
-export function variantPdfHref(v: ResumeVariant): string {
-  return `/resume/${v}/pdf`;
-}
+export const resumePdfHref = "/resume/pdf";

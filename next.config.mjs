@@ -152,6 +152,8 @@ const nextConfig = {
       ...dual("/jobs/:slug", "/resume"),
       ...dual("/jobs", "/resume"),
       ...dual("/experience", "/resume"),
+      // The software and robotics resumes were merged into one.
+      ...dual("/resume/:variant(software|robotics)/pdf", "/resume/pdf"),
 
       // --- News → updates ---
       ...dual("/news/:slug", "/updates"),
