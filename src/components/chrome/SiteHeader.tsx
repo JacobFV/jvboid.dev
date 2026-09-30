@@ -44,7 +44,7 @@ const MORE_NAV: { label: string; href: string; external?: boolean }[] = [
   { label: "Readings", href: "/readings" },
   { label: "Writings", href: "/papers" },
   { label: "Resume", href: "/resume" },
-  { label: "CAD Editor", href: "https://cad.jvboid.dev", external: true },
+  { label: "CAD Editor", href: "https://commandagi.com", external: true },
   // GenieEDA's only public host until it gets a domain; update this link when it does.
   { label: "GenieEDA", href: "https://genieeda-staging.jacobfv123.workers.dev", external: true },
 ];
