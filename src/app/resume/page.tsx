@@ -120,11 +120,8 @@ export default function ResumePage() {
         </ul>
       </section>
 
-      {/* Experience ------------------------------------------------------ */}
+      {/* Experience — no heading; the section gap sets it apart. */}
       <section className="mb-12">
-        <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
-          Experience
-        </h2>
         <ul className="grid gap-6">
           {experience.map((n) => {
             return (

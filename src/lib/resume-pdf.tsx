@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
 
   skillsLine: { fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
 
+  experience: { marginTop: 14 },
   expRow: { flexDirection: "row", marginBottom: 8 },
   expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
   expBody: { flex: 1 },
@@ -185,8 +186,8 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
           ))}
         </View>
 
-        <Text style={styles.sectionLabel}>Experience</Text>
-        <View>
+        {/* No heading: a gap is enough to set the experience apart. */}
+        <View style={styles.experience}>
           {experience.map((e) => (
             <View key={`${e.org}-${e.title}-${e.range}`} style={styles.expRow} wrap={false}>
               <Text style={styles.expDate}>{e.range}</Text>
