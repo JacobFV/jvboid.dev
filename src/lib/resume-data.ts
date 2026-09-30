@@ -49,8 +49,8 @@ export const resumeMeta: {
       label: "Robotics & hardware",
       items: [
         "robot control policies", "embodied AI", "sim-to-real", "LeRobot", "CAD",
-        "FreeCAD", "KiCAD", "Blender", "PCB design", "SMT assembly", "CNC routing",
-        "3D printing (SLA, FDM, SLS)", "hydraulics", "rapid prototyping",
+        "FreeCAD", "KiCAD", "Blender", "PCB design", "CNC routing",
+        "3D printing (SLA, FDM, SLS)", "rapid prototyping",
       ],
     },
     {
