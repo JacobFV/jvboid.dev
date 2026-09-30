@@ -90,9 +90,8 @@ const styles = StyleSheet.create({
   expBody: { flex: 1 },
   expTitle: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
-  expSummary: { marginTop: 1, fontSize: 9, color: colors.inkDim },
-  expBullet: { position: "relative", marginTop: 1, paddingLeft: 7, fontSize: 9, color: colors.inkDim },
-  expBulletDot: { position: "absolute", left: 0, top: 5, width: 2, height: 2, borderRadius: 1, backgroundColor: colors.inkMute },
+  expPara: { marginTop: 1, fontSize: 9, color: colors.inkDim },
+  expParaNext: { marginTop: 3 },
 
   projRow: { flexDirection: "row", gap: 14 },
   projItem: { flex: 1, flexDirection: "row", marginBottom: 2.4 },
@@ -197,16 +196,12 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
                     <Text style={styles.expOrg}> · {e.org}</Text>
                   </Text>
                 ) : null}
-                {e.bullets.length === 1 ? (
-                  <Text style={styles.expSummary}>{e.bullets[0]}</Text>
-                ) : (
-                  e.bullets.map((b) => (
-                    <View key={b} style={styles.expBullet}>
-                      <View style={styles.expBulletDot} />
-                      <Text>{b}</Text>
-                    </View>
-                  ))
-                )}
+                {/* Paragraphs, not bullets: each entry reads as prose. */}
+                {e.bullets.map((b, i) => (
+                  <Text key={b} style={[styles.expPara, i > 0 ? styles.expParaNext : {}]}>
+                    {b}
+                  </Text>
+                ))}
               </View>
             </View>
           ))}

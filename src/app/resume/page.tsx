@@ -143,17 +143,12 @@ export default function ResumePage() {
                       <span className="text-[var(--color-ink-dim)]"> · {n.org}</span>
                     </Wrap>
                   )}
-                  {n.bullets.length === 1 ? (
-                    <p className="mt-1 text-sm text-[var(--color-ink-dim)]">{n.bullets[0]}</p>
-                  ) : (
-                    <ul className="mt-1 grid gap-1 text-sm text-[var(--color-ink-dim)]">
-                      {n.bullets.map((b) => (
-                        <li key={b} className="relative pl-4 before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full before:bg-[var(--color-ink-mute)]">
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  {/* Paragraphs, not bullets: each entry reads as prose. */}
+                  <div className="mt-1 grid gap-1.5 text-sm text-[var(--color-ink-dim)]">
+                    {n.bullets.map((b) => (
+                      <p key={b}>{b}</p>
+                    ))}
+                  </div>
                   {n.media && n.media.length > 0 && (
                     // A LinkedIn-style media strip, deliberately small: fixed
                     // 56px height, natural width, caption on hover/focus via

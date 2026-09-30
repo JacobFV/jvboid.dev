@@ -164,7 +164,7 @@ export const experience: {
     org: "Human Robots",
     range: "Jan 2023 – Sep 2024",
     bullets: [
-      'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), 3018 mdf milling. Supplier outreach; two direct oem relationships. Did all the math in my notebook and brain before ChatGPT was useful for this!',
+      'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), 3018 mdf milling. Supplier outreach; worked with Dakings Rapid. Did all the math in my notebook and brain before ChatGPT was useful for this!',
     ],
     media: [
       media(
