@@ -204,8 +204,8 @@ export const experience: {
     href: "https://uta.edu",
     range: "Jun 2021 – May 2022",
     bullets: [
-      "Collaborated with research group to evolve and test a flask-based statistical visualization tool CoWiz",
-      "Currently developing a full stack web server MLN-Dashboard using Next-React-GraphQL stack",
+      "Flask-based statistical visualization tool CoWiz; research group collaboration",
+      "Full stack Next-React-GraphQL stack: MLN Dashboard",
     ],
     tags: ["react", "next.js", "graphql", "flask"],
     media: [
