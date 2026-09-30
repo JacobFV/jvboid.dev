@@ -188,14 +188,14 @@ export const experience: {
     title: "Software Engineer",
     org: "Motio, Inc.",
     range: "Aug 2022 – Jan 2023",
-    bullets: ["Develop Soterre for Qlik Sense"],
+    bullets: ["Developed Soterre for Qlik Sense"],
     tags: ["java", "hibernate"],
   },
   {
     title: "Software Engineer (Intern)",
     org: "Motio, Inc.",
     range: "Jun 2022 – Aug 2022",
-    bullets: ["Develop Soterre for Qlik Sense"],
+    bullets: ["Developed Soterre for Qlik Sense"],
     tags: ["java", "hibernate"],
   },
   {
