@@ -244,8 +244,7 @@ export const experience: {
     org: "McDonald's",
     range: "May 2016 – Mar 2020",
     bullets: [
-      "Led safety committee and addressed employees during 30-minute monthly safety meeting",
-      "Train employees on-the-job and formally",
+      "Led 30-minute monthly safety meetings",
       "English and Spanish",
     ],
     tags: ["training", "team-leadership", "safety", "spanish"],
