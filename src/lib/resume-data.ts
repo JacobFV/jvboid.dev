@@ -39,8 +39,13 @@ export const resumeMeta: {
   ],
   highlights: [
     [
-      "Currently developing morphology-agnostic, contact-centric robotics control policy in collaboration with ",
-      { text: "TalOS Robotics", href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics" },
+      "Currently developing ",
+      {
+        text: "morphology-agnostic, contact-centric robotics control policy",
+        href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics",
+      },
+      " in collaboration with ",
+      { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
     ],
     [
       "Developed/trained ",
@@ -89,14 +94,13 @@ function media(
 // asking; a previous pass paraphrased Breezy and AGI into something blander and
 // had to be reverted.
 // `title` and `org` are optional: an entry with neither (the career break)
-// renders as its date range and text alone. An empty `tags` shows no chips.
+// renders as its date range and text alone.
 export const experience: {
   title?: string;
   org?: string;
   href?: string;
   range: string;
   bullets: string[];
-  tags: string[];
   media?: ExperienceMedia[];
 }[] = [
   {
@@ -108,7 +112,6 @@ export const experience: {
       "Interfaces and integration across our API, SDKs, and other partner-facing surfaces. iOS, on-device llms, model quantization, agents, control plane, etc.",
       "Owned api.agi.tech. First-responder to API infra / full-stack backend issues (Team across 3 countries/timezones, constant pushes directly to production)",
     ],
-    tags: ["agents", "ios", "on-device", "schemas", "api"],
     media: [
       media(
         "burning-the-midnight-oil.jpg", 201, 180,
@@ -130,7 +133,6 @@ export const experience: {
     bullets: [
       "full-stack + infrastructure engineering across agentic systems: typescript, python, react/next.js, node.js, apis, distributed systems, cloud infrastructure, aws, gcp, s3, data engineering, containers, drizzle, pg/psql, databases, queues, browser/computer use, agent runtimes, tool use, model inference, llm integrations, multimodal models, evals, automation, control planes, observability, debugging, deployment, ci/cd, production operations. shipped rapidly across the stack in a high-velocity, production-first environment.",
     ],
-    tags: ["agents", "infra", "full-stack", "evals"],
     // The "AGI" thumbnail from this LinkedIn entry was the one image missing
     // from the handoff — the file that arrived under it was a duplicate of the
     // Human Robots prototype photo. Add it here when the real file turns up.
@@ -144,7 +146,6 @@ export const experience: {
       "Independently owned features end-to-end from product requirements and implementation through integration, debugging, and production delivery.",
       "Worked across frontend, backend, ai integrations, and application infrastructure; Left for infra role at AGI Inc",
     ],
-    tags: ["voice-ai", "agents", "rails", "next.js"],
     media: [
       media("breezy-scheduling-appointments.jpg", 161, 180, "Using Breezy to Schedule Appointments"),
       media("breezy-ai-assistant.jpg", 156, 180, "Breezy AI assistant"),
@@ -157,7 +158,6 @@ export const experience: {
     bullets: [
       "Hardware and software for Truffle-1, a personal AI computer running models on-device: enclosure iteration across SLA, FDM and SLS printing against thermal constraints, alongside on-device ML work.",
     ],
-    tags: ["ml", "on-device", "research"],
   },
   {
     title: "Humanoid Robot Prototyping",
@@ -166,7 +166,6 @@ export const experience: {
     bullets: [
       'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), 3018 mdf milling. Supplier outreach; two direct oem relationships. Did all the math in my notebook and brain before ChatGPT was useful for this!',
     ],
-    tags: ["robotics", "hydraulics", "cad", "hardware", "pcb"],
     media: [
       media(
         "endoskeletal-hydraulic-prototype.jpg", 83, 180,
@@ -182,21 +181,18 @@ export const experience: {
     bullets: [
       "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
     ],
-    tags: ["generative-ai", "diffusion", "full-stack"],
   },
   {
     title: "Software Engineer",
     org: "Motio, Inc.",
     range: "Aug 2022 – Jan 2023",
     bullets: ["Developed Soterre for Qlik Sense"],
-    tags: ["java", "hibernate"],
   },
   {
     title: "Software Engineer (Intern)",
     org: "Motio, Inc.",
     range: "Jun 2022 – Aug 2022",
     bullets: ["Developed Soterre for Qlik Sense"],
-    tags: ["java", "hibernate"],
   },
   {
     title: "Software Developer",
@@ -207,7 +203,6 @@ export const experience: {
       "Flask-based statistical visualization tool CoWiz; research group collaboration",
       "Full stack Next-React-GraphQL stack: MLN Dashboard",
     ],
-    tags: ["react", "next.js", "graphql", "flask"],
     media: [
       media(
         "mln-dashboard.jpg", 288, 180,
@@ -229,7 +224,6 @@ export const experience: {
     bullets: [
       "Maintain and enhance multi-platform (iOS and Android) data collecting application MyAmble using flutter and firebase and web administrator interface",
     ],
-    tags: ["flutter", "firebase", "mobile"],
     media: [
       media("myamble-application.jpg", 234, 180, "MyAmble Application", "This was taken from the user guide"),
     ],
@@ -237,7 +231,6 @@ export const experience: {
   {
     range: "Apr 2020 – Jun 2021",
     bullets: ["Pandemic + first year at the University of Texas at Arlington"],
-    tags: [],
   },
   {
     title: "Crew Trainer",
@@ -247,7 +240,6 @@ export const experience: {
       "Led 30-minute monthly safety meetings",
       "English and Spanish",
     ],
-    tags: ["training", "team-leadership", "safety", "spanish"],
     media: [
       media(
         "fire-safety-poster.jpg", 255, 180,
@@ -266,14 +258,12 @@ export const experience: {
     bullets: [
       "CS coursework alongside heavy lab work, independent ML/robotics prototypes, and a steady research output. GPA 3.6/4.0.",
     ],
-    tags: [],
   },
   {
     title: "A.A.S., Mathematics",
     org: "Navarro College",
     range: "2016 – 2018",
     bullets: ["Math associate degree taken dual-credit during high school. GPA 3.9/4.0."],
-    tags: [],
   },
 ];
 

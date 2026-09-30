@@ -93,24 +93,12 @@ const styles = StyleSheet.create({
   expSummary: { marginTop: 1, fontSize: 9, color: colors.inkDim },
   expBullet: { position: "relative", marginTop: 1, paddingLeft: 7, fontSize: 9, color: colors.inkDim },
   expBulletDot: { position: "absolute", left: 0, top: 5, width: 2, height: 2, borderRadius: 1, backgroundColor: colors.inkMute },
-  expTags: { marginTop: 2, fontSize: 7.5, color: colors.inkMute, letterSpacing: 0.5 },
 
   projRow: { flexDirection: "row", gap: 14 },
   projItem: { flex: 1, flexDirection: "row", marginBottom: 2.4 },
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
-
-  footer: {
-    position: "absolute",
-    bottom: 18,
-    left: 44,
-    right: 44,
-    fontSize: 7.5,
-    color: colors.inkMute,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
 });
 
 function ProjectItem({ n }: { n: Node }) {
@@ -219,7 +207,6 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
                     </View>
                   ))
                 )}
-                {e.tags.length > 0 ? <Text style={styles.expTags}>{e.tags.join(" · ")}</Text> : null}
               </View>
             </View>
           ))}
@@ -232,10 +219,6 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
           <Text style={styles.skillsLine}>{meta.strengths.join(", ")}</Text>
         </View>
 
-        <View style={styles.footer} fixed>
-          <Text>{contact.name} — resume</Text>
-          <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
-        </View>
       </Page>
     </Document>
   );

@@ -182,15 +182,6 @@ export default function ResumePage() {
                       ))}
                     </ul>
                   )}
-                  {n.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2 font-[family-name:var(--font-mono)] text-[10px] text-[var(--color-ink-mute)]">
-                      {n.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-[var(--color-bg-1)] px-2 py-0.5">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </li>
             );
