@@ -191,7 +191,7 @@ function ProjectItem({ n }: { n: ResumeProject }) {
           <IconLink key={repo.href} href={repo.href} icon={GITHUB_MARK} label={repo.slug} />
         ))}
         {resumePosts(n).map((post) => (
-          <IconLink key={post.href} href={post.href} icon={POST_MARKS[post.network]} label="Post" />
+          <IconLink key={post.href} href={post.href} icon={POST_MARKS[post.network]} label={post.label} />
         ))}
         {showcases.map((sc) => (
           <IconLink key={sc.href} href={sc.href} icon={GLOBE} label={sc.label} />
@@ -284,7 +284,7 @@ function projectHeight(n: ResumeProject): number {
     resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, ""),
     ...resumeAwards(n).map((a) => `${a.text}.`),
     ...repos.map((r) => `${GITHUB_MARK}${r.slug}`),
-    ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}Post`),
+    ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}${p.label}`),
     ...showcases.map((sc) => `${GLOBE}${sc.label}`),
     ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
   ].join(" ");
@@ -299,7 +299,7 @@ function projectsStart(): number {
   let y = 22 * 1.2 + 4 + 10 * LEADING + 6 + 8.5 * LEADING; // name, headline, contact row
   y += 10; // highlights' top margin
   for (const parts of meta.highlights) {
-    const text = parts.map((p) => (typeof p === "string" ? p : p.icon ? ` ${POST_MARKS[p.icon]}${p.text}` : p.text)).join("");
+    const text = parts.map((p) => (typeof p === "string" ? p : p.text)).join("");
     y += lineCount(text, CONTENT_WIDTH - 10, 9) * 9 * LEADING + 3;
   }
   y += 14; // experience's top margin
@@ -410,8 +410,6 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
                 {parts.map((part, j) =>
                   typeof part === "string" ? (
                     part
-                  ) : part.icon ? (
-                    <IconLink key={j} href={part.href} icon={POST_MARKS[part.icon]} label={part.text} />
                   ) : (
                     <Link key={j} src={part.href} style={styles.highlightLink}>
                       {part.text}

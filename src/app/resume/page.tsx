@@ -172,8 +172,6 @@ export default function ResumePage() {
               {parts.map((part, j) =>
                 typeof part === "string" ? (
                   part
-                ) : part.icon ? (
-                  <IconLink key={j} href={part.href} icon={<PostMark network={part.icon} />} label={part.text} />
                 ) : (
                   <a
                     key={j}
@@ -307,7 +305,7 @@ export default function ResumePage() {
                       key={post.href}
                       href={post.href}
                       icon={<PostMark network={post.network} />}
-                      label="Post"
+                      label={post.label}
                     />
                   ))}
                   {showcases.map((showcase) => (

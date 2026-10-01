@@ -19,9 +19,7 @@ export const contact = {
 
 // A highlight is a run of plain text and links, so a bullet can link the
 // thing it names without the whole line becoming one anchor.
-// A link with an `icon` renders like the post links on a project line:
-// the network's mark, then the label.
-export type HighlightPart = string | { text: string; href: string; icon?: PostNetwork };
+export type HighlightPart = string | { text: string; href: string };
 
 export const resumeMeta: {
   headline: string;
@@ -99,7 +97,6 @@ export const resumeMeta: {
       { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
       " topologically-constrained transformer foundation model for ",
       { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
-      { text: "Discussion", href: "https://lnkd.in/p/djKYJK-W", icon: "linkedin" },
     ],
     [
       "Owned ",
@@ -572,10 +569,12 @@ export function resumeAwards(node: Pick<Node, "id">): { text: string; href: stri
   return RESUME_AWARDS[node.id] ?? [];
 }
 
-// Social posts about a project, linked after its repo. Resume-only, like
-// the awards.
+// Social posts about a project, linked after its repo with the network's
+// mark and "Post", or `label` when given. Resume-only, like the awards.
 export type PostNetwork = "linkedin" | "x" | "commandagi";
-const RESUME_POSTS: Record<string, { network: PostNetwork; href: string }[]> = {
+type ResumePost = { network: PostNetwork; href: string; label?: string };
+const RESUME_POSTS: Record<string, ResumePost[]> = {
+  "ibm-1": [{ network: "linkedin", href: "https://lnkd.in/p/djKYJK-W", label: "Talk" }],
   "chem-0": [
     {
       network: "linkedin",
@@ -588,8 +587,8 @@ const RESUME_POSTS: Record<string, { network: PostNetwork; href: string }[]> = {
   ],
 };
 
-export function resumePosts(node: Pick<Node, "id">): { network: PostNetwork; href: string }[] {
-  return RESUME_POSTS[node.id] ?? [];
+export function resumePosts(node: Pick<Node, "id">): (ResumePost & { label: string })[] {
+  return (RESUME_POSTS[node.id] ?? []).map((p) => ({ ...p, label: p.label ?? "Post" }));
 }
 
 // The project's GitHub repo as `owner/repo`, for the link at the end of its
