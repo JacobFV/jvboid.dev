@@ -16,6 +16,7 @@ import {
   packageLinks,
   type BlurbPart,
   onResume,
+  resumeBlurb,
   resumeBlurbParts,
   resumeMeta as meta,
 } from "./resume-data";
@@ -109,6 +110,8 @@ const styles = StyleSheet.create({
   expPara: { marginTop: 1, fontSize: 9, color: colors.inkDim },
   expParaNext: { marginTop: 3 },
 
+  projBlock: { flexDirection: "row", gap: 14 },
+  projColumn: { flex: 1 },
   projItem: { flexDirection: "row", paddingVertical: 2 },
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
@@ -160,7 +163,7 @@ function ProjectItem({ n }: { n: Node }) {
   const repo = githubRepo(n);
   const showcase = showcaseLink(n);
   return (
-    <View style={styles.projItem} wrap={false}>
+    <View style={styles.projItem}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
       {/* react-pdf allows a line break wherever two styles meet with no space
           between them, and charges it as a hyphenation penalty. Words are
@@ -191,23 +194,119 @@ function ProjectItem({ n }: { n: Node }) {
   );
 }
 
-// One project per row, full width, so each is exactly as tall as its text
-// and every project gets the same space above and below. (Two across meant
-// rows of pairs — react-pdf can't break two side-by-side columns across a
-// page — and every pair was as tall as its longer half.)
+// Two columns, each project exactly as tall as its text. react-pdf can't
+// break a pair of side-by-side columns across a page (whatever runs past
+// the foot is drawn in a heap through the margin), and rows of pairs made
+// every pair as tall as its longer half. So the list goes in short blocks:
+// each block is two independent columns that won't split, and its projects
+// are divided between them so the columns end about level. The only slack
+// is the small difference at the foot of a block, and pages break cleanly
+// between blocks.
+const BLOCK = 4;
+// Helvetica's advance widths (per 1000 em) for printable ASCII, from its
+// standard AFM metrics; anything else is costed as a digit. With them the
+// balancer wraps each project's text the way the PDF will, word by word,
+// at the column's real width.
+const HELVETICA = [
+  278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278,
+  556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556,
+  1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
+  667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556,
+  333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556,
+  556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584,
+];
+const PROJ_FONT_SIZE = 8.5;
+// Letter page, less the side padding, split in two around the gap, less
+// the date column.
+const PROJ_TEXT_WIDTH = (612 - 2 * 44 - 14) / 2 - 46;
+
+function textWidth(text: string): number {
+  let units = 0;
+  for (const ch of text) {
+    const code = ch.codePointAt(0)!;
+    // The icon glyphs are a full em wide.
+    units += code >= 0xe000 && code <= 0xe0ff ? 1000 : (HELVETICA[code - 32] ?? 556);
+  }
+  return (units / 1000) * PROJ_FONT_SIZE;
+}
+
+// A project's height in lines, as the PDF will wrap it. Only used to
+// balance the columns, so being a word off now and then is harmless.
+function estimateLines(n: Node): number {
+  const repo = githubRepo(n);
+  const showcase = showcaseLink(n);
+  const text = [
+    `${n.title}:`,
+    resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, ""),
+    ...resumeAwards(n).map((a) => `${a.text}.`),
+    repo ? `${GITHUB_MARK}${repo.slug}` : "",
+    showcase ? `${GLOBE}${showcase.label}` : "",
+    ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
+  ].join(" ");
+  const space = textWidth(" ");
+  let lines = 1;
+  let x = 0;
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const w = textWidth(word);
+    if (x > 0 && x + space + w > PROJ_TEXT_WIDTH) {
+      lines += 1;
+      x = w;
+    } else {
+      x += (x > 0 ? space : 0) + w;
+    }
+  }
+  return lines + 0.35; // + the padding around each project, in lines
+}
+
+// Split a block between two columns, keeping date order inside each column,
+// so that the taller column is as short as possible.
+function balance(block: Node[]): [Node[], Node[]] {
+  const lines = block.map(estimateLines);
+  let best: [Node[], Node[]] = [block, []];
+  let bestHeight = Infinity;
+  for (let mask = 0; mask < 1 << block.length; mask++) {
+    let left = 0;
+    let right = 0;
+    block.forEach((_, i) => (mask & (1 << i) ? (right += lines[i]) : (left += lines[i])));
+    // Ties go to the split that keeps the most recent project top-left.
+    if (Math.max(left, right) < bestHeight && !(mask & 1)) {
+      bestHeight = Math.max(left, right);
+      best = [block.filter((_, i) => !(mask & (1 << i))), block.filter((_, i) => mask & (1 << i))];
+    }
+  }
+  return best;
+}
+
+function ProjectBlock({ block }: { block: Node[] }) {
+  const [left, right] = balance(block);
+  return (
+    <View style={styles.projBlock} wrap={false}>
+      {[left, right].map((col, i) => (
+        <View key={i} style={styles.projColumn}>
+          {col.map((n) => (
+            <ProjectItem key={n.id} n={n} />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function ProjectGroup({ items }: { items: Node[] }) {
   if (items.length === 0) return null;
-  const [first, ...rest] = items;
+  const blocks: Node[][] = [];
+  for (let i = 0; i < items.length; i += BLOCK) blocks.push(items.slice(i, i + BLOCK));
+  const [first, ...rest] = blocks;
   return (
     <View>
-      {/* The heading travels with the first project, so it is never left
+      {/* The heading travels with the first block, so it is never left
           alone at the foot of a page with its projects overleaf. */}
       <View wrap={false}>
         <Text style={styles.sectionLabel}>Projects</Text>
-        <ProjectItem n={first} />
+        <ProjectBlock block={first} />
       </View>
-      {rest.map((n) => (
-        <ProjectItem key={n.id} n={n} />
+      {rest.map((block) => (
+        <ProjectBlock key={block[0].id} block={block} />
       ))}
     </View>
   );
