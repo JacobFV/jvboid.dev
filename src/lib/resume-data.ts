@@ -46,7 +46,7 @@ export const resumeMeta: {
         "transformers", "foundation models", "multimodal models", "diffusion models",
         "world models", "reinforcement learning", "evolution strategies", "model training",
         "fine-tuning", "model quantization", "on-device inference", "TensorFlow Lite",
-        "computer vision", "OpenCV", "YOLO", "LLM integration", "OpenAI API", "Anthropic API",
+        "computer vision", "OpenCV", "LLM integration", "OpenAI API", "Anthropic API",
         "Gemini API", "AI agents", "multi-agent systems", "tool use", "computer use",
         "Model Context Protocol (MCP)", "evals", "signal processing", "EEG", "MNE-Python",
       ],
@@ -341,7 +341,7 @@ const SOFTWARE_RESUME = new Set([
   // AI systems, agents, world models, ML research
   "ibm-1", "sc-wbd", "general-unified-world-modeling", "canvas-engineering",
   "recursive-omnimodal-video-action-model", "brain-model", "tensor-computer",
-  "tensacode", "the-multi-agent-network", "the-fertile-crescent", "computatrum",
+  "tensacode", "the-multi-agent-network", "computatrum",
   "belief-graph-orchestrator", "predictive-general-intelligence",
   "full-stack-artificial-intelligence", "multigraph-nn", "multi-graph-former-project",
   "multiparadigm-networks", "bsbr", "tf-som", "eggroll-trainer", "rl-lab",
@@ -380,7 +380,7 @@ const NOT_ON_RESUME = new Set([
   "ai-proverbs", "jacobs-hits-2023", "summer-break-2021-album", "tiles",
   "space-pong", "looking-for-princess-suzzane", "polonius-as-a-fool",
   "the-right-night-light", "jacobfv-site", "jacobfv-github-io", "gohuman-fund",
-  "halo-prismatic",
+  "halo-prismatic", "the-fertile-crescent",
 ]);
 
 // Fallback for projects added after this file was last curated. Deliberately
