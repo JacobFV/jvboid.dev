@@ -40,8 +40,7 @@ const colors = {
 // Text only. The web résumé shows each job's media thumbnails; the PDF
 // leaves them out, since a printed résumé is read for the words and the
 // pictures only crowd the page.
-const WAVES_HEIGHT = 44;
-const TOP_WAVE_HEIGHT = 22;
+const WAVE_HEIGHT = 16;
 
 const styles = StyleSheet.create({
   page: {
@@ -106,8 +105,7 @@ const styles = StyleSheet.create({
   skillsLine: { marginBottom: 2, fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
   skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
-  waves: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVES_HEIGHT },
-  topWave: { position: "absolute", left: 0, right: 0, top: 0, width: 612, height: TOP_WAVE_HEIGHT },
+  wave: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVE_HEIGHT },
   experience: { marginTop: 14 },
   expRow: { flexDirection: "row", marginBottom: 8 },
   expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
@@ -387,53 +385,21 @@ function ProjectGroup({ items }: { items: Node[] }) {
   );
 }
 
-// Ink-blue waves along the foot of every page, bleeding off both sides and
-// the bottom edge. They sit inside the page's deep bottom padding, so they
-// never touch the text; three layers, lightest and tallest at the back.
-function Waves() {
+// One thin, pale ink-blue wave along the foot of every page, bleeding off
+// both sides and the bottom edge, inside the page's deep bottom padding so
+// it never touches the text. Pale on purpose: a solid band is the darkest
+// thing on the page and pulls the eye to the one place with nothing to read.
+function Wave() {
   const w = 612;
-  const h = WAVES_HEIGHT;
+  const h = WAVE_HEIGHT;
   return (
-    <Svg fixed style={styles.waves} viewBox={`0 0 ${w} ${h}`}>
+    <Svg fixed style={styles.wave} viewBox={`0 0 ${w} ${h}`}>
       <Path
-        d={`M0 10 C 90 0, 190 22, 306 11 S 520 0, ${w} 12 V ${h} H 0 Z`}
+        d={`M0 8 C 110 1, 220 14, 330 7 S 530 2, ${w} 9 V ${h} H 0 Z`}
         fill={colors.accent}
-        fillOpacity={0.12}
-      />
-      <Path
-        d={`M0 17 C 110 27, 220 5, 330 16 S 530 27, ${w} 15 V ${h} H 0 Z`}
-        fill={colors.accent}
-        fillOpacity={0.28}
-      />
-      <Path
-        d={`M0 23 C 120 16, 240 30, 360 22 S 540 17, ${w} 24 V ${h} H 0 Z`}
-        fill={colors.accent}
+        fillOpacity={0.2}
       />
     </Svg>
-  );
-}
-
-// One light wave hanging from the top edge of every page after the first —
-// page one has the name there. Kept inside the top padding.
-function TopWave() {
-  const w = 612;
-  const h = TOP_WAVE_HEIGHT;
-  return (
-    <View
-      fixed
-      style={styles.topWave}
-      render={({ pageNumber }) =>
-        pageNumber > 1 ? (
-          <Svg style={{ width: w, height: h }} viewBox={`0 0 ${w} ${h}`}>
-            <Path
-              d={`M0 0 H ${w} V 12 C 520 20, 420 4, 306 11 S 100 21, 0 13 Z`}
-              fill={colors.accent}
-              fillOpacity={0.18}
-            />
-          </Svg>
-        ) : null
-      }
-    />
   );
 }
 
@@ -443,8 +409,7 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
   return (
     <Document title="Jacob Valdez — Resume" author={contact.name} subject="resume">
       <Page size="LETTER" style={styles.page}>
-        <Waves />
-        <TopWave />
+        <Wave />
         <View>
           <Text style={styles.name}>{contact.name}</Text>
           <Text style={styles.headline}>{meta.headline}</Text>
