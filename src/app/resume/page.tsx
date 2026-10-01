@@ -141,7 +141,7 @@ export default function ResumePage() {
         <h1 className="font-block text-4xl font-extrabold tracking-tight text-[var(--color-ink)]">
           {contact.name}
         </h1>
-        <p className="mt-1 text-sm uppercase tracking-widest text-[var(--color-accent)] font-[family-name:var(--font-mono)]">
+        <p className="mt-1 text-sm uppercase tracking-widest text-[var(--color-ink)] font-[family-name:var(--font-mono)]">
           {meta.headline}
         </p>
         {meta.summary && (
@@ -160,7 +160,6 @@ export default function ResumePage() {
           <a className="hover:text-[var(--color-accent)]" href="https://twitter.com/jvboid">
             {contact.twitter}
           </a>
-          <span>{contact.location}</span>
         </div>
       </header>
 

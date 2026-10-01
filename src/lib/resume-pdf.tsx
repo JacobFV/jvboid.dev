@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     marginBottom: 4,
   },
-  headline: { fontSize: 10, color: colors.accent, fontFamily: "Helvetica-Oblique" },
+  headline: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Oblique" },
   summary: { marginTop: 6, fontSize: 9.5, color: colors.inkDim, lineHeight: 1.5 },
   contactRow: { marginTop: 6, flexDirection: "row", flexWrap: "wrap", gap: 10, fontSize: 8.5, color: colors.inkMute },
   contactItem: { color: colors.inkMute },
@@ -397,7 +397,6 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
             <Link src={`https://${contact.website}`} style={styles.contactLink}>{contact.website}</Link>
             <Link src={`https://${contact.github}`} style={styles.contactLink}>{contact.github}</Link>
             <Text style={styles.contactItem}>{contact.twitter}</Text>
-            <Text style={styles.contactItem}>{contact.location}</Text>
           </View>
         </View>
 

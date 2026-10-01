@@ -14,7 +14,6 @@ export const contact = {
   website: "jvboid.dev",
   github: "github.com/JacobFV",
   twitter: "@jvboid",
-  location: "San Francisco, CA",
 };
 
 // A highlight is a run of plain text and links, so a bullet can link the
