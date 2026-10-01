@@ -370,7 +370,7 @@ const SOFTWARE_RESUME = new Set([
   "recursive-omnimodal-video-action-model", "brain-model", "tensor-computer",
   "tensacode", "the-multi-agent-network", "computatrum",
   "belief-graph-orchestrator",
-  "full-stack-artificial-intelligence", "multigraph-nn", "multi-graph-former-project",
+  "multigraph-nn", "multi-graph-former-project",
   "multiparadigm-networks", "bsbr", "tf-som", "eggroll-trainer", "rl-lab",
   "broadening-and-building-beyond-classical-reinforcement-learning",
   "synthux", "node-tree", "langcurriculum", "jplotlib", "jnumpy",
@@ -396,7 +396,6 @@ const ROBOTICS_RESUME = new Set([
   // The models and control research that drive embodiment
   "ibm-1", "sc-wbd", "canvas-engineering", "recursive-omnimodal-video-action-model",
   "general-unified-world-modeling", "rl-lab", "computatrum",
-  "full-stack-artificial-intelligence",
   "broadening-and-building-beyond-classical-reinforcement-learning",
 ]);
 
@@ -408,6 +407,7 @@ const NOT_ON_RESUME = new Set([
   "space-pong", "looking-for-princess-suzzane", "polonius-as-a-fool",
   "the-right-night-light", "jacobfv-site", "jacobfv-github-io", "gohuman-fund",
   "halo-prismatic", "the-fertile-crescent", "predictive-general-intelligence",
+  "full-stack-artificial-intelligence",
 ]);
 
 // Fallback for projects added after this file was last curated. Deliberately

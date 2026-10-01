@@ -4,7 +4,7 @@
 // `renderResumePdf()` from a route handler.
 
 import path from "node:path";
-import { Document, Page, Text, View, StyleSheet, Link, Font, renderToBuffer } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Link, Font, Svg, Path, renderToBuffer } from "@react-pdf/renderer";
 import type { Node } from "./graph-types";
 import {
   contact,
@@ -40,6 +40,8 @@ const colors = {
 // Text only. The web résumé shows each job's media thumbnails; the PDF
 // leaves them out, since a printed résumé is read for the words and the
 // pictures only crowd the page.
+const WAVES_HEIGHT = 34;
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 38,
@@ -103,6 +105,7 @@ const styles = StyleSheet.create({
   skillsLine: { marginBottom: 2, fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
   skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
+  waves: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVES_HEIGHT },
   experience: { marginTop: 14 },
   expRow: { flexDirection: "row", marginBottom: 8 },
   expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
@@ -382,12 +385,39 @@ function ProjectGroup({ items }: { items: Node[] }) {
   );
 }
 
+// Ink-blue waves along the foot of every page, bleeding off both sides and
+// the bottom edge. They sit inside the page's deep bottom padding, so they
+// never touch the text; three layers, lightest and tallest at the back.
+function Waves() {
+  const w = 612;
+  const h = WAVES_HEIGHT;
+  return (
+    <Svg fixed style={styles.waves} viewBox={`0 0 ${w} ${h}`}>
+      <Path
+        d={`M0 12 C 90 2, 190 24, 306 13 S 520 2, ${w} 14 V ${h} H 0 Z`}
+        fill={colors.accent}
+        fillOpacity={0.12}
+      />
+      <Path
+        d={`M0 20 C 110 30, 220 8, 330 19 S 530 30, ${w} 18 V ${h} H 0 Z`}
+        fill={colors.accent}
+        fillOpacity={0.28}
+      />
+      <Path
+        d={`M0 27 C 120 20, 240 34, 360 26 S 540 21, ${w} 28 V ${h} H 0 Z`}
+        fill={colors.accent}
+      />
+    </Svg>
+  );
+}
+
 export function ResumeDocument({ projects }: { projects: Node[] }) {
   const listed = resumeProjects(projects);
 
   return (
     <Document title="Jacob Valdez — Resume" author={contact.name} subject="resume">
       <Page size="LETTER" style={styles.page}>
+        <Waves />
         <View>
           <Text style={styles.name}>{contact.name}</Text>
           <Text style={styles.headline}>{meta.headline}</Text>
