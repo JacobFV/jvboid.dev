@@ -202,21 +202,23 @@ export default function ResumePage() {
                   {n.title && (
                     <div className="text-lg text-[var(--color-ink)]">
                       {n.title}
-                      <span className="text-[var(--color-ink-dim)]">
-                        {" · "}
-                        {n.href ? (
-                          <a
-                            href={n.href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
-                          >
-                            {n.org}
-                          </a>
-                        ) : (
-                          n.org
-                        )}
-                      </span>
+                      {n.org && (
+                        <span className="text-[var(--color-ink-dim)]">
+                          {" · "}
+                          {n.href ? (
+                            <a
+                              href={n.href}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
+                            >
+                              {n.org}
+                            </a>
+                          ) : (
+                            n.org
+                          )}
+                        </span>
+                      )}
                     </div>
                   )}
                   {/* Paragraphs, not bullets: each entry reads as prose. */}

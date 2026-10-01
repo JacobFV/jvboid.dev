@@ -496,12 +496,12 @@ export function ResumeDocument({ projects, mode = "resume" }: { projects: Node[]
                 {e.title ? (
                   <Text>
                     <Text style={styles.expTitle}>{e.title}</Text>
-                    <Text style={styles.expOrg}> · </Text>
-                    {e.href ? (
+                    {e.org ? <Text style={styles.expOrg}> · </Text> : null}
+                    {e.org && e.href ? (
                       <Link src={e.href} style={styles.expOrgLink}>{e.org}</Link>
-                    ) : (
+                    ) : e.org ? (
                       <Text style={styles.expOrg}>{e.org}</Text>
-                    )}
+                    ) : null}
                   </Text>
                 ) : null}
                 {/* Paragraphs, not bullets: each entry reads as prose. */}

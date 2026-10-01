@@ -166,7 +166,8 @@ function media(
 // asking; a previous pass paraphrased Breezy and AGI into something blander and
 // had to be reverted.
 // `title` and `org` are optional: an entry with neither (the career break)
-// renders as its date range and text alone. `href` is the org's own site;
+// renders as its date range and text alone, and one with a title but no
+// org (the humanoid prototyping) shows just the title. `href` is the org's own site;
 // the org name links to it.
 export const experience: {
   title?: string;
@@ -245,8 +246,6 @@ export const experience: {
   },
   {
     title: "Humanoid Robot Prototyping",
-    org: "Human Robots",
-    href: "https://x.com/HumanRobotsAI",
     range: "Jan 2023 – Sep 2024",
     bullets: [
       'Prototyped hydraulically actuated, endoskeletal humanoid robot: KiCAD, FreeCAD, Blender, Python, 3D printing, mdf board CNC routing, 3/16" A16 plasma cutting, 100um + 300um trace PCB fabrication and SMT assembly (LCSC), 3018 mdf milling. Supplier outreach; worked with Dakings Rapid. Did all the math in my notebook and brain before ChatGPT was useful for this!',
