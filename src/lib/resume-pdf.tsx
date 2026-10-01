@@ -42,9 +42,6 @@ const colors = {
 // leaves them out, since a printed résumé is read for the words and the
 // pictures only crowd the page.
 const WAVE_HEIGHT = 16;
-// The skills' fine print, set in the last project column.
-const SKILLS_SIZE = 6.5;
-const SKILLS_LEADING = 1.35;
 
 const styles = StyleSheet.create({
   page: {
@@ -106,8 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
 
-  columnLabel: { marginTop: 8 },
-  skillsFine: { marginBottom: 1.5, fontSize: SKILLS_SIZE, color: colors.inkDim, lineHeight: SKILLS_LEADING },
+  skillsLine: { marginBottom: 2, fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
   skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
   wave: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVE_HEIGHT },
@@ -328,42 +324,17 @@ function projectsStart(): number {
 // The projects heading: sectionLabel's margins, line, padding and rule.
 const PROJECTS_HEADING = 14 + 8 * LEADING + 3 + 0.5 + 6;
 
-// The skills run in fine print in the column after the last project, as
-// one more item in the flow, rather than as a full-width section that
-// needs a page of its own.
-const SKILLS = "skills" as const;
-type ColumnItem = ResumeProject | typeof SKILLS;
-
-const COLUMN_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2;
-// sectionLabel as set in a column: a smaller top margin, line, padding, rule.
-const COLUMN_HEADING = 8 + 8 * LEADING + 3 + 0.5 + 6;
-
-function skillsHeight(): number {
-  return (
-    COLUMN_HEADING +
-    meta.skills.reduce(
-      (h, g) =>
-        h + lineCount(`${g.label}: ${g.items.join(", ")}`, COLUMN_WIDTH, SKILLS_SIZE) * SKILLS_SIZE * SKILLS_LEADING + 1.5,
-      0,
-    )
-  );
-}
-
-function itemHeight(item: ColumnItem): number {
-  return item === SKILLS ? skillsHeight() : projectHeight(item);
-}
-
-// Pour the projects, then the skills, into pages of two columns.
-function paginate(items: ColumnItem[]): ColumnItem[][][] {
+// Pour the projects into pages of two columns.
+function paginate(items: Node[]): Node[][][] {
   let room = CONTENT_HEIGHT - projectsStart() - PROJECTS_HEADING;
   // Too little left under the experience for a page of columns to be worth
   // it: the block will start the next page anyway.
   if (room < 120) room = CONTENT_HEIGHT - PROJECTS_HEADING;
-  const pages: ColumnItem[][][] = [];
-  let columns: ColumnItem[][] = [[]];
+  const pages: Node[][][] = [];
+  let columns: Node[][] = [[]];
   let used = 0;
-  for (const item of items) {
-    const h = itemHeight(item);
+  for (const n of items) {
+    const h = projectHeight(n);
     if (used + h > room - COLUMN_SLACK && columns[columns.length - 1].length > 0) {
       if (columns.length === 1) {
         columns.push([]);
@@ -374,44 +345,30 @@ function paginate(items: ColumnItem[]): ColumnItem[][][] {
       }
       used = 0;
     }
-    columns[columns.length - 1].push(item);
+    columns[columns.length - 1].push(n);
     used += h;
   }
   pages.push(columns);
   return pages;
 }
 
-function SkillsFinePrint() {
-  return (
-    <View>
-      <Text style={[styles.sectionLabel, styles.columnLabel]}>Skills (ATS)</Text>
-      {meta.skills.map((g) => (
-        <Text key={g.label} style={styles.skillsFine}>
-          <Text style={styles.skillsLabel}>{g.label}: </Text>
-          {g.items.join(", ")}
-        </Text>
-      ))}
-    </View>
-  );
-}
-
-function ProjectPage({ columns }: { columns: ColumnItem[][] }) {
+function ProjectPage({ columns }: { columns: Node[][] }) {
   return (
     <View style={styles.projBlock}>
       {[0, 1].map((i) => (
         <View key={i} style={styles.projColumn}>
-          {(columns[i] ?? []).map((item) =>
-            item === SKILLS ? <SkillsFinePrint key={SKILLS} /> : <ProjectItem key={item.id} n={item} />,
-          )}
+          {(columns[i] ?? []).map((n) => (
+            <ProjectItem key={n.id} n={n} />
+          ))}
         </View>
       ))}
     </View>
   );
 }
 
-function ProjectGroup({ items }: { items: ResumeProject[] }) {
+function ProjectGroup({ items }: { items: Node[] }) {
   if (items.length === 0) return null;
-  const [first, ...rest] = paginate([...items, SKILLS]);
+  const [first, ...rest] = paginate(items);
   return (
     <View>
       {/* The heading travels with the first page of columns, so it is never
@@ -420,8 +377,8 @@ function ProjectGroup({ items }: { items: ResumeProject[] }) {
         <Text style={styles.sectionLabel}>Projects</Text>
         <ProjectPage columns={first} />
       </View>
-      {rest.map((columns, i) => (
-        <View key={i} wrap={false} break>
+      {rest.map((columns) => (
+        <View key={columns[0][0].id} wrap={false} break>
           <ProjectPage columns={columns} />
         </View>
       ))}
@@ -516,6 +473,16 @@ export function ResumeDocument({ projects, mode = "resume" }: { projects: Node[]
         </View>
 
         <ProjectGroup items={listed} />
+
+        <View wrap={false}>
+          <Text style={styles.sectionLabel}>Skills (ATS)</Text>
+          {meta.skills.map((g) => (
+            <Text key={g.label} style={styles.skillsLine}>
+              <Text style={styles.skillsLabel}>{g.label}: </Text>
+              {g.items.join(", ")}
+            </Text>
+          ))}
+        </View>
       </Page>
     </Document>
   );
