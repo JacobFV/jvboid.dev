@@ -555,7 +555,7 @@ const FEATURED = new Set([
   // Models, research, ML systems
   "tensacode", "tensegra", "computerworld", "ibm-1", "sc-wbd", "langcurriculum",
   "canvas-engineering", "tensor-computer", "recursive-omnimodal-video-action-model",
-  "general-unified-world-modeling", "bsbr", "eggroll-trainer", "desparados-a-eye",
+  "bsbr", "eggroll-trainer", "desparados-a-eye",
   // Robotics and hardware
   "chem-0", "fieldratchet", "lunar-rover", "trash-sorter", "esp32-usb-webcam",
   // Products and tools
@@ -632,8 +632,16 @@ const RESUME_POSTS: Record<string, ResumePost[]> = {
   ],
 };
 
-export function resumePosts(node: Pick<Node, "id">): (ResumePost & { label: string })[] {
-  return (RESUME_POSTS[node.id] ?? []).map((p) => ({ ...p, label: p.label ?? "Post" }));
+export function resumePosts(node: Pick<Node, "id" | "links">): (ResumePost & { label: string })[] {
+  // A demo or site that is itself an X post is shown as one, X mark and
+  // all, rather than as a globe labelled "x.com".
+  const raw = node.links?.demo ?? node.links?.site;
+  const fromLinks: ResumePost[] = raw && isXPost(raw) ? [{ network: "x", href: raw }] : [];
+  return [...(RESUME_POSTS[node.id] ?? []), ...fromLinks].map((p) => ({ ...p, label: p.label ?? "Post" }));
+}
+
+function isXPost(href: string): boolean {
+  return /^https?:\/\/(www\.)?(x|twitter)\.com\/[^/]+\/status\//.test(href);
 }
 
 // The project's GitHub repo as `owner/repo`, for the link at the end of its
@@ -647,11 +655,12 @@ export function githubRepo(node: Pick<Node, "links">): { slug: string; href: str
 }
 
 // Where a project can be seen running or read about — its demo, else its
-// site — for the globe link beside the repo. Labelled with the host, plus
+// site — for the globe link beside the repo. An X post goes with the
+// posts instead (see resumePosts). Labelled with the host, plus
 // the path when that stays short, so the reader knows where it goes.
 export function showcaseLink(node: Pick<Node, "links">): { label: string; href: string } | null {
   const raw = node.links?.demo ?? node.links?.site;
-  if (!raw) return null;
+  if (!raw || isXPost(raw)) return null; // listed as a post instead
   const url = new URL(raw, `https://${contact.website}`);
   const host = url.hostname.replace(/^www\./, "");
   const path = url.pathname.replace(/\/(index\.html)?$/, "");
