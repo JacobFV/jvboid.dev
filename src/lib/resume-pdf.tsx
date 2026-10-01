@@ -41,6 +41,7 @@ const colors = {
 // leaves them out, since a printed résumé is read for the words and the
 // pictures only crowd the page.
 const WAVES_HEIGHT = 44;
+const TOP_WAVE_HEIGHT = 22;
 
 const styles = StyleSheet.create({
   page: {
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
   skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
   waves: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVES_HEIGHT },
+  topWave: { position: "absolute", left: 0, right: 0, top: 0, width: 612, height: TOP_WAVE_HEIGHT },
   experience: { marginTop: 14 },
   expRow: { flexDirection: "row", marginBottom: 8 },
   expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
@@ -411,6 +413,30 @@ function Waves() {
   );
 }
 
+// One light wave hanging from the top edge of every page after the first —
+// page one has the name there. Kept inside the top padding.
+function TopWave() {
+  const w = 612;
+  const h = TOP_WAVE_HEIGHT;
+  return (
+    <View
+      fixed
+      style={styles.topWave}
+      render={({ pageNumber }) =>
+        pageNumber > 1 ? (
+          <Svg style={{ width: w, height: h }} viewBox={`0 0 ${w} ${h}`}>
+            <Path
+              d={`M0 0 H ${w} V 12 C 520 20, 420 4, 306 11 S 100 21, 0 13 Z`}
+              fill={colors.accent}
+              fillOpacity={0.18}
+            />
+          </Svg>
+        ) : null
+      }
+    />
+  );
+}
+
 export function ResumeDocument({ projects }: { projects: Node[] }) {
   const listed = resumeProjects(projects);
 
@@ -418,6 +444,7 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
     <Document title="Jacob Valdez — Resume" author={contact.name} subject="resume">
       <Page size="LETTER" style={styles.page}>
         <Waves />
+        <TopWave />
         <View>
           <Text style={styles.name}>{contact.name}</Text>
           <Text style={styles.headline}>{meta.headline}</Text>
