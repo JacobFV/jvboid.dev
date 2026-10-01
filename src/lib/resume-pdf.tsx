@@ -13,6 +13,8 @@ import {
   githubRepo,
   resumeAwards,
   showcaseLink,
+  packageLinks,
+  type BlurbPart,
   onResume,
   resumeBlurbParts,
   resumeMeta as meta,
@@ -107,8 +109,7 @@ const styles = StyleSheet.create({
   expPara: { marginTop: 1, fontSize: 9, color: colors.inkDim },
   expParaNext: { marginTop: 3 },
 
-  projRow: { flexDirection: "row", gap: 14 },
-  projItem: { flex: 1, flexDirection: "row", marginBottom: 2.4 },
+  projItem: { flexDirection: "row", paddingVertical: 2 },
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
@@ -116,6 +117,8 @@ const styles = StyleSheet.create({
   projRepo: { color: colors.inkMute, textDecoration: "none" },
   projIcon: { fontFamily: "ResumeIcons" },
   projInlineLink: { color: colors.ink, textDecoration: "underline" },
+  projStrong: { color: colors.ink, fontFamily: "Helvetica-Bold" },
+  projTech: { color: colors.inkMute },
 });
 
 // Icons are glyphs in a small font built by scripts/build-resume-icon-font.py
@@ -128,6 +131,26 @@ Font.register({
 });
 const GITHUB_MARK = "\uE000";
 const GLOBE = "\uE001";
+const PACKAGE = "\uE002";
+
+// One run of a project's resume line; see BlurbPart for the markup.
+function BlurbRun({ part }: { part: BlurbPart }) {
+  if (part.href) return <Link src={part.href} style={styles.projInlineLink}>{part.text}</Link>;
+  if (part.strong) return <Text style={styles.projStrong}>{part.text}</Text>;
+  if (part.tech) return <Text style={styles.projTech}>{part.text}</Text>;
+  return <Text>{part.text}</Text>;
+}
+
+// An icon + label link at the end of a project line (repo, site, package).
+function IconLink({ href, icon, label }: { href: string; icon: string; label: string }) {
+  return (
+    <Link src={href} style={styles.projRepo}>
+      {" "}
+      <Text style={styles.projIcon}>{icon}</Text>
+      {label}
+    </Link>
+  );
+}
 
 // The layout engine reads `hyphenationPenalty` off a Text's props, but
 // @react-pdf/renderer's TextProps type doesn't declare it.
@@ -137,7 +160,7 @@ function ProjectItem({ n }: { n: Node }) {
   const repo = githubRepo(n);
   const showcase = showcaseLink(n);
   return (
-    <View style={styles.projItem}>
+    <View style={styles.projItem} wrap={false}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
       {/* react-pdf allows a line break wherever two styles meet with no space
           between them, and charges it as a hyphenation penalty. Words are
@@ -148,15 +171,9 @@ function ProjectItem({ n }: { n: Node }) {
         <Text style={styles.projTitle}>{n.title}</Text>
         <Text>
           {": "}
-          {resumeBlurbParts(n).map((part, i) =>
-            typeof part === "string" ? (
-              part
-            ) : (
-              <Link key={i} src={part.href} style={styles.projInlineLink}>
-                {part.text}
-              </Link>
-            ),
-          )}
+          {resumeBlurbParts(n).map((part, i) => (
+            <BlurbRun key={i} part={part} />
+          ))}
         </Text>
         {resumeAwards(n).map((a) => (
           <Text key={a.href}>
@@ -164,52 +181,34 @@ function ProjectItem({ n }: { n: Node }) {
             <Link src={a.href} style={styles.projAward}>{a.text}</Link>.
           </Text>
         ))}
-        {repo ? (
-          <Link src={repo.href} style={styles.projRepo}>
-            {" "}
-            <Text style={styles.projIcon}>{GITHUB_MARK}</Text>
-            {repo.slug}
-          </Link>
-        ) : null}
-        {showcase ? (
-          <Link src={showcase.href} style={styles.projRepo}>
-            {" "}
-            <Text style={styles.projIcon}>{GLOBE}</Text>
-            {showcase.label}
-          </Link>
-        ) : null}
+        {repo ? <IconLink href={repo.href} icon={GITHUB_MARK} label={repo.slug} /> : null}
+        {showcase ? <IconLink href={showcase.href} icon={GLOBE} label={showcase.label} /> : null}
+        {packageLinks(n).map((pkg) => (
+          <IconLink key={pkg.href} href={pkg.href} icon={PACKAGE} label={pkg.label} />
+        ))}
       </Text>
     </View>
   );
 }
 
-// Two across, set as rows of pairs rather than two tall columns. react-pdf
-// cannot break a flex row across pages: two columns side by side are one
-// row, so whatever ran past the page was drawn in a heap at its foot and
-// through the bottom margin. A row per pair is an ordinary block, and
-// rows break between pages cleanly.
+// One project per row, full width, so each is exactly as tall as its text
+// and every project gets the same space above and below. (Two across meant
+// rows of pairs — react-pdf can't break two side-by-side columns across a
+// page — and every pair was as tall as its longer half.)
 function ProjectGroup({ items }: { items: Node[] }) {
   if (items.length === 0) return null;
-  const rows: Node[][] = [];
-  for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2));
-  const renderRow = (row: Node[]) => (
-    <View key={row[0].id} style={styles.projRow} wrap={false}>
-      {row.map((n) => (
-        <ProjectItem key={n.id} n={n} />
-      ))}
-      {row.length === 1 && <View style={{ flex: 1 }} />}
-    </View>
-  );
-  const [first, ...rest] = rows;
+  const [first, ...rest] = items;
   return (
     <View>
-      {/* The heading travels with the first row, so it is never left
+      {/* The heading travels with the first project, so it is never left
           alone at the foot of a page with its projects overleaf. */}
       <View wrap={false}>
         <Text style={styles.sectionLabel}>Projects</Text>
-        {renderRow(first)}
+        <ProjectItem n={first} />
       </View>
-      {rest.map(renderRow)}
+      {rest.map((n) => (
+        <ProjectItem key={n.id} n={n} />
+      ))}
     </View>
   );
 }

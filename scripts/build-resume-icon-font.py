@@ -6,6 +6,7 @@ of a line with its label on the next. Two glyphs, both drawn in a 24-unit box:
 
   U+E000  the GitHub octocat, the same path SocialGlyphs uses on the site
   U+E001  a globe, for a project's demo or site link
+  U+E002  a cube, for a project's published package (pypi, npm)
 
 Each glyph's advance width carries the gap before its label. The font also
 needs the unglamorous tables (a space glyph, full OS/2 metrics, a complete
@@ -86,22 +87,64 @@ def globe(pen):
     hole(pen, lambda p: rect(p, 1.5, 11.1, 22.5, 12.9))
 
 
+def polygon(pen, pts):
+    pen.moveTo(pts[0])
+    for p in pts[1:]:
+        pen.lineTo(p)
+    pen.closePath()
+
+
+def inset(pts, d):
+    # Offset every edge of a convex polygon inward by d, then intersect
+    # neighbouring edges: an even-width stroke, unlike scaling to the centre.
+    n = len(pts)
+    cx = sum(p[0] for p in pts) / n
+    cy = sum(p[1] for p in pts) / n
+    lines = []
+    for i in range(n):
+        (x0, y0), (x1, y1) = pts[i], pts[(i + 1) % n]
+        ex, ey = x1 - x0, y1 - y0
+        length = (ex * ex + ey * ey) ** 0.5
+        nx, ny = -ey / length, ex / length
+        if (cx - x0) * nx + (cy - y0) * ny < 0:
+            nx, ny = -nx, -ny
+        lines.append(((x0 + nx * d, y0 + ny * d), (ex, ey)))
+    out = []
+    for i in range(n):
+        (px, py), (dx, dy) = lines[i - 1]
+        (qx, qy), (fx, fy) = lines[i]
+        t = ((qx - px) * fy - (qy - py) * fx) / (dx * fy - dy * fx)
+        out.append((px + t * dx, py + t * dy))
+    return out
+
+
+def cube(pen):
+    # An isometric box: the hexagon outline with its three faces cut out,
+    # leaving the edges as strokes.
+    top, ur, lr, bottom, ll, ul, c = (12, 1), (21.5, 6.5), (21.5, 17.5), (12, 23), (2.5, 17.5), (2.5, 6.5), (12, 12)
+    polygon(pen, [top, ur, lr, bottom, ll, ul])
+    for face in ([top, ur, c, ul], [ur, lr, bottom, c], [ul, c, bottom, ll]):
+        hole(pen, lambda p, f=face: polygon(p, inset(f, 0.9)))
+
+
 def main():
     empty = TTGlyphPen(None).glyph()
     fb = FontBuilder(UPM, isTTF=True)
-    fb.setupGlyphOrder([".notdef", "space", "ghmark", "globe"])
-    fb.setupCharacterMap({0x20: "space", 0xE000: "ghmark", 0xE001: "globe"})
+    fb.setupGlyphOrder([".notdef", "space", "ghmark", "globe", "cube"])
+    fb.setupCharacterMap({0x20: "space", 0xE000: "ghmark", 0xE001: "globe", 0xE002: "cube"})
     fb.setupGlyf({
         ".notdef": empty,
         "space": TTGlyphPen(None).glyph(),
         "ghmark": glyph(lambda p: parse_path(octocat_path(), p)),
         "globe": glyph(globe),
+        "cube": glyph(cube),
     })
     fb.setupHorizontalMetrics({
         ".notdef": (500, 0),
         "space": (250, 0),
         "ghmark": (ADVANCE, LEFT),
         "globe": (ADVANCE, LEFT),
+        "cube": (ADVANCE, LEFT),
     })
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({

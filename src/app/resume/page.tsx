@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import type { ReactNode } from "react";
+import { Globe, Package } from "lucide-react";
 import { SocialGlyph } from "@/components/chrome/SocialGlyphs";
 import { getGraph, isListedNode, nodeHref } from "@/lib/graph";
 import {
@@ -9,6 +10,8 @@ import {
   githubRepo,
   resumeAwards,
   showcaseLink,
+  packageLinks,
+  type BlurbPart,
   onResume,
   resumeBlurbParts,
   resumeMeta as meta,
@@ -19,6 +22,43 @@ export const metadata = {
   title: "Resume · Jacob Valdez",
   description: "Data/ML Engineering, Robotics, Full-Stack.",
 };
+
+// One run of a project's resume line; see BlurbPart for the markup.
+function BlurbRun({ part }: { part: BlurbPart }) {
+  if (part.href) {
+    return (
+      <a
+        href={part.href}
+        target="_blank"
+        rel="noreferrer"
+        className="text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+      >
+        {part.text}
+      </a>
+    );
+  }
+  if (part.strong) return <strong className="font-semibold text-[var(--color-ink)]">{part.text}</strong>;
+  if (part.tech) return <span className="text-[var(--color-ink-mute)]">{part.text}</span>;
+  return <>{part.text}</>;
+}
+
+// An icon + label link at the end of a project line (repo, site, package).
+function IconLink({ href, icon, label }: { href: string; icon: ReactNode; label: string }) {
+  return (
+    <>
+      {" "}
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-baseline gap-1 whitespace-nowrap font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline hover:text-[var(--color-accent)]"
+      >
+        <span className="self-center">{icon}</span>
+        {label}
+      </a>
+    </>
+  );
+}
 
 export default function ResumePage() {
   const { nodes } = getGraph();
@@ -218,21 +258,9 @@ export default function ResumePage() {
                     {n.title}
                   </Link>
                   {": "}
-                  {resumeBlurbParts(n).map((part, i) =>
-                    typeof part === "string" ? (
-                      part
-                    ) : (
-                      <a
-                        key={i}
-                        href={part.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
-                      >
-                        {part.text}
-                      </a>
-                    ),
-                  )}
+                  {resumeBlurbParts(n).map((part, i) => (
+                    <BlurbRun key={i} part={part} />
+                  ))}
                   {resumeAwards(n).map((a) => (
                     <span key={a.href}>
                       {" "}
@@ -248,37 +276,23 @@ export default function ResumePage() {
                     </span>
                   ))}
                   {repo && (
-                    <>
-                      {" "}
-                      <a
-                        href={repo.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-baseline gap-1 whitespace-nowrap font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline hover:text-[var(--color-accent)]"
-                      >
-                        <span className="self-center">
-                          <SocialGlyph name="github" />
-                        </span>
-                        {repo.slug}
-                      </a>
-                    </>
+                    <IconLink href={repo.href} icon={<SocialGlyph name="github" />} label={repo.slug} />
                   )}
                   {showcase && (
-                    <>
-                      {" "}
-                      <a
-                        href={showcase.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-baseline gap-1 whitespace-nowrap font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-mute)] no-underline hover:text-[var(--color-accent)]"
-                      >
-                        <span className="self-center">
-                          <Globe className="h-[0.95em] w-[0.95em]" strokeWidth={2} aria-hidden />
-                        </span>
-                        {showcase.label}
-                      </a>
-                    </>
+                    <IconLink
+                      href={showcase.href}
+                      icon={<Globe className="h-[0.95em] w-[0.95em]" strokeWidth={2} aria-hidden />}
+                      label={showcase.label}
+                    />
                   )}
+                  {packageLinks(n).map((pkg) => (
+                    <IconLink
+                      key={pkg.href}
+                      href={pkg.href}
+                      icon={<Package className="h-[0.95em] w-[0.95em]" strokeWidth={2} aria-hidden />}
+                      label={pkg.label}
+                    />
+                  ))}
                 </p>
               </li>
             );

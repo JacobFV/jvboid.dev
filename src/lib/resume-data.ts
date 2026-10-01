@@ -77,7 +77,7 @@ export const resumeMeta: {
     [
       "Currently developing ",
       {
-        text: "morphology-agnostic, contact-centric robotics control policy",
+        text: "morphology-agnostic, contact-centric encoder-diffusion robotics control policy",
         href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics",
       },
       " in collaboration with ",
@@ -429,18 +429,38 @@ export function resumeBlurb(node: Pick<Node, "summary" | "resumeDescription">): 
   return node.resumeDescription ?? node.summary;
 }
 
-// The blurb split into text and links: a resume_description may carry
-// markdown links (`[text](url)`), and nothing else of markdown.
-export function resumeBlurbParts(node: Pick<Node, "summary" | "resumeDescription">): HighlightPart[] {
+// One run of a project's resume line. A resume_description is plain text
+// with a little inline markup, and nothing else of markdown:
+//   [text](url)   a link
+//   **text**      bold — reserved for measured results and the like
+// Its last sentence, when it is a comma list ("python, pytorch, …"), is the
+// tech stack: `tech` runs render muted, so the prose reads first while the
+// keywords stay in the text for ATS parsers.
+export type BlurbPart = {
+  text: string;
+  href?: string;
+  strong?: boolean;
+  tech?: boolean;
+};
+
+export function resumeBlurbParts(node: Pick<Node, "summary" | "resumeDescription">): BlurbPart[] {
   const blurb = resumeBlurb(node);
-  const parts: HighlightPart[] = [];
+  // The tech tail follows the last ". " that has no markup after it.
+  const cut = blurb.lastIndexOf(". ");
+  const tail = cut === -1 ? "" : blurb.slice(cut + 2);
+  const hasTail = tail.includes(",") && !/[[*]/.test(tail);
+  const body = hasTail ? blurb.slice(0, cut + 1) : blurb;
+
+  const parts: BlurbPart[] = [];
   let last = 0;
-  for (const m of blurb.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)/g)) {
-    if (m.index > last) parts.push(blurb.slice(last, m.index));
-    parts.push({ text: m[1], href: m[2] });
+  for (const m of body.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)|\*\*(.+?)\*\*/g)) {
+    if (m.index > last) parts.push({ text: body.slice(last, m.index) });
+    if (m[1] !== undefined) parts.push({ text: m[1], href: m[2] });
+    else parts.push({ text: m[3], strong: true });
     last = m.index + m[0].length;
   }
-  if (last < blurb.length) parts.push(blurb.slice(last));
+  if (last < body.length) parts.push({ text: body.slice(last) });
+  if (hasTail) parts.push({ text: " " }, { text: tail, tech: true });
   return parts;
 }
 
@@ -486,6 +506,16 @@ export function showcaseLink(node: Pick<Node, "links">): { label: string; href: 
   const path = url.pathname.replace(/\/(index\.html)?$/, "");
   const label = `${host}${path}`.length <= 36 ? `${host}${path}` : host;
   return { label, href: url.href };
+}
+
+// A project's published packages, for the box links after its repo.
+export function packageLinks(node: Pick<Node, "links">): { label: string; href: string }[] {
+  const out: { label: string; href: string }[] = [];
+  const pypi = node.links?.pypi?.match(/pypi\.org\/project\/([^/?#]+)/);
+  if (pypi) out.push({ label: `pypi/${pypi[1]}`, href: node.links!.pypi! });
+  const npm = node.links?.npm?.match(/npmjs\.com\/package\/((?:@[^/]+\/)?[^/?#]+)/);
+  if (npm) out.push({ label: `npm/${npm[1]}`, href: node.links!.npm! });
+  return out;
 }
 
 export const resumePdfHref = "/resume/pdf";
