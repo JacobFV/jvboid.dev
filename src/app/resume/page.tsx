@@ -7,13 +7,13 @@ import {
   contact,
   experience,
   formatResumeDate,
-  githubRepo,
+  projectRepos,
+  projectShowcases,
+  resumeProjects,
   resumeAwards,
   resumePosts,
-  showcaseLink,
   packageLinks,
   type BlurbPart,
-  onResume,
   resumeBlurbParts,
   resumeMeta as meta,
   resumePdfHref,
@@ -63,10 +63,7 @@ function IconLink({ href, icon, label }: { href: string; icon: ReactNode; label:
 
 export default function ResumePage() {
   const { nodes } = getGraph();
-  const projects = nodes
-    .filter(isListedNode)
-    .filter((n) => n.kind === "project" && onResume(n))
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  const projects = resumeProjects(nodes.filter(isListedNode));
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
@@ -244,8 +241,8 @@ export default function ResumePage() {
         </h2>
         <ul className="grid gap-1.5">
           {projects.map((n) => {
-            const repo = githubRepo(n);
-            const showcase = showcaseLink(n);
+            const repos = projectRepos(n);
+            const showcases = projectShowcases(n);
             return (
               <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
                 <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
@@ -276,9 +273,9 @@ export default function ResumePage() {
                       .
                     </span>
                   ))}
-                  {repo && (
-                    <IconLink href={repo.href} icon={<SocialGlyph name="github" />} label={repo.slug} />
-                  )}
+                  {repos.map((repo) => (
+                    <IconLink key={repo.href} href={repo.href} icon={<SocialGlyph name="github" />} label={repo.slug} />
+                  ))}
                   {resumePosts(n).map((post) => (
                     <IconLink
                       key={post.href}
@@ -287,13 +284,14 @@ export default function ResumePage() {
                       label="Post"
                     />
                   ))}
-                  {showcase && (
+                  {showcases.map((showcase) => (
                     <IconLink
+                      key={showcase.href}
                       href={showcase.href}
                       icon={<Globe className="h-[0.95em] w-[0.95em]" strokeWidth={2} aria-hidden />}
                       label={showcase.label}
                     />
-                  )}
+                  ))}
                   {packageLinks(n).map((pkg) => (
                     <IconLink
                       key={pkg.href}

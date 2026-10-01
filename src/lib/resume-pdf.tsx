@@ -10,13 +10,14 @@ import {
   contact,
   experience,
   formatResumeDate,
-  githubRepo,
+  projectRepos,
+  projectShowcases,
+  resumeProjects,
+  type ResumeProject,
   resumeAwards,
   resumePosts,
-  showcaseLink,
   packageLinks,
   type BlurbPart,
-  onResume,
   resumeBlurb,
   resumeBlurbParts,
   resumeMeta as meta,
@@ -161,9 +162,9 @@ function IconLink({ href, icon, label }: { href: string; icon: string; label: st
 // @react-pdf/renderer's TextProps type doesn't declare it.
 const NO_SEAM_BREAKS = { hyphenationPenalty: 10000 } as object;
 
-function ProjectItem({ n }: { n: Node }) {
-  const repo = githubRepo(n);
-  const showcase = showcaseLink(n);
+function ProjectItem({ n }: { n: ResumeProject }) {
+  const repos = projectRepos(n);
+  const showcases = projectShowcases(n);
   return (
     <View style={styles.projItem}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
@@ -173,7 +174,7 @@ function ProjectItem({ n }: { n: Node }) {
           — the octocat against its repo name, the title against its colon —
           and an infinite penalty forbids them. */}
       <Text style={styles.projText} {...NO_SEAM_BREAKS}>
-        <Text style={styles.projTitle}>{n.title}</Text>
+        <Text style={styles.projTitle}>{pdfTitle(n)}</Text>
         <Text>
           {": "}
           {resumeBlurbParts(n).map((part, i) => (
@@ -186,11 +187,15 @@ function ProjectItem({ n }: { n: Node }) {
             <Link src={a.href} style={styles.projAward}>{a.text}</Link>.
           </Text>
         ))}
-        {repo ? <IconLink href={repo.href} icon={GITHUB_MARK} label={repo.slug} /> : null}
+        {repos.map((repo) => (
+          <IconLink key={repo.href} href={repo.href} icon={GITHUB_MARK} label={repo.slug} />
+        ))}
         {resumePosts(n).map((post) => (
           <IconLink key={post.href} href={post.href} icon={POST_MARKS[post.network]} label="Post" />
         ))}
-        {showcase ? <IconLink href={showcase.href} icon={GLOBE} label={showcase.label} /> : null}
+        {showcases.map((sc) => (
+          <IconLink key={sc.href} href={sc.href} icon={GLOBE} label={sc.label} />
+        ))}
         {packageLinks(n).map((pkg) => (
           <IconLink key={pkg.href} href={pkg.href} icon={PACKAGE} label={pkg.label} />
         ))}
@@ -199,19 +204,17 @@ function ProjectItem({ n }: { n: Node }) {
   );
 }
 
-// Two columns, each project exactly as tall as its text. react-pdf can't
-// break a pair of side-by-side columns across a page (whatever runs past
-// the foot is drawn in a heap through the margin), and rows of pairs made
-// every pair as tall as its longer half. So the list goes in short blocks:
-// each block is two independent columns that won't split, and its projects
-// are divided between them so the columns end about level. The only slack
-// is the small difference at the foot of a block, and pages break cleanly
-// between blocks.
-const BLOCK = 4;
+// Projects run in two newspaper columns: down the left column to the foot
+// of the page, then down the right, then on to the next page. react-pdf has
+// no columns of its own, and can't break a pair of side-by-side columns
+// across a page (whatever runs past the foot is drawn in a heap through the
+// margin), so the breaks are worked out here. Each page of projects is one
+// unsplittable block of two columns, filled from a simulation of the page
+// flow: every line of the document above, and each project's text, wrapped
+// with Helvetica's own widths at its real width and size.
+
 // Helvetica's advance widths (per 1000 em) for printable ASCII, from its
-// standard AFM metrics; anything else is costed as a digit. With them the
-// balancer wraps each project's text the way the PDF will, word by word,
-// at the column's real width.
+// standard AFM metrics; anything else is costed as a digit.
 const HELVETICA = [
   278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278,
   556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556,
@@ -220,76 +223,133 @@ const HELVETICA = [
   333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556,
   556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584,
 ];
-const PROJ_FONT_SIZE = 8.5;
-// Letter page, less the side padding, split in two around the gap, less
-// the date column.
-const PROJ_TEXT_WIDTH = (612 - 2 * 44 - 14) / 2 - 46;
 
-function textWidth(text: string): number {
+function textWidth(text: string, size: number): number {
   let units = 0;
   for (const ch of text) {
     const code = ch.codePointAt(0)!;
     // The icon glyphs are a full em wide.
     units += code >= 0xe000 && code <= 0xe0ff ? 1000 : (HELVETICA[code - 32] ?? 556);
   }
-  return (units / 1000) * PROJ_FONT_SIZE;
+  return (units / 1000) * size;
 }
 
-// A project's height in lines, as the PDF will wrap it. Only used to
-// balance the columns, so being a word off now and then is harmless.
-function estimateLines(n: Node): number {
-  const repo = githubRepo(n);
-  const showcase = showcaseLink(n);
-  const text = [
-    `${n.title}:`,
-    resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, ""),
-    ...resumeAwards(n).map((a) => `${a.text}.`),
-    repo ? `${GITHUB_MARK}${repo.slug}` : "",
-    ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}Post`),
-    showcase ? `${GLOBE}${showcase.label}` : "",
-    ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
-  ].join(" ");
-  const space = textWidth(" ");
+// How many lines `text` takes at `size` points in a box `width` wide,
+// breaking between words the way the PDF does. react-pdf's line breaker
+// squeezes the spaces of a line a little to fit one more word, so a space
+// is costed short of its full width.
+const SPACE_SQUEEZE = 0.6;
+
+function lineCount(text: string, width: number, size: number): number {
+  const space = textWidth(" ", size) * SPACE_SQUEEZE;
   let lines = 1;
   let x = 0;
   for (const word of text.split(/\s+/).filter(Boolean)) {
-    const w = textWidth(word);
-    if (x > 0 && x + space + w > PROJ_TEXT_WIDTH) {
+    const w = textWidth(word, size);
+    if (x > 0 && x + space + w > width) {
       lines += 1;
       x = w;
     } else {
       x += (x > 0 ? space : 0) + w;
     }
   }
-  return lines + 0.35; // + the padding around each project, in lines
+  return lines;
 }
 
-// Split a block between two columns, keeping date order inside each column,
-// so that the taller column is as short as possible.
-function balance(block: Node[]): [Node[], Node[]] {
-  const lines = block.map(estimateLines);
-  let best: [Node[], Node[]] = [block, []];
-  let bestHeight = Infinity;
-  for (let mask = 0; mask < 1 << block.length; mask++) {
-    let left = 0;
-    let right = 0;
-    block.forEach((_, i) => (mask & (1 << i) ? (right += lines[i]) : (left += lines[i])));
-    // Ties go to the split that keeps the most recent project top-left.
-    if (Math.max(left, right) < bestHeight && !(mask & 1)) {
-      bestHeight = Math.max(left, right);
-      best = [block.filter((_, i) => !(mask & (1 << i))), block.filter((_, i) => mask & (1 << i))];
-    }
+// Geometry, in points, mirroring the styles below. Letter is 612 × 792.
+const CONTENT_WIDTH = 612 - 2 * 44;
+const CONTENT_HEIGHT = 792 - 38 - 56;
+const LEADING = 1.45; // the page's line height
+const COLUMN_GAP = 14;
+const PROJ_DATE_WIDTH = 46;
+const PROJ_TEXT_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2 - PROJ_DATE_WIDTH;
+// The simulation is close, not exact: leave this much of each column free,
+// so a column that runs a little long still fits its page.
+const COLUMN_SLACK = 14;
+
+// Helvetica has no emoji, and draws junk for one ("👩🏽‍🌾 The Fertile
+// Cresent"), so titles lose them in the PDF.
+function pdfTitle(n: Node): string {
+  return n.title.replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\u200d\ufe0f]/gu, "").trim();
+}
+
+function projectHeight(n: ResumeProject): number {
+  const repos = projectRepos(n);
+  const showcases = projectShowcases(n);
+  const text = [
+    `${pdfTitle(n)}:`,
+    resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, ""),
+    ...resumeAwards(n).map((a) => `${a.text}.`),
+    ...repos.map((r) => `${GITHUB_MARK}${r.slug}`),
+    ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}Post`),
+    ...showcases.map((sc) => `${GLOBE}${sc.label}`),
+    ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
+  ].join(" ");
+  const textHeight = lineCount(text, PROJ_TEXT_WIDTH, 8.5) * 8.5 * 1.4;
+  const dateHeight = lineCount(formatResumeDate(n), PROJ_DATE_WIDTH - 4, 7.5) * 7.5 * LEADING;
+  return Math.max(textHeight, dateHeight) + 4; // + projItem's vertical padding
+}
+
+// Where the projects heading starts: how far down its page, after laying
+// out the header, highlights and experience as the PDF will.
+function projectsStart(): number {
+  let y = 22 * 1.2 + 4 + 10 * LEADING + 6 + 8.5 * LEADING; // name, headline, contact row
+  y += 10; // highlights' top margin
+  for (const parts of meta.highlights) {
+    const text = parts.map((p) => (typeof p === "string" ? p : p.text)).join("");
+    y += lineCount(text, CONTENT_WIDTH - 10, 9) * 9 * LEADING + 3;
   }
-  return best;
+  y += 14; // experience's top margin
+  for (const e of experience) {
+    let h = e.title ? 10 * LEADING : 0;
+    e.bullets.forEach((b, i) => {
+      h += (i > 0 ? 3 : 1) + lineCount(b, CONTENT_WIDTH - 104, 9) * 9 * LEADING;
+    });
+    h += 8; // expRow's bottom margin
+    // Rows don't split: one that won't fit starts the next page.
+    if (y + h > CONTENT_HEIGHT) y = 0;
+    y += h;
+  }
+  return y;
 }
 
-function ProjectBlock({ block }: { block: Node[] }) {
-  const [left, right] = balance(block);
+// The projects heading: sectionLabel's margins, line, padding and rule.
+const PROJECTS_HEADING = 14 + 8 * LEADING + 3 + 0.5 + 6;
+
+// Pour the projects into pages of two columns.
+function paginate(items: Node[]): Node[][][] {
+  let room = CONTENT_HEIGHT - projectsStart() - PROJECTS_HEADING;
+  // Too little left under the experience for a page of columns to be worth
+  // it: the block will start the next page anyway.
+  if (room < 120) room = CONTENT_HEIGHT - PROJECTS_HEADING;
+  const pages: Node[][][] = [];
+  let columns: Node[][] = [[]];
+  let used = 0;
+  for (const n of items) {
+    const h = projectHeight(n);
+    if (used + h > room - COLUMN_SLACK && columns[columns.length - 1].length > 0) {
+      if (columns.length === 1) {
+        columns.push([]);
+      } else {
+        pages.push(columns);
+        columns = [[]];
+        room = CONTENT_HEIGHT;
+      }
+      used = 0;
+    }
+    columns[columns.length - 1].push(n);
+    used += h;
+  }
+  pages.push(columns);
+  return pages;
+}
+
+function ProjectPage({ columns }: { columns: Node[][] }) {
   return (
-    <View style={styles.projBlock} wrap={false}>
-      {[left, right].map((col, i) => (
+    <View style={styles.projBlock}>
+      {[0, 1].map((i) => (
         <View key={i} style={styles.projColumn}>
-          {col.map((n) => (
+          {(columns[i] ?? []).map((n) => (
             <ProjectItem key={n.id} n={n} />
           ))}
         </View>
@@ -300,27 +360,26 @@ function ProjectBlock({ block }: { block: Node[] }) {
 
 function ProjectGroup({ items }: { items: Node[] }) {
   if (items.length === 0) return null;
-  const blocks: Node[][] = [];
-  for (let i = 0; i < items.length; i += BLOCK) blocks.push(items.slice(i, i + BLOCK));
-  const [first, ...rest] = blocks;
+  const [first, ...rest] = paginate(items);
   return (
     <View>
-      {/* The heading travels with the first block, so it is never left
-          alone at the foot of a page with its projects overleaf. */}
+      {/* The heading travels with the first page of columns, so it is never
+          left alone at the foot of a page with its projects overleaf. */}
       <View wrap={false}>
         <Text style={styles.sectionLabel}>Projects</Text>
-        <ProjectBlock block={first} />
+        <ProjectPage columns={first} />
       </View>
-      {rest.map((block) => (
-        <ProjectBlock key={block[0].id} block={block} />
+      {rest.map((columns) => (
+        <View key={columns[0][0].id} wrap={false} break>
+          <ProjectPage columns={columns} />
+        </View>
       ))}
     </View>
   );
 }
 
 export function ResumeDocument({ projects }: { projects: Node[] }) {
-  const sortByDateDesc = (a: Node, b: Node) => (a.date < b.date ? 1 : -1);
-  const listed = projects.filter(onResume).sort(sortByDateDesc);
+  const listed = resumeProjects(projects);
 
   return (
     <Document title="Jacob Valdez — Resume" author={contact.name} subject="resume">

@@ -352,7 +352,7 @@ const SOFTWARE_RESUME = new Set([
   "imgpt", "bonk", "fieldratchet", "precisionbom", "racksavant",
   // Full-stack, front-end, systems
   "browser-os", "macos-web-next", "windows-web-next",
-  "living-with-intelligence", "jterm", "ascii-art", "halo-prismatic",
+  "living-with-intelligence", "jterm", "ascii-art",
   "microscope-viewer", "esp32-usb-webcam", "mln-dashboard", "dash",
   // Coursework and early work that still shows range
   "labatron", "desparados-a-eye", "20q", "sqtest", "sale", "copyright-calculator",
@@ -374,11 +374,13 @@ const ROBOTICS_RESUME = new Set([
 ]);
 
 // Real work, but a hiring reader gets nothing from it: music, animation,
-// games made as a teenager, this site and the portfolio it replaced, the fund.
+// games made as a teenager, this site and the portfolio it replaced, the fund,
+// and demos too slight to stand beside the rest.
 const NOT_ON_RESUME = new Set([
   "ai-proverbs", "jacobs-hits-2023", "summer-break-2021-album", "tiles",
   "space-pong", "looking-for-princess-suzzane", "polonius-as-a-fool",
   "the-right-night-light", "jacobfv-site", "jacobfv-github-io", "gohuman-fund",
+  "halo-prismatic",
 ]);
 
 // Fallback for projects added after this file was last curated. Deliberately
@@ -420,16 +422,34 @@ function seasonOf(month: number): string {
   return "Fall";
 }
 
-export function formatResumeDate(node: Pick<Node, "date" | "datePrecision">): string {
-  const iso = node.date;
-  if (!iso) return "";
+function formatOne(iso: string, precision: Node["datePrecision"]): string {
   const year = iso.slice(0, 4);
   const month = Number.parseInt(iso.slice(5, 7), 10);
-  const precision = node.datePrecision;
   if (precision === "year") return year;
   if (!month || Number.isNaN(month)) return year;
   if (precision === "season") return `${seasonOf(month)} ${year}`;
   return `${MONTHS[month - 1]} ${year}`;
+}
+
+// A project's date, or its span when `endDate` falls in a later month —
+// a weekend hackathon stays one date, work that ran on shows its range.
+export function formatResumeDate(node: Pick<Node, "date" | "endDate" | "datePrecision">): string {
+  if (!node.date) return "";
+  const start = formatOne(node.date, node.datePrecision);
+  if (!node.endDate) return start;
+  const end = formatOne(node.endDate, undefined);
+  return end === start || node.endDate.slice(0, 7) === node.date.slice(0, 7) ? start : `${start} – ${end}`;
+}
+
+// Newest work first, by when it was last active: a project that started
+// years ago but was worked on this month sorts with this month's work.
+export function compareResumeProjects(
+  a: Pick<Node, "date" | "endDate">,
+  b: Pick<Node, "date" | "endDate">,
+): number {
+  const ka = a.endDate ?? a.date;
+  const kb = b.endDate ?? b.date;
+  return ka < kb ? 1 : ka > kb ? -1 : 0;
 }
 
 // The blurb the resume shows for a project: the tight resume_description
@@ -471,6 +491,53 @@ export function resumeBlurbParts(node: Pick<Node, "summary" | "resumeDescription
   if (last < body.length) parts.push({ text: body.slice(last) });
   if (hasTail) parts.push({ text: " " }, { text: tail, tech: true });
   return parts;
+}
+
+// Projects the resume lists as one: the browser desktops are a shell and two
+// simulations built on it, and read better as one entry than three. The
+// entry keeps the first project's page and id, spans all of their dates,
+// and links every member's repo and demo.
+const RESUME_MERGES: { into: string; members: string[]; title: string; resumeDescription: string }[] = [
+  {
+    into: "browser-os",
+    members: ["windows-web-next", "macos-web-next"],
+    title: "browser-os · windows-web-next · macos-web-next",
+    resumeDescription:
+      "browser-native desktop shell (window manager, virtual filesystem, app lifecycle) with windows 11 and macOS simulations built on it, as instrumentable environments for human annotation and computer-use agent training. typescript, svelte, vercel, html2canvas, computer-use agents.",
+  },
+];
+
+export type ResumeProject = Node & { members?: Node[] };
+
+// The projects on the resume, merged where RESUME_MERGES says, newest
+// activity first.
+export function resumeProjects(nodes: Node[]): ResumeProject[] {
+  const listed: ResumeProject[] = nodes.filter((n) => n.kind === "project" && onResume(n));
+  const byId = new Map(listed.map((n) => [n.id, n]));
+  const absorbed = new Set<string>();
+  for (const m of RESUME_MERGES) {
+    const base = byId.get(m.into);
+    if (!base) continue;
+    const members = m.members.map((id) => byId.get(id)).filter((n): n is Node => !!n);
+    const all = [base, ...members];
+    const date = all.map((n) => n.date).sort()[0];
+    const endDate = all.map((n) => n.endDate ?? n.date).sort().at(-1);
+    byId.set(m.into, { ...base, title: m.title, resumeDescription: m.resumeDescription, date, endDate, members });
+    members.forEach((n) => absorbed.add(n.id));
+  }
+  return listed
+    .filter((n) => !absorbed.has(n.id))
+    .map((n) => byId.get(n.id)!)
+    .sort(compareResumeProjects);
+}
+
+// Every repo and every demo/site of a project, members included.
+export function projectRepos(n: ResumeProject) {
+  return [n, ...(n.members ?? [])].map(githubRepo).filter((r) => r !== null);
+}
+
+export function projectShowcases(n: ResumeProject) {
+  return [n, ...(n.members ?? [])].map(showcaseLink).filter((s) => s !== null);
 }
 
 // Prizes a project won, shown after its resume line. Resume-only, so they
