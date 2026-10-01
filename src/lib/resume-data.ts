@@ -554,11 +554,11 @@ const FEATURED = new Set([
   // Models, research, ML systems
   "tensacode", "tensegra", "computerworld", "ibm-1", "sc-wbd", "langcurriculum",
   "canvas-engineering", "tensor-computer", "recursive-omnimodal-video-action-model",
-  "bsbr", "eggroll-trainer", "desparados-a-eye",
+  "bsbr", "eggroll-trainer", "desparados-a-eye", "jnumpy", "synthux",
   // Robotics and hardware
   "chem-0", "fieldratchet", "lunar-rover", "trash-sorter", "esp32-usb-webcam",
   // Products and tools
-  "precisionbom", "browser-os", "jterm", "bonk",
+  "precisionbom", "browser-os", "jterm", "bonk", "theagentsuite",
 ]);
 
 // The projects on the resume, merged where RESUME_MERGES says, newest
