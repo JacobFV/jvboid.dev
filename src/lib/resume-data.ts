@@ -431,9 +431,17 @@ function formatOne(iso: string, precision: Node["datePrecision"]): string {
   return `${MONTHS[month - 1]} ${year}`;
 }
 
+// Work that came in separate stretches, which one date and endDate can't
+// say; a newline is a line break in the narrow date column. The endDate
+// still decides where the project sorts.
+const RESUME_DATE_LABELS: Record<string, string> = {
+  tensacode: "Apr 2022 –\nDec 2022,\nSep 2026",
+};
+
 // A project's date, or its span when `endDate` falls in a later month —
 // a weekend hackathon stays one date, work that ran on shows its range.
-export function formatResumeDate(node: Pick<Node, "date" | "endDate" | "datePrecision">): string {
+export function formatResumeDate(node: Pick<Node, "id" | "date" | "endDate" | "datePrecision">): string {
+  if (RESUME_DATE_LABELS[node.id]) return RESUME_DATE_LABELS[node.id];
   if (!node.date) return "";
   const start = formatOne(node.date, node.datePrecision);
   if (!node.endDate) return start;
@@ -563,7 +571,7 @@ export function resumeAwards(node: Pick<Node, "id">): { text: string; href: stri
 
 // Social posts about a project, linked after its repo. Resume-only, like
 // the awards.
-export type PostNetwork = "linkedin" | "x";
+export type PostNetwork = "linkedin" | "x" | "commandagi";
 const RESUME_POSTS: Record<string, { network: PostNetwork; href: string }[]> = {
   "chem-0": [
     {
@@ -572,6 +580,9 @@ const RESUME_POSTS: Record<string, { network: PostNetwork; href: string }[]> = {
     },
   ],
   bsbr: [{ network: "x", href: "https://x.com/jvboid/status/1905931398961127820?s=20" }],
+  "canvas-engineering": [
+    { network: "commandagi", href: "https://commandagi.com/research/canvas-engineering" },
+  ],
 };
 
 export function resumePosts(node: Pick<Node, "id">): { network: PostNetwork; href: string }[] {

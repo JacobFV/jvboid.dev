@@ -137,7 +137,7 @@ Font.register({
 const GITHUB_MARK = "\uE000";
 const GLOBE = "\uE001";
 const PACKAGE = "\uE002";
-const POST_MARKS = { linkedin: "\uE003", x: "\uE004" } as const;
+const POST_MARKS = { linkedin: "\uE003", x: "\uE004", commandagi: "\uE005" } as const;
 
 // One run of a project's resume line; see BlurbPart for the markup.
 function BlurbRun({ part }: { part: BlurbPart }) {
@@ -241,6 +241,9 @@ function textWidth(text: string, size: number): number {
 const SPACE_SQUEEZE = 0.6;
 
 function lineCount(text: string, width: number, size: number): number {
+  if (text.includes("\n")) {
+    return text.split("\n").reduce((sum, line) => sum + lineCount(line, width, size), 0);
+  }
   const space = textWidth(" ", size) * SPACE_SQUEEZE;
   let lines = 1;
   let x = 0;

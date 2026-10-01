@@ -9,16 +9,18 @@ of a line with its label on the next. Two glyphs, both drawn in a 24-unit box:
   U+E002  a cube, for a project's published package (pypi, npm)
   U+E003  LinkedIn's mark, for a post about a project
   U+E004  X's mark, likewise
+  U+E005  CommandAGI's mark (the looped square, ⌘), for a post on commandagi.com
 
 Each glyph's advance width carries the gap before its label. The font also
 needs the unglamorous tables (a space glyph, full OS/2 metrics, a complete
 name table): without them react-pdf's render never settles and the PDF
 route hangs.
 
-Run with fontTools available:  pip install fonttools
+Run with fontTools and shapely available:  pip install fonttools shapely
   python3 scripts/build-resume-icon-font.py
 """
 
+import math
 import re
 from pathlib import Path
 
@@ -131,13 +133,48 @@ def cube(pen):
         hole(pen, lambda p, f=face: polygon(p, inset(f, 0.9)))
 
 
+def commandagi(pen):
+    # commandagi.com/icon.svg draws its mark as one stroked path: a square
+    # whose sides run on into a 270° loop at each corner. A glyph has to be
+    # a filled outline, so the centreline is rebuilt here (loops of radius
+    # 3.63 about the square's corners, as in that path, with the same
+    # 0.8774 scale about the centre) and shapely strokes it, round caps and
+    # joins at the path's 3.05 width.
+    from shapely.geometry import LineString
+    from shapely.geometry.polygon import orient
+
+    lo, hi, r = 4.635, 19.365, 3.63
+    a, b = lo + r, hi - r  # 8.265, 15.735: where the sides meet the loops
+
+    def arc(cx, cy, start_deg, sweep_deg, steps=48):
+        return [
+            (cx + r * math.cos(math.radians(start_deg + sweep_deg * i / steps)),
+             cy + r * math.sin(math.radians(start_deg + sweep_deg * i / steps)))
+            for i in range(steps + 1)
+        ]
+
+    # Following the SVG path's order (y down): each loop goes the long way
+    # round its corner.
+    pts = []
+    pts += arc(lo, lo, 90, 270)    # (4.635, 8.265) → (8.265, 4.635)
+    pts += arc(lo, hi, 0, 270)     # (8.265, 19.365) → (4.635, 15.735)
+    pts += arc(hi, hi, -90, 270)   # (19.365, 15.735) → (15.735, 19.365)
+    pts += arc(hi, lo, 180, 270)   # (15.735, 4.635) → (19.365, 8.265)
+    pts.append(pts[0])
+    k, c = 0.8774, 1.4712
+    line = LineString([(c + k * x, c + k * y) for x, y in pts])
+    shape = orient(line.buffer(3.05 * k / 2, cap_style="round", join_style="round", quad_segs=12))
+    for ring in [shape.exterior, *shape.interiors]:
+        polygon(pen, list(ring.coords)[:-1])
+
+
 def main():
     empty = TTGlyphPen(None).glyph()
     fb = FontBuilder(UPM, isTTF=True)
-    fb.setupGlyphOrder([".notdef", "space", "ghmark", "globe", "cube", "linkedin", "x"])
+    fb.setupGlyphOrder([".notdef", "space", "ghmark", "globe", "cube", "linkedin", "x", "commandagi"])
     fb.setupCharacterMap({
         0x20: "space", 0xE000: "ghmark", 0xE001: "globe", 0xE002: "cube",
-        0xE003: "linkedin", 0xE004: "x",
+        0xE003: "linkedin", 0xE004: "x", 0xE005: "commandagi",
     })
     fb.setupGlyf({
         ".notdef": empty,
@@ -147,6 +184,7 @@ def main():
         "cube": glyph(cube),
         "linkedin": glyph(lambda p: parse_path(brand_path("linkedin"), p)),
         "x": glyph(lambda p: parse_path(brand_path("x"), p)),
+        "commandagi": glyph(commandagi),
     })
     fb.setupHorizontalMetrics({
         ".notdef": (500, 0),
@@ -156,6 +194,7 @@ def main():
         "cube": (ADVANCE, LEFT),
         "linkedin": (ADVANCE, LEFT),
         "x": (ADVANCE, LEFT),
+        "commandagi": (ADVANCE, LEFT),
     })
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({

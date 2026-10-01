@@ -43,6 +43,25 @@ function BlurbRun({ part }: { part: BlurbPart }) {
   return <>{part.text}</>;
 }
 
+// CommandAGI's mark, the looped square (⌘), as commandagi.com/icon.svg
+// draws it: one stroked path, in the text colour.
+function CommandAgiMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[0.95em] w-[0.95em] shrink-0" aria-hidden focusable="false">
+      <g transform="translate(1.4712 1.4712) scale(0.8774)">
+        <path
+          d="M4.635 8.265A3.63 3.63 0 1 1 8.265 4.635L8.265 19.365A3.63 3.63 0 1 1 4.635 15.735L19.365 15.735A3.63 3.63 0 1 1 15.735 19.365L15.735 4.635A3.63 3.63 0 1 1 19.365 8.265L4.635 8.265Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={3.05}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+    </svg>
+  );
+}
+
 // An icon + label link at the end of a project line (repo, site, package).
 function IconLink({ href, icon, label }: { href: string; icon: ReactNode; label: string }) {
   return (
@@ -245,7 +264,7 @@ export default function ResumePage() {
             const showcases = projectShowcases(n);
             return (
               <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
-                <div className="font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
+                <div className="whitespace-pre-line font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
                   {formatResumeDate(n)}
                 </div>
                 <p className="text-sm text-[var(--color-ink-dim)]">
@@ -280,7 +299,7 @@ export default function ResumePage() {
                     <IconLink
                       key={post.href}
                       href={post.href}
-                      icon={<SocialGlyph name={post.network} />}
+                      icon={post.network === "commandagi" ? <CommandAgiMark /> : <SocialGlyph name={post.network} />}
                       label="Post"
                     />
                   ))}
