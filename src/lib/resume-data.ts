@@ -544,9 +544,28 @@ const RESUME_MERGES: { into: string; members: string[]; title: string; resumeDes
 
 export type ResumeProject = Node & { members?: Node[] };
 
+// Two lengths of the same document. The resume lists only FEATURED work;
+// the CV lists everything onResume() lets through. Nothing renders the CV
+// yet — it's kept so the full list is one argument away, not a rewrite.
+export type ResumeMode = "resume" | "cv";
+
+// The work worth a screener's minute: recent, measured, shipped or
+// recognised. Everything else on the resume still appears in the CV.
+const FEATURED = new Set([
+  // Models, research, ML systems
+  "tensacode", "tensegra", "computerworld", "ibm-1", "sc-wbd", "langcurriculum",
+  "canvas-engineering", "tensor-computer", "recursive-omnimodal-video-action-model",
+  "general-unified-world-modeling", "bsbr", "eggroll-trainer", "desparados-a-eye",
+  // Robotics and hardware
+  "chem-0", "fieldratchet", "lunar-rover", "trash-sorter", "rl-lab", "limboid",
+  "esp32-usb-webcam",
+  // Products and tools
+  "precisionbom", "browser-os", "jterm", "bonk",
+]);
+
 // The projects on the resume, merged where RESUME_MERGES says, newest
-// activity first.
-export function resumeProjects(nodes: Node[]): ResumeProject[] {
+// activity first; in "resume" mode, only the featured ones.
+export function resumeProjects(nodes: Node[], mode: ResumeMode = "resume"): ResumeProject[] {
   const listed: ResumeProject[] = nodes.filter((n) => n.kind === "project" && onResume(n));
   const byId = new Map(listed.map((n) => [n.id, n]));
   const absorbed = new Set<string>();
@@ -561,7 +580,7 @@ export function resumeProjects(nodes: Node[]): ResumeProject[] {
     members.forEach((n) => absorbed.add(n.id));
   }
   return listed
-    .filter((n) => !absorbed.has(n.id))
+    .filter((n) => !absorbed.has(n.id) && (mode === "cv" || FEATURED.has(n.id)))
     .map((n) => byId.get(n.id)!)
     .sort(compareResumeProjects);
 }

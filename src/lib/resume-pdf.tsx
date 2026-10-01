@@ -13,6 +13,7 @@ import {
   projectRepos,
   projectShowcases,
   resumeProjects,
+  type ResumeMode,
   type ResumeProject,
   resumeAwards,
   resumePosts,
@@ -403,8 +404,8 @@ function Wave() {
   );
 }
 
-export function ResumeDocument({ projects }: { projects: Node[] }) {
-  const listed = resumeProjects(projects);
+export function ResumeDocument({ projects, mode = "resume" }: { projects: Node[]; mode?: ResumeMode }) {
+  const listed = resumeProjects(projects, mode);
 
   return (
     <Document title="Jacob Valdez — Resume" author={contact.name} subject="resume">
@@ -487,6 +488,7 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
   );
 }
 
-export async function renderResumePdf(projects: Node[]): Promise<Buffer> {
-  return renderToBuffer(<ResumeDocument projects={projects} />);
+// `mode: "cv"` lists every project; see ResumeMode.
+export async function renderResumePdf(projects: Node[], mode: ResumeMode = "resume"): Promise<Buffer> {
+  return renderToBuffer(<ResumeDocument projects={projects} mode={mode} />);
 }
