@@ -101,7 +101,8 @@ export const resumeMeta: {
     [
       "Owned ",
       { text: "api.agi.tech", href: "https://api.agi.tech" },
-      ", integrations architect, web and android/ios SwE for AGI Inc",
+      ", integrations architect, web and android/ios SwE for ",
+      { text: "AGI Inc", href: "https://theagi.company/" },
     ],
   ],
 };
@@ -152,7 +153,7 @@ export const experience: {
   {
     title: "API / Integration Architect",
     org: "AGI, Inc.",
-    href: "https://agi.app",
+    href: "https://theagi.company/",
     range: "Jan 2026 – Apr 2026",
     bullets: [
       "Interfaces and integration across our API, SDKs, and other partner-facing surfaces. iOS, on-device llms, model quantization, agents, control plane, etc.",
@@ -174,7 +175,7 @@ export const experience: {
   {
     title: "Software Engineer",
     org: "AGI, Inc.",
-    href: "https://agi.app",
+    href: "https://theagi.company/",
     range: "Oct 2025 – Jan 2026",
     bullets: [
       "full-stack + infrastructure engineering across agentic systems: typescript, python, react/next.js, node.js, apis, distributed systems, cloud infrastructure, aws, gcp, s3, data engineering, containers, drizzle, pg/psql, databases, queues, browser/computer use, agent runtimes, tool use, model inference, llm integrations, multimodal models, evals, automation, control planes, observability, debugging, deployment, ci/cd, production operations. shipped rapidly across the stack in a high-velocity, production-first environment.",
