@@ -557,8 +557,7 @@ const FEATURED = new Set([
   "canvas-engineering", "tensor-computer", "recursive-omnimodal-video-action-model",
   "general-unified-world-modeling", "bsbr", "eggroll-trainer", "desparados-a-eye",
   // Robotics and hardware
-  "chem-0", "fieldratchet", "lunar-rover", "trash-sorter", "rl-lab", "limboid",
-  "esp32-usb-webcam",
+  "chem-0", "fieldratchet", "lunar-rover", "trash-sorter", "rl-lab", "esp32-usb-webcam",
   // Products and tools
   "precisionbom", "browser-os", "jterm", "bonk",
 ]);
