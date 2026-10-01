@@ -19,7 +19,9 @@ export const contact = {
 
 // A highlight is a run of plain text and links, so a bullet can link the
 // thing it names without the whole line becoming one anchor.
-export type HighlightPart = string | { text: string; href: string };
+// A link with an `icon` renders like the post links on a project line:
+// the network's mark, then the label.
+export type HighlightPart = string | { text: string; href: string; icon?: PostNetwork };
 
 export const resumeMeta: {
   headline: string;
@@ -93,10 +95,11 @@ export const resumeMeta: {
       { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
     ],
     [
-      "Developed/trained ",
+      "Recently developed/trained ",
       { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
       " topologically-constrained transformer foundation model for ",
       { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
+      { text: "Discussion", href: "https://lnkd.in/p/djKYJK-W", icon: "linkedin" },
     ],
     [
       "Owned ",
@@ -342,7 +345,7 @@ const SOFTWARE_RESUME = new Set([
   "ibm-1", "sc-wbd", "general-unified-world-modeling", "canvas-engineering",
   "recursive-omnimodal-video-action-model", "brain-model", "tensor-computer",
   "tensacode", "the-multi-agent-network", "computatrum",
-  "belief-graph-orchestrator", "predictive-general-intelligence",
+  "belief-graph-orchestrator",
   "full-stack-artificial-intelligence", "multigraph-nn", "multi-graph-former-project",
   "multiparadigm-networks", "bsbr", "tf-som", "eggroll-trainer", "rl-lab",
   "broadening-and-building-beyond-classical-reinforcement-learning",
@@ -380,7 +383,7 @@ const NOT_ON_RESUME = new Set([
   "ai-proverbs", "jacobs-hits-2023", "summer-break-2021-album", "tiles",
   "space-pong", "looking-for-princess-suzzane", "polonius-as-a-fool",
   "the-right-night-light", "jacobfv-site", "jacobfv-github-io", "gohuman-fund",
-  "halo-prismatic", "the-fertile-crescent",
+  "halo-prismatic", "the-fertile-crescent", "predictive-general-intelligence",
 ]);
 
 // Fallback for projects added after this file was last curated. Deliberately

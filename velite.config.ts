@@ -101,7 +101,9 @@ const projects = defineCollection({
       // Resume-only blurb. When present it replaces `summary` everywhere the
       // resume renders this project — a tight one-liner ("what it is") plus a
       // comma-separated tech list, instead of the longer narrative summary.
-      resume_description: s.string().max(400).optional(),
+      // It may carry [text](url) links and **bold**, and that markup counts
+      // toward the cap, hence the headroom.
+      resume_description: s.string().max(500).optional(),
       // How precisely `date` is known. Undefined / "month" / "day" → the
       // resume shows "Mon YYYY". "season" → "Winter 2024". "year" → "2024"
       // (used when only the year is documented). See formatResumeDate().

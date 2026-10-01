@@ -14,6 +14,7 @@ import {
   resumePosts,
   packageLinks,
   type BlurbPart,
+  type PostNetwork,
   resumeBlurbParts,
   resumeMeta as meta,
   resumePdfHref,
@@ -60,6 +61,10 @@ function CommandAgiMark() {
       </g>
     </svg>
   );
+}
+
+function PostMark({ network }: { network: PostNetwork }) {
+  return network === "commandagi" ? <CommandAgiMark /> : <SocialGlyph name={network} />;
 }
 
 // An icon + label link at the end of a project line (repo, site, package).
@@ -167,6 +172,8 @@ export default function ResumePage() {
               {parts.map((part, j) =>
                 typeof part === "string" ? (
                   part
+                ) : part.icon ? (
+                  <IconLink key={j} href={part.href} icon={<PostMark network={part.icon} />} label={part.text} />
                 ) : (
                   <a
                     key={j}
@@ -299,7 +306,7 @@ export default function ResumePage() {
                     <IconLink
                       key={post.href}
                       href={post.href}
-                      icon={post.network === "commandagi" ? <CommandAgiMark /> : <SocialGlyph name={post.network} />}
+                      icon={<PostMark network={post.network} />}
                       label="Post"
                     />
                   ))}

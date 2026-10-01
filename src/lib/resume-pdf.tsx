@@ -299,7 +299,7 @@ function projectsStart(): number {
   let y = 22 * 1.2 + 4 + 10 * LEADING + 6 + 8.5 * LEADING; // name, headline, contact row
   y += 10; // highlights' top margin
   for (const parts of meta.highlights) {
-    const text = parts.map((p) => (typeof p === "string" ? p : p.text)).join("");
+    const text = parts.map((p) => (typeof p === "string" ? p : p.icon ? ` ${POST_MARKS[p.icon]}${p.text}` : p.text)).join("");
     y += lineCount(text, CONTENT_WIDTH - 10, 9) * 9 * LEADING + 3;
   }
   y += 14; // experience's top margin
@@ -410,6 +410,8 @@ export function ResumeDocument({ projects }: { projects: Node[] }) {
                 {parts.map((part, j) =>
                   typeof part === "string" ? (
                     part
+                  ) : part.icon ? (
+                    <IconLink key={j} href={part.href} icon={POST_MARKS[part.icon]} label={part.text} />
                   ) : (
                     <Link key={j} src={part.href} style={styles.highlightLink}>
                       {part.text}

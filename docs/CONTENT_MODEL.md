@@ -75,7 +75,11 @@ tags: [agents, infra]
 summary: ...
 # Resume-only one-liner. When present, it replaces `summary` everywhere the
 # resume (page + PDF) renders this project — a tight "what it is" phrase plus
-# a comma-separated tech list. Omit to fall back to `summary`.
+# a comma-separated tech list. Omit to fall back to `summary`. It may carry
+# [text](url) links and **bold** (kept for measured results), and nothing
+# else of markdown; its last sentence, when it is a comma list, renders
+# muted as the tech stack. Max 500 characters, markup included. See
+# resumeBlurbParts() in src/lib/resume-data.ts.
 resume_description: "..."
 # Precision of `date` for the resume's month display. Omitted/"month"/"day"
 # → "Jun 2024"; "season" → "Summer 2024"; "year" → "2024" (only the year is
