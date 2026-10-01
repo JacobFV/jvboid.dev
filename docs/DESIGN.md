@@ -18,6 +18,7 @@ One palette, dark-first. Light mode is a derived inversion, not a separate desig
 --ink-dim   #9097A3   secondary text
 --ink-mute  #5A6070   tertiary, axis labels
 --accent    #FF6B35   single accent, used sparingly: hover, active edges, CTA
+--resume    #8FB3E6   the resume's ink blue (#1F4E8C in light mode and the PDF)
 --lane-research  #6FA8DC
 --lane-building  #93C47D
 --lane-writing   #C27BA0

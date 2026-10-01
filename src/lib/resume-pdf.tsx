@@ -32,8 +32,9 @@ const colors = {
   ink: "#111111",
   inkDim: "#3a3a3a",
   inkMute: "#6b6b6b",
-  rule: "#dcdcdc",
-  accent: "#b34700",
+  // Ink blue, the resume's one colour: section headings and their rules,
+  // links, the highlight bullets. Matches --color-resume in light mode.
+  accent: "#1f4e8c",
 };
 
 // Text only. The web résumé shows each job's media thumbnails; the PDF
@@ -69,19 +70,19 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 6,
     fontSize: 8,
-    color: colors.inkMute,
+    color: colors.accent,
     fontFamily: "Helvetica-Bold",
     // Kept tight: wide tracking extracts as "S K I L L S", which an ATS
     // won't recognise as a heading.
     letterSpacing: 0.6,
     textTransform: "uppercase",
     borderBottomWidth: 0.5,
-    borderBottomColor: colors.rule,
+    borderBottomColor: colors.accent,
     paddingBottom: 3,
   },
 
   highlights: { marginTop: 10 },
-  highlightLink: { color: colors.ink, textDecoration: "underline" },
+  highlightLink: { color: colors.accent, textDecoration: "underline" },
   highlightItem: {
     position: "relative",
     marginBottom: 3,
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
   expBody: { flex: 1 },
   expTitle: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
-  expOrgLink: { color: colors.inkDim, fontFamily: "Helvetica", textDecoration: "underline" },
+  expOrgLink: { color: colors.accent, fontFamily: "Helvetica", textDecoration: "underline" },
   expPara: { marginTop: 1, fontSize: 9, color: colors.inkDim },
   expParaNext: { marginTop: 3 },
 
@@ -118,10 +119,10 @@ const styles = StyleSheet.create({
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
-  projAward: { color: colors.ink, fontFamily: "Helvetica-Bold", textDecoration: "underline" },
+  projAward: { color: colors.accent, fontFamily: "Helvetica-Bold", textDecoration: "underline" },
   projRepo: { color: colors.inkMute, textDecoration: "none" },
   projIcon: { fontFamily: "ResumeIcons" },
-  projInlineLink: { color: colors.ink, textDecoration: "underline" },
+  projInlineLink: { color: colors.accent, textDecoration: "underline" },
   projStrong: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   projTech: { color: colors.inkMute },
 });

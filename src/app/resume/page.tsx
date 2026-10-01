@@ -25,6 +25,9 @@ export const metadata = {
   description: "Data/ML Engineering, Robotics, Full-Stack.",
 };
 
+// The resume's links carry its ink blue with `!`: globals.css sets
+// `a { color: inherit }` unlayered, which beats any Tailwind utility.
+
 // One run of a project's resume line; see BlurbPart for the markup.
 function BlurbRun({ part }: { part: BlurbPart }) {
   if (part.href) {
@@ -33,7 +36,7 @@ function BlurbRun({ part }: { part: BlurbPart }) {
         href={part.href}
         target="_blank"
         rel="noreferrer"
-        className="text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+        className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
       >
         {part.text}
       </a>
@@ -167,7 +170,7 @@ export default function ResumePage() {
       <section className="mb-12">
         <ul className="grid gap-3 text-sm leading-relaxed text-[var(--color-ink-dim)]">
           {meta.highlights.map((parts, i) => (
-            <li key={i} className="border-l border-[var(--color-bg-2)] pl-4">
+            <li key={i} className="border-l-2 border-[var(--color-resume)] pl-4">
               {parts.map((part, j) =>
                 typeof part === "string" ? (
                   part
@@ -175,7 +178,7 @@ export default function ResumePage() {
                   <a
                     key={j}
                     href={part.href}
-                    className="text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                    className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
                   >
                     {part.text}
                   </a>
@@ -206,7 +209,7 @@ export default function ResumePage() {
                             href={n.href}
                             target="_blank"
                             rel="noreferrer"
-                            className="underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                            className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
                           >
                             {n.org}
                           </a>
@@ -259,7 +262,7 @@ export default function ResumePage() {
 
       {/* Projects -------------------------------------------------------- */}
       <section className="mb-12">
-        <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
+        <h2 className="mb-4 border-b border-[var(--color-resume)] pb-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-resume)]">
           Projects ({projects.length})
         </h2>
         <ul className="grid gap-1.5">
@@ -289,7 +292,7 @@ export default function ResumePage() {
                         href={a.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-medium text-[var(--color-ink)] underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]"
+                        className="font-medium text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
                       >
                         {a.text}
                       </a>
@@ -331,7 +334,7 @@ export default function ResumePage() {
       </section>
       {/* Skills ---------------------------------------------------------- */}
       <section className="mb-12">
-        <h2 className="mb-4 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-ink-mute)]">
+        <h2 className="mb-4 border-b border-[var(--color-resume)] pb-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-resume)]">
           Skills (ATS)
         </h2>
         <div className="grid gap-1.5 text-sm leading-relaxed text-[var(--color-ink-dim)]">

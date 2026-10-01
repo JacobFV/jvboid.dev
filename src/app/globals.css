@@ -16,6 +16,11 @@
   --color-ink-dim: #9097a3;
   --color-ink-mute: #5a6070;
   --color-accent: #ff6b35;
+  /* The resume's ink blue: section headings, its links, the highlight rule.
+     The resume keeps its own colour so the PDF (always on white, set in
+     #1F4E8C) and the page agree; dark mode gets a lighter blue to stay
+     legible on the dark ground. */
+  --color-resume: #8fb3e6;
   /* iOS-style call-accept green; used on the empty-state submit button
      and the CallSheet CTA. Tuned slightly darker for light mode below. */
   --color-phone: #22c55e;
@@ -69,6 +74,7 @@
   --color-ink-dim: #54585f;
   --color-ink-mute: #8a8f99;
   --color-accent: #d8541c;
+  --color-resume: #1f4e8c;
   --color-phone: #16a34a;
   --color-lane-research: #2f6cb0;
   --color-lane-building: #4a8b34;
