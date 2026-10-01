@@ -34,43 +34,52 @@ export const resumeMeta: {
   skills: [
     {
       label: "Languages",
-      items: ["Python", "TypeScript", "JavaScript", "SQL", "Java", "Ruby", "Dart"],
+      items: [
+        "Python", "TypeScript", "JavaScript", "SQL", "Rust", "Java", "Kotlin", "C", "C#",
+        "Ruby", "Dart", "HTML", "CSS",
+      ],
     },
     {
       label: "AI / ML",
       items: [
-        "PyTorch", "JAX", "TensorFlow", "transformers", "foundation models",
-        "multimodal models", "diffusion models", "world models", "reinforcement learning",
-        "model training", "fine-tuning", "model quantization", "on-device inference",
-        "LLM integration", "AI agents", "tool use", "computer use", "evals",
+        "PyTorch", "JAX", "TensorFlow", "Keras", "NumPy", "pandas", "Jupyter", "Hugging Face",
+        "transformers", "foundation models", "multimodal models", "diffusion models",
+        "world models", "reinforcement learning", "evolution strategies", "model training",
+        "fine-tuning", "model quantization", "on-device inference", "TensorFlow Lite",
+        "computer vision", "OpenCV", "YOLO", "LLM integration", "OpenAI API", "Anthropic API",
+        "Gemini API", "AI agents", "multi-agent systems", "tool use", "computer use",
+        "Model Context Protocol (MCP)", "evals", "signal processing", "EEG", "MNE-Python",
       ],
     },
     {
       label: "Robotics & hardware",
       items: [
-        "robot control policies", "embodied AI", "sim-to-real", "LeRobot", "CAD",
-        "FreeCAD", "KiCAD", "Blender", "PCB design", "CNC routing",
-        "3D printing (SLA, FDM, SLS)", "rapid prototyping",
+        "robot control policies", "embodied AI", "sim-to-real", "LeRobot", "SO-101",
+        "MuJoCo", "OpenSim", "Arduino", "ESP32", "ESP-IDF", "PlatformIO", "Raspberry Pi",
+        "embedded firmware", "stepper motors", "CAD", "FreeCAD", "KiCAD", "Blender",
+        "PCB design", "CNC routing", "3D printing (SLA, FDM, SLS)", "rapid prototyping",
       ],
     },
     {
       label: "Web & backend",
       items: [
-        "React", "Next.js", "Node.js", "FastAPI", "Flask", "Ruby on Rails", "GraphQL",
-        "REST APIs", "SDKs", "Hibernate",
+        "React", "Next.js", "Node.js", "Svelte", "Vite", "Three.js", "Electron", "Tauri",
+        "WebAssembly", "FastAPI", "Flask", "Ruby on Rails", "GraphQL", "REST APIs", "OAuth",
+        "Stripe", "Pydantic", "SQLModel", "Prisma", "Hibernate", "SDKs",
       ],
     },
     {
       label: "Data & infrastructure",
       items: [
-        "PostgreSQL", "Drizzle ORM", "Redis", "AWS", "GCP", "S3", "Cloudflare", "Vercel",
-        "Modal", "fal.ai", "containers", "distributed systems", "queues", "data engineering",
-        "CI/CD", "observability", "Git",
+        "PostgreSQL", "SQLite", "Supabase", "Drizzle ORM", "Redis", "AWS", "GCP", "S3",
+        "Cloudflare Workers", "Durable Objects", "Cloudflare R2", "Cloudflare D1", "Vercel",
+        "Modal", "fal.ai", "containers", "distributed systems", "queues", "event sourcing",
+        "data engineering", "FFmpeg", "CI/CD", "observability", "Git",
       ],
     },
     {
       label: "Mobile",
-      items: ["iOS", "Android", "Flutter", "Firebase"],
+      items: ["iOS", "Android", "React Native", "Expo", "Flutter", "Firebase"],
     },
   ],
   highlights: [
@@ -483,6 +492,23 @@ const RESUME_AWARDS: Record<string, { text: string; href: string }[]> = {
 
 export function resumeAwards(node: Pick<Node, "id">): { text: string; href: string }[] {
   return RESUME_AWARDS[node.id] ?? [];
+}
+
+// Social posts about a project, linked after its repo. Resume-only, like
+// the awards.
+export type PostNetwork = "linkedin" | "x";
+const RESUME_POSTS: Record<string, { network: PostNetwork; href: string }[]> = {
+  "chem-0": [
+    {
+      network: "linkedin",
+      href: "https://www.linkedin.com/posts/jacob-f-valdez_a-lot-of-embodied-ai-discourse-treats-reasoning-activity-7462650692445585408-E-pv?utm_source=share&utm_medium=member_desktop&rcm=ACoAADBbAAMBz1bWduOstTVqglQ1jVnVDaRkE9Q",
+    },
+  ],
+  bsbr: [{ network: "x", href: "https://x.com/jvboid/status/1905931398961127820?s=20" }],
+};
+
+export function resumePosts(node: Pick<Node, "id">): { network: PostNetwork; href: string }[] {
+  return RESUME_POSTS[node.id] ?? [];
 }
 
 // The project's GitHub repo as `owner/repo`, for the link at the end of its

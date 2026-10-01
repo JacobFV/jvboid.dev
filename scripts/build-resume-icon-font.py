@@ -7,6 +7,8 @@ of a line with its label on the next. Two glyphs, both drawn in a 24-unit box:
   U+E000  the GitHub octocat, the same path SocialGlyphs uses on the site
   U+E001  a globe, for a project's demo or site link
   U+E002  a cube, for a project's published package (pypi, npm)
+  U+E003  LinkedIn's mark, for a post about a project
+  U+E004  X's mark, likewise
 
 Each glyph's advance width carries the gap before its label. The font also
 needs the unglamorous tables (a space glyph, full OS/2 metrics, a complete
@@ -36,10 +38,12 @@ LEFT = 40
 ADVANCE = 1000  # 40 left bearing + 720 glyph + ~240 gap before the label
 
 
-def octocat_path() -> str:
+def brand_path(name: str) -> str:
+    # The brand marks come from the site's own SocialGlyphs, so the PDF's
+    # icons are the same drawings as the web page's.
     src = (ROOT / "src/components/chrome/SocialGlyphs.tsx").read_text()
-    m = re.search(r'github:\s*"([^"]+)"', src)
-    assert m, "octocat path not found in SocialGlyphs.tsx"
+    m = re.search(rf'\b{name}:\s*"([^"]+)"', src)
+    assert m, f"{name} path not found in SocialGlyphs.tsx"
     return m.group(1)
 
 
@@ -130,14 +134,19 @@ def cube(pen):
 def main():
     empty = TTGlyphPen(None).glyph()
     fb = FontBuilder(UPM, isTTF=True)
-    fb.setupGlyphOrder([".notdef", "space", "ghmark", "globe", "cube"])
-    fb.setupCharacterMap({0x20: "space", 0xE000: "ghmark", 0xE001: "globe", 0xE002: "cube"})
+    fb.setupGlyphOrder([".notdef", "space", "ghmark", "globe", "cube", "linkedin", "x"])
+    fb.setupCharacterMap({
+        0x20: "space", 0xE000: "ghmark", 0xE001: "globe", 0xE002: "cube",
+        0xE003: "linkedin", 0xE004: "x",
+    })
     fb.setupGlyf({
         ".notdef": empty,
         "space": TTGlyphPen(None).glyph(),
-        "ghmark": glyph(lambda p: parse_path(octocat_path(), p)),
+        "ghmark": glyph(lambda p: parse_path(brand_path("github"), p)),
         "globe": glyph(globe),
         "cube": glyph(cube),
+        "linkedin": glyph(lambda p: parse_path(brand_path("linkedin"), p)),
+        "x": glyph(lambda p: parse_path(brand_path("x"), p)),
     })
     fb.setupHorizontalMetrics({
         ".notdef": (500, 0),
@@ -145,6 +154,8 @@ def main():
         "ghmark": (ADVANCE, LEFT),
         "globe": (ADVANCE, LEFT),
         "cube": (ADVANCE, LEFT),
+        "linkedin": (ADVANCE, LEFT),
+        "x": (ADVANCE, LEFT),
     })
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({

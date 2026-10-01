@@ -9,6 +9,7 @@ import {
   formatResumeDate,
   githubRepo,
   resumeAwards,
+  resumePosts,
   showcaseLink,
   packageLinks,
   type BlurbPart,
@@ -278,6 +279,14 @@ export default function ResumePage() {
                   {repo && (
                     <IconLink href={repo.href} icon={<SocialGlyph name="github" />} label={repo.slug} />
                   )}
+                  {resumePosts(n).map((post) => (
+                    <IconLink
+                      key={post.href}
+                      href={post.href}
+                      icon={<SocialGlyph name={post.network} />}
+                      label="Post"
+                    />
+                  ))}
                   {showcase && (
                     <IconLink
                       href={showcase.href}

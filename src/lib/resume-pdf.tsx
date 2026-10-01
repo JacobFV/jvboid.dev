@@ -12,6 +12,7 @@ import {
   formatResumeDate,
   githubRepo,
   resumeAwards,
+  resumePosts,
   showcaseLink,
   packageLinks,
   type BlurbPart,
@@ -135,6 +136,7 @@ Font.register({
 const GITHUB_MARK = "\uE000";
 const GLOBE = "\uE001";
 const PACKAGE = "\uE002";
+const POST_MARKS = { linkedin: "\uE003", x: "\uE004" } as const;
 
 // One run of a project's resume line; see BlurbPart for the markup.
 function BlurbRun({ part }: { part: BlurbPart }) {
@@ -185,6 +187,9 @@ function ProjectItem({ n }: { n: Node }) {
           </Text>
         ))}
         {repo ? <IconLink href={repo.href} icon={GITHUB_MARK} label={repo.slug} /> : null}
+        {resumePosts(n).map((post) => (
+          <IconLink key={post.href} href={post.href} icon={POST_MARKS[post.network]} label="Post" />
+        ))}
         {showcase ? <IconLink href={showcase.href} icon={GLOBE} label={showcase.label} /> : null}
         {packageLinks(n).map((pkg) => (
           <IconLink key={pkg.href} href={pkg.href} icon={PACKAGE} label={pkg.label} />
@@ -240,6 +245,7 @@ function estimateLines(n: Node): number {
     resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, ""),
     ...resumeAwards(n).map((a) => `${a.text}.`),
     repo ? `${GITHUB_MARK}${repo.slug}` : "",
+    ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}Post`),
     showcase ? `${GLOBE}${showcase.label}` : "",
     ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
   ].join(" ");
