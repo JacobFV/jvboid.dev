@@ -288,9 +288,13 @@ const LEADING = 1.45; // the page's line height
 const COLUMN_GAP = 14;
 const COLUMN_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2;
 const PROJ_TEXT_WIDTH = COLUMN_WIDTH;
-// The simulation is close, not exact: leave this much of each column free,
-// so a column that runs a little long still fits its page.
-const COLUMN_SLACK = 14;
+// The simulation is close, not exact, and it runs short: bold metrics and
+// the brief labels set wider than the plain Helvetica it measures, and over
+// a full column of projects that adds up to more than a line or two. A
+// column that runs past the page doesn't spill — react-pdf squashes the
+// whole page to fit, every line on top of the next — so fill each column
+// only to this share of its room.
+const COLUMN_FILL = 0.94;
 
 // A project's date on the title line: the narrow-column line breaks in a
 // multi-stretch label ("Apr 2022 –\nDec 2022,\nSep 2026") become spaces.
@@ -449,7 +453,7 @@ function flow(blocks: Block[]): Placed[][][] {
     const column = () => columns[columns.length - 1];
     const need = (top: boolean) =>
       b.height(top) + (b.keepWithNext && blocks[i + 1] ? blocks[i + 1].height(false) : 0);
-    if (column().length > 0 && used + need(false) > room - COLUMN_SLACK) {
+    if (column().length > 0 && used + need(false) > room * COLUMN_FILL) {
       if (columns.length === 1) {
         columns.push([]);
       } else {
