@@ -45,6 +45,17 @@ const colors = {
 // pictures only crowd the page.
 const WAVE_HEIGHT = 16;
 
+// Type sizes, in points, shared by the styles and the layout simulation.
+const SIZE = {
+  name: 20,
+  headline: 9.5,
+  page: 8.5, // highlights, summary
+  contact: 8,
+  label: 7.5, // section headings
+  text: 8, // experience, projects, skills
+  briefLabel: 6,
+};
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 38,
@@ -53,28 +64,28 @@ const styles = StyleSheet.create({
     paddingBottom: 56,
     paddingHorizontal: 44,
     fontFamily: "Helvetica",
-    fontSize: 9,
+    fontSize: SIZE.page,
     color: colors.inkDim,
     lineHeight: 1.45,
   },
   name: {
-    fontSize: 22,
+    fontSize: SIZE.name,
     lineHeight: 1.2,
     color: colors.ink,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.2,
     marginBottom: 4,
   },
-  headline: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Oblique" },
-  summary: { marginTop: 6, fontSize: 9.5, color: colors.inkDim, lineHeight: 1.5 },
-  contactRow: { marginTop: 6, flexDirection: "row", flexWrap: "wrap", gap: 10, fontSize: 8.5, color: colors.inkMute },
+  headline: { fontSize: SIZE.headline, color: colors.ink, fontFamily: "Helvetica-Oblique" },
+  summary: { marginTop: 6, fontSize: SIZE.page, color: colors.inkDim, lineHeight: 1.5 },
+  contactRow: { marginTop: 6, flexDirection: "row", flexWrap: "wrap", gap: 10, fontSize: SIZE.contact, color: colors.inkMute },
   contactItem: { color: colors.inkMute },
   contactLink: { color: colors.inkMute, textDecoration: "none" },
 
   sectionLabel: {
     marginTop: 14,
     marginBottom: 6,
-    fontSize: 8,
+    fontSize: SIZE.label,
     color: colors.accent,
     fontFamily: "Helvetica-Bold",
     // Kept tight: wide tracking extracts as "S K I L L S", which an ATS
@@ -92,7 +103,7 @@ const styles = StyleSheet.create({
     position: "relative",
     marginBottom: 3,
     paddingLeft: 10,
-    fontSize: 9,
+    fontSize: SIZE.page,
     color: colors.inkDim,
   },
   highlightBullet: {
@@ -105,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
 
-  skillsLine: { marginBottom: 3, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
+  skillsLine: { marginBottom: 3, fontSize: SIZE.text, color: colors.inkDim, lineHeight: 1.4 },
   skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
   wave: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVE_HEIGHT },
@@ -119,7 +130,7 @@ const styles = StyleSheet.create({
 
   // An experience entry is laid out like a project: date beside, text after.
   expRow: { flexDirection: "row", paddingVertical: 3 },
-  expBody: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
+  expBody: { flex: 1, fontSize: SIZE.text, color: colors.inkDim, lineHeight: 1.4 },
   expTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
   expOrgLink: { color: colors.accent, fontFamily: "Helvetica", textDecoration: "underline" },
@@ -128,13 +139,13 @@ const styles = StyleSheet.create({
   projItem: { flexDirection: "row", paddingVertical: 2 },
   // Dates follow the title, muted, rather than taking a column of their own.
   date: { color: colors.inkMute, fontFamily: "Helvetica" },
-  projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
+  projText: { flex: 1, fontSize: SIZE.text, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   projAward: { color: colors.accent, fontFamily: "Helvetica-Bold", textDecoration: "underline" },
   projRepo: { color: colors.inkMute, textDecoration: "none" },
   projIcon: { fontFamily: "ResumeIcons" },
   projInlineLink: { color: colors.accent, textDecoration: "underline" },
-  projLabel: { color: colors.accent, fontFamily: "Helvetica-Bold", fontSize: 6.5, letterSpacing: 0.4 },
+  projLabel: { color: colors.accent, fontFamily: "Helvetica-Bold", fontSize: SIZE.briefLabel, letterSpacing: 0.4 },
   projStrong: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   projTech: { color: colors.inkMute },
 });
@@ -343,16 +354,16 @@ function projectHeight(n: ResumeProject): number {
     ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
     stack ? `· ${stack}` : "",
   ].join(" ");
-  return lineCount(text, PROJ_TEXT_WIDTH, 8.5) * 8.5 * 1.4 + 4; // + projItem's vertical padding
+  return lineCount(text, PROJ_TEXT_WIDTH, SIZE.text) * SIZE.text * 1.4 + 4; // + projItem's vertical padding
 }
 
 // The hero's height: name, headline, contact row and highlights.
 function heroHeight(): number {
-  let y = 22 * 1.2 + 4 + 10 * LEADING + 6 + 8.5 * LEADING; // name, headline, contact row
+  let y = SIZE.name * 1.2 + 4 + SIZE.headline * LEADING + 6 + SIZE.contact * LEADING; // name, headline, contact row
   y += 10; // highlights' top margin
   for (const parts of meta.highlights) {
     const text = parts.map((p) => (typeof p === "string" ? p : p.text)).join("");
-    y += lineCount(text, CONTENT_WIDTH - 10, 9) * 9 * LEADING + 3;
+    y += lineCount(text, CONTENT_WIDTH - 10, SIZE.page) * SIZE.page * LEADING + 3;
   }
   return y;
 }
@@ -368,7 +379,7 @@ type Block = {
 };
 
 function textHeight(text: string, width: number): number {
-  return lineCount(text, width, 8.5) * 8.5 * 1.4;
+  return lineCount(text, width, SIZE.text) * SIZE.text * 1.4;
 }
 
 function heading(label: string): Block {
@@ -377,7 +388,7 @@ function heading(label: string): Block {
     keepWithNext: true,
     // sectionLabel's line, padding, rule and bottom margin, plus its top
     // margin unless it opens a column.
-    height: (top) => (top ? 0 : 10) + 8 * LEADING + 3 + 0.5 + 6,
+    height: (top) => (top ? 0 : 10) + SIZE.label * LEADING + 3 + 0.5 + 6,
     render: (top) => (
       <Text style={[styles.sectionLabel, top ? styles.columnLabelTop : styles.columnLabel]}>{label}</Text>
     ),
