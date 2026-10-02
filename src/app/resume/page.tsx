@@ -348,7 +348,7 @@ export default function ResumePage() {
                       label={pkg.label}
                     />
                   ))}
-                  {stack && <span className="text-[var(--color-ink-mute)]"> {stack}</span>}
+                  {stack && <span className="text-[var(--color-ink-mute)]"> · {stack}</span>}
                 </p>
               </li>
             );

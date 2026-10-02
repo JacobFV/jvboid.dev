@@ -221,7 +221,7 @@ function ProjectItem({ n }: { n: ResumeProject }) {
         {packageLinks(n).map((pkg) => (
           <IconLink key={pkg.href} href={pkg.href} icon={PACKAGE} label={pkg.label} />
         ))}
-        {stack && <Text style={styles.projTech}> {stack}</Text>}
+        {stack && <Text style={styles.projTech}> · {stack}</Text>}
       </Text>
     </View>
   );
@@ -317,7 +317,7 @@ function projectHeight(n: ResumeProject): number {
     ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}${p.label}`),
     ...showcases.map((sc) => `${GLOBE}${sc.label}`),
     ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
-    stack ?? "",
+    stack ? `· ${stack}` : "",
   ].join(" ");
   const textHeight = lineCount(text, PROJ_TEXT_WIDTH, 8.5) * 8.5 * 1.4;
   const dateHeight = lineCount(formatResumeDate(n), PROJ_DATE_WIDTH - 4, 7.5) * 7.5 * LEADING;
