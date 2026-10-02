@@ -22,6 +22,7 @@ import {
   resumeBlurb,
   resumeBlurbParts,
   resumeBriefLines,
+  resumeStack,
   resumeMeta as meta,
 } from "./resume-data";
 
@@ -173,6 +174,7 @@ function ProjectItem({ n }: { n: ResumeProject }) {
   const repos = projectRepos(n);
   const showcases = projectShowcases(n);
   const brief = resumeBriefLines(n);
+  const stack = resumeStack(n);
   return (
     <View style={styles.projItem}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
@@ -219,6 +221,7 @@ function ProjectItem({ n }: { n: ResumeProject }) {
         {packageLinks(n).map((pkg) => (
           <IconLink key={pkg.href} href={pkg.href} icon={PACKAGE} label={pkg.label} />
         ))}
+        {stack && <Text style={styles.projTech}> {stack}</Text>}
       </Text>
     </View>
   );
@@ -302,6 +305,7 @@ function projectHeight(n: ResumeProject): number {
   // A brief runs problem, task and outcome on in one paragraph after the
   // title, each behind its label.
   const brief = resumeBriefLines(n);
+  const stack = resumeStack(n);
   const blurb = brief
     ? brief.map((l) => `${l.label} ${l.parts.map((p) => p.text).join("")}`).join(" ")
     : resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, "");
@@ -313,6 +317,7 @@ function projectHeight(n: ResumeProject): number {
     ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}${p.label}`),
     ...showcases.map((sc) => `${GLOBE}${sc.label}`),
     ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
+    stack ?? "",
   ].join(" ");
   const textHeight = lineCount(text, PROJ_TEXT_WIDTH, 8.5) * 8.5 * 1.4;
   const dateHeight = lineCount(formatResumeDate(n), PROJ_DATE_WIDTH - 4, 7.5) * 7.5 * LEADING;

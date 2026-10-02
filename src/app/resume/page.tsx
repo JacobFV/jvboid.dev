@@ -17,6 +17,7 @@ import {
   type PostNetwork,
   resumeBlurbParts,
   resumeBriefLines,
+  resumeStack,
   resumeMeta as meta,
   resumePdfHref,
 } from "@/lib/resume-data";
@@ -273,6 +274,7 @@ export default function ResumePage() {
             const repos = projectRepos(n);
             const showcases = projectShowcases(n);
             const brief = resumeBriefLines(n);
+            const stack = resumeStack(n);
             return (
               <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
                 <div className="whitespace-pre-line font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
@@ -346,6 +348,7 @@ export default function ResumePage() {
                       label={pkg.label}
                     />
                   ))}
+                  {stack && <span className="text-[var(--color-ink-mute)]"> {stack}</span>}
                 </p>
               </li>
             );

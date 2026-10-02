@@ -533,21 +533,24 @@ function inlineParts(text: string): BlurbPart[] {
 }
 
 // A project's resume_brief as the three labelled runs the resume prints —
-// problem, task, outcome — with the stack muted at the end of the task, the
-// way a resume_description carries its tech tail. Null when the project has
-// no brief and the resume falls back to its one-line blurb.
+// problem, task, outcome. Null when the project has no brief and the resume
+// falls back to its one-line blurb. The stack isn't one of them: it prints
+// muted after the project's links (see resumeStack).
 export type BriefLine = { label: string; parts: BlurbPart[] };
 
 export function resumeBriefLines(node: Pick<Node, "resumeBrief">): BriefLine[] | null {
   const b = node.resumeBrief;
   if (!b) return null;
-  const task = inlineParts(b.task);
-  if (b.stack) task.push({ text: " " }, { text: b.stack, tech: true });
   return [
     { label: "Problem", parts: inlineParts(b.problem) },
-    { label: "Task", parts: task },
+    { label: "Task", parts: inlineParts(b.task) },
     { label: "Outcome", parts: inlineParts(b.outcome) },
   ];
+}
+
+// A brief's tech stack, which the resume prints last, after the links.
+export function resumeStack(node: Pick<Node, "resumeBrief">): string | null {
+  return node.resumeBrief?.stack ?? null;
 }
 
 // Projects the resume lists as one: the browser desktops are a shell and two
