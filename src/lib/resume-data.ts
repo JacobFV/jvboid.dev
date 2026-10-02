@@ -40,79 +40,40 @@ export const resumeMeta: {
   skills: [
     {
       label: "Languages",
-      items: [
-        "Python", "TypeScript", "JavaScript", "SQL", "Rust", "Java", "Kotlin", "C", "C#",
-        "Ruby", "Dart", "HTML", "CSS",
-      ],
+      items: ["Python", "TypeScript", "SQL", "Rust", "C", "Java", "Kotlin"],
     },
     {
-      label: "AI / ML / Research",
+      label: "AI / ML",
       items: [
-        "machine learning", "deep learning", "neural networks", "generative AI",
-        "large language models (LLMs)", "transformers", "attention mechanisms",
-        "diffusion models", "foundation models", "multimodal models", "world models",
-        "latent dynamics", "representation learning", "self-supervised learning",
-        "supervised learning", "reinforcement learning", "evolution strategies",
-        "graph neural networks (GNNs)", "embeddings", "neurosymbolic AI",
-        "differentiable programming", "synthetic data generation", "model training",
-        "fine-tuning", "model quantization", "on-device inference", "inference optimization",
-        "model evaluation", "benchmarking", "computer vision", "signal processing", "EEG",
-        "PyTorch", "JAX", "TensorFlow", "TensorFlow Lite", "Keras", "NumPy", "pandas",
-        "Jupyter", "Hugging Face", "OpenCV", "MNE-Python",
+        "deep learning", "transformers", "diffusion models", "world models",
+        "reinforcement learning", "foundation models", "computer vision", "LLMs",
+        "PyTorch", "JAX", "Hugging Face",
       ],
     },
     {
       label: "Agents",
       items: [
-        "agentic AI", "AI agents", "LLM agents", "autonomous agents", "multi-agent systems",
-        "computer use", "browser automation", "tool use", "function calling",
-        "structured outputs", "orchestration", "prompt engineering", "context engineering",
-        "AI automation", "evals", "Model Context Protocol (MCP)", "LLM integration",
-        "OpenAI API", "Anthropic API", "Gemini API",
+        "AI agents", "multi-agent systems", "computer use", "tool use",
+        "Model Context Protocol (MCP)", "evals",
       ],
     },
     {
-      label: "Robotics / Embodied AI / Hardware",
+      label: "Robotics / Hardware",
       items: [
-        "robotics", "embodied AI", "robot learning", "policy learning", "robot control policies",
-        "imitation learning", "cross-embodiment control", "contact-centric control",
-        "manipulation", "grasping", "teleoperation", "perception", "motion planning",
-        "autonomous systems", "sim-to-real", "robotics simulation", "physics simulation",
-        "LeRobot", "SO-101", "MuJoCo", "OpenSim", "embedded systems", "embedded firmware",
-        "electronics", "mechatronics", "hardware prototyping", "hardware-software integration",
-        "Arduino", "ESP32", "ESP-IDF", "PlatformIO", "Raspberry Pi", "stepper motors",
-        "computer-aided design (CAD)", "FreeCAD", "KiCAD", "Blender", "PCB design",
-        "PCB fabrication", "CNC routing", "additive manufacturing", "3D printing (SLA, FDM, SLS)",
-        "rapid prototyping",
+        "robot learning", "imitation learning", "manipulation", "LeRobot", "MuJoCo",
+        "embedded firmware", "ESP32", "PCB design", "KiCAD", "CAD", "3D printing",
       ],
     },
     {
-      label: "ML Infrastructure / Data / Cloud",
+      label: "Infrastructure / Web",
       items: [
-        "ML infrastructure", "ML systems", "training infrastructure", "inference infrastructure",
-        "model serving", "GPU training", "data pipelines", "dataset generation",
-        "evaluation pipelines", "data engineering", "distributed systems", "cloud computing",
-        "serverless", "PostgreSQL", "SQLite", "relational databases", "Supabase", "Drizzle ORM",
-        "Redis", "message queues", "event sourcing", "AWS", "GCP", "S3", "Cloudflare Workers",
-        "Durable Objects", "Cloudflare R2", "Cloudflare D1", "Vercel", "Modal", "fal.ai",
-        "containers", "FFmpeg", "CI/CD", "observability",
-      ],
-    },
-    {
-      label: "Software Engineering / Web / Backend",
-      items: [
-        "software engineering", "full-stack engineering", "backend engineering",
-        "frontend engineering", "infrastructure engineering", "system design",
-        "system architecture", "API design", "API development", "REST APIs", "GraphQL", "SDKs",
-        "OAuth", "production systems", "testing", "debugging", "performance optimization",
-        "developer tools", "open source", "React", "Next.js", "Node.js", "Svelte", "Vite",
-        "Three.js", "Electron", "Tauri", "WebAssembly", "FastAPI", "Flask", "Ruby on Rails",
-        "Stripe", "Pydantic", "SQLModel", "Prisma", "Hibernate", "Git",
+        "distributed systems", "data pipelines", "PostgreSQL", "AWS", "GCP",
+        "Cloudflare Workers", "Vercel", "CI/CD", "React", "Next.js", "Node.js", "FastAPI",
       ],
     },
     {
       label: "Mobile",
-      items: ["iOS", "Android", "React Native", "Expo", "Flutter", "Firebase"],
+      items: ["iOS", "Android", "React Native", "Flutter"],
     },
   ],
 };
@@ -599,12 +560,11 @@ export type ResumeMode = "resume" | "cv";
 const FEATURED = new Set([
   // Models, research, ML systems
   "tensacode", "tensegra", "computerworld", "ibm-1", "sc-wbd", "langcurriculum",
-  "canvas-engineering", "tensor-computer", "recursive-omnimodal-video-action-model",
-  "bsbr", "eggroll-trainer", "desparados-a-eye", "jnumpy", "synthux",
+  "canvas-engineering", "tensor-computer", "bsbr", "desparados-a-eye", "jnumpy", "synthux",
   // Robotics and hardware
-  "chem-0", "fieldratchet", "lunar-rover", "trash-sorter", "esp32-usb-webcam",
+  "chem-0", "fieldratchet", "lunar-rover", "trash-sorter",
   // Products and tools
-  "precisionbom", "browser-os", "jterm", "bonk", "theagentsuite",
+  "precisionbom", "browser-os", "jterm",
 ]);
 
 // The projects on the resume, merged where RESUME_MERGES says, newest
