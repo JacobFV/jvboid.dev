@@ -105,22 +105,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
 
-  skillsLine: { marginBottom: 2, fontSize: 9, color: colors.inkDim, lineHeight: 1.45 },
+  skillsLine: { marginBottom: 3, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   skillsLabel: { color: colors.ink, fontFamily: "Helvetica-Bold" },
 
   wave: { position: "absolute", left: 0, right: 0, bottom: 0, width: 612, height: WAVE_HEIGHT },
-  experience: { marginTop: 14 },
-  expRow: { flexDirection: "row", marginBottom: 8 },
-  expDate: { width: 104, paddingRight: 8, fontSize: 8.5, color: colors.inkMute },
-  expBody: { flex: 1 },
-  expTitle: { fontSize: 10, color: colors.ink, fontFamily: "Helvetica-Bold" },
+
+  // Everything under the hero runs in two newspaper columns; see flow().
+  flowPage: { flexDirection: "row", gap: 14 },
+  flowFirst: { marginTop: 14 },
+  flowColumn: { flex: 1 },
+  columnLabel: { marginTop: 10 },
+  columnLabelTop: { marginTop: 0 },
+
+  // An experience entry is laid out like a project: date beside, text after.
+  expRow: { flexDirection: "row", paddingVertical: 3 },
+  expBody: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
+  expTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   expOrg: { color: colors.inkDim, fontFamily: "Helvetica" },
   expOrgLink: { color: colors.accent, fontFamily: "Helvetica", textDecoration: "underline" },
-  expPara: { marginTop: 1, fontSize: 9, color: colors.inkDim },
-  expParaNext: { marginTop: 3 },
+  expPara: { marginTop: 2 },
 
-  projBlock: { flexDirection: "row", gap: 14 },
-  projColumn: { flex: 1 },
   projItem: { flexDirection: "row", paddingVertical: 2 },
   projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
@@ -227,14 +231,15 @@ function ProjectItem({ n }: { n: ResumeProject }) {
   );
 }
 
-// Projects run in two newspaper columns: down the left column to the foot
-// of the page, then down the right, then on to the next page. react-pdf has
-// no columns of its own, and can't break a pair of side-by-side columns
-// across a page (whatever runs past the foot is drawn in a heap through the
-// margin), so the breaks are worked out here. Each page of projects is one
-// unsplittable block of two columns, filled from a simulation of the page
-// flow: every line of the document above, and each project's text, wrapped
-// with Helvetica's own widths at its real width and size.
+// Below the hero, the whole resume — experience, projects, skills — runs in
+// two newspaper columns: down the left column to the foot of the page, then
+// down the right, then on to the next page. react-pdf has no columns of its
+// own, and can't break a pair of side-by-side columns across a page
+// (whatever runs past the foot is drawn in a heap through the margin), so
+// the breaks are worked out here. Each page is one unsplittable block of
+// two columns, filled from a simulation of the flow: the hero above, and
+// each block's text, wrapped with Helvetica's own widths at its real width
+// and size.
 
 // Helvetica's advance widths (per 1000 em) for printable ASCII, from its
 // standard AFM metrics; anything else is costed as a digit.
@@ -287,8 +292,9 @@ const CONTENT_WIDTH = 612 - 2 * 44;
 const CONTENT_HEIGHT = 792 - 38 - 56;
 const LEADING = 1.45; // the page's line height
 const COLUMN_GAP = 14;
+const COLUMN_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2;
 const PROJ_DATE_WIDTH = 46;
-const PROJ_TEXT_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2 - PROJ_DATE_WIDTH;
+const PROJ_TEXT_WIDTH = COLUMN_WIDTH - PROJ_DATE_WIDTH;
 // The simulation is close, not exact: leave this much of each column free,
 // so a column that runs a little long still fits its page.
 const COLUMN_SLACK = 14;
@@ -324,44 +330,115 @@ function projectHeight(n: ResumeProject): number {
   return Math.max(textHeight, dateHeight) + 4; // + projItem's vertical padding
 }
 
-// Where the projects heading starts: how far down its page, after laying
-// out the header, highlights and experience as the PDF will.
-function projectsStart(): number {
+// The hero's height: name, headline, contact row and highlights.
+function heroHeight(): number {
   let y = 22 * 1.2 + 4 + 10 * LEADING + 6 + 8.5 * LEADING; // name, headline, contact row
   y += 10; // highlights' top margin
   for (const parts of meta.highlights) {
     const text = parts.map((p) => (typeof p === "string" ? p : p.text)).join("");
     y += lineCount(text, CONTENT_WIDTH - 10, 9) * 9 * LEADING + 3;
   }
-  y += 14; // experience's top margin
-  for (const e of experience) {
-    let h = e.title ? 10 * LEADING : 0;
-    e.bullets.forEach((b, i) => {
-      h += (i > 0 ? 3 : 1) + lineCount(b, CONTENT_WIDTH - 104, 9) * 9 * LEADING;
-    });
-    h += 8; // expRow's bottom margin
-    // Rows don't split: one that won't fit starts the next page.
-    if (y + h > CONTENT_HEIGHT) y = 0;
-    y += h;
-  }
   return y;
 }
 
-// The projects heading: sectionLabel's margins, line, padding and rule.
-const PROJECTS_HEADING = 14 + 8 * LEADING + 3 + 0.5 + 6;
+// One unsplittable piece of the flow. `top` is whether it opens a column,
+// where a heading drops its top margin.
+type Block = {
+  key: string;
+  height: (top: boolean) => number;
+  render: (top: boolean) => React.ReactElement;
+  // A heading: never left alone at the foot of a column.
+  keepWithNext?: boolean;
+};
 
-// Pour the projects into pages of two columns.
-function paginate(items: Node[]): Node[][][] {
-  let room = CONTENT_HEIGHT - projectsStart() - PROJECTS_HEADING;
-  // Too little left under the experience for a page of columns to be worth
-  // it: the block will start the next page anyway.
-  if (room < 120) room = CONTENT_HEIGHT - PROJECTS_HEADING;
-  const pages: Node[][][] = [];
-  let columns: Node[][] = [[]];
+function textHeight(text: string, width: number): number {
+  return lineCount(text, width, 8.5) * 8.5 * 1.4;
+}
+
+function heading(label: string): Block {
+  return {
+    key: `h-${label}`,
+    keepWithNext: true,
+    // sectionLabel's line, padding, rule and bottom margin, plus its top
+    // margin unless it opens a column.
+    height: (top) => (top ? 0 : 10) + 8 * LEADING + 3 + 0.5 + 6,
+    render: (top) => (
+      <Text style={[styles.sectionLabel, top ? styles.columnLabelTop : styles.columnLabel]}>{label}</Text>
+    ),
+  };
+}
+
+type Job = (typeof experience)[number];
+
+function experienceBlock(e: Job): Block {
+  const head = e.title ? `${e.title}${e.org ? ` · ${e.org}` : ""}` : "";
+  return {
+    key: `exp-${e.org}-${e.title}-${e.range}`,
+    height: () => {
+      let h = head ? textHeight(head, PROJ_TEXT_WIDTH) * 1.05 : 0; // bold runs wide
+      for (const b of e.bullets) h += 2 + textHeight(b, PROJ_TEXT_WIDTH);
+      const date = lineCount(e.range, PROJ_DATE_WIDTH - 4, 7.5) * 7.5 * LEADING;
+      return Math.max(h, date) + 6; // + expRow's vertical padding
+    },
+    render: () => (
+      <View style={styles.expRow}>
+        <Text style={styles.projYear}>{e.range}</Text>
+        <View style={styles.expBody}>
+          {e.title ? (
+            <Text>
+              <Text style={styles.expTitle}>{e.title}</Text>
+              {e.org ? <Text style={styles.expOrg}> · </Text> : null}
+              {e.org && e.href ? (
+                <Link src={e.href} style={styles.expOrgLink}>{e.org}</Link>
+              ) : e.org ? (
+                <Text style={styles.expOrg}>{e.org}</Text>
+              ) : null}
+            </Text>
+          ) : null}
+          {/* Paragraphs, not bullets: each entry reads as prose. */}
+          {e.bullets.map((b) => (
+            <Text key={b} style={styles.expPara}>
+              {b}
+            </Text>
+          ))}
+        </View>
+      </View>
+    ),
+  };
+}
+
+function projectBlock(n: ResumeProject): Block {
+  return { key: `proj-${n.id}`, height: () => projectHeight(n), render: () => <ProjectItem n={n} /> };
+}
+
+function skillsBlock(g: (typeof meta.skills)[number]): Block {
+  return {
+    key: `skills-${g.label}`,
+    height: () => textHeight(`${g.label}: ${g.items.join(", ")}`, COLUMN_WIDTH) * 1.02 + 3,
+    render: () => (
+      <Text style={styles.skillsLine}>
+        <Text style={styles.skillsLabel}>{g.label}: </Text>
+        {g.items.join(", ")}
+      </Text>
+    ),
+  };
+}
+
+// Pour the blocks into pages of two columns. Each entry in a column is a
+// block and whether it opens that column.
+type Placed = { block: Block; top: boolean };
+
+function flow(blocks: Block[]): Placed[][][] {
+  // The first page's columns start under the hero and flowFirst's margin.
+  let room = CONTENT_HEIGHT - heroHeight() - 14;
+  const pages: Placed[][][] = [];
+  let columns: Placed[][] = [[]];
   let used = 0;
-  for (const n of items) {
-    const h = projectHeight(n);
-    if (used + h > room - COLUMN_SLACK && columns[columns.length - 1].length > 0) {
+  blocks.forEach((b, i) => {
+    const column = () => columns[columns.length - 1];
+    const need = (top: boolean) =>
+      b.height(top) + (b.keepWithNext && blocks[i + 1] ? blocks[i + 1].height(false) : 0);
+    if (column().length > 0 && used + need(false) > room - COLUMN_SLACK) {
       if (columns.length === 1) {
         columns.push([]);
       } else {
@@ -371,44 +448,34 @@ function paginate(items: Node[]): Node[][][] {
       }
       used = 0;
     }
-    columns[columns.length - 1].push(n);
-    used += h;
-  }
+    const top = column().length === 0;
+    column().push({ block: b, top });
+    used += b.height(top);
+  });
   pages.push(columns);
   return pages;
 }
 
-function ProjectPage({ columns }: { columns: Node[][] }) {
+function Columns({ blocks }: { blocks: Block[] }) {
   return (
-    <View style={styles.projBlock}>
-      {[0, 1].map((i) => (
-        <View key={i} style={styles.projColumn}>
-          {(columns[i] ?? []).map((n) => (
-            <ProjectItem key={n.id} n={n} />
+    <>
+      {flow(blocks).map((columns, p) => (
+        <View
+          key={columns[0][0]?.block.key ?? p}
+          wrap={false}
+          break={p > 0}
+          style={[styles.flowPage, p === 0 ? styles.flowFirst : {}]}
+        >
+          {[0, 1].map((i) => (
+            <View key={i} style={styles.flowColumn}>
+              {(columns[i] ?? []).map(({ block, top }) => (
+                <View key={block.key}>{block.render(top)}</View>
+              ))}
+            </View>
           ))}
         </View>
       ))}
-    </View>
-  );
-}
-
-function ProjectGroup({ items }: { items: Node[] }) {
-  if (items.length === 0) return null;
-  const [first, ...rest] = paginate(items);
-  return (
-    <View>
-      {/* The heading travels with the first page of columns, so it is never
-          left alone at the foot of a page with its projects overleaf. */}
-      <View wrap={false}>
-        <Text style={styles.sectionLabel}>Projects</Text>
-        <ProjectPage columns={first} />
-      </View>
-      {rest.map((columns) => (
-        <View key={columns[0][0].id} wrap={false} break>
-          <ProjectPage columns={columns} />
-        </View>
-      ))}
-    </View>
+    </>
   );
 }
 
@@ -471,44 +538,14 @@ export function ResumeDocument({ projects, mode = "resume" }: { projects: Node[]
         </View>
 
         {/* No heading: a gap is enough to set the experience apart. */}
-        <View style={styles.experience}>
-          {experience.map((e) => (
-            <View key={`${e.org}-${e.title}-${e.range}`} style={styles.expRow} wrap={false}>
-              <Text style={styles.expDate}>{e.range}</Text>
-              <View style={styles.expBody}>
-                {e.title ? (
-                  <Text>
-                    <Text style={styles.expTitle}>{e.title}</Text>
-                    {e.org ? <Text style={styles.expOrg}> · </Text> : null}
-                    {e.org && e.href ? (
-                      <Link src={e.href} style={styles.expOrgLink}>{e.org}</Link>
-                    ) : e.org ? (
-                      <Text style={styles.expOrg}>{e.org}</Text>
-                    ) : null}
-                  </Text>
-                ) : null}
-                {/* Paragraphs, not bullets: each entry reads as prose. */}
-                {e.bullets.map((b, i) => (
-                  <Text key={b} style={[styles.expPara, i > 0 ? styles.expParaNext : {}]}>
-                    {b}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          ))}
-        </View>
-
-        <ProjectGroup items={listed} />
-
-        <View wrap={false}>
-          <Text style={styles.sectionLabel}>Skills (ATS)</Text>
-          {meta.skills.map((g) => (
-            <Text key={g.label} style={styles.skillsLine}>
-              <Text style={styles.skillsLabel}>{g.label}: </Text>
-              {g.items.join(", ")}
-            </Text>
-          ))}
-        </View>
+        <Columns
+          blocks={[
+            ...experience.map(experienceBlock),
+            ...(listed.length ? [heading("Projects"), ...listed.map(projectBlock)] : []),
+            heading("Skills (ATS)"),
+            ...meta.skills.map(skillsBlock),
+          ]}
+        />
       </Page>
     </Document>
   );
