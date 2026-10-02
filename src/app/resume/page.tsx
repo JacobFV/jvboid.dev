@@ -16,6 +16,7 @@ import {
   type BlurbPart,
   type PostNetwork,
   resumeBlurbParts,
+  resumeBriefLines,
   resumeMeta as meta,
   resumePdfHref,
 } from "@/lib/resume-data";
@@ -267,10 +268,11 @@ export default function ResumePage() {
         <h2 className="mb-4 border-b border-[var(--color-resume)] pb-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--color-resume)]">
           Projects ({projects.length})
         </h2>
-        <ul className="grid gap-1.5">
+        <ul className="grid gap-3">
           {projects.map((n) => {
             const repos = projectRepos(n);
             const showcases = projectShowcases(n);
+            const brief = resumeBriefLines(n);
             return (
               <li key={n.id} className="grid grid-cols-[88px_1fr] gap-3">
                 <div className="whitespace-pre-line font-[family-name:var(--font-mono)] text-[11px] text-[var(--color-ink-mute)]">
@@ -283,10 +285,26 @@ export default function ResumePage() {
                   >
                     {n.title}
                   </Link>
-                  {": "}
-                  {resumeBlurbParts(n).map((part, i) => (
-                    <BlurbRun key={i} part={part} />
-                  ))}
+                  {brief
+                    ? brief.map((line) => (
+                        <span key={line.label}>
+                          <br />
+                          <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--color-resume)]">
+                            {line.label}
+                          </span>{" "}
+                          {line.parts.map((part, i) => (
+                            <BlurbRun key={i} part={part} />
+                          ))}
+                        </span>
+                      ))
+                    : (
+                        <>
+                          {": "}
+                          {resumeBlurbParts(n).map((part, i) => (
+                            <BlurbRun key={i} part={part} />
+                          ))}
+                        </>
+                      )}
                   {resumeAwards(n).map((a) => (
                     <span key={a.href}>
                       {" "}

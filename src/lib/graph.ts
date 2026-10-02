@@ -95,6 +95,8 @@ const toNode =
       critiques: raw.critiques ?? [],
       resumeDescription:
         kind === "project" ? (extra.resume_description as string | undefined) : undefined,
+      resumeBrief:
+        kind === "project" ? (extra.resume_brief as Node["resumeBrief"]) : undefined,
       datePrecision:
         kind === "project" ? (extra.datePrecision as Node["datePrecision"]) : undefined,
       video: kind === "project" ? (extra.video as string | undefined) : undefined,

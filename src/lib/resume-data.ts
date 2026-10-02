@@ -513,31 +513,69 @@ export function resumeBlurbParts(node: Pick<Node, "summary" | "resumeDescription
   const tail = cut === -1 ? "" : blurb.slice(cut + 2);
   const hasTail = tail.includes(",") && !/[[*]/.test(tail);
   const body = hasTail ? blurb.slice(0, cut + 1) : blurb;
+  const parts = inlineParts(body);
+  if (hasTail) parts.push({ text: " " }, { text: tail, tech: true });
+  return parts;
+}
 
+// [text](url) and **text** runs, and the plain text between them.
+function inlineParts(text: string): BlurbPart[] {
   const parts: BlurbPart[] = [];
   let last = 0;
-  for (const m of body.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)|\*\*(.+?)\*\*/g)) {
-    if (m.index > last) parts.push({ text: body.slice(last, m.index) });
+  for (const m of text.matchAll(/\[([^\]]+)\]\(([^)\s]+)\)|\*\*(.+?)\*\*/g)) {
+    if (m.index > last) parts.push({ text: text.slice(last, m.index) });
     if (m[1] !== undefined) parts.push({ text: m[1], href: m[2] });
     else parts.push({ text: m[3], strong: true });
     last = m.index + m[0].length;
   }
-  if (last < body.length) parts.push({ text: body.slice(last) });
-  if (hasTail) parts.push({ text: " " }, { text: tail, tech: true });
+  if (last < text.length) parts.push({ text: text.slice(last) });
   return parts;
+}
+
+// A project's resume_brief as the three labelled lines the resume prints —
+// problem, task, outcome — with the stack muted at the end of the task, the
+// way a resume_description carries its tech tail. Null when the project has
+// no brief and the resume falls back to its one-line blurb.
+export type BriefLine = { label: string; parts: BlurbPart[] };
+
+export function resumeBriefLines(node: Pick<Node, "resumeBrief">): BriefLine[] | null {
+  const b = node.resumeBrief;
+  if (!b) return null;
+  const task = inlineParts(b.task);
+  if (b.stack) task.push({ text: " " }, { text: b.stack, tech: true });
+  return [
+    { label: "Problem", parts: inlineParts(b.problem) },
+    { label: "Task", parts: task },
+    { label: "Outcome", parts: inlineParts(b.outcome) },
+  ];
 }
 
 // Projects the resume lists as one: the browser desktops are a shell and two
 // simulations built on it, and read better as one entry than three. The
 // entry keeps the first project's page and id, spans all of their dates,
 // and links every member's repo and demo.
-const RESUME_MERGES: { into: string; members: string[]; title: string; resumeDescription: string }[] = [
+const RESUME_MERGES: {
+  into: string;
+  members: string[];
+  title: string;
+  resumeDescription: string;
+  resumeBrief?: Node["resumeBrief"];
+}[] = [
   {
     into: "browser-os",
     members: ["windows-web-next", "macos-web-next"],
     title: "browser-os · windows-web-next · macos-web-next",
     resumeDescription:
       "browser-native desktop shell (window manager, virtual filesystem, app lifecycle) with windows 11 and macOS simulations built on it, as instrumentable environments for human annotation and computer-use agent training. typescript, svelte, vercel, html2canvas, computer-use agents.",
+    resumeBrief: {
+      problem:
+        "Computer-use agents need desktops they can safely act on, but real OS instances are messy: state isn't inspectable, actions aren't transactional and resets are slow.",
+      task:
+        "Built a Svelte desktop shell (window manager, virtual filesystem, app lifecycle) plus Windows 11 and macOS simulations on it, adding 20+ macOS apps and an html2canvas embed bridge.",
+      outcome:
+        "All three run live on Vercel as SynthUX's native substrates, driven for 111 recorded observations: **100% app-native on macOS**, 81.1% across all three.",
+      stack: "typescript, svelte, vercel, html2canvas, computer-use agents",
+    },
   },
 ];
 
@@ -574,7 +612,15 @@ export function resumeProjects(nodes: Node[], mode: ResumeMode = "resume"): Resu
     const all = [base, ...members];
     const date = all.map((n) => n.date).sort()[0];
     const endDate = all.map((n) => n.endDate ?? n.date).sort().at(-1);
-    byId.set(m.into, { ...base, title: m.title, resumeDescription: m.resumeDescription, date, endDate, members });
+    byId.set(m.into, {
+      ...base,
+      title: m.title,
+      resumeDescription: m.resumeDescription,
+      resumeBrief: m.resumeBrief,
+      date,
+      endDate,
+      members,
+    });
     members.forEach((n) => absorbed.add(n.id));
   }
   return listed

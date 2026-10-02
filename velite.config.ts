@@ -104,6 +104,21 @@ const projects = defineCollection({
       // It may carry [text](url) links and **bold**, and that markup counts
       // toward the cap, hence the headroom.
       resume_description: s.string().max(500).optional(),
+      // The resume's 30-second version of the project, in the shape a
+      // recruiter reads: the problem and why it mattered, the task — what
+      // was actually built to solve it — and the outcome, with the number
+      // that proves it. Each part takes the same [text](url) and **bold**
+      // markup as resume_description; `stack` is the plain comma list of
+      // tools, kept for applicant tracking systems. When present the resume
+      // shows this instead of resume_description, which the CV still uses.
+      resume_brief: s
+        .object({
+          problem: s.string().max(260),
+          task: s.string().max(260),
+          outcome: s.string().max(260),
+          stack: s.string().max(200).optional(),
+        })
+        .optional(),
       // How precisely `date` is known. Undefined / "month" / "day" → the
       // resume shows "Mon YYYY". "season" → "Winter 2024". "year" → "2024"
       // (used when only the year is documented). See formatResumeDate().

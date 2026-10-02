@@ -21,6 +21,7 @@ import {
   type BlurbPart,
   resumeBlurb,
   resumeBlurbParts,
+  resumeBriefLines,
   resumeMeta as meta,
 } from "./resume-data";
 
@@ -127,6 +128,7 @@ const styles = StyleSheet.create({
   projRepo: { color: colors.inkMute, textDecoration: "none" },
   projIcon: { fontFamily: "ResumeIcons" },
   projInlineLink: { color: colors.accent, textDecoration: "underline" },
+  projLabel: { color: colors.accent, fontFamily: "Helvetica-Bold", fontSize: 6.5, letterSpacing: 0.4 },
   projStrong: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   projTech: { color: colors.inkMute },
 });
@@ -170,6 +172,7 @@ const NO_SEAM_BREAKS = { hyphenationPenalty: 10000 } as object;
 function ProjectItem({ n }: { n: ResumeProject }) {
   const repos = projectRepos(n);
   const showcases = projectShowcases(n);
+  const brief = resumeBriefLines(n);
   return (
     <View style={styles.projItem}>
       <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
@@ -180,12 +183,24 @@ function ProjectItem({ n }: { n: ResumeProject }) {
           and an infinite penalty forbids them. */}
       <Text style={styles.projText} {...NO_SEAM_BREAKS}>
         <Text style={styles.projTitle}>{pdfTitle(n)}</Text>
-        <Text>
-          {": "}
-          {resumeBlurbParts(n).map((part, i) => (
-            <BlurbRun key={i} part={part} />
-          ))}
-        </Text>
+        {brief ? (
+          brief.map((line) => (
+            <Text key={line.label}>
+              {"\n"}
+              <Text style={styles.projLabel}>{line.label.toUpperCase()}</Text>{" "}
+              {line.parts.map((part, i) => (
+                <BlurbRun key={i} part={part} />
+              ))}
+            </Text>
+          ))
+        ) : (
+          <Text>
+            {": "}
+            {resumeBlurbParts(n).map((part, i) => (
+              <BlurbRun key={i} part={part} />
+            ))}
+          </Text>
+        )}
         {resumeAwards(n).map((a) => (
           <Text key={a.href}>
             {" "}
@@ -284,9 +299,16 @@ function pdfTitle(n: Node): string {
 function projectHeight(n: ResumeProject): number {
   const repos = projectRepos(n);
   const showcases = projectShowcases(n);
+  // A brief puts the title on a line of its own and each of problem,
+  // task and outcome on the next three, behind a label about half a
+  // word's width; the links run on after the outcome.
+  const brief = resumeBriefLines(n);
+  const blurb = brief
+    ? `\n${brief.map((l) => `${l.label} ${l.parts.map((p) => p.text).join("")}`).join("\n")}`
+    : resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, "");
   const text = [
     `${pdfTitle(n)}:`,
-    resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, ""),
+    blurb,
     ...resumeAwards(n).map((a) => `${a.text}.`),
     ...repos.map((r) => `${GITHUB_MARK}${r.slug}`),
     ...resumePosts(n).map((p) => `${POST_MARKS[p.network]}${p.label}`),

@@ -81,6 +81,18 @@ summary: ...
 # muted as the tech stack. Max 500 characters, markup included. See
 # resumeBlurbParts() in src/lib/resume-data.ts.
 resume_description: "..."
+# The resume's 30-second version, which a recruiter reads instead of the
+# one-liner: problem (what, and why it mattered), task (what was built to
+# solve it), outcome (the number that proves it). Every figure has to come
+# from the page itself — no invented metrics. Each part takes the same
+# links and **bold** (bold on the outcome's metric); `stack` is the plain
+# tech list. When present the resume shows this, not resume_description.
+# See resumeBriefLines() in src/lib/resume-data.ts.
+resume_brief: # optional
+  problem: "..."
+  task: "..."
+  outcome: "..."
+  stack: "python, pytorch, ..."
 # Precision of `date` for the resume's month display. Omitted/"month"/"day"
 # → "Jun 2024"; "season" → "Summer 2024"; "year" → "2024" (only the year is
 # known). See formatResumeDate() in src/lib/resume-data.ts.

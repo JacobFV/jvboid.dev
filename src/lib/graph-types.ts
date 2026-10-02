@@ -70,6 +70,8 @@ export type Node = {
   // kind-specific (all optional on the union)
   // Resume-only override for `summary` + precision of `date`. See resume-data.
   resumeDescription?: string;
+  // The resume's problem / task / outcome version of a project.
+  resumeBrief?: { problem: string; task: string; outcome: string; stack?: string };
   datePrecision?: "year" | "season" | "month" | "day";
   // Optional demo video URL (project kind). YouTube/Vimeo/embeddable
   // page. Rendered in Hero as a 16:9 iframe when present.
