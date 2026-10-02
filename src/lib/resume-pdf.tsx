@@ -184,9 +184,9 @@ function ProjectItem({ n }: { n: ResumeProject }) {
       <Text style={styles.projText} {...NO_SEAM_BREAKS}>
         <Text style={styles.projTitle}>{pdfTitle(n)}</Text>
         {brief ? (
-          brief.map((line) => (
+          brief.map((line, li) => (
             <Text key={line.label}>
-              {"\n"}
+              {li === 0 ? ": " : " "}
               <Text style={styles.projLabel}>{line.label.toUpperCase()}</Text>{" "}
               {line.parts.map((part, i) => (
                 <BlurbRun key={i} part={part} />
@@ -299,12 +299,11 @@ function pdfTitle(n: Node): string {
 function projectHeight(n: ResumeProject): number {
   const repos = projectRepos(n);
   const showcases = projectShowcases(n);
-  // A brief puts the title on a line of its own and each of problem,
-  // task and outcome on the next three, behind a label about half a
-  // word's width; the links run on after the outcome.
+  // A brief runs problem, task and outcome on in one paragraph after the
+  // title, each behind its label.
   const brief = resumeBriefLines(n);
   const blurb = brief
-    ? `\n${brief.map((l) => `${l.label} ${l.parts.map((p) => p.text).join("")}`).join("\n")}`
+    ? brief.map((l) => `${l.label} ${l.parts.map((p) => p.text).join("")}`).join(" ")
     : resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, "");
   const text = [
     `${pdfTitle(n)}:`,

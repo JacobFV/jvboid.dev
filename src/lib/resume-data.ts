@@ -532,7 +532,7 @@ function inlineParts(text: string): BlurbPart[] {
   return parts;
 }
 
-// A project's resume_brief as the three labelled lines the resume prints —
+// A project's resume_brief as the three labelled runs the resume prints —
 // problem, task, outcome — with the stack muted at the end of the task, the
 // way a resume_description carries its tech tail. Null when the project has
 // no brief and the resume falls back to its one-line blurb.

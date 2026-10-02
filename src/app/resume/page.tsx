@@ -286,9 +286,9 @@ export default function ResumePage() {
                     {n.title}
                   </Link>
                   {brief
-                    ? brief.map((line) => (
+                    ? brief.map((line, li) => (
                         <span key={line.label}>
-                          <br />
+                          {li === 0 ? ": " : " "}
                           <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wider text-[var(--color-resume)]">
                             {line.label}
                           </span>{" "}
