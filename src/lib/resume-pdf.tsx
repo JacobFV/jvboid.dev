@@ -126,7 +126,8 @@ const styles = StyleSheet.create({
   expPara: { marginTop: 2 },
 
   projItem: { flexDirection: "row", paddingVertical: 2 },
-  projYear: { width: 46, paddingRight: 4, fontSize: 7.5, color: colors.inkMute },
+  // Dates follow the title, muted, rather than taking a column of their own.
+  date: { color: colors.inkMute, fontFamily: "Helvetica" },
   projText: { flex: 1, fontSize: 8.5, color: colors.inkDim, lineHeight: 1.4 },
   projTitle: { color: colors.ink, fontFamily: "Helvetica-Bold" },
   projAward: { color: colors.accent, fontFamily: "Helvetica-Bold", textDecoration: "underline" },
@@ -181,7 +182,6 @@ function ProjectItem({ n }: { n: ResumeProject }) {
   const stack = resumeStack(n);
   return (
     <View style={styles.projItem}>
-      <Text style={styles.projYear}>{formatResumeDate(n)}</Text>
       {/* react-pdf allows a line break wherever two styles meet with no space
           between them, and charges it as a hyphenation penalty. Words are
           never hyphenated here, so those style seams are the only such breaks
@@ -189,6 +189,7 @@ function ProjectItem({ n }: { n: ResumeProject }) {
           and an infinite penalty forbids them. */}
       <Text style={styles.projText} {...NO_SEAM_BREAKS}>
         <Text style={styles.projTitle}>{pdfTitle(n)}</Text>
+        <Text style={styles.date}> · {pdfDate(n)}</Text>
         {brief ? (
           brief.map((line, li) => (
             <Text key={line.label}>
@@ -293,11 +294,28 @@ const CONTENT_HEIGHT = 792 - 38 - 56;
 const LEADING = 1.45; // the page's line height
 const COLUMN_GAP = 14;
 const COLUMN_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2;
-const PROJ_DATE_WIDTH = 46;
-const PROJ_TEXT_WIDTH = COLUMN_WIDTH - PROJ_DATE_WIDTH;
+const PROJ_TEXT_WIDTH = COLUMN_WIDTH;
 // The simulation is close, not exact: leave this much of each column free,
 // so a column that runs a little long still fits its page.
 const COLUMN_SLACK = 14;
+
+// A project's date on the title line: the narrow-column line breaks in a
+// multi-stretch label ("Apr 2022 –\nDec 2022,\nSep 2026") become spaces.
+function pdfDate(n: Node): string {
+  return unbroken(formatResumeDate(n).replace(/\n/g, " "));
+}
+
+// A date range kept on one line: its spaces made non-breaking, so the line
+// breaker never strands "2024" below "Sep 2024 – Dec". The simulation
+// splits words on \s, which matches a non-breaking space, so it costs the
+// range with "_" instead — about the same width, and not a break.
+const NBSP = "\u00a0";
+function unbroken(range: string): string {
+  return range.replace(/ /g, NBSP);
+}
+function simDate(range: string): string {
+  return range.replace(/[ \u00a0]/g, "_");
+}
 
 // Helvetica has no emoji, and draws junk for one ("👩🏽‍🌾 The Fertile
 // Cresent"), so titles lose them in the PDF.
@@ -316,7 +334,7 @@ function projectHeight(n: ResumeProject): number {
     ? brief.map((l) => `${l.label} ${l.parts.map((p) => p.text).join("")}`).join(" ")
     : resumeBlurb(n).replace(/\*\*|\]\([^)]*\)|\[/g, "");
   const text = [
-    `${pdfTitle(n)}:`,
+    `${pdfTitle(n)} · ${simDate(pdfDate(n))}:`,
     blurb,
     ...resumeAwards(n).map((a) => `${a.text}.`),
     ...repos.map((r) => `${GITHUB_MARK}${r.slug}`),
@@ -325,9 +343,7 @@ function projectHeight(n: ResumeProject): number {
     ...packageLinks(n).map((p) => `${PACKAGE}${p.label}`),
     stack ? `· ${stack}` : "",
   ].join(" ");
-  const textHeight = lineCount(text, PROJ_TEXT_WIDTH, 8.5) * 8.5 * 1.4;
-  const dateHeight = lineCount(formatResumeDate(n), PROJ_DATE_WIDTH - 4, 7.5) * 7.5 * LEADING;
-  return Math.max(textHeight, dateHeight) + 4; // + projItem's vertical padding
+  return lineCount(text, PROJ_TEXT_WIDTH, 8.5) * 8.5 * 1.4 + 4; // + projItem's vertical padding
 }
 
 // The hero's height: name, headline, contact row and highlights.
@@ -371,30 +387,28 @@ function heading(label: string): Block {
 type Job = (typeof experience)[number];
 
 function experienceBlock(e: Job): Block {
-  const head = e.title ? `${e.title}${e.org ? ` · ${e.org}` : ""}` : "";
+  const head = [e.title, e.org, simDate(e.range)].filter(Boolean).join(" · ");
   return {
     key: `exp-${e.org}-${e.title}-${e.range}`,
     height: () => {
-      let h = head ? textHeight(head, PROJ_TEXT_WIDTH) * 1.05 : 0; // bold runs wide
+      let h = textHeight(head, PROJ_TEXT_WIDTH) * 1.05; // bold runs wide
       for (const b of e.bullets) h += 2 + textHeight(b, PROJ_TEXT_WIDTH);
-      const date = lineCount(e.range, PROJ_DATE_WIDTH - 4, 7.5) * 7.5 * LEADING;
-      return Math.max(h, date) + 6; // + expRow's vertical padding
+      return h + 6; // + expRow's vertical padding
     },
     render: () => (
       <View style={styles.expRow}>
-        <Text style={styles.projYear}>{e.range}</Text>
         <View style={styles.expBody}>
-          {e.title ? (
-            <Text>
-              <Text style={styles.expTitle}>{e.title}</Text>
-              {e.org ? <Text style={styles.expOrg}> · </Text> : null}
-              {e.org && e.href ? (
-                <Link src={e.href} style={styles.expOrgLink}>{e.org}</Link>
-              ) : e.org ? (
-                <Text style={styles.expOrg}>{e.org}</Text>
-              ) : null}
-            </Text>
-          ) : null}
+          {/* An entry with no title (the career break) shows its dates alone. */}
+          <Text>
+            {e.title ? <Text style={styles.expTitle}>{e.title}</Text> : null}
+            {e.org ? <Text style={styles.expOrg}> · </Text> : null}
+            {e.org && e.href ? (
+              <Link src={e.href} style={styles.expOrgLink}>{e.org}</Link>
+            ) : e.org ? (
+              <Text style={styles.expOrg}>{e.org}</Text>
+            ) : null}
+            <Text style={styles.date}>{e.title ? " · " : ""}{unbroken(e.range)}</Text>
+          </Text>
           {/* Paragraphs, not bullets: each entry reads as prose. */}
           {e.bullets.map((b) => (
             <Text key={b} style={styles.expPara}>
