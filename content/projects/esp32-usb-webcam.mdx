@@ -2,6 +2,11 @@
 title: ESP32-S3 USB Webcam
 date: 2026-05-25
 resume_description: "firmware that makes a seeed xiao esp32s3 sense enumerate as a standard usb video class webcam streaming mjpeg over native usb, seen on linux as a normal /dev/video node. esp-idf, platformio, c, usb uvc, embedded hardware."
+resume_brief:
+  problem: "Most ESP32 cameras stream over Wi-Fi, needing an access point, a stream URL and a custom adapter instead of plugging in like an ordinary webcam."
+  task: "Wrote ESP-IDF firmware that makes a XIAO ESP32S3 Sense enumerate as a standard USB Video Class device, streaming MJPEG from its onboard camera over native USB."
+  outcome: "Linux enumerated it as a normal UVC webcam with a /dev/video0 node, and OpenCV captured a real **640x480 frame**, with no Wi-Fi or custom driver involved."
+  stack: "c, esp-idf, platformio, usb uvc, mjpeg, embedded hardware"
 lane: building
 tags: [hardware, esp32, usb, camera, embedded]
 summary: "Firmware that makes a Seeed XIAO ESP32S3 Sense enumerate as a real USB Video Class webcam, with Linux seeing it as a normal /dev/video camera."

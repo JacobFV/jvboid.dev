@@ -5,6 +5,11 @@ lane: research
 tags: [neuroscience, foundation-models, eeg, fmri, neurotechnology, python]
 summary: "A working model of one person's brain — 414 regions wired the way theirs are — where electrical activity, blood flow, a magnetic pulse and what the person does each read the same shared state, through its own physics, on its own clock."
 resume_description: "whole-brain dynamics foundation model over 414 regions fusing EEG, fMRI, stimulation and behaviour through declared forward operators, with four public checkpoints and a claim-gate release process. pytorch, python, mne, nibabel, e-field solvers."
+resume_brief:
+  problem: "EEG, fMRI, stimulation and behaviour each see a different slice of the brain on a different clock, so results rarely combine and almost none describe one specific person."
+  task: "Built a 414-region whole-brain dynamics model fusing EEG, fMRI, TMS and behaviour through declared physics forward operators, with a claim-gate release process that blocks unbacked claims."
+  outcome: "Shipped four public checkpoints; the 26.3M-parameter SC-WBD-003 **beat every baseline on 27 held-out participants** (1.986 vs 2.024 nats), with field solvers validated to 1.3%."
+  stack: "pytorch, python, mne, nibabel, e-field solvers"
 datePrecision: day
 hero:
   src: "/assets/img/projects/sc-wbd-mark.png"

@@ -7,6 +7,11 @@ lane: building
 tags: [agents, hardware, rsi, eda, hackathon]
 summary: "A recursively self-improving compiler for PCB layout: schematic in, routed board out — where the placement engine is a coupled-oscillator substrate that mutates and improves itself on every iteration."
 resume_description: "recursively self-improving pcb layout compiler; coupled-oscillator (kuramoto) placement substrate that mutates itself under a score gate; independent damped-wave emi validator (**4mm to 10µm**). typescript, remotion, electron, kicad, mojo/max."
+resume_brief:
+  problem: "Engineers place and route every PCB by hand, rip it up after DRC and EMI review, and none of that hard-won intuition ever compounds back into the tool."
+  task: "Built a self-improving layout compiler whose coupled-oscillator placement engine mutates itself, keeping changes only if the score and an independent EMI solver agree."
+  outcome: "On a 187-component, 450-net mainboard it beat simulated annealing by **78%**, and an evolved optimizer made an unseen board **~24% better** with zero new feedback."
+  stack: "typescript, remotion, electron, kicad, mojo/max, kuramoto oscillators, emi simulation"
 hero:
   src: "/assets/media/fieldratchet/hero.png"
   alt: "fieldratchet rendering the routed 187-component autonomy mainboard with a magnified fine-trace detail and layer stack"
