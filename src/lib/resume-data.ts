@@ -1,6 +1,6 @@
 // Resume content used by both the on-page embed and the PDF renderer.
 // There is one resume. It used to come in `software` and `robotics`
-// variants; they were merged, so the skills, highlights and project list
+// variants; they were merged, so the skills, experience and project list
 // below cover both. The headline is one line of titles and carries no
 // separate summary under it — `summary` stays optional so one can be added
 // back without a schema change.
@@ -16,15 +16,22 @@ export const contact = {
   twitter: "@jvboid",
 };
 
-// A highlight is a run of plain text and links, so a bullet can link the
+// A run of plain text and links, so an experience paragraph can link the
 // thing it names without the whole line becoming one anchor.
 export type HighlightPart = string | { text: string; href: string };
+
+// An experience paragraph: plain text, or text with links in it.
+export type Bullet = string | HighlightPart[];
+
+// A paragraph's plain text, for keys and for measuring it.
+export function bulletText(b: Bullet): string {
+  return typeof b === "string" ? b : b.map((p) => (typeof p === "string" ? p : p.text)).join("");
+}
 
 export const resumeMeta: {
   headline: string;
   summary?: string;
   skills: { label: string; items: string[] }[];
-  highlights: HighlightPart[][];
 } = {
   headline: "Data/ML Engineering, Robotics, Full-Stack",
   // Grouped plain-text keywords for applicant tracking systems, which
@@ -108,29 +115,6 @@ export const resumeMeta: {
       items: ["iOS", "Android", "React Native", "Expo", "Flutter", "Firebase"],
     },
   ],
-  highlights: [
-    [
-      "Currently developing ",
-      {
-        text: "morphology-agnostic, contact-centric encoder-diffusion robotics control policy",
-        href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics",
-      },
-      " in collaboration with ",
-      { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
-    ],
-    [
-      "Recently developed/trained ",
-      { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
-      " topologically-constrained transformer foundation model for ",
-      { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
-    ],
-    [
-      "Owned ",
-      { text: "api.agi.tech", href: "https://api.agi.tech" },
-      ", integrations architect, web and android/ios SwE for ",
-      { text: "AGI Inc", href: "https://theagi.company/" },
-    ],
-  ],
 };
 
 // One media item attached to a job: the caption and (optional) description
@@ -174,9 +158,32 @@ export const experience: {
   org?: string;
   href?: string;
   range: string;
-  bullets: string[];
+  bullets: Bullet[];
   media?: ExperienceMedia[];
 }[] = [
+  {
+    title: "Independent ML & Robotics Research",
+    range: "Jul 2026 – Present",
+    bullets: [
+      [
+        "Developing ",
+        {
+          text: "morphology-agnostic, contact-centric encoder-diffusion robotics control policy",
+          href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics",
+        },
+        " in collaboration with ",
+        { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
+        " (Aug 2026 – Present)",
+      ],
+      [
+        "Developed/trained ",
+        { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
+        " topologically-constrained transformer foundation model for ",
+        { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
+        " (Jul 2026 – Present)",
+      ],
+    ],
+  },
   {
     title: "API / Integration Architect",
     org: "AGI, Inc.",

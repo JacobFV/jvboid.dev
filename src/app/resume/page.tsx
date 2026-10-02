@@ -14,6 +14,7 @@ import {
   resumePosts,
   packageLinks,
   type BlurbPart,
+  bulletText,
   type PostNetwork,
   resumeBlurbParts,
   resumeBriefLines,
@@ -168,29 +169,6 @@ export default function ResumePage() {
         </div>
       </header>
 
-      {/* Highlights — no heading; the bullets follow the header directly. */}
-      <section className="mb-12">
-        <ul className="grid gap-3 text-sm leading-relaxed text-[var(--color-ink-dim)]">
-          {meta.highlights.map((parts, i) => (
-            <li key={i} className="border-l-2 border-[var(--color-resume)] pl-4">
-              {parts.map((part, j) =>
-                typeof part === "string" ? (
-                  part
-                ) : (
-                  <a
-                    key={j}
-                    href={part.href}
-                    className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
-                  >
-                    {part.text}
-                  </a>
-                ),
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {/* Experience — no heading; the section gap sets it apart. */}
       <section className="mb-12">
         <ul className="grid gap-6">
@@ -226,7 +204,25 @@ export default function ResumePage() {
                   {/* Paragraphs, not bullets: each entry reads as prose. */}
                   <div className="mt-1 grid gap-1.5 text-sm text-[var(--color-ink-dim)]">
                     {n.bullets.map((b) => (
-                      <p key={b}>{b}</p>
+                      <p key={bulletText(b)}>
+                        {typeof b === "string"
+                          ? b
+                          : b.map((part, j) =>
+                              typeof part === "string" ? (
+                                part
+                              ) : (
+                                <a
+                                  key={j}
+                                  href={part.href}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[var(--color-resume)]! decoration-[var(--color-resume)]! underline decoration-1 underline-offset-2 hover:text-[var(--color-accent)]!"
+                                >
+                                  {part.text}
+                                </a>
+                              ),
+                            )}
+                      </p>
                     ))}
                   </div>
                   {n.media && n.media.length > 0 && (

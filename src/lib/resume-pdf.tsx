@@ -19,6 +19,7 @@ import {
   resumePosts,
   packageLinks,
   type BlurbPart,
+  bulletText,
   resumeBlurb,
   resumeBlurbParts,
   resumeBriefLines,
@@ -36,7 +37,7 @@ const colors = {
   inkDim: "#3a3a3a",
   inkMute: "#6b6b6b",
   // Ink blue, the resume's one colour: section headings and their rules,
-  // links, the highlight bullets. Matches --color-resume in light mode.
+  // links. Matches --color-resume in light mode.
   accent: "#1f4e8c",
 };
 
@@ -49,7 +50,7 @@ const WAVE_HEIGHT = 16;
 const SIZE = {
   name: 20,
   headline: 9.5,
-  page: 8.5, // highlights, summary
+  page: 8.5, // summary
   contact: 8,
   label: 7.5, // section headings
   text: 8, // experience, projects, skills
@@ -95,25 +96,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: colors.accent,
     paddingBottom: 3,
-  },
-
-  highlights: { marginTop: 10 },
-  highlightLink: { color: colors.accent, textDecoration: "underline" },
-  highlightItem: {
-    position: "relative",
-    marginBottom: 3,
-    paddingLeft: 10,
-    fontSize: SIZE.page,
-    color: colors.inkDim,
-  },
-  highlightBullet: {
-    position: "absolute",
-    left: 0,
-    top: 5,
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: colors.accent,
   },
 
   skillsLine: { marginBottom: 3, fontSize: SIZE.text, color: colors.inkDim, lineHeight: 1.4 },
@@ -357,15 +339,9 @@ function projectHeight(n: ResumeProject): number {
   return lineCount(text, PROJ_TEXT_WIDTH, SIZE.text) * SIZE.text * 1.4 + 4; // + projItem's vertical padding
 }
 
-// The hero's height: name, headline, contact row and highlights.
+// The hero's height: name, headline and contact row.
 function heroHeight(): number {
-  let y = SIZE.name * 1.2 + 4 + SIZE.headline * LEADING + 6 + SIZE.contact * LEADING; // name, headline, contact row
-  y += 10; // highlights' top margin
-  for (const parts of meta.highlights) {
-    const text = parts.map((p) => (typeof p === "string" ? p : p.text)).join("");
-    y += lineCount(text, CONTENT_WIDTH - 10, SIZE.page) * SIZE.page * LEADING + 3;
-  }
-  return y;
+  return SIZE.name * 1.2 + 4 + SIZE.headline * LEADING + 6 + SIZE.contact * LEADING;
 }
 
 // One unsplittable piece of the flow. `top` is whether it opens a column,
@@ -403,7 +379,7 @@ function experienceBlock(e: Job): Block {
     key: `exp-${e.org}-${e.title}-${e.range}`,
     height: () => {
       let h = textHeight(head, PROJ_TEXT_WIDTH) * 1.05; // bold runs wide
-      for (const b of e.bullets) h += 2 + textHeight(b, PROJ_TEXT_WIDTH);
+      for (const b of e.bullets) h += 2 + textHeight(bulletText(b), PROJ_TEXT_WIDTH);
       return h + 6; // + expRow's vertical padding
     },
     render: () => (
@@ -422,8 +398,18 @@ function experienceBlock(e: Job): Block {
           </Text>
           {/* Paragraphs, not bullets: each entry reads as prose. */}
           {e.bullets.map((b) => (
-            <Text key={b} style={styles.expPara}>
-              {b}
+            <Text key={bulletText(b)} style={styles.expPara}>
+              {typeof b === "string"
+                ? b
+                : b.map((part, j) =>
+                    typeof part === "string" ? (
+                      part
+                    ) : (
+                      <Link key={j} src={part.href} style={styles.expOrgLink}>
+                        {part.text}
+                      </Link>
+                    ),
+                  )}
             </Text>
           ))}
         </View>
@@ -540,26 +526,6 @@ export function ResumeDocument({ projects, mode = "resume" }: { projects: Node[]
             <Link src={`https://${contact.github}`} style={styles.contactLink}>{contact.github}</Link>
             <Text style={styles.contactItem}>{contact.twitter}</Text>
           </View>
-        </View>
-
-        {/* No heading: the highlights follow the contact line directly. */}
-        <View style={styles.highlights}>
-          {meta.highlights.map((parts, i) => (
-            <View key={i} style={styles.highlightItem} wrap={false}>
-              <View style={styles.highlightBullet} />
-              <Text>
-                {parts.map((part, j) =>
-                  typeof part === "string" ? (
-                    part
-                  ) : (
-                    <Link key={j} src={part.href} style={styles.highlightLink}>
-                      {part.text}
-                    </Link>
-                  ),
-                )}
-              </Text>
-            </View>
-          ))}
         </View>
 
         {/* No heading: a gap is enough to set the experience apart. */}
