@@ -3,9 +3,9 @@ title: bsbr
 date: 2025-03-28
 resume_description: "novel attention mechanism for near-linear processing of long sequences in transformers, using chunk-based attention with block retrieval. python, pytorch, transformers, research."
 resume_brief:
-  problem: "Standard attention scales quadratically with sequence length, which makes long-context transformers expensive in both compute and memory."
-  task: "Designed and shipped a pip-installable attention mechanism: exact attention within chunks plus retrieval over compressed chunk states, with a converter for pretrained GPT-2."
-  outcome: "Benchmarked against six architectures: **5.6× faster than linear attention** and **30× faster than DeltaNet** at 1,024 tokens, with a flatter scaling fit than standard attention (n^0.70 vs n^0.81)."
+  problem: "Attention cost grows quadratically with sequence length, making long context expensive."
+  task: "Pip-installable attention: exact within chunks, retrieval over compressed chunk states, plus a GPT-2 converter."
+  outcome: "**5.6× faster than linear attention** and **30× faster than DeltaNet** at 1,024 tokens."
   stack: "python, pytorch, transformers, hugging face, pypi, research"
 endDate: 2025-03-29
 lane: building

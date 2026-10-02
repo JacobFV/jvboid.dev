@@ -3,9 +3,9 @@ title: The Tensor Computer
 date: 2026-02-01
 resume_description: "von neumann computer rebuilt as **end-to-end differentiable** tensor operations so machine-code programs can in principle be learned by gradient descent. four independent ISA backends held in agreement by a shared conformance suite; a self-hosting c compiler and a windowing os run on the machine. python, jax, c, rust, differentiable programming, research."
 resume_brief:
-  problem: "LLM agents spend 20–50 tokens on what one machine instruction does, so I asked whether programs could be learned directly as machine code by gradient descent."
-  task: "Rebuilt a full von Neumann computer (ALU, cache, virtual memory, GPU, peripherals) as differentiable JAX tensor ops, checked against independent C, Rust and C++ backends."
-  outcome: "All **4 backends agree on 59 shared conformance vectors**, and a self-hosting C compiler running on the machine reproduces the host compiler's output **byte for byte**."
+  problem: "LLM agents spend 20–50 tokens on what one machine instruction does; could programs be learned as machine code instead?"
+  task: "Rebuilt a full von Neumann computer (ALU, cache, virtual memory, GPU) as differentiable JAX tensor ops."
+  outcome: "**4 independent backends agree on 59 conformance vectors**; a self-hosting C compiler matches the host's output **byte for byte**."
   stack: "python, jax, c, rust, c++, differentiable programming, program synthesis, research"
 lane: building
 tags: [differentiable-programming, program-synthesis, jax, agents, research]

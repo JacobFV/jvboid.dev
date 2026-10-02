@@ -6,9 +6,9 @@ tags: [terminal, tauri, rust, developer-tools, desktop]
 summary: "A tabbed terminal with tmux-style splits where a pane can also be a notepad, a browser, or a viewer — and where the command you typed but never ran survives a crash."
 resume_description: "cross-platform tabbed terminal with tmux-style splits, crash-durable unsubmitted-prompt recovery, and panes that can be code editors, browsers, or image/video/stl viewers. rust, tauri, typescript, react, xterm.js, codemirror, three.js."
 resume_brief:
-  problem: "When a machine crashes, every terminal loses the command you typed but never ran, because that line lives in the shell's memory and no API exposes it."
-  task: "Mirrored every readline edit from keystrokes, persisted it with fsync-and-rename snapshots, and built tmux-style splits that never restart the shell inside a moved pane."
-  outcome: "SIGKILL and relaunch brings back three split shells with scrollback and the unsubmitted command; **155 tests**, ~11,000 lines, installers for macOS, Windows and Linux."
+  problem: "When a machine crashes, terminals lose the command you typed but never ran."
+  task: "Mirrored every readline edit to crash-safe snapshots, with tmux-style splits that never restart the shell."
+  outcome: "Survives SIGKILL with scrollback and unsent commands intact; **155 tests**, installers for macOS, Windows and Linux."
   stack: "rust, tauri, typescript, react, xterm.js, codemirror, three.js"
 hero:
   src: "/assets/img/projects/jterm-panes.png"

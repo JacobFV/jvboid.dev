@@ -569,11 +569,9 @@ const RESUME_MERGES: {
       "browser-native desktop shell (window manager, virtual filesystem, app lifecycle) with windows 11 and macOS simulations built on it, as instrumentable environments for human annotation and computer-use agent training. typescript, svelte, vercel, html2canvas, computer-use agents.",
     resumeBrief: {
       problem:
-        "Computer-use agents need desktops they can safely act on, but real OS instances are messy: state isn't inspectable, actions aren't transactional and resets are slow.",
-      task:
-        "Built a Svelte desktop shell (window manager, virtual filesystem, app lifecycle) plus Windows 11 and macOS simulations on it, adding 20+ macOS apps and an html2canvas embed bridge.",
-      outcome:
-        "All three run live on Vercel as SynthUX's native substrates, driven for 111 recorded observations: **100% app-native on macOS**, 81.1% across all three.",
+        "Computer-use agents need desktops that are inspectable and instantly resettable, which real OSes aren't.",
+      task: "Svelte desktop shell (windows, filesystem, app lifecycle) with Windows 11 and macOS simulations and 20+ apps.",
+      outcome: "Live on Vercel as SynthUX's substrates: **100% app-native on macOS**, 81.1% across all three.",
       stack: "typescript, svelte, vercel, html2canvas, computer-use agents",
     },
   },

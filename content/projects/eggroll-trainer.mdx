@@ -3,9 +3,9 @@ title: eggroll-trainer
 date: 2025-11-23
 resume_description: "python implementation of the EGGROLL low-rank evolution-strategies algorithm for training billion-parameter models without gradients. python, pytorch, evolution strategies."
 resume_brief:
-  problem: "Evolution strategies train models without gradients, but full-rank perturbations cost O(mn) memory and compute per layer, making them impractical for large models."
-  task: "Implemented the EGGROLL algorithm as a PyTorch library, using low-rank perturbations to cut per-layer cost to O(r(m+n)) while population averaging keeps updates high-rank."
-  outcome: "Released an open-source library with a simple trainer API, a gradient-free MNIST CNN example, and a comparison framework against standard evolution strategies."
+  problem: "Gradient-free evolution strategies cost O(mn) per layer, too much for large models."
+  task: "PyTorch implementation of EGGROLL's low-rank perturbations, cutting per-layer cost to O(r(m+n))."
+  outcome: "Open-source library with a trainer API, a gradient-free MNIST CNN example and an ES comparison framework."
   stack: "python, pytorch, evolution strategies, low-rank optimization"
 lane: building
 tags: [personal]
