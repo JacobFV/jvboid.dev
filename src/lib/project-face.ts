@@ -63,17 +63,18 @@ const projectMosaicCols: Record<string, number> = {
 // what decides how many pixels a face is baked at: see HEX_UNIT_W in
 // scripts/generate-hex-tiles.ts.
 const hexSizeById: Record<string, HexSize> = {
-  // The two 3× tiles on the page. IBM-1 is the implicit brain model, the lead
+  // The three 3× tiles on the page. IBM-1 is the implicit brain model, the lead
   // project, with the rendered brain at the centre of its mosaic; Computerworld
   // is the deterministic computer world, and its face is a screen — a 3× cell is
   // the smallest one a desktop reads as a desktop rather than as a grey smear.
   "ibm-1": 3,
   computerworld: 3,
+  // The third: the robot-policy research, its clips and factor tiles in a
+  // 3×3 mosaic.
+  rrp: 3,
   // Its predecessor and sibling, the whole-brain dynamics model — four public
   // checkpoints, a paper and a site of its own.
   "sc-wbd": 2,
-  // The robot-policy research: clips and factor tiles, a 3×3 mosaic.
-  rrp: 2,
   "cookie-baker-3d-printer": 2,
   "chem-0": 2,
   "canvas-engineering": 2,
