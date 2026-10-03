@@ -142,13 +142,13 @@ The base factor is plain geometry: a learned Euclidean metric with a direction t
 - **blood flow** — directed, from the arterial supply tree (CC0 artery atlas, arterial territories, a 7T venous atlas). Upstream → downstream is shorter than the reverse.
 - **time** — a decay with the gap between measurement times.
 
-Each factor also has its own time gate γ_f(Δt), because different physics dominates at different scales: volume conduction is instantaneous, tracts act at conduction delays of milliseconds, blood moves over seconds. The same model can therefore answer a query 16 ms ahead and one 1 s ahead without being told which regime it is in.
+Each factor also has its own time gate γ_f(Δt), because different physics dominates at different scales: volume conduction is instantaneous, tracts act at conduction delays of milliseconds, blood takes up to a second or two to travel between territories. The same model can therefore answer a query 16 ms ahead and one 1 s ahead without being told which regime it is in.
 
 Every weight w_f starts at zero, so turning a relation on changes nothing until training finds it useful. With no relation data the score is just Euclidean distance. Each relation also has off / rewired / shuffled / reversed controls, so whether a relation earns its place is something to measure, not assume.
 
-![Registry factors, where (top) and when (bottom): four scalp maps for electrode C3 showing the geometry distance and direction terms, the tract term and the EM-coupling term, above one log time axis showing each factor's time gate — EM at Δt≈0, tracts at conduction delays near 10 ms, a time decay, and blood flow at about 1 s](/assets/media/ibm-1/registry-factors.png)
+![Registry factors, where (top) and when (bottom): five scalp maps for electrode C3 showing the geometry distance and direction terms, the tract term, the EM-coupling term and directed blood-flow transit, above one log time axis showing each factor's time gate — EM at Δt≈0, tracts at conduction delays near 10 ms, a time decay, and blood flow out to about 1 s](/assets/media/ibm-1/registry-factors.png)
 
-*Top: one query's pattern per factor (scalp electrode C3, circled), computed from the template forward model and atlas tractography; the direction in (b) is illustrative, the model learns it. Bottom: each factor's time gate from the declared parameters; none is fitted. A blood-flow map follows once the arterial supply graph is built. The relation factors are being implemented now; there are no results for them yet.*
+*Top: one query's pattern per factor (scalp electrode C3, circled), computed from the template forward model, atlas tractography and a region-level arterial supply graph derived from the artery and territory atlases. In (e), red electrodes are fed before C3 (upstream) and blue after. The direction in (b) is illustrative; the model learns it. Bottom: each factor's time gate from the declared parameters; none is fitted. Arrival times are scaled to a declared 0.7–2.5 s arterial-transit range; per-region accuracy is untested. The relation factors are implemented and switched off by default; there are no training results for them yet.*
 
 ## §2 research
 
