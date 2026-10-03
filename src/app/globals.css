@@ -520,10 +520,16 @@ body {
   outline: none;
 }
 .card-stack-deck {
+  --deck-w: min(88rem, calc(100vw - 2rem));
   display: grid;
-  max-width: 24rem;
-  margin-inline: auto;
-  padding-right: 1.5rem;
+  justify-items: center;
+  width: var(--deck-w);
+  margin-inline-start: calc(50% - var(--deck-w) / 2);
+  padding-block: 0.5rem;
+  overflow: clip;
+  /* The outermost neighbours fade into the page rather than stopping at a
+     hard edge. */
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
   touch-action: pan-y;
   user-select: none;
   cursor: grab;
@@ -532,36 +538,30 @@ body {
   cursor: grabbing;
 }
 .card-stack-card {
+  position: relative;
   grid-area: 1 / 1;
+  width: min(21rem, 72vw);
   min-width: 0;
   transition:
-    transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 0.32s ease;
-  transform-origin: 50% 100%;
+    transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.38s ease;
 }
-.card-stack-card[data-slot="top"] { z-index: 4; }
-.card-stack-card[data-slot="behind-1"] {
-  z-index: 3;
-  transform: translateX(0.75rem) scale(0.96);
-  opacity: 0.7;
+.card-stack-card:not([data-current]) {
+  cursor: pointer;
 }
-.card-stack-card[data-slot="behind-2"] {
-  z-index: 2;
-  transform: translateX(1.5rem) scale(0.92);
-  opacity: 0.4;
-}
-.card-stack-card[data-slot="gone"] {
-  z-index: 5;
-  transform: translateX(-115%) rotate(-7deg);
-  opacity: 0;
+/* Neighbours sink into the page the further out they sit (the depth comes
+   from --card-dim, set per card), on either theme's ground. */
+.card-stack-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: var(--color-bg-0);
+  opacity: var(--card-dim, 0);
   pointer-events: none;
+  transition: opacity 0.38s ease;
 }
-.card-stack-card[data-slot="hidden"] {
-  z-index: 1;
-  transform: translateX(1.5rem) scale(0.92);
-  opacity: 0;
-}
-.card-stack-deck[data-dragging] .card-stack-card[data-slot="top"] {
+.card-stack-deck[data-dragging] .card-stack-card {
   transition: none;
 }
 .card-stack-controls {
