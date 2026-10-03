@@ -1,0 +1,755 @@
+[
+ {
+  "id": "edge.node_in_assembly",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/edge-node-in-assembly.webp",
+  "desc": "a joint / sensor token attends to the assembly (arm, gripper) it belongs to",
+  "eq": "$\\mathbb{1}[\\,j=\\mathrm{asm}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "edge.same_assembly",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/edge-same-assembly.webp",
+  "desc": "a command dim attends to the other dims of its own assembly (here the left arm)",
+  "eq": "$\\mathbb{1}[\\,\\mathrm{asm}(i)=\\mathrm{asm}(j),\\ i\\neq j\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "edge.same_node",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/edge-same-node.webp",
+  "desc": "an action-node query attends to its OWN morphology token (one per actuated joint)",
+  "eq": "$\\mathbb{1}[\\,j=\\mathrm{morph}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "id.same_assembly",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/id-same-assembly.webp",
+  "desc": "soft same-assembly term: a command dim prefers knots of its own assembly (left arm)",
+  "eq": "$\\langle e(a_i),e(a_j)\\rangle\\approx\\mathbb{1}[a_i=a_j]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "id.same_body",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/id-same-body.webp",
+  "desc": "tokens denoting the SAME entity (a tracker slot and the task roles bound to it) attend to each other",
+  "eq": "$\\langle e(\\mathrm{id}_i),e(\\mathrm{id}_j)\\rangle\\approx\\mathbb{1}[\\mathrm{id}_i=\\mathrm{id}_j]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "id.slot_handle",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/id-slot-handle.webp",
+  "desc": "each scene token carries its public tracker slot address as a learned embedding, so a slot keeps its identity across steps",
+  "eq": "$x_k \\leftarrow x_k + E[\\mathrm{slot}_k]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "msg.incidence",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/msg-incidence.webp",
+  "desc": "role and predicate tokens receive a message from the entity they point to (arrows: entity -> role)",
+  "eq": "$h_i \\leftarrow h_i + W\\,h_{\\mathrm{ptr}(i)}$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "route.assembly_reads",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/route-assembly-reads.webp",
+  "desc": "system 0 (Psi0 Realizer): a command dim reads packet knots of its own assembly and its kinematic neighbours only (left arm: arm, hand, torso)",
+  "eq": "$0\\ \\mathrm{if}\\ \\mathrm{READS}[\\mathrm{asm}(i),\\mathrm{asm}(j)]\\ \\mathrm{else}\\ -\\infty$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "route.own_assembly",
+  "family": "structure",
+  "src": "/assets/media/rrp/tiles/route-own-assembly.webp",
+  "desc": "system 0 (legged Realizer): a joint node reads only the packet knots of its own limb plus the body assembly",
+  "eq": "$0\\ \\mathrm{if}\\ a_j\\in\\{a_i,\\mathrm{body}\\}\\ \\mathrm{else}\\ -\\infty$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#4E9A5B"
+ },
+ {
+  "id": "geo.above",
+  "family": "geometry",
+  "src": "/assets/media/rrp/tiles/geo-above.webp",
+  "desc": "above / below along gravity: +1 for tokens (and surface points) higher than the query by > 1 cm, -1 lower, 0 in the dead zone (query: middle cube of a stack)",
+  "eq": "$\\mathrm{sign}((r_j-r_i)\\cdot\\hat z)\\ \\mathrm{if}\\ |\\cdot|>1\\,\\mathrm{cm}$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "geo.depth3d",
+  "family": "geometry",
+  "src": "/assets/media/rrp/tiles/geo-depth3d.webp",
+  "desc": "PaPE over (u, v, depth) in the declared front camera",
+  "eq": "$-(r_j-r_i)^{\\top}M(r_j-r_i),\\ r=(u,v,\\mathrm{depth})$",
+  "source": "public + default est-probe",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "geo.normal_align",
+  "family": "geometry",
+  "src": "/assets/media/rrp/tiles/geo-normal-align.webp",
+  "desc": "query direction b vs each token's contact normal (arrows: outward normal, mean over the token's contacts)",
+  "eq": "$\\langle b_i,n_j\\rangle,\\ b=(0,0,1)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "geo.orient",
+  "family": "geometry",
+  "src": "/assets/media/rrp/tiles/geo-orient.webp",
+  "desc": "relative rotation between token frames: tr(R_i^T R_j) = 1 + 2 cos(angle) (axes: x red, y green, z blue)",
+  "eq": "$\\langle R_iB,R_j\\rangle_F=\\mathrm{tr}(R_i^{\\top}R_j),\\ B=I$",
+  "source": "gt train-only + est-probe",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "geo.pos3d",
+  "family": "geometry",
+  "src": "/assets/media/rrp/tiles/geo-pos3d.webp",
+  "desc": "PaPE relative-position term: tokens near and below the gripper score high",
+  "eq": "$-(r_j-r_i)^{\\top}M(r_j-r_i)+\\tilde b^{\\top}(r_j-r_i)$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "edge.foot_of",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/edge-foot-of.webp",
+  "desc": "a limb token attends to its own foot token (feet exist only on foot-carrying assemblies; limbs drawn at hips, feet at foot sites)",
+  "eq": "$\\mathbb{1}[\\,j=\\mathrm{foot}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "edge.limb_adjacent",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/edge-limb-adjacent.webp",
+  "desc": "a limb token attends to the other limbs of the same kind on the trunk (all four legs; tokens drawn at their hips)",
+  "eq": "$\\mathbb{1}[\\,\\mathrm{kind}(i)=\\mathrm{kind}(j)\\neq\\mathrm{body},\\ i\\neq j\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "edge.over_cell",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/edge-over-cell.webp",
+  "desc": "a foot token attends to the terrain-scan cells of its landing window (0.05 m behind to 0.35 m ahead, +-0.15 m aside of its default stance, body frame)",
+  "eq": "$\\mathbb{1}[\\,\\mathrm{cell}\\ j\\in\\mathrm{window}(\\mathrm{foot}\\ i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "edge.kin_child",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/edge-kin-child.webp",
+  "desc": "a command dim attends to its kinematic children (waist pitch -> both shoulder pitches)",
+  "eq": "$\\mathbb{1}[\\,\\mathrm{parent}(j)=i\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "edge.mirror",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/edge-mirror.webp",
+  "desc": "a command dim attends to its left/right homologue (grey lines: every mirror pair of the body)",
+  "eq": "$\\mathbb{1}[\\,j=\\mathrm{mirror}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "edge.kin_parent",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/edge-kin-parent.webp",
+  "desc": "a joint token attends to its kinematic parent joint (grey: every parent edge of the four legs)",
+  "eq": "$\\mathbb{1}[\\,j=\\mathrm{parent}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "kin.ancestor",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/kin-ancestor.webp",
+  "desc": "a joint token attends to every joint up its kinematic chain (transitive closure of kin_parent; grey arrows: the parent edges)",
+  "eq": "$\\mathbb{1}[\\,j\\ \\mathrm{ancestor\\ of}\\ i\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "kin.sibling",
+  "family": "kinematics",
+  "src": "/assets/media/rrp/tiles/kin-sibling.webp",
+  "desc": "dims at undirected tree distance 2: the sibling (r_shoulder_pitch) and, by the same op, grandparent and grandchild",
+  "eq": "$\\mathbb{1}[\\,d_{\\mathrm{tree}}(i,j)=2\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "ix.contact",
+  "family": "interaction",
+  "src": "/assets/media/rrp/tiles/ix-contact.webp",
+  "desc": "two entities in geometric contact (sim contact truth): query gripper → cube 1, distractors / target 0",
+  "eq": "$\\mathrm{contact}(i,j)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed (label)",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "ix.force_flow",
+  "family": "interaction",
+  "src": "/assets/media/rrp/tiles/ix-force-flow.webp",
+  "desc": "transitive closure of the support graph: everything the query carries, directly or through others",
+  "eq": "$\\mathrm{flow}^{+}(\\mathrm{support})(i,j)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "ix.handover",
+  "family": "interaction",
+  "src": "/assets/media/rrp/tiles/ix-handover.webp",
+  "desc": "two manipulator assemblies in contact with the same object at once (a handover in progress): query L grip → R grip 1, bar / target 0",
+  "eq": "$\\mathrm{handover}(i,j)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed (label)",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "ix.held_by",
+  "family": "interaction",
+  "src": "/assets/media/rrp/tiles/ix-held-by.webp",
+  "desc": "object held by a manipulator assembly (≥ 2 contacts with its hand bodies): lifted cube → gripper 1",
+  "eq": "$\\mathrm{held\\_by}(i,j)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed (label)",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "ix.support",
+  "family": "interaction",
+  "src": "/assets/media/rrp/tiles/ix-support.webp",
+  "desc": "a supports b: contact + contact normal within 30° of gravity-up at a's top",
+  "eq": "$\\mathrm{support}(i,j)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed (label)",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "edge.actor_of",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-actor-of.webp",
+  "desc": "manipulator entity ↔ every event it is (cooperating) actor of",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{actor\\_of}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.consumed_by",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-consumed-by.webp",
+  "desc": "runtime receipt ↔ the event whose output-binding role consumes it: offer.anchor is consumed by receive",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{consumed\\_by}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.destination_of",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-destination-of.webp",
+  "desc": "destination entity ↔ event: the right gripper is where 'offer' and 'release' deliver the bar (target zone is place's destination)",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{destination\\_of}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.enables",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-enables.webp",
+  "desc": "event → event it requires COMPLETED (requires_completed): release needs receive and offer done",
+  "eq": "$\\mathbb{1}[\\,j\\in\\mathrm{requires\\_completed}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.maintained",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-maintained.webp",
+  "desc": "event → event it requires ACTIVE (requires_active): receive is only valid while offer is held",
+  "eq": "$\\mathbb{1}[\\,j\\in\\mathrm{requires\\_active}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.node_actor_of",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-node-actor-of.webp",
+  "desc": "action node (one joint-command token) → every event its manipulator acts in: a 2-hop composition node → assembly → actor binding",
+  "eq": "$\\mathbb{1}[\\,\\mathrm{asm}(i)\\in\\mathrm{actors}(j)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.output_to",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-output-to.webp",
+  "desc": "event ↔ event consuming its output: receive's reference role binds offer's 'anchor' output (event_output binding)",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{output\\_to}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.patient_of",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-patient-of.webp",
+  "desc": "patient entity ↔ the events that act on it: the bar is the patient of all five handover events (take, offer, receive, release, place)",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{patient\\_of}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.pred_arg",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-pred-arg.webp",
+  "desc": "predicate-estimate token ↔ its argument entities: held_by(bar, left) points at the bar slot and the left-gripper assembly",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{pred\\_arg}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.produced",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-produced.webp",
+  "desc": "runtime receipt ↔ the event that produced it: the 'anchor' receipt (interact bank) was emitted by offer",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{produced}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.role_in_event",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-role-in-event.webp",
+  "desc": "role-slot token ↔ its event: receive owns four ordered role slots (actor, patient, source, reference)",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{role\\_in\\_event}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.role_points_to",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-role-points-to.webp",
+  "desc": "role-slot token → the entity token it is bound to: receive:source → left-gripper assembly (an output binding points to no entity)",
+  "eq": "$\\mathbb{1}[\\,j=\\mathrm{bound}(i)\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "edge.support_of",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-support-of.webp",
+  "desc": "support-role entity ↔ event: the left arm braces the fixture during align",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{support\\_of}}\\,]$",
+  "source": "public",
+  "status": "illustrative",
+  "colour": "#8C7CF0",
+  "illustrative": "no shipped arm or dual task graph binds a support role to an entity; align:support is rebound to 'left' for this figure only."
+ },
+ {
+  "id": "edge.target_of",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/edge-target-of.webp",
+  "desc": "target entity (and every role without its own channel, here receive:source) ↔ event: the left gripper is the source of 'receive'",
+  "eq": "$\\mathbb{1}[\\,\\{i,j\\}\\in E_{\\mathrm{target\\_of}}\\,]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "task.next_contact",
+  "family": "task",
+  "src": "/assets/media/rrp/tiles/task-next-contact.webp",
+  "desc": "manipulator → graspable score, sharpened by the task gate (g_task = 1.00 at init, learned)",
+  "eq": "$g_{\\rm task}\\,\\mathrm{next}(i,j)$",
+  "source": "candidates + selected: gt train-only + est-probe",
+  "status": "computed (label)",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "leg.com_support",
+  "family": "locomotion",
+  "src": "/assets/media/rrp/tiles/leg-com-support.webp",
+  "desc": "readout of the stability margin: signed planar distance of the COM projection to the stance-foot support polygon (m, + inside)",
+  "eq": "signed dist(COM$_{xy}$, hull(stance feet))",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "leg.foothold",
+  "family": "locomotion",
+  "src": "/assets/media/rrp/tiles/leg-foothold.webp",
+  "desc": "pair label: each swinging foot -> the terrain-scan cell containing its next touchdown (hindsight)",
+  "eq": "foothold(foot$_f$, cell$_c$)",
+  "source": "gt train-only + est-probe",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "ui.above",
+  "family": "ui",
+  "src": "/assets/media/rrp/tiles/ui-above.webp",
+  "desc": "signed render order: +1 if widget j is drawn above i (higher dense z-layer), -1 below, 0 same layer",
+  "eq": "$\\mathrm{sign}(z_j-z_i)$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "ui.drag_to",
+  "family": "ui",
+  "src": "/assets/media/rrp/tiles/ui-drag-to.webp",
+  "desc": "pair label: the teacher's drag handle -> the nearest widget outside the dragged window to where the drag ends (cw/drag_window)",
+  "eq": "$\\mathrm{drag\\_to}(i,j)$",
+  "source": "gt train-only + est-probe",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "ui.focus_next",
+  "family": "ui",
+  "src": "/assets/media/rrp/tiles/ui-focus-next.webp",
+  "desc": "public UI edge: i, j consecutive in the tab order (focusable, enabled widgets in scene order, cyclic)",
+  "eq": "$\\mathrm{focus\\_next}(i,j)$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "ui.label_for",
+  "family": "ui",
+  "src": "/assets/media/rrp/tiles/ui-label-for.webp",
+  "desc": "public UI edge: a role=label widget -> the next widget after it in the same window (scene order)",
+  "eq": "$\\mathrm{label\\_for}(i,j)$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "ui.same_window",
+  "family": "ui",
+  "src": "/assets/media/rrp/tiles/ui-same-window.webp",
+  "desc": "1 when two widgets belong to the same window (parent_id equality; shell items such as the tab strip have parent -1 and never match)",
+  "eq": "$\\mathbb{1}[\\mathrm{parent}_i=\\mathrm{parent}_j]$",
+  "source": "public",
+  "status": "computed",
+  "colour": "#3A3F47"
+ },
+ {
+  "id": "probe.arm.acting_on",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-acting-on.webp",
+  "desc": "readout of whether assembly a's hand links touch entity e (contact truth)",
+  "eq": "$\\mathrm{contact}(e,a)$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.arm.focused_on",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-focused-on.webp",
+  "desc": "readout of which entities a currently ACTIVE task event binds (active op 'place': cube + target)",
+  "eq": "$\\mathrm{focus}(e)=\\exists$ active event $\\ni e$",
+  "source": "public label",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.arm.goal_effect",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-goal-effect.webp",
+  "desc": "readout of the displacement the task asks of each entity: destination minus patient for open events (cube -> target; others 0)",
+  "eq": "$\\hat p_{\\rm dst}-\\hat p_{\\rm patient}$ (open events)",
+  "source": "public label",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.arm.held_by",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-held-by.webp",
+  "desc": "readout of whether entity e is held by assembly a (here gripper; cube 1, others 0)",
+  "eq": "$\\mathrm{held}(e,a)$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.arm.looking_at",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-looking-at.webp",
+  "desc": "readout of each entity's angle off the front-camera optical axis (gaze label, degrees, scaled 1/30)",
+  "eq": "$\\angle(\\mathrm{cam\\ axis},\\ p_e-c)$ [deg]",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.arm.observed_effect",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-observed-effect.webp",
+  "desc": "readout of each entity's realized displacement over the 16-tick chunk (future_disp; cube lifted, others 0)",
+  "eq": "$p_e(t{+}H{-}1)-p_e(t)$, H=16",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.arm.rel_pos",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-rel-pos.webp",
+  "desc": "readout of entity position relative to the assembly's TCP, (x,y,z) m, world frame",
+  "eq": "$p_e - p_{\\rm tcp}(a)$ [m]",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.arm.subtask",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-subtask.webp",
+  "desc": "readout of the active task operator for the assembly (12-way; this episode: grasp -> place -> none)",
+  "eq": "$\\arg\\,\\mathrm{op}(\\mathrm{active\\ event})$",
+  "source": "public label",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.arm.visible",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-arm-visible.webp",
+  "desc": "readout of whether each entity is visible in the front camera (cube occluded by the closing gripper here: 0)",
+  "eq": "$\\mathrm{visible}(e)\\in\\{0,1\\}$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.legged.contact",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-legged-contact.webp",
+  "desc": "readout of each foot's ground contact at the 4 packet knots (+0.1/0.3/0.5/0.7 s) of a trot",
+  "eq": "$c_{f}(t+\\tau_k)$, $\\tau$=0.1,0.3,0.5,0.7 s",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.legged.disp",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-legged-disp.webp",
+  "desc": "readout of the base displacement over the next 0.8 s in the start body frame (xy in 0.5 m units, yaw change in rad)",
+  "eq": "$R_{\\psi_t}^{\\top}(p_{t+H}-p_t)/0.5,\\ \\Delta\\psi$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.legged.fall",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-legged-fall.webp",
+  "desc": "readout of an imminent fall: 1 in the last 0.8 s of an episode that ends in a fall (non-foot ground contact, low base or tilt)",
+  "eq": "$\\mathbb{1}[\\mathrm{fell}]\\cdot\\mathbb{1}[T_{\\rm end}-t\\leq 0.8\\,\\mathrm{s}]$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.legged.goal",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-legged-goal.webp",
+  "desc": "readout of the active event's goal entity (here the waypoint) in the body yaw frame, /2 m, as the PUBLIC context estimates it",
+  "eq": "goal$_{\\rm active}$ in body yaw frame / 2 m",
+  "source": "public label",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.legged.subtask",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-legged-subtask.webp",
+  "desc": "readout of which task event is active (walk_to_a, walk_to_b, halt, done) from the public task runtime",
+  "eq": "index of the active task event (4-way)",
+  "source": "public label",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.pointer.phase",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-pointer-phase.webp",
+  "desc": "readout of the interaction phase of the commanded tick (idle, move, press, release, drag, type) at each knot",
+  "eq": "phase of the commanded tick (6-way)",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.pointer.rel",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-pointer-rel.webp",
+  "desc": "readout of the target point relative to the pointer, normalized screen units (x right, y up), per knot",
+  "eq": "$xy_{\\rm target}(t{+}j)-xy_{\\rm ptr}(t)$ [screen/2]",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.pointer.slot",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-pointer-slot.webp",
+  "desc": "readout of WHICH widget the current plan step targets, as its stable slot index (opaque codes only, no widget content)",
+  "eq": "slot index of the step's target widget (80-way)",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.psi0.active_hand",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-active-hand.webp",
+  "desc": "readout of which hand the packet binds to the target (here right)",
+  "eq": "hand bound to the target over the packet",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.psi0.base_cmd",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-base-cmd.webp",
+  "desc": "readout of the demonstrated base command at each knot (normalized action dims 32 = vx, 34 = turning flag per bodies.g1_simple)",
+  "eq": "demonstrated (vx, turn) command at knot $k$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#8C7CF0"
+ },
+ {
+  "id": "probe.psi0.base_disp",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-base-disp.webp",
+  "desc": "readout of the pelvis displacement over the packet (t -> t+29) in the robot frame at t, plus yaw change",
+  "eq": "pelvis $(\\Delta x,\\Delta y,\\Delta\\psi)$ over 30 ticks",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ },
+ {
+  "id": "probe.psi0.contact",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-contact.webp",
+  "desc": "readout of hand-target contact per hand at the 5 knots (here the right hand closes on the target)",
+  "eq": "$\\mathbb{1}[\\mathrm{hand}_h \\mathrm{\\ touches\\ target}](t{+}k)$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.psi0.grasp_face",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-grasp-face.webp",
+  "desc": "readout of the object face (+x,-x,+y,-y,+z,-z) of each hand's first contact",
+  "eq": "$2\\,\\arg\\max|p|+[p_{\\rm ax}<0]$ (6 faces)",
+  "source": "gt train-only (OFF)",
+  "status": "illustrative",
+  "colour": "#F2A33A",
+  "illustrative": "scene real; the label is not computable here (no contact positions in any recorded replay; needs SIMPLE / Isaac Sim)."
+ },
+ {
+  "id": "probe.psi0.grasp_pt",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-grasp-pt.webp",
+  "desc": "readout of each hand's FIRST contact point on the target in the object frame (last knot)",
+  "eq": "$R(q)^{\\top}(p_{\\rm contact}-p_{\\rm obj})$",
+  "source": "gt train-only (OFF)",
+  "status": "illustrative",
+  "colour": "#F2A33A",
+  "illustrative": "scene real; the label is not computable here (no contact positions in any recorded replay; needs SIMPLE / Isaac Sim)."
+ },
+ {
+  "id": "probe.psi0.hand_dist",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-hand-dist.webp",
+  "desc": "readout of each hand's palm-to-target distance at the 5 packet knots (+5..+29 ticks of 20 ms)",
+  "eq": "$\\|p_{\\rm palm,h}(t{+}k)-p_{\\rm target}(t{+}k)\\|$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.psi0.lift",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-lift.webp",
+  "desc": "readout of whether the target is lifted >= 3 cm above its initial height at each knot",
+  "eq": "$\\mathbb{1}[z_{\\rm target}(t{+}k)\\geq z_0+3\\,\\mathrm{cm}]$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#F2A33A"
+ },
+ {
+  "id": "probe.psi0.target_pos",
+  "family": "probe",
+  "src": "/assets/media/rrp/tiles/probe-psi0-target-pos.webp",
+  "desc": "readout of the target's position at each knot in the robot (pelvis yaw) frame at t",
+  "eq": "$R_{\\psi_t}^{\\top}(p_{\\rm target}(t{+}k)-p_{\\rm pelvis}(t))$",
+  "source": "gt train-only",
+  "status": "computed",
+  "colour": "#2BB3C0"
+ }
+]
