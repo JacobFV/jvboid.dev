@@ -45,11 +45,6 @@ const projectMosaicCols: Record<string, number> = {
   // mosaic of it would be a mosaic of one thing. 1 falls through to the
   // plain hero face.
   "cookie-baker-3d-printer": 1,
-  // Computerworld's tile is a screen (see `screenIds`), and a screen shows
-  // one screen. A mosaic of four desktops inside a 16:10 rectangle reads as
-  // a contact sheet; the single hero reads as a machine. 1 falls through to
-  // the plain hero face.
-  computerworld: 1,
 };
 
 // Honeycomb tile size per project, in multiples of the base hexagon.
@@ -65,8 +60,9 @@ const projectMosaicCols: Record<string, number> = {
 const hexSizeById: Record<string, HexSize> = {
   // The three 3× tiles on the page. IBM-1 is the implicit brain model, the lead
   // project, with the rendered brain at the centre of its mosaic; Computerworld
-  // is the deterministic computer world, and its face is a screen — a 3× cell is
-  // the smallest one a desktop reads as a desktop rather than as a grey smear.
+  // is the deterministic computer world, and its face is a screen tiled 2×2 with
+  // four of its desktops — a 3× cell is the smallest one where a quarter of it
+  // still reads as a desktop rather than as a grey smear.
   "ibm-1": 3,
   computerworld: 3,
   // The third: the robot-policy research, its clips and factor tiles in a
