@@ -1,10 +1,12 @@
 import katex from "katex";
 import tiles from "@/data/rrp-factor-tiles.json";
 import { ReaderImage } from "./ReaderImage";
+import { CardStack } from "./CardStack";
 
-// The RRP project page's factor gallery: one tile per relation factor, the
-// way the paper's tile figure shows them. Each family heading lives in the
-// MDX body; this draws the tiles of one family under it.
+// The RRP project page's factor gallery: one card per relation factor, the
+// way the paper's tile figure shows them, dealt as one swipeable deck per
+// family (CardStack). Each family heading lives in the MDX body; this deals
+// the cards of one family under it.
 //
 // The data is generated from the research repo's figure metadata
 // (docs/paper/figures/factor_grid.json) — names, one-line descriptions,
@@ -45,75 +47,34 @@ function renderEq(eq: string) {
   );
 }
 
+// The paper's family colours, as page tokens: the kinematics/UI grey and
+// the amber need a different shade on each ground (globals.css, "RRP").
+const familyClass: Record<string, string> = {
+  "#2BB3C0": "rrp-geo",
+  "#3A3F47": "rrp-kin",
+  "#F2A33A": "rrp-ix",
+  "#8C7CF0": "rrp-task",
+  "#4E9A5B": "rrp-struct",
+};
+
 export function RrpFactorTiles({ family }: { family: string }) {
   const list = all.filter((t) => t.family === family);
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 220px), 1fr))",
-        gap: "1.25rem 1rem",
-        margin: "1.25rem 0 2.25rem",
-      }}
-    >
+    <CardStack label={`${family} factors, ${list.length} cards`}>
       {list.map((t) => (
-        <div key={t.id} style={{ minWidth: 0 }}>
-          <ReaderImage
-            src={t.src}
-            alt={`${t.id}: ${t.desc}`}
-            width={600}
-            height={450}
-            style={{
-              margin: 0,
-              width: "100%",
-              height: "auto",
-              aspectRatio: "4 / 3",
-              background: "var(--color-bg-1)",
-              borderTop: `3px solid ${t.colour}`,
-            }}
-          />
-          <div
-            style={{
-              marginTop: "0.5rem",
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.8rem",
-              color: t.colour,
-              overflowWrap: "anywhere",
-            }}
-          >
-            {t.id}
+        <article key={t.id} className={`rrp-tile ${familyClass[t.colour] ?? ""}`}>
+          <ReaderImage src={t.src} alt={`${t.id}: ${t.desc}`} width={600} height={450} draggable={false} />
+          <div className="rrp-tile-body">
+            <div className="rrp-tile-id">{t.id}</div>
+            <p className="rrp-tile-desc">{t.desc}</p>
+            <div className="rrp-tile-eq">{renderEq(t.eq)}</div>
+            <div className="rrp-tile-source">
+              source: {t.source}
+              {t.illustrative && <span>illustrative: {t.illustrative}</span>}
+            </div>
           </div>
-          <div style={{ fontSize: "0.85rem", lineHeight: 1.45, color: "var(--color-ink)" }}>
-            {t.desc}
-          </div>
-          <div
-            style={{
-              marginTop: "0.3rem",
-              fontSize: "0.85rem",
-              color: "var(--color-ink-dim)",
-              overflowX: "auto",
-              overflowY: "hidden",
-            }}
-          >
-            {renderEq(t.eq)}
-          </div>
-          <div
-            style={{
-              marginTop: "0.3rem",
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.68rem",
-              color: "var(--color-ink-mute)",
-            }}
-          >
-            source: {t.source}
-            {t.illustrative && (
-              <span style={{ display: "block", color: "var(--color-accent)" }}>
-                illustrative: {t.illustrative}
-              </span>
-            )}
-          </div>
-        </div>
+        </article>
       ))}
-    </div>
+    </CardStack>
   );
 }

@@ -324,6 +324,325 @@ body {
   color: var(--color-ink-dim);
 }
 
+/* ---- RRP (content/projects/rrp.mdx) ----
+   The paper's relation-family colours as tokens. The kinematics/UI grey
+   is the ink on either ground, and the amber darkens on paper so it still
+   reads as text. */
+.rrp-geo { --rrp-c: #2bb3c0; }
+.rrp-kin { --rrp-c: var(--color-ink-dim); }
+.rrp-ix { --rrp-c: #f2a33a; }
+.rrp-task { --rrp-c: #9d8ff5; }
+.rrp-struct { --rrp-c: #5fb06c; }
+:root[data-theme="light"] .rrp-ix { --rrp-c: #b87414; }
+:root[data-theme="light"] .rrp-task { --rrp-c: #6f5fd8; }
+:root[data-theme="light"] .rrp-struct { --rrp-c: #3f7f4a; }
+
+/* The clip reel: the IBM-1 reel's layout, its own name. */
+.prose-mdx .rrp-reel {
+  display: grid;
+  gap: 1.5rem 1.25rem;
+  margin-block: 2rem 2.5rem;
+}
+@media (min-width: 40rem) {
+  .prose-mdx .rrp-reel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .prose-mdx .rrp-reel figure:first-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 64rem) {
+  .prose-mdx .rrp-reel {
+    --x-wide: min(64rem, calc(100vw - 3rem));
+    width: var(--x-wide);
+    margin-inline-start: calc(50% - var(--x-wide) / 2);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .prose-mdx .rrp-reel figure:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+.prose-mdx .rrp-reel figure {
+  margin: 0;
+}
+.prose-mdx .rrp-reel video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+  margin: 0;
+  border-radius: 3px;
+  background: var(--color-bg-1);
+}
+.prose-mdx .rrp-reel figcaption {
+  margin-top: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--color-ink-mute);
+}
+.prose-mdx .rrp-reel figcaption strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-ink-dim);
+}
+
+/* The logit figure (reader/RrpLogitFigure.tsx). Wide: odd panels above the
+   equation, even ones below, leaders between. Narrow: the equation wraps,
+   the leaders go, and the panels list in order with their own term. */
+.prose-mdx .rrp-logit {
+  margin: 2.25rem 0;
+  container-type: inline-size;
+}
+@media (min-width: 64rem) {
+  .prose-mdx .rrp-logit {
+    --x-wide: min(60rem, calc(100vw - 3rem));
+    width: var(--x-wide);
+    margin-inline-start: calc(50% - var(--x-wide) / 2);
+  }
+}
+.rrp-logit-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 0.75rem;
+}
+.rrp-logit-eq {
+  grid-column: 1 / -1;
+  order: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em 0.35em;
+  font-size: 1.05rem;
+  color: var(--color-ink);
+}
+.rrp-logit-lead {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rrp-logit-note {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-mute);
+}
+.rrp-logit-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  white-space: nowrap;
+}
+.rrp-logit-plus {
+  color: var(--color-ink-mute);
+}
+.rrp-logit-term,
+.rrp-logit-panel-term {
+  color: var(--rrp-c);
+}
+.rrp-logit-panel {
+  min-width: 0;
+}
+.rrp-logit-panel-term {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+.rrp-logit-panel .reader-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  border-radius: 2px;
+}
+.rrp-logit-leaders {
+  display: none;
+}
+@container (min-width: 34rem) {
+  .rrp-logit-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3.25rem 1rem;
+  }
+  .rrp-logit-eq {
+    flex-wrap: nowrap;
+    gap: 0 0.3em;
+    font-size: min(2.25cqi, 1.3rem);
+  }
+  .rrp-logit-eq,
+  .rrp-logit-panel {
+    order: 0 !important;
+  }
+  .rrp-logit-eq { grid-row: 2; }
+  .rrp-logit-panel[data-panel="1"] { grid-area: 1 / 1; }
+  .rrp-logit-panel[data-panel="3"] { grid-area: 1 / 2; }
+  .rrp-logit-panel[data-panel="5"] { grid-area: 1 / 3; }
+  .rrp-logit-panel[data-panel="7"] { grid-area: 1 / 4; }
+  .rrp-logit-panel[data-panel="2"] { grid-area: 3 / 1; }
+  .rrp-logit-panel[data-panel="4"] { grid-area: 3 / 2; }
+  .rrp-logit-panel[data-panel="6"] { grid-area: 3 / 3; }
+  .rrp-logit-panel[data-panel="8"] { grid-area: 3 / 4; }
+  .rrp-logit-panel-term {
+    display: none;
+  }
+  .rrp-logit-leaders {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .rrp-logit-leaders line {
+    stroke: var(--rrp-c);
+    stroke-width: 1;
+    opacity: 0.85;
+  }
+}
+.prose-mdx .rrp-logit figcaption {
+  margin: 1.25rem auto 0;
+  max-width: 42rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--color-ink-mute);
+}
+
+/* The factor decks (reader/CardStack.tsx, reader/RrpFactorTiles.tsx). */
+.card-stack {
+  margin: 1.25rem 0 2.5rem;
+  outline: none;
+}
+.card-stack-deck {
+  display: grid;
+  max-width: 24rem;
+  margin-inline: auto;
+  padding-right: 1.5rem;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.card-stack-deck[data-dragging] {
+  cursor: grabbing;
+}
+.card-stack-card {
+  grid-area: 1 / 1;
+  min-width: 0;
+  transition:
+    transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.32s ease;
+  transform-origin: 50% 100%;
+}
+.card-stack-card[data-slot="top"] { z-index: 4; }
+.card-stack-card[data-slot="behind-1"] {
+  z-index: 3;
+  transform: translateX(0.75rem) scale(0.96);
+  opacity: 0.7;
+}
+.card-stack-card[data-slot="behind-2"] {
+  z-index: 2;
+  transform: translateX(1.5rem) scale(0.92);
+  opacity: 0.4;
+}
+.card-stack-card[data-slot="gone"] {
+  z-index: 5;
+  transform: translateX(-115%) rotate(-7deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.card-stack-card[data-slot="hidden"] {
+  z-index: 1;
+  transform: translateX(1.5rem) scale(0.92);
+  opacity: 0;
+}
+.card-stack-deck[data-dragging] .card-stack-card[data-slot="top"] {
+  transition: none;
+}
+.card-stack-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-mute);
+}
+.card-stack-controls button {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 999px;
+  color: var(--color-ink-dim);
+}
+.card-stack-controls button:hover {
+  color: var(--color-ink);
+  border-color: var(--color-ink-mute);
+}
+.card-stack:focus-visible .card-stack-controls span {
+  color: var(--color-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-stack-card {
+    transition: none;
+  }
+}
+.rrp-tile {
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
+  border-top: 3px solid var(--rrp-c);
+  border-radius: 6px;
+  background: var(--color-bg-1);
+  box-shadow: 0 10px 30px -18px rgb(0 0 0 / 0.6);
+}
+.rrp-tile .reader-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  border-radius: 0;
+  -webkit-user-drag: none;
+}
+.rrp-tile-body {
+  padding: 0.75rem 0.9rem 0.9rem;
+}
+.rrp-tile-id {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--rrp-c);
+  overflow-wrap: anywhere;
+}
+.prose-mdx .rrp-tile-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-ink);
+}
+.rrp-tile-eq {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-dim);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.rrp-tile-source {
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--color-ink-mute);
+}
+.rrp-tile-source span {
+  display: block;
+  color: var(--color-accent);
+}
+
 /* ---- Code (src/lib/rehype-shiki.ts) ----
    Highlighted at build time with both themes' colours on every token; the
    active theme picks one. Dark is the default, as it is for the site. The

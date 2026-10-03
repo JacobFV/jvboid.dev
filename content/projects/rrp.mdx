@@ -5,16 +5,25 @@ lane: research
 tags: [robotics, attention, flow-matching, morphology, humanoids, mujoco, research]
 summary: "Research toward morphology-general robot control: a planner samples a structured latent packet z[K×M×D] that carries the task's meaning, a body-side controller realizes it from proprioception and touch, and every attention layer adds a sum of declared relational terms from one registry of 75 factors. Simulation only; a pre-registered campaign is running."
 hero:
-  src: /assets/img/projects/rrp-attention-logit.webp
-  alt: "The attention logit decomposed into its terms — relative geometry, kinematic tree, contact, support and force flow, held-by, task-gated next contact and UI structure — each panel drawn over a real simulator state"
-  fit: contain
+  src: /assets/media/rrp/h1-stairs.webp
+  alt: "The h1 humanoid climbing the step course in MuJoCo under a privileged RL teacher"
 threadImages:
-  - src: /assets/img/projects/rrp-attention-logit.webp
-    alt: "The attention logit, one term at a time"
+  - src: /assets/media/rrp/h1-stairs.webp
+    alt: "h1 on the step course (privileged teacher)"
+  - src: /assets/media/rrp/arm-pick-place-latent.webp
+    alt: "Panda pick-and-place through the learned latent route"
   - src: /assets/media/rrp/tiles/geo-pos3d.webp
     alt: "geo.pos3d: the PaPE relative-position term around a gripper"
+  - src: /assets/media/rrp/dual-handover-teacher.webp
+    alt: "Panda and UR5e bar handover (scripted teacher)"
   - src: /assets/media/rrp/tiles/ix-handover.webp
     alt: "ix.handover: two grippers holding the same bar"
+  - src: /assets/media/rrp/legged-montage-teacher.webp
+    alt: "Ten legged and humanoid bodies on one tracker (scripted teacher)"
+  - src: /assets/media/rrp/tiles/kin-ancestor.webp
+    alt: "kin.ancestor: a joint's ancestors in the kinematic tree"
+  - src: /assets/media/rrp/pointer-bc.webp
+    alt: "A Computerworld pointer policy on a calculator"
   - src: /assets/media/rrp/tiles/ui-label-for.webp
     alt: "ui.label_for: a label widget pointing at its text box"
 links:
@@ -24,114 +33,20 @@ realizes: []
 critiques: []
 ---
 
-RRP (it began as *relational robot policy*; the repository is now
-`structured-psi0-latent-diffusion-dynamics`) asks what a robot policy should say
-about its intentions if it is meant to survive a change of body. The answer it
-tests is a **latent packet**: a planner emits a continuous tensor
-$z\in\mathbb{R}^{K\times M\times D}$, one slot per knot time and per body assembly,
-and a fast controller on the body turns the *received* packet into joint targets
-using only what that body senses. Task meaning has to live on $z$, and the project
-requires evidence for that from probes *and* from causal edits of the packet.
+RRP asks one question. What must a robot policy say about its intent if the
+policy must survive a change of body? The test answer is a **latent packet**.
+A planner emits a continuous tensor $z\in\mathbb{R}^{K\times M\times D}$:
+one slot per knot time and per body assembly. A fast controller on the body
+turns the *received* packet into joint targets. It uses only what that body
+senses. Task meaning must live on $z$. The project requires two kinds of
+evidence for this: probes, and causal edits of the packet.
 
-![The attention logit, one term at a time: each panel stretches one relational term for a single query token over a real simulator state. Values are computed by the factor operators, not learned attention.](/assets/img/projects/rrp-attention-logit.webp)
+The name began as *relational robot policy*. The repository is now
+`structured-psi0-latent-diffusion-dynamics`. All work is in simulation. No
+physical robot was commanded.
 
-## Problem
-
-A policy trained on one arm usually knows nothing useful about the next one. The
-interface between "what should happen" and "how this body makes it happen" is
-implicit, buried in weights, and it does not carry over. On top of that, most of
-the structure a roboticist knows in advance — which joint is whose parent, what is
-touching what, which object the task is about, which widget a label belongs to — is
-left for the network to rediscover from data, if it does at all.
-
-## Solution
-
-Two ideas, kept separate so each can be tested on its own.
-
-**The packet interface.** Following the $\Psi_0$ naming, System 1 is an
-encoder–decoder transformer trained by rectified flow: it reads typed context
-(morphology, scene, task events and roles, touch) and samples $z$ in 8 Euler steps.
-System 0 runs every control tick: one query per actuated joint, built from public
-morphology and the current measured state, cross-attends to the packet's knots and
-outputs a normalized joint target. System 0 never sees the task, the instruction or
-an image — the only way meaning reaches the body is through $z$. Packet queries are
-computed from public morphology rather than looked up per robot ID, which is what
-lets a new body produce new queries.
-
-**Relational attention as a sum of declared terms.** Every attention call in the
-model has the same logit:
-
-$$
-A_{ij}=\frac{q_i^{\top}k_j}{\sqrt d}+\sum_{f}w_{f,h}\,\gamma_f\,v_f(i,j)+\big\langle\phi_q(i),\phi_k(j)\big\rangle
-$$
-
-Each factor $f$ is one entry in a single registry — field × operator × form × source
-— and contributes one term: an additive bias, a kernel-compatible augmentation
-appended to $q,k$ (so fused attention kernels still apply), a task-conditioned gate,
-or a hard mask. Relative geometry follows PaPE; graph terms come from declared
-morphology and the supplied task graph; pair terms that can't be read from public
-inputs (contact, support, held-by, handover) are bilinear, so the bias *is* a
-supervised attention subspace and its probe estimate can be used at run time. Every
-coefficient is zero-initialized, so switching a factor on in a trained model is a
-no-op at step 0. A deploy guard refuses any simulator-truth source at run time:
-ground truth trains the probes, and only public or estimated values steer attention.
-
-## How
-
-- **Language / runtime:** Python 3.12, PyTorch, one `rrp` CLI; every heavy job runs
-  under a resource broker on two NVIDIA GB10 machines.
-- **Simulation:** native MuJoCo with MuJoCo Menagerie robots, a batched Warp legged
-  environment, the $\Psi_0$ SIMPLE benchmark on Isaac Sim, and
-  [Computerworld](/projects/computerworld) rendered as a 3D UI world for a pointer
-  track. 251 distinct embodiments have been simulated in at least one recorded run;
-  150 of them are in a training set.
-- **Code and weights:** the code is on
-  [GitHub](https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics);
-  checkpoints are on [Hugging Face](https://huggingface.co/jacob-valdez/rrp-checkpoints).
-- **One interface each** for environments, policies and tasks; one harness runs any
-  accepted policy × environment × task and records declined pairs with reasons.
-- **Relation-aware data.** One privileged state interface feeds four registries —
-  label functions, composable scene parts, factor-agnostic transforms (reveal,
-  surprise, counterfactual swap, noise, occlusion, subsampling) and a composition
-  operator — and a progressive-composition scheduler promotes each factor from
-  isolated scenes to composed ones as its competence rises. The scheduler is
-  implemented and smoke-tested; there is no curriculum result yet.
-
-![The five environments: arm and dual-arm frames are scripted-teacher states (privileged); the quadruped, humanoid and Computerworld frames are reset states with no controller running.](/assets/img/projects/rrp-environments.webp)
-
-## Clips
-
-Short loops from the simulator. Each one says on the frame where its actions came
-from, because a scripted teacher and a learned policy look the same in a video.
-
-<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1rem", margin: "1.5rem 0" }}>
-  <div>
-    <video
-      src="/assets/media/rrp/arm-pick-place-latent.mp4"
-      poster="/assets/media/rrp/arm-pick-place-latent.webp"
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="metadata"
-      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
-    />
-    <p><em>Learned latent route (deployable R2: System 1 → packet → System 0), Panda pick-and-place, success. 1.5× speed.</em></p>
-  </div>
-  <div>
-    <video
-      src="/assets/media/rrp/dual-handover-teacher.mp4"
-      poster="/assets/media/rrp/dual-handover-teacher.webp"
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="metadata"
-      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
-    />
-    <p><em>Scripted teacher (privileged), Panda + UR5e bar handover. 2× speed. The dual-arm track is parked.</em></p>
-  </div>
-  <div>
+<div className="rrp-reel">
+  <figure>
     <video
       src="/assets/media/rrp/h1-stairs.mp4"
       poster="/assets/media/rrp/h1-stairs.webp"
@@ -140,24 +55,22 @@ from, because a scripted teacher and a learned policy look the same in a video.
       muted
       playsInline
       preload="metadata"
-      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
     />
-    <p><em>Privileged teacher: an RL expert with a privileged height scan walks h1 up the step course. A reference, not a policy under test.</em></p>
-  </div>
-  <div>
+    <figcaption><strong>privileged teacher</strong>An RL expert with a privileged height scan walks h1 up the step course. Reference only. Not a policy under test.</figcaption>
+  </figure>
+  <figure>
     <video
-      src="/assets/media/rrp/legged-montage-teacher.mp4"
-      poster="/assets/media/rrp/legged-montage-teacher.webp"
+      src="/assets/media/rrp/arm-pick-place-latent.mp4"
+      poster="/assets/media/rrp/arm-pick-place-latent.webp"
       autoPlay
       loop
       muted
       playsInline
       preload="metadata"
-      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
     />
-    <p><em>Scripted teacher (privileged) over a frozen tracker on ten legged and humanoid bodies. Recorded 25 Sep, before the learned legged results below — the banner's "no learned policy yet" is from that date.</em></p>
-  </div>
-  <div>
+    <figcaption><strong>learned · R2 latent route</strong>System 1 → packet → System 0. Panda pick-and-place, success. 1.5× speed.</figcaption>
+  </figure>
+  <figure>
     <video
       src="/assets/media/rrp/pointer-bc.mp4"
       poster="/assets/media/rrp/pointer-bc.webp"
@@ -166,102 +79,208 @@ from, because a scripted teacher and a learned policy look the same in a video.
       muted
       playsInline
       preload="metadata"
-      style={{ width: "100%", borderRadius: "0.75rem", display: "block" }}
     />
-    <p><em>Learned behaviour-cloning pointer policy on a Computerworld dev seed: 8 + 5 on the calculator. An illustration, not a result.</em></p>
-  </div>
+    <figcaption><strong>learned · BC</strong>Behaviour-cloning pointer on a Computerworld dev seed: 8 + 5 on the calculator. Illustration, not a result.</figcaption>
+  </figure>
+  <figure>
+    <video
+      src="/assets/media/rrp/dual-handover-teacher.mp4"
+      poster="/assets/media/rrp/dual-handover-teacher.webp"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="metadata"
+    />
+    <figcaption><strong>scripted teacher</strong>Panda + UR5e bar handover. 2× speed. Dual-arm track parked.</figcaption>
+  </figure>
+  <figure>
+    <video
+      src="/assets/media/rrp/legged-montage-teacher.mp4"
+      poster="/assets/media/rrp/legged-montage-teacher.webp"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="metadata"
+    />
+    <figcaption><strong>scripted teacher</strong>Frozen tracker, ten legged and humanoid bodies. Recorded 25 Sep, before the learned legged results; the banner is from that date.</figcaption>
+  </figure>
 </div>
+
+Every clip states its action source on the frame. A scripted teacher and a
+learned policy look the same in a video; the label is the only difference.
+
+## Problem
+
+A policy trained on one arm usually knows nothing useful about the next arm.
+The interface between "what must happen" and "how this body does it" is
+implicit. It is buried in weights, and it does not transfer. Also, the network
+must rediscover structure that the engineer already knows: which joint is the
+parent of which, what touches what, which object the task is about, which
+widget a label belongs to. Often it does not rediscover it.
+
+## Solution
+
+Two ideas. Each is separate, so each can be tested alone.
+
+**1 · The packet interface.** The naming follows $\Psi_0$.
+
+- **System 1** is an encoder–decoder transformer trained by rectified flow. It
+  reads typed context: morphology, scene, task events and roles, touch. It
+  samples $z$ in 8 Euler steps.
+- **System 0** runs every control tick. It builds one query per actuated joint
+  from public morphology and the measured state. The queries cross-attend to
+  the packet knots. The output is one normalized joint target per joint.
+- System 0 never sees the task, the instruction or an image. Meaning reaches
+  the body only through $z$.
+- Packet queries come from public morphology, not from a per-robot lookup. A
+  new body therefore produces new queries.
+
+**2 · Relational attention as a sum of declared terms.** Every attention call
+in the model uses one logit:
+
+$$
+A_{ij}=\frac{q_i^{\top}k_j}{\sqrt d}+\sum_{f\in\mathcal B}w_{f,h}\,\gamma_f\,v_f(i,j)+\big\langle\phi_q(i),\phi_k(j)\big\rangle
+$$
+
+Each factor $f$ is one entry in one registry: field × operator × form ×
+source. It adds one term $v_f(i,j)$ in one of four forms:
+
+- **bias** — added to the logit;
+- **augmentation** — appended to $q,k$, so fused attention kernels still apply;
+- **gate** — $\gamma_f=2\sigma(u\cdot c+b)$ scales another term by a task,
+  goal or body summary $c$;
+- **mask** — hard.
+
+Relative geometry follows PaPE. Graph terms come from declared morphology and
+from the supplied task graph. Some pair terms cannot be read from public
+inputs: contact, support, held-by, handover. These are bilinear,
+$\langle Ux_i,Vx_j\rangle$. The bias *is* then a supervised attention
+subspace, and its probe estimate is usable at run time. Every coefficient
+starts at zero. Switching a factor on in a trained model is a no-op at step 0.
+A deploy guard refuses all simulator-truth sources at run time. Ground truth
+trains the probes. Only public or estimated values steer attention.
+
+<RrpLogitFigure />
+
+## How
+
+- **Language / runtime:** Python 3.12, PyTorch, one `rrp` CLI. A resource
+  broker runs every heavy job on two NVIDIA GB10 machines.
+- **Simulation:** native MuJoCo with MuJoCo Menagerie robots; a batched Warp
+  legged environment; the $\Psi_0$ SIMPLE benchmark on Isaac Sim;
+  [Computerworld](/projects/computerworld) as a 3D UI world for a pointer
+  track. 251 distinct bodies ran in at least one recorded run. 150 are in a
+  training set.
+- **Code and weights:** code on
+  [GitHub](https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics);
+  checkpoints on [Hugging Face](https://huggingface.co/jacob-valdez/rrp-checkpoints).
+- **One interface each** for environments, policies and tasks. One harness runs
+  any accepted policy × environment × task. It records each declined pair with
+  its reason.
+- **Relation-aware data.** One privileged state interface feeds four
+  registries: label functions, composable scene parts, factor-agnostic
+  transforms (reveal, surprise, counterfactual swap, noise, occlusion,
+  subsampling) and a composition operator. A scheduler promotes each factor
+  from isolated scenes to composed scenes as its competence rises. The
+  scheduler is implemented and smoke-tested. There is no curriculum result.
+
+![The five environments. Arm and dual-arm frames: scripted-teacher states (privileged). Quadruped, humanoid and Computerworld frames: reset states, no controller.](/assets/img/projects/rrp-environments.webp)
 
 ## Tests
 
-The repository's merge gate is a unit suite (`pytest tests/unit`) that skips, by
-name, anything needing weights or third-party assets. Evaluation uses matched seeds
-across routes — R0 scripted teacher (privileged), R1 oracle packet (diagnostic, not
-deployable), R2 generated packet (deployable) — plus a behaviour-cloning control on
-the same demonstrations, and edit suites that change the task context and roll out.
-Semantic and no-semantic variants are capacity-matched. Splits are sealed and
-hash-pinned before results, and each sealed cell runs once.
+- **Merge gate:** `pytest tests/unit`. It skips, by name, each test that needs
+  weights or third-party assets.
+- **Routes, on matched seeds:** R0 scripted teacher (privileged); R1 oracle
+  packet (diagnostic, not deployable); R2 generated packet (deployable); plus
+  a behaviour-cloning control on the same demonstrations.
+- **Edit suites** change the task context and roll out.
+- Semantic and no-semantic variants have matched capacity.
+- Splits are sealed and hash-pinned before results. Each sealed cell runs once.
 
 ## Results
 
-Recorded results only, from the report's snapshot of 2 October 2026. All of it is
-simulation; no physical robot was commanded.
+Recorded results only, from the report snapshot of 2 October 2026.
 
-- **Semantic supervision helps inside the training bodies.** On four arm bodies and
-  two seeds, the latent route with semantic packet supervision succeeds in 425/480
-  deployable episodes against 314/480 for the capacity-matched control: **+0.23
-  [0.18, 0.28]**, ahead in 8/8 body × seed cells. The latent route is still below
-  plain BC on Panda (135/180 against 58/60).
-- **The packet is causally used.** A "halt" added to System 1's task context — which
-  can only reach the body through $z$ — cuts forward progress by 0.40 m on anymal_c
-  and 0.66 m on go2 relative to the control, 3/3 seeds ordered, while an irrelevant
-  context change moves the body at most 0.02 m. In Computerworld a probe-guided packet
-  edit pulls the pointer from 163 px to 41 and 22 px of the new target, against
-  102–105 px for a random edit of equal norm. The edits are partial and task success
-  is unchanged.
-- **Transfer to a new arm is not supported.** Zero-shot on sealed xarm7 targets, the
-  latent route and BC both score 0/200. With target demonstrations, BC fine-tuning
-  reaches 69–192/200; the latent route's best adaptation (added after the sealed
-  result, so post-hoc) beats a System 0 refit in 12/12 cells but stays below BC in
-  12/12. The latent route has not beaten BC on any new body.
-- **Pointer:** in-distribution, BC 398/400, semantic latent 372, control 368. On
-  unseen words and names every learned method scores 0/100 — none copies characters
-  from the instruction.
-- **Pretrained humanoid ($\Psi_0$):** released 20/20, direct fine-tune 19/20, structured
-  head 0/20 — traced to an integration fault (System 0 ignored the packet), not
-  evidence against structure. The packet-use gate added afterwards passed; the
-  closed-loop rerun is queued.
+- **Semantic supervision helps inside the training bodies.** Four arm bodies,
+  two seeds. The latent route with semantic packet supervision succeeds in
+  425/480 deployable episodes. The capacity-matched control succeeds in
+  314/480. Difference: **+0.23 [0.18, 0.28]**, ahead in 8/8 body × seed
+  cells. The latent route is still below plain BC on Panda: 135/180 against
+  58/60.
+- **The packet is causally used.** A "halt" added to System 1's task context
+  can reach the body only through $z$. It cuts forward progress by 0.40 m on
+  anymal_c and 0.66 m on go2 against the control, 3/3 seeds ordered. An
+  irrelevant context change moves the body 0.02 m at most. In Computerworld, a
+  probe-guided packet edit moves the pointer from 163 px to 41 and 22 px of the
+  new target. A random edit of equal norm gives 102–105 px. The edits are
+  partial. Task success does not change.
+- **Transfer to a new arm is not supported.** Zero-shot on sealed xarm7
+  targets: latent route 0/200, BC 0/200. With target demonstrations, BC
+  fine-tuning reaches 69–192/200. The best latent adaptation was added after
+  the sealed result, so it is post-hoc. It beats a System 0 refit in 12/12
+  cells and stays below BC in 12/12. The latent route has not beaten BC on any
+  new body.
+- **Pointer.** In distribution: BC 398/400, semantic latent 372, control 368.
+  On unseen words and names, every learned method scores 0/100. None copies
+  characters from the instruction.
+- **Pretrained humanoid ($\Psi_0$).** Released 20/20; direct fine-tune 19/20;
+  structured head 0/20. The cause was an integration fault: System 0 ignored
+  the packet. This is not evidence against structure. The packet-use gate added
+  after the fault passed. The closed-loop rerun is queued.
 
-What the report does *not* claim: that the relation factors help (the experiment
-that tests this is running), that the latent route transfers across bodies, or
-anything about a real robot. A ten-node pre-registered campaign — humanoids, arm
-diversity, $\Psi_0$, the pointer and the relation factors — is in progress, with its
-gates written down before the runs.
+The report does *not* claim three things: that the relation factors help (the
+test is running), that the latent route transfers across bodies, or anything
+about a real robot. A ten-node pre-registered campaign is in progress:
+humanoids, arm diversity, $\Psi_0$, the pointer and the relation factors. Its
+gates were written before the runs.
 
 ## Lessons
 
-The most useful thing in the repository turned out to be bookkeeping. An early
-"semantic supervision hurts" result was a confound — an unbounded probe loss shrank
-System 0's updates by two orders of magnitude — and it was only caught because every
-comparison carries a decision number and a capacity-matched control. Labelling
-every source (teacher, oracle, learned) on every frame and every table, and keeping
-negative results in the same ledger as positive ones, cost little and kept the
-project honest about where the latent route is still behind plain BC.
+The most useful part of the repository is bookkeeping. An early result said
+"semantic supervision hurts". It was a confound: an unbounded probe loss made
+System 0's updates two orders of magnitude smaller. The check found it only
+because every comparison has a decision number and a capacity-matched control.
+A source label (teacher, oracle, learned) on every frame and every table costs
+little. Negative results go in the same ledger as positive ones. Together these
+keep the project honest about where the latent route is still behind plain BC.
 
-## Every factor, one tile each
+## Every factor, one card each
 
-All 75 implemented relation factors, grouped by family. Each tile draws one term of
-the attention logit for a single query token (the ring) over a real simulator state,
-with the scene's source in the corner. The values are computed by the factor
-operators — they are not learned attention — and where a pair term is trained from
-simulator truth, the tile shows the label that trains its probe, not the deployed
-estimate. Three tiles are marked illustrative. Click any tile to enlarge it.
+75 implemented relation factors, one deck per family. Swipe a deck left or
+right, or use the arrows. Each card draws one logit term for one query token
+(the ring) over a real simulator state. The scene source is in the corner. The
+factor operators compute the values; they are not learned attention. For a
+pair term trained from simulator truth, the card shows the label that trains
+its probe, not the deployed estimate. Three cards are marked illustrative. Tap
+an image to enlarge it.
 
 ### Structure
 
-Which token belongs to which assembly, which slot is which entity, and which packet
-knots each System 0 node is allowed to read.
+Token-to-assembly membership, slot identity, and which packet knots each
+System 0 node can read.
 
 <RrpFactorTiles family="structure" />
 
 ### Geometry
 
-Relative position, depth, orientation and surface normals; `geo.pos3d` is the PaPE
-term in its kernel-compatible form.
+Relative position, depth, orientation, surface normals. `geo.pos3d` is the
+PaPE term in kernel-compatible form.
 
 <RrpFactorTiles family="geometry" />
 
 ### Kinematics
 
-The declared kinematic tree: parents, children, ancestors, siblings, mirror pairs,
-limbs and the feet and terrain cells they reach.
+The declared kinematic tree: parents, children, ancestors, siblings, mirror
+pairs, limbs, and the feet and terrain cells they reach.
 
 <RrpFactorTiles family="kinematics" />
 
 ### Interaction
 
-Contact, support, force flow, holding and handover — pair terms that can't be read
-from public inputs, so they are bilinear and estimated by their own probes.
+Contact, support, force flow, holding, handover. Public inputs cannot give
+these pair terms. They are bilinear, and each has its own probe.
 
 <RrpFactorTiles family="interaction" />
 
@@ -274,19 +293,22 @@ dependencies, receipts — and the task-gated next contact.
 
 ### Locomotion
 
+The stability margin of the centre of mass, and each swinging foot's next
+foothold.
+
 <RrpFactorTiles family="locomotion" />
 
 ### UI
 
-The Computerworld widget tree: same window, render order, tab order, labels and drag
-targets.
+The Computerworld widget tree: same window, render order, tab order, labels,
+drag targets.
 
 <RrpFactorTiles family="ui" />
 
 ### Probes
 
-Readouts in the same registry: what the packet is supervised to carry, read with
-opaque handles only. Probes are diagnostics; causal use is shown by edits and
-rollouts.
+Readouts in the same registry: what the packet is supervised to carry, read
+through opaque handles only. Probes are diagnostics. Edits and rollouts show
+causal use.
 
 <RrpFactorTiles family="probe" />
