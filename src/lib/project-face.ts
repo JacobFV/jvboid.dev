@@ -39,6 +39,8 @@ const projectMosaicCols: Record<string, number> = {
   "ibm-1": 3,
   "lunar-rover": 3,
   limboid: 3,
+  // The h1 clip in the middle, the other clips and three factor tiles around it.
+  rrp: 3,
   // The Cookie Baker gantry has exactly one surviving photograph, so a
   // mosaic of it would be a mosaic of one thing. 1 falls through to the
   // plain hero face.
@@ -70,6 +72,8 @@ const hexSizeById: Record<string, HexSize> = {
   // Its predecessor and sibling, the whole-brain dynamics model — four public
   // checkpoints, a paper and a site of its own.
   "sc-wbd": 2,
+  // The robot-policy research: clips and factor tiles, a 3×3 mosaic.
+  rrp: 2,
   "cookie-baker-3d-printer": 2,
   "chem-0": 2,
   "canvas-engineering": 2,

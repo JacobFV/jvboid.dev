@@ -31,6 +31,9 @@ const featuredProjectOrder = [
   // keeps welded together: the third of the projects carrying the page,
   // and the other 3× tile on the comb.
   "computerworld",
+  // The current research thread, a 2× tile, right behind the projects
+  // carrying the page.
+  "rrp",
   "chem-0",
   "trash-sorter",
   "lunar-rover",
