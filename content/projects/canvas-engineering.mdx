@@ -14,6 +14,7 @@ summary: "Repurposes silicon optimized for generating anime slop videos with (de
 hero:
   src: /assets/img/canvas-engineering/code_to_canvas.png
   alt: "A CanvasLayout and CanvasTopology declaration compiled into a laid-out canvas with information-flow arrows"
+video: "/assets/media/canvas-engineering/attention-swarm.mp4"
 threadImages:
   - src: /assets/img/canvas-engineering/code_to_canvas.png
     alt: Schema declaration compiled into a laid-out canvas
@@ -94,6 +95,13 @@ cross-edges you declared. The topology *is* the coordination protocol,
 written as data.
 
 ![Left: four robots around a shared task in the real world, with vision cones and motion arrows. Right: the same causal structure compiled onto the canvas as per-agent observation and action regions coordinating through a shared dispatch region](/assets/img/canvas-engineering/real_vs_neural.png)
+
+<Video
+  url="/assets/media/canvas-engineering/attention-swarm.mp4"
+  poster="/assets/media/canvas-engineering/attention-swarm-poster.jpg"
+  title="From one transformer to a swarm on one canvas"
+  caption="From one transformer, to two attending to each other's internal states, to a swarm on one canvas. Three MuJoCo mobile manipulators share a 20×48 canvas; each arc is a real softmax(QKᵀ/√d) score from one denoising step of a randomly initialised, untrained canvas DiT, so it shows the mechanism, not learned behaviour."
+/>
 
 ## How
 
