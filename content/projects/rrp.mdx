@@ -48,7 +48,7 @@ physical robot was commanded.
 **[Paper (PDF)](/assets/pdf/rrp-report.pdf)** ·
 [GitHub](https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics).
 The paper is a living report, audited against the decision ledger on
-4 October 2026. The training campaign is still running.
+5 October 2026. The training campaign is still running.
 
 <div className="rrp-reel">
   <figure>
@@ -206,7 +206,7 @@ trains the probes. Only public or estimated values steer attention.
 
 ## Results
 
-Recorded results only, from the report snapshot of 4 October 2026.
+Recorded results only, from the report snapshot of 5 October 2026.
 
 - **Semantic supervision helps inside the training bodies.** Four arm bodies,
   two seeds. The latent route with semantic packet supervision succeeds in
@@ -230,21 +230,35 @@ Recorded results only, from the report snapshot of 4 October 2026.
 - **Pointer.** In distribution: BC 398/400, semantic latent 372, control 368.
   With the first packet format, every learned method scores 0/100 on unseen
   words and names. In campaign round 1 (development seeds only), the v2 key
-  code types held-out strings (50/50); a copy head made dragging worse. No
-  sealed v2 result exists yet.
+  code types held-out strings (50/50); a copy head made dragging worse. Round
+  2 is in progress. The semantic latent route, three seeds, types held-out
+  strings 45–50/50. On one seed so far, learned BC with the same key code
+  also types them (50/50), and the older v1 key code types only 8/50. So the
+  discrete key code, not the latent route, looks like the reason. That is a
+  reading, not a decision: the rule waits for all three seeds. No sealed v2
+  result exists yet.
 - **Pretrained humanoid ($\Psi_0$).** Released checkpoint (upstream, not
   ours) 20/20; our direct fine-tune 19/20; our first structured head 0/20,
   caused by an integration fault (System 0 ignored the packet). After the fix
   the packet-use gate passed, and the structured head reaches 7/20 against
   19/20 for direct (McNemar p = 0.0018). Structure does not match direct
-  fine-tuning on this task. On BendPick: released 20/20, direct 15/20,
-  structured still running.
+  fine-tuning on this task. On BendPick: released (upstream) 20/20, direct
+  15/20, structured 18/20. McNemar p = 0.375, so no difference is shown. A
+  sealed test at the strongest domain randomisation is in progress.
 - **Campaign outcomes so far.** Training on 65 arm and gripper combinations failed its gate on
   the original bodies (362/480 against 425/480), so no new-arm transfer cell
   ran. A first relation-factor comparison was halted at a floor (0/360 in
-  both arms). The sealed humanoid bodies checked so far failed the scripted
-  teacher check. The legged-relations comparison waits on a matched-input
-  control, which is running.
+  both arms). The second one is in progress.
+- **Humanoid transfer: the first runs are void.** Every humanoid transfer
+  run up to 4 October is void. Two pipeline bugs caused it: the evaluation
+  started the gait clock late, and the data collector never applied its
+  DART noise (all 600 episodes at σ = 0). Both are fixed. A pilot gate check
+  retrained one learned policy on the fixed data: zero-shot h_turn on t1
+  went from 0/100 to 97/100 (scripted teacher 100/100). This is a gate
+  check, not a transfer result. The full rebuild is in progress. After
+  tracker adaptation, only one sealed body and task (n1, h_turn, 16/20)
+  qualifies; its sealed cells are pending. The legged-relations comparison
+  also waits on a matched-input control.
 
 The report does *not* claim three things: that the relation factors help (the
 test is running), that the latent route transfers across bodies, or anything
