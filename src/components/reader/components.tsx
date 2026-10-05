@@ -6,6 +6,7 @@ import { ScreenshotRow } from "./ScreenshotRow";
 import { ScreenshotTimeline } from "./ScreenshotTimeline";
 import { PresentationSlides } from "./PresentationSlides";
 import { XPost } from "./XPost";
+import { LinkedInPost } from "./LinkedInPost";
 import { JtermAtmosphere } from "./JtermAtmosphere";
 import { LangCurriculumAtmosphere } from "./LangCurriculumAtmosphere";
 import { FluentAtmosphere } from "./FluentAtmosphere";
@@ -229,6 +230,7 @@ export const readerComponents: MDXComponents = {
   ScreenshotTimeline,
   PresentationSlides,
   XPost,
+  LinkedInPost,
   // Media embeds. Bodies place these themselves — nothing is hoisted
   // above the article from frontmatter.
   Pdf,
