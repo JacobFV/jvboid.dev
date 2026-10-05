@@ -1,0 +1,86 @@
+---
+title: RackSavant × Archilogic
+date: 2026-10-04
+lane: building
+tags: [work, retail, iot, esp32, localization, cloudflare, spatial-data]
+summary: "Spatial foot-traffic analytics for a retail store: ESP32 anchors hear anonymous phones, range each other by Wi-Fi RTT to self-survey, and a Durable Object per store resolves every reading to a zone on the Archilogic floor plan."
+resume_description: "Retail foot-traffic pipeline for the RackSavant × Archilogic pilot: ESP32 anchors with on-device anonymisation and anchor-to-anchor FTM ranging, trilateration and barycentric coordinates in a per-store Durable Object, zones from the Archilogic Space API, CV validation and KPI dashboard. c, esp-idf, typescript, cloudflare workers, durable objects, d1, react."
+resume_brief:
+  problem: "A store's sensor readings are useless without knowing where they happened; the RackSavant × Archilogic pilot needed every reading to land on a zone of the Archilogic floor plan."
+  task: "Built ESP32 anchor firmware, a Linux fallback, and a Cloudflare app whose per-store Durable Object self-surveys the anchors, positions anonymous phones, and maps them to Archilogic spaces."
+  outcome: "In simulation, anchors self-surveyed to within **7–22 cm** of their pinned positions; **316** automated tests across firmware, agent, simulator and cloud."
+  stack: "c, esp-idf, python, typescript, cloudflare workers, durable objects, d1, pages, react"
+hero: { src: /assets/img/racksavant-archilogic/floorplan.jpeg, alt: "TrafficSense floor plan view: a narrow store with a blue visit heat map, zone labels with visit counts, anchor markers and live device trails" }
+links:
+  demo: https://racksavant-web.pages.dev
+influences: [racksavant]
+realizes: []
+critiques: []
+---
+
+<LinkedInPost
+  url="https://www.linkedin.com/posts/racksavant-ai-961aa4351_proptech-retailtech-spatialdata-share-7512880248196116481-skmS/"
+  authorName="RackSavant AI"
+  headline="Research Services in GenAI"
+  date="Oct 5, 2026"
+  text={`RackSavant and Archilogic have been testing a spatial data pipeline for physical retail: Archilogic provides the structured floor plan and defined zones, while RackSavant anchors real-time in-store sensor data to those locations.
+
+The pilot now runs end to end in a live San Francisco retail environment, with sensor readings resolving to specific zones on the Archilogic floor plan. Next comes computer-vision validation and operational KPI measurement against that same spatial record.
+
+“Sensor data is only useful when it knows where it is. Archilogic gives every reading a place on a structured floor plan, so RackSavant can turn a signal into a zone and a zone into a decision.” — Sjef Tijssen, COO, Archilogic
+
+Excited to share more during SF Tech Week.
+
+#PropTech #RetailTech #SpatialData #FloorPlans #SDK`}
+  mentions={["Sjef Tijssen", "Jacob Valdez", "Pramod Thebe", "Kareem Dasilva", "Archilogic"]}
+/>
+
+## Problem
+
+RackSavant started as a [try-on studio](/projects/racksavant) for a friend's clothing store. The store's next question was physical rather than visual: when are people here, where do they go, how long do they stay, and is the floor staffed for it? Retail sensors answer the first question and fumble the rest, because a reading means nothing until you know *where* it happened. Archilogic already turns floor plans into structured spatial models with named, measured spaces. The job was to give every radio reading a place in that model.
+
+## Solution
+
+**TrafficSense** is a three-tier pipeline. Three or more ESP32 anchors around the store passively hear the Wi-Fi probes, Wi-Fi data frames and Bluetooth adverts that phones emit anyway. Each anchor hashes the phone's address on the device, so no raw identifier ever leaves the store. The anchors also range *each other* by Wi-Fi round-trip time. A Cloudflare Durable Object per store fuses every anchor's view of the same phone, works out a position, and assigns it to an Archilogic space. The dashboard turns those visits into traffic, dwell, heat maps, staffing recommendations and alerts.
+
+![TrafficSense floor plan: visits per Archilogic space as a heat map, live devices with trails, the 1:1 sensor-to-space mapping in the sidebar](/assets/img/racksavant-archilogic/floorplan.jpeg)
+
+## How
+
+The interesting constraint is physical. Nothing can measure round-trip time to an anonymous phone: Wi-Fi FTM only works if the phone *starts* the exchange, which needs an app on it, and the ESP32's receive timestamps are 1 µs, which is 300 m of light. So the system splits the problem:
+
+- **Anchors range each other by RTT.** ESP32-S3/C3/C6 run a SoftAP as an FTM responder and an FTM initiator on the station side, giving anchor-to-anchor distances to within tens of centimetres.
+- **Those links calibrate RSSI.** Each pair has a known distance and a measured beacon RSSI, so the store fits its own path-loss exponent and per-anchor offsets online, then applies that model to phones, which can only be heard, not ranged.
+- **The anchors survey themselves.** Classical MDS (gaps filled by shortest paths, refined with SMACOF) turns the distance matrix into a layout. An Umeyama similarity transform registers it to the anchors an installer pinned on the floor plan, and the residual is reported as survey error, which catches a moved anchor.
+- **Phones get barycentric coordinates.** Weighted Gauss–Newton trilateration with a Huber loss, then barycentric coordinates in the Delaunay triangle of anchors. Those weights don't change under an affine map, so the anchors' own geometry and the Archilogic floor frame agree on them. A Kalman filter smooths the track, and zone hysteresis turns it into visits.
+- **The pilot's 1:1 mode still works.** With fewer than three anchors, each anchor maps to exactly one Archilogic space and a phone is in the space of its strongest anchor. That is the "sensor-to-space ID mapping" in the case study, and trilateration is the upgrade path.
+
+![Sensors page: anchors pinned on the plan, the self-survey state, and the fitted path-loss exponent with per-anchor receive offsets](/assets/img/racksavant-archilogic/sensors.jpeg)
+
+- **Firmware:** C on ESP-IDF 5.4: promiscuous 802.11 parsing, NimBLE passive scan with a phone-vendor filter, HMAC-SHA256 hashing with a site salt that rotates daily, 2-second aggregation with linear-domain RSSI means, HTTPS uplink with an offline queue, and OTA with rollback. A Python agent does the same job on a Raspberry Pi with a monitor-mode NIC, and a simulator impersonates a whole store.
+- **Cloud:** a Cloudflare Worker with Hono, one `SiteDO` Durable Object per store on a 1-second alarm tick with hibernating WebSockets for the live view, D1 for visits and hourly aggregates, a cron for salt rotation and retention, and a React Pages app that reaches the Worker over a service binding.
+- **Archilogic:** zones come from the Space API's floor GeoJSON, keyed by Archilogic space id, so re-importing a floor never breaks a sensor mapping.
+
+![Dashboard: total visits, median dwell, returning visitors, conversion, visitors per staff-hour, live occupancy per zone, and median dwell by hour per zone](/assets/img/racksavant-archilogic/dashboard.jpeg)
+
+## Tests
+
+The four implementations of the anonymous hash (ESP32 C, the Linux agent, the simulator, the Worker) are checked against shared test vectors. That is what lets one phone's readings from different anchors fuse into one identity. Counts: 160 host-side C checks on the firmware's pure logic (hashing, 802.11 and BLE parsing, aggregation) under ASan/UBSan; 62 pytest tests for the Linux agent and 34 for the simulator; 58 Vitest unit tests for the geometry (MDS, Umeyama, trilateration, Delaunay, barycentric, Kalman, calibration) plus an integration test inside the Workers runtime that goes from signup to analytics. The firmware builds without warnings for ESP32-S3, C3 and C6.
+
+## Results
+
+The firmware team's simulator, run against the cloud team's Worker, was the cross-check. All of its uploads were accepted, and the anchors self-surveyed purely from simulated RTT landed **7–22 cm** from their pinned positions. Calibration recovered a path-loss exponent of 2.47 against a true 2.55. The whole stack is deployed on Cloudflare; the dashboard is invite-only, with a demo workspace running on simulated traffic.
+
+![Validation page: sensor visits against computer-vision entries per Archilogic space, with MAPE, Pearson r, bias and coverage per zone](/assets/img/racksavant-archilogic/validation.jpeg)
+
+The Validation page is built for the phase the post names next: computer-vision counts and POS data posted against the same Archilogic space ids, scored per zone. The numbers in the screenshots come from simulated data. Real CV agreement and KPI results are what the measurement phase is for, and the anchor firmware has not yet been flashed into the store.
+
+<Pdf
+  src="/assets/pdf/racksavant-archilogic-case-study.pdf"
+  title="RackSavant and Archilogic: Spatial Intelligence for Retail Operations"
+  caption="The partner case study, approved by Archilogic and published with the post."
+/>
+
+## Lessons
+
+The useful move was to stop asking for a measurement physics won't give you. RTT to anonymous phones isn't available; RTT between your own anchors is. Spending that on calibration and self-survey turned a weak signal (raw RSSI) into a calibrated one, and turned installation into "pin two anchors and wait five minutes" instead of a tape-measure survey. The other lesson is the 1:1 mapping. The simplest version, one sensor per space, was what made the pilot legible to a store owner and a partner. Building trilateration as an upgrade to that mode, rather than a replacement, kept the system shippable at every step.

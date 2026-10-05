@@ -71,6 +71,9 @@ const hexSizeById: Record<string, HexSize> = {
   // Its predecessor and sibling, the whole-brain dynamics model — four public
   // checkpoints, a paper and a site of its own.
   "sc-wbd": 2,
+  // The RackSavant × Archilogic retail sensing build: dashboard, firmware,
+  // and the launch post. A 2× tile, so the floor-plan heat map reads.
+  "racksavant-archilogic": 2,
   "cookie-baker-3d-printer": 2,
   "chem-0": 2,
   "canvas-engineering": 2,
