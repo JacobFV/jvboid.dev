@@ -12,6 +12,7 @@ resume_brief:
   outcome: "A 52 MB E57 goes from upload to a labelled, viewable scan in **~40 s**; **30/30** end-to-end checks pass; **986/986** Revit pages reconstruct byte-for-byte."
   stack: "typescript, hono, cloudflare pages, durable objects, d1, r2, containers, python, potree, ifcopenshell, claude api, rust"
 hero: { src: /assets/img/movingatoms/heatmap.jpeg, alt: "The rebuilt viewer: a pump-room scan inside an X-ray wall model, coloured by deviation from the model, with the agent's notes on the left" }
+video: https://www.youtube.com/watch?v=ONhvcvdMmFI
 links:
   github: https://github.com/JacobFV/movingatoms-ai
   demo: https://movingatoms-ai.pages.dev
@@ -20,9 +21,11 @@ realizes: []
 critiques: []
 ---
 
-{/* YouTube: once the walkthrough is uploaded, put its URL in `video:` above and replace this comment with
-<Video url="https://www.youtube.com/watch?v=VIDEO_ID" poster="/assets/img/movingatoms/heatmap.jpeg" title="Moving Atoms, rebuilt — launch film" caption="48 seconds. The point cloud is the real pump-room scan, rendered frame by frame; the screens are the live app." />
-*/}
+<Video
+  url="https://www.youtube.com/watch?v=ONhvcvdMmFI"
+  title="Moving Atoms, rebuilt — launch film"
+  caption="48 seconds, narrated. The point cloud is the real pump-room scan, rendered frame by frame; the screens are the live app."
+/>
 
 - A full rebuild of the [movingatoms.ai](https://movingatoms.ai) scan-to-BIM product on my own Cloudflare account, worked out from the outside: the published front end, its source maps and its API's observable behaviour
 - Drop a LiDAR scan and it is decoded, measured, labelled and streamed into a 3D viewer in about 40 seconds; an agent then models walls, slabs and equipment from it and delivers IFC and GLB
