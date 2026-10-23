@@ -1,0 +1,96 @@
+---
+title: Moving Atoms, rebuilt
+date: 2026-10-22
+datePrecision: day
+lane: building
+tags: [work, scan-to-bim, point-clouds, cloudflare, durable-objects, agents, claude, reverse-engineering, revit]
+summary: "A ground-up rebuild of the movingatoms.ai scan-to-BIM platform on my own Cloudflare deployment: resumable uploads into R2, a point-cloud pipeline on two GB10s and Cloudflare Containers, a live model in a Durable Object, a Claude agent that models from the scan, and a clean-room native Revit writer."
+resume_description: "Rebuilt the movingatoms.ai scan-to-BIM platform from its public front end: Hono API on Pages Functions, D1, R2 multipart uploads, a Durable Object live model with undo/redo, a Python point-cloud pipeline (E57/LAS/PLY, labelling, Potree, IFC/GLB) on GB10s and Cloudflare Containers, a Claude Opus 5.5 modelling agent, and a clean-room .rvt page codec (**986/986** pages byte-exact). typescript, hono, cloudflare pages, durable objects, d1, r2, containers, python, ifcopenshell, rust."
+resume_brief:
+  problem: "Scan-to-BIM turns LiDAR scans into Revit models, and the movingatoms.ai product needed to run end to end on infrastructure I control, including the parts nobody publishes, like writing native .rvt."
+  task: "Rebuilt the whole stack on Cloudflare (API, storage, real-time live model, billing), a point-cloud processing worker, a Claude agent that models from the scan, and a clean-room reader/writer for Revit's page format."
+  outcome: "A 52 MB E57 goes from upload to a labelled, viewable scan in **~40 s**; **30/30** end-to-end checks pass; **986/986** Revit pages reconstruct byte-for-byte."
+  stack: "typescript, hono, cloudflare pages, durable objects, d1, r2, containers, python, potree, ifcopenshell, claude api, rust"
+hero: { src: /assets/img/movingatoms/heatmap.jpeg, alt: "The rebuilt viewer: a pump-room scan inside an X-ray wall model, coloured by deviation from the model, with the agent's notes on the left" }
+links:
+  github: https://github.com/JacobFV/movingatoms-ai
+  demo: https://movingatoms-ai.pages.dev
+influences: []
+realizes: []
+critiques: []
+---
+
+{/* YouTube: once the walkthrough is uploaded, put its URL in `video:` above and replace this comment with
+<Video url="https://www.youtube.com/watch?v=VIDEO_ID" poster="/assets/img/movingatoms/heatmap.jpeg" title="Moving Atoms, rebuilt" caption="84 seconds: architecture, upload, pipeline, viewer, the agent, deliverables and the Revit format." />
+*/}
+
+- A full rebuild of the [movingatoms.ai](https://movingatoms.ai) scan-to-BIM product on my own Cloudflare account, worked out from the outside: the published front end, its source maps and its API's observable behaviour
+- Drop a LiDAR scan and it is decoded, measured, labelled and streamed into a 3D viewer in about 40 seconds; an agent then models walls, slabs and equipment from it and delivers IFC and GLB
+- Alongside it, a clean-room investigation of Autodesk's `.rvt` format that now rebuilds every page of six licensed fixtures byte-for-byte and writes native walls without Revit
+
+![The rebuilt product's landing page](/assets/img/movingatoms/landing.jpeg)
+
+## Problem
+
+Scan-to-BIM is the slow, expensive step between a laser scan of a building and a model an architect can work in. Moving Atoms automates it: upload an E57 or LAS file, and an agent turns the point cloud into a Revit-ready model. I wanted that whole product running on infrastructure I control, every feature working: uploads, processing, the viewer, the agent, billing. Nothing on the server side was available to me. All I had was what anyone can see from a browser.
+
+Revit was the hard edge. Customers want native `.rvt`, not IFC. The format is undocumented, and the usual route to writing it is running Revit itself. I wanted to know how far a clean-room approach could get without it.
+
+## Solution
+
+The front end ships with source maps, so I recovered the app's 119 original source files. Its mock-service handlers and type definitions amount to a precise API contract. I rebuilt everything behind that contract:
+
+- **Cloudflare Pages + Functions** serve the site and a Hono API: email and password auth, projects, sharing, uploads, revisions, a credit ledger, Stripe checkout and an admin console.
+- **D1** holds 27 tables. Two **R2** buckets hold private uploads and public media.
+- A **Durable Object** per project (`ProjectRoom`) owns the live model as a merge-patch ops log, with version conflicts, per-author undo/redo and hibernating WebSockets that push every change to the browser.
+- A **Python processing worker** claims jobs over an authenticated API. It runs as a user service on two NVIDIA GB10 boxes and as a **Cloudflare Container** woken by Durable Object alarms.
+- **Atom**, the agent, is Claude Opus 5.5 in a tool loop that reads the scan and edits the live model.
+
+<Video url="/assets/media/movingatoms/upload.mp4" poster="/assets/img/movingatoms/preparing.jpeg" title="Upload to viewable scan" caption="A 52 MB E57, sped up: resumable multipart upload into R2, then decoding, labelling and the first view, while the file facts fill in." />
+
+## How
+
+**Uploads** use the S3 multipart protocol that Uppy speaks. The Worker relays each part into R2 and records ETags in D1, so an interrupted multi-gigabyte upload resumes where it stopped. Assets are served through signed, range-capable links scoped to a project.
+
+**The pipeline** reads E57, LAS/LAZ, PLY, PTS, PTX, PCD, zipped scans and meshes. It measures extent, footprint, point spacing and levels, then labels points geometrically as wall, floor, pipe, equipment, clutter or noise. It builds a Potree octree for streaming and renders six annotated views (plan, labelled plan, two isometrics, two elevations). Downloads and uploads run as parallel ranged streams. As soon as the bounds are known the estimate updates, before processing finishes.
+
+![The labelled scan: floor, walls, pipes and equipment coloured by class, with the agent's scoping questions on the left](/assets/img/movingatoms/labels.jpeg)
+
+**The viewer** is the original app, pointed at my API. It colours the scan by RGB, intensity, elevation, label or deviation, and shows the model as shaded, realistic, X-ray, by class or side by side.
+
+<Video url="/assets/media/movingatoms/viewer.mp4" poster="/assets/img/movingatoms/xray.jpeg" title="The viewer" caption="Orbiting the scan inside the X-ray model, switching to the deviation heatmap, class colours and elevation." />
+
+**Atom** asks scoping questions first: what to include, level of detail, accuracy, deliverable format. Then it works through tools that edit the live model, fit elements to the scan, publish a revision and compute a heatmap. When it can't place something from labels alone, it says so and asks for a rough position. The worker builds the revision as IFC4 with IfcOpenShell and as GLB, and scores every point against the model.
+
+<Video url="/assets/media/movingatoms/atom-build.mp4" poster="/assets/img/movingatoms/revision.jpeg" title="Atom building a model" caption="Answering Atom's questions; it places a slab, four trial walls and two pump boxes, then starts a fit job against the scan." />
+
+![Revision 1 delivered as IFC and GLB, with the model over the scan](/assets/img/movingatoms/revision.jpeg)
+
+**Revit.** An `.rvt` is an OLE compound file whose streams are cut into 65,249-byte pages: a 64,896-byte payload plus a 353-byte trailer that looked like a signature. It isn't one. It is error correction: 255 interleaved Hamming(2047, 2036) codewords with generator x¹¹ + x² + 1, LSB-first, with shortened codes on final pages. Once that was understood, the trailer could be computed from the data alone. The [research notes](https://github.com/JacobFV/movingatoms-ai/blob/main/docs/rvt-research.md) go on from there to object envelopes, save bookkeeping and native element encoders, plus a Rust transport crate. It is all clean-room work: MIT-licensed fixtures only, no disassembly of Autodesk software. I ran that investigation with GPT-6 Codex doing much of the grinding. The platform rebuild was done with Claude Code, with parallel agents on the API, pipeline and site.
+
+![A native model written without Revit and read back from the saved file: named levels, a wall, open panels and a roof surface, with their application properties](/assets/img/movingatoms/rvt-seed-model.jpeg)
+
+## Tests
+
+- **End to end against production:** 30 of 30 checks pass, from account creation through upload, processing, the estimate, an agent turn, model ops and undo/redo. Checkout is exercised separately in Stripe test mode.
+- **Processing:** 23 pytest tests pass (4 skipped), covering the readers, measurement, labelling and model export. The same jobs run on the GB10s and on Cloudflare Containers.
+- **Revit:** the research suite passes 309 tests. All 917 full and 69 final pages of six licensed 2023–2025 fixtures reconstruct byte-for-byte, with separate Python and Rust implementations agreeing. Every written candidate is re-read and checked by an independent reader.
+- **Head to head:** I ran the same scan through the original site and through mine, recording every state change, and characterized its processing, labelling, pricing and agent.
+
+## Results
+
+The rebuild is live at [movingatoms-ai.pages.dev](https://movingatoms-ai.pages.dev). A 52 MB E57 becomes a labelled, streamable scan in about 40 seconds; the original does it in about 19, and my side is bound by home Wi-Fi upstream of the GPUs. The rebuild decodes 1.21 M valid points from that file, where the original keeps 2.88 M by including the points the scanner marked invalid. The whole recorded session, two scoping rounds, a model build and a published IFC + GLB revision with a heatmap, used 0.37 credits of agent time.
+
+![Account page: balance, usage per day and per project](/assets/img/movingatoms/account.jpeg)
+
+On Revit, the writer produces saved files with native walls (100 in one save), named levels and multipart meshes. All 26,425 existing element identities in the fixture survive, and an independent reader verifies each result. What is **not** done: no generated file has yet been opened in Revit or Autodesk's viewer. Until it has, native `.rvt` remains an experimental export behind an explicit flag, and customer builds default to IFC.
+
+<Video url="/assets/media/movingatoms/publish.mp4" poster="/assets/img/movingatoms/heatmap.jpeg" title="Publishing a revision" caption="Atom publishes revision 1 and runs the deviation heatmap against the scan." />
+
+## Lessons
+
+- **The front end is a spec.** Mock handlers and TypeScript types told me more about the API than any amount of probing the live service did.
+- **Don't trust a scheduler you haven't watched fire.** The Worker cron never ran once. Waking processors from a Durable Object alarm when a job is queued is more reliable, and it is cheaper too.
+- **Measure the pipe before the code.** After parallelising downloads and uploads, the bottleneck was a 9 MB/s Wi-Fi link, not Python.
+- **"Signature" was a guess, and it nearly ended the work.** My first pass called the trailer a no-go. Treating the trailer as unknown structure rather than crypto is what cracked it: once you look for a linear code, the bytes say which one.
+- **Be loud about evidence boundaries.** Every RVT result records exactly what was verified and by what, because "it re-reads in our reader" is not "Revit opens it".
