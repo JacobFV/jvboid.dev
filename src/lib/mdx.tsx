@@ -4,6 +4,10 @@
 import * as runtime from "react/jsx-runtime";
 import type { ComponentType } from "react";
 import { readerComponents } from "@/components/reader/components";
+import {
+  HumanoidExperiment,
+  HumanoidStudy,
+} from "@/components/research/self-aware-humanoid/HumanoidStudy";
 
 // MDX components have arbitrary prop shapes (Sidetrack takes `to`,
 // Figure takes `caption`, etc.). The MDX runtime dispatches by name, so
@@ -19,6 +23,8 @@ const sharedComponents: MDXComponents = {
   // Typography map; route-specific components (Scene, Figure, Sidetrack
   // for /loop) are merged in by the page that renders them.
   ...readerComponents,
+  HumanoidStudy,
+  HumanoidExperiment,
 };
 
 function compile(code: string): ComponentType<{

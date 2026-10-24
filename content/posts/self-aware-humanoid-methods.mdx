@@ -1,0 +1,43 @@
+---
+title: "Embodied metacognition: methods and stationary control"
+date: 2026-07-30
+lane: research
+tags: [robotics, machine learning, methods]
+summary: "The architecture, training contract, utility function, causal ablations, seed-selection rule, and stationary null condition for the embodied self-modeling benchmark."
+unlisted: true
+---
+
+This record defines the experimental contract behind [the robot that predicts its own failure](/posts/self-aware-humanoid). The stationary condition is deliberately uneventful: no sensor, actuator, memory, reward, or learning-rule fault is introduced. A self-model that helps only by consuming additional capacity should have no advantage here.
+
+<HumanoidExperiment scenario="stationary" />
+
+## Architecture matching
+
+G+ and SA each contain 9,307 trainable parameters. Their observation encoder, 36-unit GRU, auxiliary-head width, low-level gait and navigation controller, physical body, meta-action set, training episodes, optimizer, and evaluation seeds are matched.
+
+G+ predicts eight ordinary future external features. SA predicts eight future cognitive variables: left and right actuator gain, sensor reliability, memory integrity, update effectiveness, reward alignment, future control error, and fault activity. The semantic difference is in the auxiliary target and the causal interpretation of that prediction—not additional width.
+
+## Evaluation and utility
+
+Every scenario contains 20 paired evaluations: five independently trained model seeds and four matched environment seeds. Utility is
+
+$$
+V = 10\mathbf 1[\text{complete}]
+-0.18T
+-0.65C
+-0.14I
+-0.025E
+-0.22D,
+$$
+
+where $T$ is completion time, $C$ collisions, $I$ diagnostic interventions, $E$ control energy, and $D$ final target distance.
+
+The stationary SA-minus-G+ contrast is $-0.002$, with a 95% bootstrap interval of $[-0.090, 0.081]$. This is the expected null: explicit self-modeling is not intrinsically useful when the agent's own cognition remains stable.
+
+## Causal ablation
+
+SA gate-off is the same trained policy with self-model-guided intervention selection disabled. This is stricter than training a smaller model, but it is not sufficient by itself: disabling a module can create an internal distribution shift. The benchmark therefore reports both matched G+ comparisons and gate-off contrasts.
+
+## Limits
+
+The body is kinematic-dynamic rather than a rigid-body contact model. Internal telemetry is controlled and partially privileged. The selector over SA's learned self-state is first-order and hand-structured. Repair supervision is oracle-labeled. These choices make causal diagnosis measurable, but they also narrow the conclusion.

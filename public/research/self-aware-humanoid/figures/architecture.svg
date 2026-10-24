@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#7f8b9b"/></marker><filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".35"/></filter></defs>
+<rect width="1600" height="900" fill="#080a0e"/>
+<text x="72" y="76" font-family="Inter" font-size="18" fill="#8f9baa" letter-spacing="2">MATCHED COMPUTATIONAL GRAPH</text>
+<text x="72" y="132" font-family="Inter" font-size="42" font-weight="700" fill="#eef2f6">The same body and recurrent core; a different predictive target</text>
+<text x="72" y="176" font-family="Inter" font-size="19" fill="#a7b1be">Both policies receive identical observations and telemetry. SA spends its matched auxiliary head on future cognitive state.</text>
+<g filter="url(#shadow)"><rect x="72" y="260" width="260" height="94" rx="16" fill="#11161d" stroke="#586577" stroke-width="2"/><text x="94" y="294" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">3D humanoid + world</text><text x="94" y="324" font-family="Inter" font-size="14" fill="#929eac">latent state, sensors, rewards</text></g>
+<g filter="url(#shadow)"><rect x="390" y="260" width="260" height="94" rx="16" fill="#11161d" stroke="#586577" stroke-width="2"/><text x="412" y="294" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Shared observation encoder</text><text x="412" y="324" font-family="Inter" font-size="14" fill="#929eac">same 44-dimensional input</text></g>
+<g filter="url(#shadow)"><rect x="708" y="260" width="260" height="94" rx="16" fill="#11161d" stroke="#586577" stroke-width="2"/><text x="730" y="294" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">GRU belief state</text><text x="730" y="324" font-family="Inter" font-size="14" fill="#929eac">36 recurrent units</text></g>
+<line x1="332" y1="307" x2="390" y2="307" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<line x1="650" y1="307" x2="708" y2="307" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<text x="72" y="430" font-family="Inter" font-size="17" fill="#52c7e2" letter-spacing="1">G+ / GENERIC RECURRENT LEARNER</text>
+<text x="824" y="430" font-family="Inter" font-size="17" fill="#f1b74c" letter-spacing="1">SA / PREDICTIVE SELF-MODEL</text>
+<g filter="url(#shadow)"><rect x="72" y="474" width="270" height="106" rx="16" fill="#11161d" stroke="#52c7e2" stroke-width="2"/><text x="94" y="508" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Matched auxiliary head</text><text x="94" y="538" font-family="Inter" font-size="14" fill="#929eac">predicts next external features</text></g>
+<g filter="url(#shadow)"><rect x="390" y="474" width="270" height="106" rx="16" fill="#11161d" stroke="#52c7e2" stroke-width="2"/><text x="412" y="508" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Direct action head</text><text x="412" y="538" font-family="Inter" font-size="14" fill="#929eac">π(a | recurrent state)</text></g>
+<g filter="url(#shadow)"><rect x="230" y="662" width="270" height="106" rx="16" fill="#11161d" stroke="#52c7e2" stroke-width="2"/><text x="252" y="696" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Diagnostic action</text><text x="252" y="726" font-family="Inter" font-size="14" fill="#929eac">continue / probe / sweep / refresh</text></g>
+<line x1="838" y1="354" x2="207" y2="474" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<line x1="838" y1="354" x2="525" y2="474" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<line x1="525" y1="580" x2="365" y2="662" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<g filter="url(#shadow)"><rect x="824" y="474" width="320" height="106" rx="16" fill="#11161d" stroke="#f1b74c" stroke-width="2"/><text x="846" y="508" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Explicit self-transition head</text><text x="846" y="538" font-family="Inter" font-size="14" fill="#929eac">q(cₜ₊₁, eₜ₊₁ | hₜ, telemetry)</text></g>
+<g filter="url(#shadow)"><rect x="1192" y="474" width="336" height="106" rx="16" fill="#11161d" stroke="#f1b74c" stroke-width="2"/><text x="1214" y="508" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">First-order meta-controller</text><text x="1214" y="538" font-family="Inter" font-size="14" fill="#929eac">selects tests from predicted failure state</text></g>
+<g filter="url(#shadow)"><rect x="1010" y="662" width="330" height="106" rx="16" fill="#11161d" stroke="#f1b74c" stroke-width="2"/><text x="1032" y="696" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Diagnostic action</text><text x="1032" y="726" font-family="Inter" font-size="14" fill="#929eac">continue / probe / sweep / refresh</text></g>
+<line x1="838" y1="354" x2="984" y2="474" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<line x1="1144" y1="527" x2="1192" y2="527" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<line x1="1360" y1="580" x2="1175" y2="662" stroke="#7f8b9b" stroke-width="2"  marker-end="url(#arrow)"/>
+<g filter="url(#shadow)"><rect x="72" y="800" width="510" height="62" rx="16" fill="#11161d" stroke="#586577" stroke-width="2"/><text x="94" y="834" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">External loss</text><text x="94" y="864" font-family="Inter" font-size="14" fill="#929eac">next observation / task return</text></g>
+<g filter="url(#shadow)"><rect x="824" y="800" width="510" height="62" rx="16" fill="#11161d" stroke="#f1b74c" stroke-width="2"/><text x="846" y="834" font-family="Inter" font-size="18" font-weight="600" fill="#eef2f6">Self-model loss</text><text x="846" y="864" font-family="Inter" font-size="14" fill="#929eac">future actuator, sensor, memory, update, error</text></g>
+<line x1="342" y1="800" x2="207" y2="580" stroke="#7f8b9b" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow)"/>
+<line x1="1079" y1="800" x2="984" y2="580" stroke="#f1b74c" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow)"/>
+<text x="1476" y="842" font-family="DejaVu Sans Mono" font-size="13" fill="#7e8998" text-anchor="end">9,307 parameters each</text>
+</svg>

@@ -1,0 +1,24 @@
+---
+title: "Actuator drift: a self-test without a self-awareness advantage"
+date: 2026-07-30
+lane: research
+tags: [robotics, metacognition, adaptation]
+summary: "The humanoid detects a hidden change in leg gain and probes its own actuator, yet ordinary feedback adaptation is already sufficient and explicit metacognition adds no reliable value."
+unlisted: true
+---
+
+At 3.2 seconds, the effective gain of one leg changes without an external fault label. The robot can continue, excite the actuator with a diagnostic gait, or reset its adaptation state.
+
+<HumanoidExperiment scenario="actuator_drift" />
+
+## What the behavior means
+
+The motor probe is a legitimate metacognitive experiment. It deliberately changes the body's input so the controller can estimate the mapping between commanded and realized motion. The resulting update reduces uncertainty about the robot's own actuator dynamics rather than about an external object.
+
+But a meaningful self-test is not automatically valuable. G+ and even SA gate-off can compensate through ordinary closed-loop feedback. Across 20 paired evaluations, SA's mean utility difference is $-0.085$ with interval $[-0.207, 0.039]$.
+
+The result should be read as a boundary condition: explicit self-modeling is unnecessary when the base controller already observes enough error, adapts quickly, and faces no catastrophic consequence for transient imbalance.
+
+## Next experiment
+
+The diagnostic should be repeated with fall dynamics, payload shifts, asymmetric friction, irreversible damage, and a narrow stability envelope. Those conditions increase the value of predicting future failure *before* ordinary feedback experiences it.

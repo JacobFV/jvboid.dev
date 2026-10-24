@@ -1,0 +1,44 @@
+{
+  "actuator_drift": {
+    "model_seed": 3,
+    "seed": 301001,
+    "severity": 0.7732061512705085,
+    "SA_minus_Gplus": -0.004735774172358376,
+    "median_contrast": -0.015863889593823455
+  },
+  "composite": {
+    "model_seed": 3,
+    "seed": 305001,
+    "severity": 0.8067241963251477,
+    "SA_minus_Gplus": 0.06675769082171978,
+    "median_contrast": 0.06338950268536392
+  },
+  "memory_lesion": {
+    "model_seed": 1,
+    "seed": 103002,
+    "severity": 0.9317253578171704,
+    "SA_minus_Gplus": -0.3962905319903749,
+    "median_contrast": -0.3968213574902153
+  },
+  "sensor_corruption": {
+    "model_seed": 1,
+    "seed": 102002,
+    "severity": 1.0909514508616949,
+    "SA_minus_Gplus": 0.05502373408310923,
+    "median_contrast": 0.05542520827143038
+  },
+  "stationary": {
+    "model_seed": 0,
+    "seed": 0,
+    "severity": 0.0,
+    "SA_minus_Gplus": 0.0,
+    "median_contrast": 0.0
+  },
+  "update_mutation": {
+    "model_seed": 0,
+    "seed": 4001,
+    "severity": 1.097151768069442,
+    "SA_minus_Gplus": -0.2820401047213199,
+    "median_contrast": -0.29622545812507717
+  }
+}
