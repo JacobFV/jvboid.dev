@@ -1,0 +1,147 @@
+name: end-to-end morphology self-model study
+
+on:
+  push:
+    branches:
+      - agent/end-to-end-morphology-self-model-study
+    paths:
+      - ".github/workflows/end-to-end-morphology-study.yml"
+      - "experiments/end_to_end_morphology/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/end-to-end-morphology-study.yml"
+      - "experiments/end_to_end_morphology/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: end-to-end-morphology-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  execute:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      MUJOCO_GL: osmesa
+      PYOPENGL_PLATFORM: osmesa
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore and verify the exact executable study source
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "5fd25a129b3dc859733c0f89fdbfd07f3470080cb2bb260ae1b7dc1c53e66567  experiments/end_to_end_morphology/source.000.b64" | sha256sum --check --strict
+          echo "973035fbd8822ccfec733714090d17a1e8c6e834fde2b5fa7f824a6ad152777f  experiments/end_to_end_morphology/source.001.b64" | sha256sum --check --strict
+          cat experiments/end_to_end_morphology/source.*.b64 > /tmp/full_study.py.gz.b64
+          echo "1b952e7390f4a3ab038e2c9c33af5d420a172ea24bcd4c1a9cf9246c5ea30895  /tmp/full_study.py.gz.b64" | sha256sum --check --strict
+          base64 --decode /tmp/full_study.py.gz.b64 > /tmp/full_study.py.gz
+          echo "0319331eca66a8a2195caca58832e91773721b5361b60782a9addcb73018f01c  /tmp/full_study.py.gz" | sha256sum --check --strict
+          gzip --test /tmp/full_study.py.gz
+          gzip --decompress --stdout /tmp/full_study.py.gz > experiments/end_to_end_morphology/full_study.py
+          echo "2a6b30882ac17735efedc06bc60fd1428820abe582be656c60c26215339c1d6a  experiments/end_to_end_morphology/full_study.py" | sha256sum --check --strict
+
+      - name: Install rigid-body simulation, learning, and video runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libosmesa6-dev libgl1 ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+          python -m pip install "mujoco>=3.2,<4" numpy scipy pillow imageio imageio-ffmpeg matplotlib
+
+      - name: Compile source and validate every morphology expert
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile experiments/end_to_end_morphology/full_study.py
+          python experiments/end_to_end_morphology/full_study.py --smoke-only
+
+      - name: Train the generic baselines, augment both branches, evaluate, and render
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/end_to_end_morphology_results /tmp/end-to-end-morphology-self-model-study.zip
+          python experiments/end_to_end_morphology/full_study.py \
+            --output /tmp/end_to_end_morphology_results \
+            --archive /tmp/end-to-end-morphology-self-model-study.zip
+
+      - name: Verify the complete export set
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s /tmp/end-to-end-morphology-self-model-study.zip
+          test "$(unzip -Z1 /tmp/end-to-end-morphology-self-model-study.zip | grep -E 'videos/.*\.mp4$' | wc -l)" -eq 19
+          test "$(unzip -Z1 /tmp/end-to-end-morphology-self-model-study.zip | grep -E 'models/.*\.pt$' | wc -l)" -eq 18
+          test "$(find /tmp/end_to_end_morphology_results/videos -maxdepth 1 -name '*.mp4' -type f | wc -l)" -eq 19
+          test "$(find /tmp/end_to_end_morphology_results/models -maxdepth 1 -name '*.pt' -type f | wc -l)" -eq 18
+          test -s /tmp/end_to_end_morphology_results/data/episode_results.csv
+          test -s /tmp/end_to_end_morphology_results/data/summary.csv
+          test -s /tmp/end_to_end_morphology_results/data/paired_comparisons.csv
+          test -s /tmp/end_to_end_morphology_results/data/generic_gate.csv
+          test -s /tmp/end_to_end_morphology_results/data/video_validation.json
+          test -s /tmp/end_to_end_morphology_results/traces/representative_traces.npz
+          test -s /tmp/end_to_end_morphology_results/figures/video_contact_sheet.png
+          test -s /tmp/end_to_end_morphology_results/figures/success_rates.png
+          test -s /tmp/end_to_end_morphology_results/study_manifest.json
+          test -s /tmp/end_to_end_morphology_results/artifact_manifest.json
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          root = Path('/tmp/end_to_end_morphology_results')
+          manifest = json.loads((root / 'artifact_manifest.json').read_text())
+          for row in manifest:
+              path = root / row['path']
+              assert path.is_file(), path
+              assert path.stat().st_size == row['bytes'], path
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == row['sha256'], path
+          validation = json.loads((root / 'data' / 'video_validation.json').read_text())
+          assert len(validation) == 19
+          assert all(row['codec'] == 'h264' for row in validation)
+          assert all(row['width'] == 1080 and row['height'] == 480 for row in validation)
+          print('verified manifest entries', len(manifest), 'videos', len(validation))
+          PY
+          find /tmp/end_to_end_morphology_results -maxdepth 3 -type f -printf '%s %p\n' | sort -n
+
+      - name: Upload every exported artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: end-to-end-morphology-self-model-study
+          path: |
+            /tmp/end_to_end_morphology_results
+            /tmp/end-to-end-morphology-self-model-study.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+
+      - name: Publish every artifact on the study branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination=public/research/end-to-end-morphology
+          rm -rf "$destination"
+          mkdir -p "$destination"
+          cp -a /tmp/end_to_end_morphology_results/. "$destination/"
+          cp /tmp/end-to-end-morphology-self-model-study.zip "$destination/end-to-end-morphology-self-model-study.zip"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$destination"
+          if ! git diff --cached --quiet; then
+            git commit -m "publish complete end-to-end morphology study artifacts"
+            git push origin HEAD:agent/end-to-end-morphology-self-model-study
+          fi
