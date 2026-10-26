@@ -1,0 +1,107 @@
+---
+title: LabRat
+date: 2026-10-11
+datePrecision: day
+lane: building
+tags: [robotics, agents, lab-automation, digital-twin, hardware, hackathon]
+summary: "A voice-operated desk-lab robot that dry-runs every experiment on a digital twin before it touches a liquid, runs the approved plate on a 3018 CNC with a pipette head I designed, photographs the result and refits its own model. 2nd place at Cerebral Valley's Harness Engineering & Model Wrangling Hackathon."
+resume_description: "self-improving lab agent (**2nd place**, Cerebral Valley Harness Engineering hackathon): a 3018 CNC with a servo pipette I designed, two SO-101 arms and a phone as face and camera; every protocol is simulated on a three.js twin and approved before it runs, and the camera's readings refit the simulator. claude, cloudflare durable objects, d1, python, three.js, build123d, esp32."
+resume_brief:
+  problem: "Lab automation is either rigid scripted liquid handling that never learns, or an LLM driving hardware with nothing between its guess and the robot."
+  task: "Built a desk lab where Claude designs a plate, a digital twin checks and predicts it, a human approves, a CNC pipette runs it and the phone camera's readings refit the simulator."
+  outcome: "**2nd place** of the hackathon; in a scripted test one observation cut the twin's colour-prediction error from 39.2 to **12.2**."
+  stack: "claude, cloudflare workers, durable objects, d1, python, three.js, build123d, esp32, grbl, so-101"
+hero:
+  src: "/assets/media/labrat/bench_photo.jpg"
+  alt: "The LabRat bench: a 3018 CNC with a pink tip rack and well plates, an SO-101 arm at each front corner, the phone with animated eyes front-centre and the laptop on the right"
+threadImages:
+  - src: "/assets/media/labrat/bench_photo.jpg"
+    alt: "The real LabRat bench at the hackathon"
+  - src: "/assets/media/labrat/twin_wide.jpg"
+    alt: "The three.js digital twin of the bench"
+video: "/assets/media/labrat/demo.mp4"
+links:
+  github: https://github.com/JacobFV/labrat
+influences: [chem-0]
+realizes: []
+critiques: []
+---
+
+{/* Placeholder: the hackathon cut, re-encoded to 720p. A better demo video is coming;
+    swap the url here and `video:` in the frontmatter, then delete demo.mp4 / demo-poster.jpg. */}
+<Video
+  url="/assets/media/labrat/demo.mp4"
+  title="LabRat demo"
+  poster="/assets/media/labrat/demo-poster.jpg"
+  caption="The hackathon demo: the bench, the voice request, sixteen protocols simulated in the twin, the approval gate and the self-refit."
+/>
+
+- A desk lab you talk to: a 3018 CNC carrying a pipette, an SO-101 arm on each side, and a phone that is its face, eyes, ears and voice
+- Every protocol is simulated on a 3D digital twin and approved by a person before anything moves. After the real run the camera reads the result and the simulator refits itself, keeping a new model only if it predicts better
+- Built solo in a day at the Harness Engineering & Model Wrangling Hackathon (Cerebral Valley, San Francisco, October 11, 2026) for the "Recursive Harnessing" track, where it took **2nd place**. I designed the servo pipette that morning
+- Rebuilt in the week after: one Cloudflare Durable Object instead of the hackathon's sponsor stack, a geared syringe tool head with a microscope and a liquid-level probe, a motorised phone stand, and experiments reshaped around the plate
+
+![The real LabRat bench at the hackathon: the 3018 CNC with a pink tip rack and well plates, the servo pipette on the spindle mount, an SO-101 arm at each front corner, the phone with animated eyes front-centre and the laptop on the right](/assets/media/labrat/bench_photo.jpg)
+
+## Problem
+
+Lab automation tends to come in two kinds. Scripted liquid handlers do exactly what they are told and never learn from what happened. LLM agents with hardware access will try anything, with nothing between a hallucinated step and a robot. A scientist wants something in between: say what you want ("the most orange well from red and yellow"), and get a system that plans, checks itself before acting, waits for permission, and gets measurably better with each run. The hackathon's "Recursive Harnessing" track asked for a harness that improves itself. A physical bench is a demanding place to try that, because the feedback comes from a camera looking at liquid, not from a test suite.
+
+## Solution
+
+LabRat wraps the robot in a loop it cannot skip:
+
+1. **Ask** by voice through the phone, by chat in the laptop console, or from a Python script.
+2. **Design.** Claude writes the protocol: how many µL of each stock go into each well.
+3. **Simulate.** The digital twin runs it: CNC motion and timing, pipette volumes, tip use, reach and overflow checks, and a dye-mixing model that predicts each well's colour. A protocol that fails a check cannot be queued.
+4. **Approve.** A person approves the real run, by click or by voice.
+5. **Execute** on the hardware through a USB bridge with its own soft limits, a G-code whitelist and a watchdog.
+6. **Observe.** The head parks, the phone photographs the plate, and each well's measured colour lands next to its prediction.
+7. **Refit.** The colour model refits from the readings and is adopted only if it predicts *all* readings so far better than the old one. Every version is kept.
+
+![The hackathon twin simulating many protocol variants on the deck: tip rack, 96-well plate filling with orange and yellow mixes, dye reservoirs, and the pipette on the CNC gantry](/assets/media/labrat/twin_simmany.jpg)
+
+![The twin replaying the chosen variant from the front, with the servo pipette over the plate and the two columns of mixed wells](/assets/media/labrat/twin_simreal.jpg)
+
+## How
+
+**At the hackathon.** A FastAPI server held the agent (Claude tool use with twelve tools), the simulator, the learning loop and the vision sampler. The phone, the console, a terminal CLI and the USB bridge all connected to it over WebSockets. The memory was typed (semantic, episodic, procedural, taxonomic) and lived in MongoDB Atlas with vector search. ElevenLabs gave it a voice, Raindrop traced every chat turn, tool call, simulation and refit, and Modelence ran a mission-control event feed. Every integration fell back to a local mock when its key was missing, so the demo could never block on a service.
+
+The pipette was a servo on a cam, driven by a PCA9685 on an ESP32 board, in a mount that replaced the 3018's spindle. I designed it in build123d that morning.
+
+![CAD of the hackathon pipette on the 3018: a servo-driven cam presses a pipette plunger, in an orange mount clamped beside the spindle](/assets/media/labrat/cnc3018_spindle_pipette.jpg)
+
+Vision reads the plate through a camera-to-plate homography from four clicked wells, white-balanced against an empty well, with Claude vision as the fallback. The two SO-101 arms were calibrated and could be teleoperated (the right arm, moved by hand, drives the left at 30 Hz with trajectory recording).
+
+**After the hackathon.** I cut the stack down to what the lab needs. The coordinator is now one Cloudflare Worker with a single Durable Object and a D1 database. It holds the WebSocket hub, the REST API, experiments, the simulator, the agent, the colour model and a full-text lab notebook. Anthropic is the only outside service, and voice runs on the phone. Everything dials out to the Durable Object, so nothing needs an inbound port. A generic ESP32 + PCA9685 servo hub speaks JSON lines over USB or Bluetooth and knows nothing about pipettes. The cloud owns what each channel means.
+
+![The current digital twin: the 3018 with the new teal tool head, a beaker matrix of coloured vials, the phone on its stand between the two SO-101 arms, and the laptop](/assets/media/labrat/twin_wide.jpg)
+
+**An experiment is one plate.** You give the µL of water, red, yellow and blue for each beaker. LabRat turns that into robot steps (one tip per stock, dispense from above, mix with a fresh tip), dry-runs it, and predicts every beaker's colour. After the run each beaker has a measured colour next to the prediction made at the time, and the whole table exports to CSV. The same flow works from the console, from the agent, or from `from labrat_cli import Lab`.
+
+![The twin's deck view: the USB microscope and tool head over the printed beaker matrix, with coloured stocks in the back column and the tip rack in front](/assets/media/labrat/twin_deck.jpg)
+
+**The tool head.** The cam pipette became a parametric build123d design that drops into the 3018's 42 mm motor holder. A 12 mL syringe with a 200 µL tip is driven by an FS90R continuous servo through a 12.01:1 printed gear train, about 0.5 mm of plunger per servo radian. The rack slides on its own back, on a V-ridge right behind the gear mesh, so there is no purchased guide. A tool rail carries a USB microscope and a capacitive liquid-level probe that a 9 g servo swings down to probe and up out of the way to pipette. A microswitch reports the plunger's bottom stop. Every printed part prints without supports, and the build checks that. These are Cycles renders of the design, not photos.
+
+![Cycles render of the tool head on the 3018: teal body, white printed gears, the syringe with a yellow tip, the USB microscope and the orange probe arm over the beaker matrix](/assets/media/labrat/tool-head-head_on_machine.jpg)
+
+![Close render of the head's underside: the microscope, the orange probe arm deployed with its probe wire, and the 200 µL tip](/assets/media/labrat/tool-head-studio_probe.jpg)
+
+**The phone stand.** The phone's screen is the face and its rear camera is the eye. A printed pan/tilt stand on two 9 g servos tilts it forward to photograph the deck and brings it up to face the operator while it talks.
+
+![Render of the phone stand: a weighted base, an aluminium post, and a white pan/tilt yoke holding the phone in portrait](/assets/media/labrat/phone-stand-studio_operator_view.jpg)
+
+## Tests
+
+The hackathon server had pytest suites for the simulator, an end-to-end run against a fake bridge and UI, and the vision sampler (synthetic plates, homography, white balance, automatic observation into the refit). The current repo tests the cloud (vitest plus typecheck), the bridge, the CLI, the phone app and the servo-hub firmware on the host. A generator checks the wiring diagram's pin map against the firmware. The tool head's build runs 28 design checks, including support-free printing and clearance over a 401-pose motion sweep. CI runs all of it.
+
+## Results
+
+- **2nd place** at the Harness Engineering & Model Wrangling Hackathon.
+- **The refit works on its own numbers.** In a scripted run of three observations for "orange", the first observation cut mean RGB prediction error from 39.2 to 12.2. The new parameters were accepted, twelve past variants were re-scored and the protocol was promoted to procedural memory. The next two runs improved less (25.0 to 24.3, 31.0 to 26.6). These came from scripted observations, not from a series of physical runs.
+- **Live at the deadline:** Claude, MongoDB Atlas, Raindrop, ElevenLabs and Modelence all answered. The arms were wired, calibrated and teleoperated. Voyage embeddings ran on a hashed fallback because the key never arrived, and the AWS deploy script was written but not deployed.
+- **Afterwards:** the rebuilt stack, the tool head, the beaker deck and the phone stand are designed, checked, and sliced onto five Ender-3 plates (about 45 hours and 0.61 kg of filament).
+
+## Lessons
+
+The thing that made LabRat feel like a harness rather than a demo was the order of operations: simulate, then ask, then act, then measure, then change only what measurably helps. Each step is a gate, and every gate is code, not a prompt. The second lesson came the week after. A hackathon rewards integrating every sponsor, and I did, with graceful fallbacks so none of them could stall the demo. But seven external services is a lot of surface for a robot on a desk. Rebuilding around one Durable Object, with Anthropic as the only dependency, made the system easier to reason about and cost nothing the lab needed. Calling an experiment "one plate" did the same for the interface: a scientist thinks in plates and beakers, not variants and scores. The honest gap is the physical loop. The refit numbers come from scripted observations, and the next real milestone is a series of plates run and read on the bench.
