@@ -1,0 +1,111 @@
+---
+title: My Little Brain
+date: 2026-10-25
+datePrecision: day
+lane: building
+tags: [eeg, neuroscience, agents, quantum, gemini, hackathon]
+summary: "A chat agent with a brain's personality that knows you through your notes and live OpenBCI EEG, and runs neuroscience experiments on you: it fits a neural-mass model to your signal by designing QAOA circuits across quantum simulators and a thermodynamic sampler."
+resume_description: "hackathon build with Hanah Rahman and Rohit Korrapolu (led engineering): chat agent that reads live OpenBCI EEG in the browser and fits a Wilson–Cowan model by designing its own QAOA circuits; recovered hidden synthetic parameters in **48 of 256** simulations. python, fastapi, gemini, qiskit, three.js, web serial, cloud run."
+resume_brief:
+  problem: "Inferring brain-model parameters from EEG is a nonlinear inverse problem, and consumer EEG normally needs a companion app before an agent can touch it."
+  task: "Led engineering on a Gemini agent that reads OpenBCI EEG over Web Serial and casts the fit as a 256-hypothesis QUBO for QAOA across Aer, IonQ, IBM, qBraid and THRML."
+  outcome: "Recovered hidden synthetic brain parameters in **48 of 256** simulations; its self-written circuit fell from 106 gates to **42** (simulators only)."
+  stack: "python, fastapi, gemini, qiskit, ionq, qbraid, thrml, three.js, web serial, cloud run, firestore"
+hero:
+  src: "/assets/media/my-little-brain/deck-slide-1.jpg"
+  alt: "My Little Brain title slide: a translucent 3D brain with eyeballs and a spinal cord over a soft rainbow gradient"
+threadImages:
+  - src: "/assets/media/my-little-brain/deck-slide-1.jpg"
+    alt: "My Little Brain title slide with the 3D brain"
+  - src: "/assets/media/my-little-brain/app-landscape.jpg"
+    alt: "The app with the 256-hypothesis landscape in the analysis panel"
+video: "https://www.youtube.com/watch?v=c7H80NzR3Tg"
+links:
+  github: https://github.com/JacobFV/my-little-brain
+  demo: https://my-little-brain-563778990179.us-central1.run.app
+influences: [eeg-acquisition-chain, brain-model]
+realizes: []
+critiques: []
+---
+
+<Video
+  url="https://www.youtube.com/watch?v=c7H80NzR3Tg"
+  title="My Little Brain demo"
+  poster="/assets/media/my-little-brain/deck-slide-1.jpg"
+  caption="Demo: chatting with your brain, live EEG, and the agent designing and dispatching its own circuits."
+/>
+
+- A chat agent with a brain's personality ("your brain") that knows you from your uploaded notes and your live EEG, and runs neuroscience research on you
+- Reads an OpenBCI Cyton straight into Chrome over the Web Serial API, with no companion app, and fits a Wilson–Cowan neural-mass model to the signal
+- Treats the fit as a 256-hypothesis search that the agent hands to quantum and thermodynamic backends by writing and revising its own QAOA circuits
+- Built in about a day at the Gemini 4 Argon SF Hackathon (Cerebral Valley), October 2026, with Hanah Rahman (Berkeley Lab, quantum applications) and Rohit Korrapolu (applied AI researcher, i14labs). I led engineering: full stack, the agent, the quantum backends, the GCP deploy, and the EEG integration
+
+## Problem
+
+Getting EEG from a headset into anything an agent can reason about usually takes a vendor app, a recording, an export, and a notebook. The question you actually want answered, *what is my brain doing*, is an inverse problem. A neural-mass model can generate EEG-like spectra from a few physiological parameters. Going the other way, from the spectrum you measured back to the parameters, is nonlinear and has no closed form, so you end up searching. We wanted to know whether a language agent could run that whole loop: look at the signal, pose the model, choose a search method, run it, and check the answer, all inside a chat.
+
+## Solution
+
+My Little Brain is a web app where you talk to your own brain. A real 3D brain (fsaverage cortex and ENIGMA subcortex template anatomy, rendered in three.js) sits in the middle of the screen with a pair of eyeballs. It blinks and reacts while it talks. Behind it is a Gemini 4 Argon agent with tools. It can read your notes and your live EEG, render spectrograms and look at them, build experiments, design and dispatch search jobs, read the results, and remember what it found.
+
+![Annotated app screenshot: "It knows you — your notes, your live EEG, your questions." The left panel holds experiments and jobs, the chat sits under the 3D brain, and quantum circuit results land in the right-hand analysis panel](/assets/media/my-little-brain/deck-slide-2.jpg)
+
+![The app mid-conversation: the agent's tool calls (eeg_overview, check_jobs, look_at_spectrograms on CHB-MIT chb01_03, job_result, run_quantum_search) stack under the brain while an Aer noisy-simulator job runs](/assets/media/my-little-brain/app-reply.jpg)
+
+## How
+
+**EEG in the browser.** An OpenBCI Cyton (8 channels at 250 Hz) connects to Chrome over the Web Serial API. The browser does all of the work: it parses the 33-byte packets, filters the signal, computes band powers, and detects blinks and alpha. For seizure data the agent also works from CHB-MIT scalp recordings.
+
+**From EEG to a quantum state.** We don't encode raw EEG into qubits. We encode *hypotheses*. A Wilson–Cowan neural-mass model has four parameters: drive, inhibition, excitation, and the synaptic time constant τ. Each one is quantized to 2 bits, which gives 8 qubits and 256 candidate "brains". The EEG is reduced to 10 relative band powers. A nonlinear mismatch between each candidate's simulated spectrum and the measured one is the cost. We fit a QUBO surrogate to that cost (ridge/BOCS-style, inside a trust region) and map it exactly to an Ising Hamiltonian. QAOA or thermodynamic sampling then concentrates probability on the low-cost candidates. Finally the top samples are re-simulated through the real nonlinear model, so a backend only proposes answers and the forward simulation decides which ones hold up.
+
+![Slide: "EEG → quantum state." 8 channels × 250 Hz condensed into 10 band powers; 4 model dials × 2 qubits give a 2⁸-dimensional Hilbert space; the EEG mismatch becomes the circuit's energy; measure, re-simulate, verify. On the right, the app's grid of all 256 hypotheses scored against the EEG](/assets/media/my-little-brain/deck-slide-4.jpg)
+
+![The app's hypothesis landscape: observed versus simulated band powers above a 16×16 grid of all 256 parameter combinations, coloured by exact nonlinear loss, with IonQ trapped-ion noise-model samples overlaid](/assets/media/my-little-brain/app-landscape.jpg)
+
+The deck explains the intuition with Grover search, computed exactly for N = 256. A classical search checks one brain at a time. Amplitude amplification makes the right one louder. Our QAOA uses the same interference idea heuristically, and we don't claim a speed-up at 256 states.
+
+![Slide: "Amplify, don't scan." Left, a classical sequential search has checked 99 of 256 cells, O(N). Right, Grover amplitudes after 8 of 12 rounds put 76% probability on the right answer, O(√N)](/assets/media/my-little-brain/deck-slide-5.jpg)
+
+**The agent.** Gemini 4 Argon runs a tool-calling chat. It renders EEG spectrograms and uses Gemini vision to choose which channels and time windows to model. It builds experiments, designs QAOA circuits and revises them (including writing its own OpenQASM), dispatches jobs, reads results, and keeps a memory. Model calls go through a router that fails over across multiple keys and providers.
+
+**Backends.** A single registry exposes:
+
+- **Qiskit Aer**: ideal simulation, plus IBM device noise models.
+- **IBM Quantum**: QPU submission is wired. One job was queued before the free quota ran out.
+- **IonQ**: the cloud simulator with trapped-ion noise models. The QPU path is wired, but our key had no QPU access.
+- **qBraid**: a multi-vendor gateway to simulators and to Rigetti, IQM, AQT and IonQ QPUs. Wired up.
+- **Extropic THRML**: the open-source thermodynamic sampler, running both in-process and as a private Cloud Run service.
+
+All of the results below ran on simulators, not physical QPUs.
+
+![Slide: "It studies itself." The brain dispatches to IonQ, IBM, qBraid, Extropic THRML, Gemini and OpenBCI, beside the headline numbers (48/256 simulations, 42 gates, 52 vs 454 gates, τ 16→55 ms) and an excerpt of OpenQASM written by Gemini 4 Argon, run on Qiskit Aer with IBM Torino noise](/assets/media/my-little-brain/deck-slide-3.jpg)
+
+**Infrastructure.** It runs as one Cloud Run service (FastAPI plus the web app), with Cloud Tasks for jobs, Firestore, Cloud Storage, Secret Manager and Google Sign-In. THRML runs as a separate private Cloud Run service.
+
+![Slide: "Behind the scenes." An OpenBCI Ultracortex feeds the app through Web Serial in Chrome; the app talks to a Gemini 4 Argon agent on Cloud Run (with Firestore, Storage, Cloud Tasks, Secret Manager, Artifact Registry and Sign-In), which dispatches QAOA and thermodynamic sampling to IonQ, IBM, qBraid, Qiskit Aer and Extropic THRML, validated by forward simulation](/assets/media/my-little-brain/deck-slide-6.jpg)
+
+## Tests
+
+The main test is to hide the answer. We generated synthetic EEG from known Wilson–Cowan parameters, gave the agent only the spectrum, and checked whether it recovered the parameters. We also ran an equal-budget benchmark of the surrogate plus noisy QAOA against random sampling. Every candidate a backend returns is re-simulated through the nonlinear forward model, so the score never depends on trusting a backend.
+
+## Results
+
+These come from synthetic data plus one real recording:
+
+- **Parameter recovery.** Working blind, the agent recovered hidden synthetic brain parameters with 48 of the 256 possible forward simulations, over 2–3 iterations it revised itself.
+- **A circuit it wrote itself.** Gemini cut its own OpenQASM circuit from 106 physical gates to 42, and that circuit solved the alpha-rhythm case.
+- **Hardware choice matters.** The full problem needs 52 gates on IonQ's all-to-all trapped ions against about 454 on IBM's heavy-hex layout, so the agent chooses hardware based on the problem's connectivity.
+- **Seizure windows.** On CHB-MIT chb01_03, every seizure window the agent picked pointed to slower synaptic dynamics (τ from 16 ms to 30–55 ms). That is one recording. It is a model hypothesis, not a validated biomarker or a diagnosis.
+- **Benchmark.** At an equal budget, the surrogate plus noisy QAOA found the target in 5 of 11 cases against 3 of 11 for random sampling. That difference is within noise.
+
+We make no quantum-advantage claim. At 256 states a classical computer can simply score every one. The point is the pipeline: an agent that poses the inverse problem, picks a solver and hardware, and verifies what comes back.
+
+![Illustration (not a measured result): an 8-qubit QAOA state concentrating probability onto one of 256 candidate brains, which then decodes to model parameters like P, c₂, c₁ and τ](/assets/media/my-little-brain/qaoa.jpg)
+
+![Illustrative tractometry render: simulated band power at 19 scalp electrodes lighting up stylized white-matter tracts inside a translucent template brain (not reconstructed from real tractography)](/assets/media/my-little-brain/tractometry.jpg)
+
+The app is [live](https://my-little-brain-563778990179.us-central1.run.app) behind Google sign-in, and the code is at [JacobFV/my-little-brain](https://github.com/JacobFV/my-little-brain).
+
+## Lessons
+
+We had about a day, and the last stretch was a two-hour deadline. What got us through was running several coding agents in parallel on separate pieces and simplifying hard: one app, one environment, one deployment. Everything ships as a single Cloud Run deploy. The hardest discipline was being honest about the quantum part. A 256-state problem is small enough to brute-force, so the pitch had to be about the method and the verification loop, and every slide says the results came from simulators and that the outputs are model hypotheses, not diagnoses. We also hit friction with Gemini 4 Argon. Its thought signatures have to be passed back exactly on multi-turn tool calls, and we kept running into quota limits. The multi-key, multi-provider failover router is how we worked around the quota limits. If I picked this up again, I would get real QPU time for the circuit the agent already chose, and run the seizure analysis across many recordings before reading anything into the τ shift.
