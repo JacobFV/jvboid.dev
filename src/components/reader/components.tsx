@@ -23,6 +23,7 @@ import { EditorialAtmosphere } from "./EditorialAtmosphere";
 import { TensorAtmosphere } from "./TensorAtmosphere";
 import { CinemaAtmosphere } from "./CinemaAtmosphere";
 import { StatuteAtmosphere } from "./StatuteAtmosphere";
+import { Topology3D } from "./Topology3D";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
@@ -259,6 +260,8 @@ export const readerComponents: MDXComponents = {
   // The PHASER post's signal path, in the same hairline idiom.
   PhaserDiagram,
   TensegraComputation,
+  // 3D network-topology figures; specs in src/lib/topologies/.
+  Topology3D,
   RrpFactorTiles,
   RrpLogitFigure,
   // Page-scoped dressing: the worlds. Placed by a body, like everything else

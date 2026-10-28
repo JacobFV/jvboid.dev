@@ -1,0 +1,55 @@
+import type { Topology } from "@/lib/topology-types";
+
+// Checked against JacobFV/typed-crystallization-networks: tcn/training.py
+// (the tick, lines 95-165), tcn/agent.py, tcn/graph.py, tcn/select.py,
+// tcn/library.py and ARCHITECTURE.md §1-5.
+export const tcnTopology: Topology = {
+  id: "typed-crystallization-networks",
+  title:
+    "Typed Crystallization Networks: a soft typed program graph acts in a generated world, is trained on prediction, probes and reward, then crystallizes into an exact, content-addressed program that is published back as a new typed operator",
+  camera: [0, 1.6, 10.5],
+  nodes: [
+    { id: "host", label: "world host", sub: "generator · step · replay", pos: [-4.7, -0.2, 0], kind: "io" },
+    { id: "view", label: "actor view", sub: "only what it may see", pos: [-3.3, 1.2, 0] },
+    { id: "prog", label: "typed program graph", sub: "legal (op, binding) only", pos: [-0.4, 2.5, 0], kind: "model", size: 1.5 },
+    { id: "mem", label: "recurrent state", sub: "explicit delays", pos: [-0.6, 3.6, -1], kind: "store" },
+    { id: "heads", label: "heads", sub: "policy · value · predict", pos: [2.6, 1.4, 0] },
+    { id: "bind", label: "bind action", sub: "typed arguments", pos: [2.1, 0.2, 0.6] },
+    { id: "rec", label: "step record", sub: "latents · reward", pos: [-3, -0.9, 0.6], kind: "store" },
+    { id: "loss", label: "losses", sub: "predict · probe · reward", pos: [-1.8, -2.6, 1.2], kind: "check" },
+    { id: "commit", label: "crystallize", sub: "argmax · prune · digest", pos: [0.5, -1.2, -0.4], kind: "check" },
+    { id: "disc", label: "discrete search", sub: "with certificate", pos: [4.6, -2.4, -1.4] },
+    { id: "lib", label: "library", sub: "content-addressed", pos: [2.6, -3.1, 0], kind: "store" },
+    { id: "reg", label: "operator registry", pos: [3.6, 3.3, -1], kind: "store" },
+    { id: "agent", label: "frozen agent", sub: "bit-for-bit", pos: [4.9, 0.4, 0.8], kind: "io" },
+  ],
+  edges: [
+    { from: "host", to: "view", bend: 0.2 },
+    { from: "view", to: "prog", bend: 0.1 },
+    { from: "mem", to: "prog", bend: 0.25 },
+    { from: "prog", to: "mem", bend: 0.25 },
+    { from: "prog", to: "heads", bend: 0.1 },
+    { from: "heads", to: "bind", bend: 0.2 },
+    { from: "bind", to: "host", bend: -0.6 },
+    { from: "host", to: "rec", bend: -0.2 },
+    { from: "rec", to: "loss", bend: -0.2 },
+    { from: "loss", to: "prog", bend: 0.6 },
+    { from: "prog", to: "commit", bend: -0.3 },
+    { from: "disc", to: "commit", bend: 0.2 },
+    { from: "commit", to: "lib", bend: -0.2 },
+    { from: "lib", to: "reg", bend: -0.9 },
+    { from: "reg", to: "prog", bend: 0.4 },
+    { from: "commit", to: "agent", bend: -0.3 },
+    { from: "agent", to: "host", bend: 1.1 },
+  ],
+  phases: [
+    { label: "The world host shows the actor only what it is allowed to see: observation, objective, legal actions.", edges: ["host>view"] },
+    { label: "Every node of the program graph is a softmax over legal (operator, binding) pairs. Illegal wiring never enters the softmax at all.", edges: ["view>prog", "mem>prog"] },
+    { label: "Policy logits are masked to the available actions and bound into a typed action.", edges: ["prog>heads", "heads>bind", "bind>host"] },
+    { label: "A second pass predicts what the chosen action will do and updates the recurrent state; the host steps and records the result.", edges: ["prog>mem", "host>rec"] },
+    { label: "At the end of an episode, prediction, probe and policy-gradient losses train the graph together.", edges: ["rec>loss", "loss>prog"] },
+    { label: "Crystallize: take the argmax, prune, content-address. The result is an exact, gradient-free program, or one found directly by discrete search with a certificate.", edges: ["prog>commit", "disc>commit"] },
+    { label: "Published programs come back as new typed operators, so abstraction is recursive.", edges: ["commit>lib", "lib>reg", "reg>prog"] },
+    { label: "The frozen agent runs closed-loop in the world and reproduces its fixtures bit for bit.", edges: ["commit>agent", "agent>host"] },
+  ],
+};
