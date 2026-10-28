@@ -24,9 +24,9 @@ threadImages:
   - src: "/assets/img/projects/computerworld-windows-multiwindow.png"
     alt: "The Windows 11 shell with PowerShell, a browser and Notepad open at once"
 links:
-  github: https://github.com/JacobFV/computerworld
-  site: https://jacobfv.github.io/computerworld/
-  docs: https://jacobfv.github.io/computerworld/docs/
+  github: https://github.com/ComputaCo/computerworld
+  site: https://computaco.ai/
+  docs: https://computaco.ai/docs/
   pypi: https://pypi.org/project/computerworld/
   npm: https://www.npmjs.com/package/computerworld
 influences: [synthux, computatrum]
@@ -43,6 +43,13 @@ The whole design turns on one sentence: **a run is a pure function of (engine, w
 seed, action sequence, viewport)**. Everything else on this page is either a
 consequence of that promise or a limit the promise cost.
 
+It is now a product of **COMPUTACO INC.**, at [computaco.ai](https://computaco.ai/),
+where it runs the company's hosted computer instances, user simulation and verified
+expert-work data. The engine's source is private from here on; the MIT-licensed
+Python and JavaScript clients for the hosted API are public at
+[ComputaCo/computerworld](https://github.com/ComputaCo/computerworld), and the open
+releases already published, up to 0.3.0 on PyPI and npm, stay available.
+
 ![A synthetic github.com pull request, rendered by Computerworld's own rasterizer inside a simulated macOS desktop](/assets/img/projects/computerworld-macos-github.jpg)
 
 That screenshot has no browser in it. There is no Chromium process, no DOM, no
@@ -58,9 +65,9 @@ the mouse and the keyboard; the arrows and the ticks walk the rest. Nothing is
 fetched after it boots: every frame you see is rendered here.
 
 <LiveDemo
-  url="https://jacobfv.github.io/computerworld/embed.html#code-debug"
+  url="https://computaco.ai/embed.html#code-debug"
   title="Computerworld's machines, running in this frame"
-  caption="The slideshow from computerworld's own front page, embedded. Click a machine to bring it to the middle; it boots there and takes your input."
+  caption="The slideshow from the front page of computaco.ai, embedded. Click a machine to bring it to the middle; it boots there and takes your input."
 />
 
 ## Problem
@@ -366,7 +373,7 @@ Refusing is the feature.
 
 **The predecessors' bugs were the specification.** Eleven repositories were read
 before a line was written, pinned by commit in `research/sources.json`, and the
-[provenance matrix](https://github.com/JacobFV/computerworld/blob/main/docs/provenance.md)
+[provenance matrix](https://computaco.ai/docs/provenance.html)
 records subsystem by subsystem what should survive and what should not: an internet
 stub that was three dictionaries; a host-socket HTTP façade whose allowlist checked
 the initial URL while redirects escaped it; mocks whose display controls never mutated
