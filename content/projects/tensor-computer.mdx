@@ -4,12 +4,12 @@ date: 2026-02-01
 resume_description: "von neumann computer rebuilt as **end-to-end differentiable** tensor operations so machine-code programs can in principle be learned by gradient descent. four independent ISA backends held in agreement by a shared conformance suite; a self-hosting c compiler and a windowing os run on the machine. python, jax, c, rust, differentiable programming, research."
 resume_brief:
   problem: "LLM agents spend 20–50 tokens on what one machine instruction does; could programs be learned as machine code instead?"
-  task: "Rebuilt a full von Neumann computer (ALU, cache, virtual memory, GPU) as differentiable JAX tensor ops."
+  task: "Rebuilt a full von Neumann computer (ALU, cache, memory, GPU) as differentiable JAX tensor ops."
   outcome: "**4 independent backends agree on 59 conformance vectors**; a self-hosting C compiler matches the host's output **byte for byte**."
   stack: "python, jax, c, rust, c++, differentiable programming, program synthesis, research"
 lane: building
 tags: [differentiable-programming, program-synthesis, jax, agents, research]
-summary: "A complete von Neumann computer — ALU, registers, cache, virtual memory, bus, GPU, peripherals — rebuilt as differentiable tensor operations in JAX, so that programs written in machine code can, in principle, be learned end-to-end by gradient descent."
+summary: "A complete von Neumann computer — ALU, registers, cache, memory, disk, GPU, peripherals — rebuilt as differentiable tensor operations in JAX, so that programs written in machine code can, in principle, be learned end-to-end by gradient descent."
 hero:
   src: /assets/img/projects/tensor-computer-blender.gif
   alt: A pixel-art Blender-style GUI environment the tensor computer's agents are trained to operate
@@ -47,10 +47,11 @@ of generated as text?
 ## Solution
 
 The Tensor Computer is a complete von Neumann architecture — ALU,
-register file, flags, cache, NTM-style main memory, a 4KB-sector hard
-disk, two-level virtual memory with a TLB, a softmax-arbitrated system
-bus, a GPU, and peripheral ring buffers — implemented **entirely as
-differentiable tensor operations in JAX**. Every discrete decision a real
+register file, flags, cache, RAM with an NTM-style content-addressed
+region, a 4KB-sector hard disk, a GPU, and peripheral ports — implemented
+**entirely as differentiable tensor operations in JAX**. (Two-level virtual
+memory with a TLB and a softmax-arbitrated system bus exist too, as
+standalone modules; the step function does not call them yet.) Every discrete decision a real
 CPU makes is replaced by a temperature-scaled softmax:
 
 - The **opcode** is a distribution over 32 operations; the ALU computes
@@ -64,7 +65,9 @@ At temperature τ → 0 every softmax collapses to one-hot and the machine
 recovers exact discrete semantics. At higher τ, gradients flow through
 the entire computation, so a program — encoded as 112 real-valued
 parameters per instruction — is just another differentiable object you
-can optimize.
+can optimize. One cycle of the soft machine, step by step:
+
+<Topology3D id="tensor-computer" caption="One cycle of step(): every unit computes every cycle, and each update is blended by how much the current instruction is that kind of instruction." />
 
 To prove the architecture is real and not a toy, the implementation
 carries four independent backends — the JAX machine, a reference C VM, a
@@ -87,11 +90,12 @@ five applications, in 20,256 slots.
   `jax.nn.softmax` for all soft addressing, `jax.grad` for end-to-end
   differentiation, JIT-compiled and vectorized across a batch of
   programs.
-- **Architecture:** 16×32-bit registers, 256-line cache with soft LRU
-  eviction, 256×32 NTM-style main memory with content-based addressing,
-  64MB disk with 4KB sector loading, two-level page tables + TLB, a
-  64K-word tensor GPU, and a 480×640×3 display framebuffer — each a
-  tensor in the machine-state tuple.
+- **Architecture:** 16×32-bit registers, a direct-mapped L1 cache with a
+  learned eviction network, 64MB RAM plus a 256-slot NTM-style region with
+  content-based addressing, a disk window with 4KB sectors, a 64K-word
+  tensor GPU, and a 480×640×3 display framebuffer — each a tensor in the
+  machine-state tuple. Two-level page tables with a TLB and the system bus
+  are implemented as separate modules outside the step.
 - **Training strategy:** five-phase temperature annealing (warm-up →
   anneal → crystallize → discrete local search → extraction), curriculum
   learning over program length and task difficulty, shaped rewards plus
@@ -106,9 +110,11 @@ five applications, in 20,256 slots.
 The honest result first: **the Tensor Computer never learned through SGD
 on its own.** The soft loss landscape at medium temperature does not
 track the discrete one — a blend of 32 operations has different semantics
-from any single operation — and the gradients through the annealed
-softmax stack are too sharp to descend. Pure gradient-based program
-synthesis stalled.
+from any single operation — and the gradient through the annealed
+softmax stack is badly behaved. On one four-instruction kernel its norm is
+2e-5 at τ = 10, about 1 at τ = 1, and 9e-6 at τ = 0.01: five orders of
+magnitude, non-monotone, and in a different place for a different
+program. Pure gradient-based program synthesis stalled.
 
 What *did* work was scaffolding. With temperature annealing, a
 length/difficulty curriculum, shaped rewards, imitation warmstart, and
@@ -119,14 +125,19 @@ very little learning on its own — the search procedure carries most of
 the weight. It is closer to guided program search than to an autonomous
 gradient learner.
 
-Within those bounds the results are real and verifiable:
+Within those bounds, these are the results the original paper reports.
+The August 2026 re-implementation described on this page has **not**
+reproduced them: its own status file says that nothing in it yet
+synthesizes a correct non-trivial program, because the shipped training
+budgets are deliberately toy-sized and the learned kernels are wrong at
+them. Treat the table as the paper's claim, not this code's:
 
-| Task         | Episodes to 100% | Learned program                     |
-| ------------ | ---------------- | ------------------------------------ |
-| `add`        | 847 ± 123        | `ADD R0,R0,R1; HALT` — optimal       |
-| `max`        | 2,341 ± 412      | `CMP; JGE; MOV; HALT` — see below    |
-| `sum_array`  | 15K              | correct loop, generalizes to any `n` |
-| `bubble_sort`| 50K              | nested-loop bubble sort, 98.5% @ n=4 |
+| Task         | Episodes (as reported) | Learned program                     |
+| ------------ | ---------------------- | ------------------------------------ |
+| `add`        | 847 ± 123 to 100%      | `ADD R0,R0,R1; HALT` — optimal       |
+| `max`        | 2,341 ± 412 to 100%    | `CMP; JGE; MOV; HALT` — see below    |
+| `sum_array`  | 15K                    | correct loop, generalizes to any `n` |
+| `bubble_sort`| 45K to 90%, with a curriculum | nested-loop bubble sort, 98.5% @ n=4 |
 
 The `max` row needs a correction I only found while building the full
 implementation, and it is more interesting than the original claim. That
@@ -149,8 +160,8 @@ Annealing is not optional; it is the experiment.
 
 ## Results
 
-The trained programs are correct machine code, and some are genuinely
-*alien*. Asked for absolute value, one run rediscovered the branchless
+The programs the paper reports are correct machine code, and some are
+genuinely *alien*. Asked for absolute value, one run rediscovered the branchless
 two's-complement trick (`SRA` to build a sign mask, then `XOR`/`SUB`) —
 a technique most programmers would not reach for. An in-place swap was
 solved with the classic XOR swap, rediscovered from scratch.
@@ -159,28 +170,23 @@ loop that length-generalizes to arrays it never saw; trained on a single
 size, it overfit into an unrolled straight-line solution — a clean,
 legible picture of generalization failure.
 
-The longer-horizon goal is GUI agents, but the important detail in the
-clip below is not the UI polish. The "screen" is a literal
-`H×W×3 float32` tensor inside the machine state, rendered by JAX as part
-of the Tensor Computer's primitive video pipeline. The cursor is not a
-browser cursor moving over a mockup; it is another peripheral state being
-advanced by a program running inside the differentiable computer graph.
-
-In other words, the demo is showing a full computer running inside a
-tensor graph: CPU state, memory, GPU/framebuffer, peripherals, display
-scanout, and mouse movement are all tensors updated by the same compiled
-JAX step function. The pixel-art look is deliberate because it keeps the
-rendering pipeline inspectable while the research target remains much
-deeper than UI aesthetics.
+The longer-horizon goal is GUI agents, and the clip below is that target
+environment. The point of building the screen into the machine is that it
+is a literal `H×W×3 float32` framebuffer inside the machine state, so an
+agent's actions and what it sees could live in one differentiable graph.
+That is the aim, not something this clip proves: the windowing system
+that actually runs today, tensor-os, runs on the discrete VMs, which share
+the soft machine's ISA and framebuffer layout. The pixel-art look is
+deliberate because it keeps the rendering pipeline inspectable.
 
 <div className="my-6 rounded-lg border border-[var(--color-bg-2)] bg-[var(--color-bg-1)] p-4">
   <p className="m-0 font-[family-name:var(--font-mono)] text-xs uppercase tracking-wide text-[var(--color-ink-mute)]">
     What the video is actually showing
   </p>
   <p className="mt-2 mb-0 max-w-[70ch] text-sm leading-relaxed text-[var(--color-ink)]">
-    A differentiable von Neumann computer in JAX, with a full display
-    framebuffer represented as an <code>H×W×3 float32</code> tensor and
-    a cursor rendered through the machine's own primitive video path.
+    The GUI-agent target environment. The machine's display is an
+    <code>H×W×3 float32</code> tensor in its state; the GUI that runs on
+    it today does so on the discrete VMs, not inside the JAX graph.
   </p>
 </div>
 
