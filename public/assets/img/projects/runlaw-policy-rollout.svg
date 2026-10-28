@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="38 43 1142 678" role="img" aria-labelledby="t d">
   <title id="t">runlaw: setting and rolling out a policy</title>
   <desc id="d">A policy is one JSON document: a name, a default mode, what to do if the judge fails, and a list of rules. Each rule has a type (pii, pattern, tool or semantic), the stages it watches (input, output, tool_call) and an action (flag, redact, rewrite, block or require_approval). You can replay a draft against recent real traces before saving it. Saving it from the console editor or with PUT /api/policy validates it and stores a new version, which applies from the next call. Run it in monitor mode first, then switch to enforce. To roll back, save an older version again.</desc>
   <defs>
@@ -23,8 +23,6 @@
       .dot{fill:#062b8a}
     </style>
   </defs>
-  
-  <rect width="1200" height="760" rx="0" fill="#ddd0b9"/>
   <style>.c{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#ddd0b9;white-space:pre}.ck{fill:#8fa9ee}.cv{fill:#c7d3f5}.lk{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#8c9ccc;letter-spacing:.08em}.lv{font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#ddd0b9}</style>
   <text x="40" y="56" class="k">1 · WRITE THE POLICY AS JSON</text>
   <rect x="40" y="74" width="470" height="644" rx="0" fill="#062b8a"/>

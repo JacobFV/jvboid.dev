@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="37 43 1126 732" role="img" aria-labelledby="t d">
   <title id="t">runlaw: the ruling path for one call</title>
   <desc id="d">One chat completion through runlaw. 1, the Accounts Durable Object admits the caller or refuses with 403, 402 or 429. 2, input rules run, redacting the messages or blocking with a 400. 3, the request goes to the model and the whole answer is buffered. 4, output rules redact, rewrite or withhold the text. 5, tool-call rules check each proposed call and block it or hold it for approval. 6, the ruled answer is returned as JSON or re-sent as server-sent events. Afterwards the trace is written to the workspace Ledger and the tokens are charged. Held calls wait in the approvals queue; rules in monitor mode record the same events without changing anything.</desc>
   <defs>
@@ -23,7 +23,6 @@
       .dot{fill:#062b8a}
     </style>
   </defs>
-  <rect width="1200" height="800" rx="0" fill="#ddd0b9"/>
 
   <text x="40" y="56" class="k">REQUEST PATH</text>
   <rect x="40" y="74" width="340" height="196" rx="0" class="card"/>
