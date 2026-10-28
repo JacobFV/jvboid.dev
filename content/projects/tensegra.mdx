@@ -8,11 +8,11 @@ resume_description: "regularizes latent dynamics in queryable KV space for graph
 resume_brief:
   problem: "Agents reuse stale work, ignore valid tool results and waste compute, and one score can't say which failure happened."
   task: "PyTorch modules for graph-conditioned attention and protected symbolic execution, with causal diagnostics at each model-tool boundary."
-  outcome: "**570-run** attention study; dependency-aware policies reached **0.93–0.98 sealed IID success** with near-zero invalid reuse."
+  outcome: "**570-run** attention study; with full inputs, imitation-bootstrapped dependency-aware policies reached **0.93–0.98 sealed IID success** with near-zero invalid reuse, and removing the applicability input raised invalid reuse to 0.41–0.46."
   stack: "python, pytorch, typed graphs, recurrent computation"
 hero:
   src: /assets/img/projects/tensegra-crystallization.svg
-  alt: "Latent tensor components project into a faceted symbolic workspace, execute across recurrent microsteps, and return as typed information to the evolving latent state"
+  alt: "Latent tensor components bind to typed operands, execute across protected microsteps, and return as typed information to the evolving latent state"
   fit: contain
 links:
   github: https://github.com/JacobFV/tensegra
@@ -32,9 +32,9 @@ An agent's cache key is not its validity condition. A retrieved computation may 
 
 The architecture separates a continuous workspace $H_t\in\mathbb{R}^{L\times d}$ from a symbolic store with stable identities and typed operations. Recurrent microsteps refine the workspace, propose candidate-local operations, estimate readiness, and conditionally commit admissible transitions. A return encoder maps the resulting typed event back into the next recurrent update. Schematically, $c_t=C_\theta(H_t,G_t)$, $(G_{t+1},r_t)=\operatorname{Exec}(G_t,c_t)$ when the gate admits the proposal, and $H_{t+1}=F_\theta(H_t,E_\theta(r_t),x_t)$. Here $x_t$ denotes current public input; the notation summarizes the interface, not a claim that all experiments share one controller.
 
-<TensegraComputation />
+<Topology3D id="tensegra" caption="The whole interface in one pass: structure enters attention as a bias, execution happens outside the weights, and every boundary a value crosses can be intervened on." />
 
-Crystallization is a local commitment: selected latent components become explicit operator and operand bindings with a validity contract. Symbolic computation advances through protected microsteps while the surrounding latent state continues to evolve; the encoded result then disperses back into the neural workspace. This separates execution authority from representation learning and makes **<u>auditable tool execution</u>** an architectural boundary rather than an interpretation of generated prose.
+Execution is a protected boundary: a proposal names its operator and operands, a gate checks that it is legal and ready, and an exact executor advances the symbolic store while the surrounding latent state keeps evolving; the encoded result then returns to the workspace. This separates execution authority from representation learning and makes **<u>auditable tool execution</u>** an architectural boundary rather than an interpretation of generated prose. (A sibling project, [Typed Crystallization Networks](/projects/typed-crystallization-networks), takes the opposite route and commits a learned structure itself to an exact program; Tensegra keeps the network and the executor separate and studies the interface between them.)
 
 ## How
 
@@ -51,6 +51,23 @@ The harness couples initial parameters, data schedules, and procedural populatio
 For the factor-consumption experiments, a genuine shaping × reading design separates auxiliary gradients through the shared trunk from explicit factor inputs to the policy. Exact, zero, mean, and in-support substituted factors test causal consumption; out-of-fold and noise-mixed training contracts control exposure to predictor error. Counterfactual octets vary factor combinations while preserving matched instances. Flip, invariance, and near-miss populations distinguish correct action changes from indiscriminate sensitivity or conservatism. Per-seed contrasts and two-level bootstrap intervals, where specified, separate configuration uncertainty from seed variation. The result is **<u>causal evaluation for architecture decisions</u>**, with acquisition error, representation use, and interaction discrimination measured independently.
 
 ## Results
+
+Tensegra (called Topoformer until the rename) ran eleven stages and seven campaigns between 22 and 27 September 2026, 1,862 commits, all on synthetic tasks with no real data or pretrained model. Each step asked one question about one boundary:
+
+| step | question | result |
+|---|---|---|
+| stage 1–2 | does a true-graph bias help? | yes: 3–12% lower error across 570 runs, transferring from 12 to 128 nodes; a permuted graph removes the gain |
+| stage 3 | can grounding be learned? | 0.966 at depth 4, 0.19 at depth 32; a graph supplied as input gets 0.997 |
+| stage 4 | can a pointer survive depth? | 99.74% at depth 64, but only with a hand-programmed write |
+| stage 5 | can text be translated into an exact interpreter? | 96.88% supervised; 1–5% from answer-only reward |
+| stage 6–9 | can a recurrent workspace execute? | no: 0 of 1,111 executions had the right operands; at width 1024 every broad gate failed |
+| stage 10–11 | which interfaces hold in isolation? | beliefs are ID-invariant (90/90); returns are read 50.65% of the time at 32 steps; text-to-graph works on fixed graphs, 0/512 fresh |
+| extended-02 | do input contracts fix things? | yes: provenance 0.35 → 1.00, failures 126 → 0; population training lost to multistart |
+| extended-03 | is the dependency input used? | yes: invalid reuse 0.41–0.46 without it, ≤ 0.014 with it; RL collapsed in 2 of 3 runs |
+| extended-04–06 | does a learned controller beat simple rules? | no: RL never beat imitation (best +0.002), delegation only recovered the teacher, and one world lacked the headroom to try |
+| extended-07 | do factor channels help? | shaping the trunk helps (+0.074); reading the factors didn't replicate |
+
+The most consistent finding is the last two rows: wherever a learned policy or meta-controller was compared against imitation or a simple rule with the same information, it did not win.
 
 The [570-run structural-attention study](https://github.com/JacobFV/tensegra/blob/main/research/stages/stage-02/stage2-report.md) covers efficiency, topology corruption, graph transfer, heterogeneous mechanisms, and learned biases. The recurrent workspace study retains 780 declared evaluation rows, 11,520 training rows, and 225 checkpoints across 45 seed/arm runs. In [Campaign03](https://github.com/JacobFV/tensegra/blob/main/research/campaigns/extended-03/report-P1.md), full-input imitation bootstrap endpoints reached 0.93–0.98 sealed IID success with near-zero invalid reuse; applicability interventions connected behavior to the supplied dependency relations. These are bounded endpoint measurements with explicit supervision and information contracts.
 
