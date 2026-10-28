@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 420" role="img" aria-labelledby="t d" font-family="Inter, system-ui, sans-serif">
+  <title id="t">The harness moves more than the models</title>
+  <desc id="d">One fitted model, corefer-001, scored over 2,632 masked fills on 179 lessons. Read as a move on the graph it scores 0.508 label accuracy; read as text it scores 0.085; abstaining scores 0.087; the floor is 0.2025. The readout changes the score by about 0.43, while all architectures together span only about 0.1. Source: runs/agent-sweep/*/summary.json in symbolic-ai-models.</desc>
+  <style>
+    .ink{fill:#1a1815}.dim{fill:#54585f}.rule{stroke:#1a1815;stroke-opacity:.16}
+    .bar{fill:#1a1815;fill-opacity:.82}.acc{fill:#d8541c}.floor{stroke:#d8541c;stroke-dasharray:5 4;stroke-width:1.5}
+    @media (prefers-color-scheme: dark){.ink{fill:#f4f1eb}.dim{fill:#9097a3}.rule{stroke:#f4f1eb}.bar{fill:#f4f1eb}.acc{fill:#ff6b35}.floor{stroke:#ff6b35}}
+  </style>
+  <text class="ink" x="0" y="22" font-size="19" font-weight="600">Same model, four ways of reading its answer</text>
+  <text class="dim" x="0" y="46" font-size="14">corefer-001 · label accuracy on 2,632 masked fills across 179 lessons</text>
+  <!-- axis: 0 .. 0.6 over x 220..840 -->
+  <g class="rule" stroke-width="1">
+    <line x1="220" y1="72" x2="220" y2="340"/>
+    <line x1="323.3" y1="72" x2="323.3" y2="340"/><line x1="426.7" y1="72" x2="426.7" y2="340"/>
+    <line x1="530" y1="72" x2="530" y2="340"/><line x1="633.3" y1="72" x2="633.3" y2="340"/><line x1="736.7" y1="72" x2="736.7" y2="340"/>
+  </g>
+  <g class="dim" font-size="12" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, monospace">
+    <text x="220" y="358">0</text><text x="323.3" y="358">0.1</text><text x="426.7" y="358">0.2</text><text x="530" y="358">0.3</text><text x="633.3" y="358">0.4</text><text x="736.7" y="358">0.5</text>
+  </g>
+  <!-- bars: width = v/0.1*103.33 -->
+  <text class="ink" x="208" y="105" font-size="15" text-anchor="end">read as a move</text>
+  <text class="dim" x="208" y="122" font-size="12" text-anchor="end">graphread</text>
+  <rect class="acc" x="220" y="90" width="524.9" height="30"/>
+  <text class="ink" x="752" y="110" font-size="14" font-family="JetBrains Mono, ui-monospace, monospace">0.508</text>
+
+  <text class="ink" x="208" y="175" font-size="15" text-anchor="end">floor</text>
+  <text class="dim" x="208" y="192" font-size="12" text-anchor="end">no skill at all</text>
+  <rect class="bar" x="220" y="160" width="209.2" height="30" style="fill-opacity:.3"/>
+  <text class="ink" x="437" y="180" font-size="14" font-family="JetBrains Mono, ui-monospace, monospace">0.203</text>
+
+  <text class="ink" x="208" y="245" font-size="15" text-anchor="end">says nothing</text>
+  <text class="dim" x="208" y="262" font-size="12" text-anchor="end">abstain</text>
+  <rect class="bar" x="220" y="230" width="89.5" height="30"/>
+  <text class="ink" x="317" y="250" font-size="14" font-family="JetBrains Mono, ui-monospace, monospace">0.087</text>
+
+  <text class="ink" x="208" y="315" font-size="15" text-anchor="end">read as text</text>
+  <text class="dim" x="208" y="332" font-size="12" text-anchor="end">wrap</text>
+  <rect class="bar" x="220" y="300" width="87.9" height="30"/>
+  <text class="ink" x="316" y="320" font-size="14" font-family="JetBrains Mono, ui-monospace, monospace">0.085</text>
+
+  <line class="floor" x1="429.2" y1="72" x2="429.2" y2="340"/>
+  <text class="dim" x="0" y="396" font-size="14">The readout moves the score by ≈ 0.43. Every architecture in the zoo, together, spans ≈ 0.1.</text>
+</svg>

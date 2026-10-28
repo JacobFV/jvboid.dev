@@ -1,0 +1,81 @@
+---
+title: symbolic-ai-models
+date: 2026-08-10
+endDate: 2026-08-20
+datePrecision: day
+lane: research
+tags: [symbolic-ai, evaluation, nlp, program-synthesis, python, pytorch]
+summary: "One harness that trains and scores neural and rule-based language models on the same generated episodes, next-token and masked-node, always as lift over a floor and checked by renaming every symbol. The main finding: how a model's answer is read moved its score more than which model it was."
+resume_description: "evaluation harness training ~20 neural and symbolic architectures (transformer, gru, tpr, hrr, ndr, n-gram, ctw, ilp, grammar induction, codelet workspace, …) on one procedurally generated curriculum, scored as lift over floors with a symbol-renaming control; found the readout moves accuracy **≈ 0.43** while all architectures span ≈ 0.1. python, pytorch."
+resume_brief:
+  problem: "Claims that small symbolic models reason as well as neural ones rarely survive a fair comparison: different data, different scoring, no floor."
+  task: "Built one harness that trains neural and rule-based architectures on the same generated episodes and scores every one as lift over a floor, with a control that renames every symbol."
+  outcome: "Rule-based models of 74–6,000 parameters beat ~1M-parameter networks on masked-node accuracy, but the readout alone moved one model's score **from 0.085 to 0.508**, more than every architecture together."
+  stack: "python, pytorch, sqlite"
+hero:
+  src: "/assets/img/projects/symbolic-ai-models-readout.svg"
+  alt: "One model scored four ways: read as a move on the graph 0.508, floor 0.203, abstaining 0.087, read as text 0.085"
+  fit: contain
+influences: [langcurriculum]
+realizes: []
+critiques: []
+---
+
+- **One harness, two tasks, one head.** Every architecture predicts the next token of a rendered episode *and* a hidden node of the typed term the episode was built from, through the same vocabulary and output head
+- **No raw accuracy anywhere.** Each number is a lift over floors that include the best shortcut a cheater could take, and a renaming control swaps every symbol to see what survives
+- **Neural and symbolic, side by side:** transformer, GRU, relational graph transformer, tensor-product and holographic binding, Neural Data Router, against n-grams, context-tree weighting, grammar and clause induction, transformation rules, analogy and a Copycat-style codelet workspace
+
+## Problem
+
+I wanted a language substrate that is cheap per correct answer and whose reasoning you can read: something closer to a rule set than a weight matrix. Claims of that kind are easy to make and hard to check. Symbolic and neural systems are usually evaluated on different data, scored differently, and compared against no baseline at all, so "the small model matched the big one" often means "the task let both of them guess."
+
+So before building anything clever I built the comparison: every model, the same episodes, the same scoring, and the same question asked of each number. Is this above what knowing nothing gets you, and does it survive when the vocabulary changes?
+
+## Solution
+
+Episodes come from [langcurriculum](/projects/langcurriculum), vendored byte for byte and pinned by checksum over 179 lessons × 5 seeds × 7 languages. Each episode is generated as a typed term, so the answer is known by construction. The harness turns it into two views: prose for next-token prediction, and a term graph with 15% of its nodes hidden for masked-node prediction.
+
+<Topology3D id="symbolic-ai-harness" caption="Drag to turn it. The chips step through the pipeline; every model on the page passes through the same path." />
+
+Neural models share one training loop (AdamW, cosine decay, gradient clipping, a joint loss on both tasks). Rule-based models fit in a single pass on CPU. Train and evaluation sets are seed ranges, not files, so a held-out set cannot leak by being copied.
+
+The headline metric is dollars per episode solved above the floor. That is the number that would decide whether a symbolic substrate is worth building, and it forces the cost of a model's runtime into the same sentence as its accuracy.
+
+## How
+
+- **Language / runtime:** Python, PyTorch for the neural architectures, plain Python for the symbolic ones
+- **Data:** langcurriculum episodes, rendered to prose and to a typed term graph (parent, child, sibling, ancestor and same-label edges)
+- **Scoring:** uniform, majority and shortcut floors (`floors.py`, `shortcuts.py`), a renaming invariance control, a calibrator, and a cost ledger
+- **Scale:** 778 commits in ten days, most of them experiments; each run writes a `summary.json` and, for rule learners, the learned rules as text
+
+The most interesting model to watch was the workspace, a small Copycat-style system. It walks up from the hidden node to a goal signature, asks a learned policy which of six codelets has been right in that situation before, lets them propose fillers in parallel, and commits only if they agree. The learned policy is short enough to print: 84 signatures, each mapped to codelet hit rates.
+
+<Topology3D id="symbolic-ai-workspace" caption="The workspace model. Temperature is codelet agreement: a settled workspace commits, an unsettled one defers to a back-off prior." />
+
+## Results
+
+**Small rule learners beat million-parameter networks at filling the hole.** Over all 179 lessons, masked-node label accuracy:
+
+| model | label accuracy | lift over floor | change when every symbol is renamed |
+|---|---:|---:|---:|
+| corefer | 0.357 | +0.250 | −0.003 |
+| workspace | 0.357 | +0.249 | −0.130 |
+| analogy | 0.334 | +0.222 | |
+| ruleinduce | 0.329 | +0.217 | |
+| rgt (best neural) | 0.241 | +0.115 | |
+
+The models in the top four have between 74 and 6,000 parameters. The ranking also depends on the measure: grammar induction is first when scored in bits and fourteenth on accuracy.
+
+**But the last column undoes most of it.** Rename every symbol and the leaders fall to the floor or below it. Much of what looked like skill was memorised vocabulary, and the masked-node task turned out to be mostly copying: corefer scores 0.492 where the answer appears somewhere else in the graph and 0.003 where it does not.
+
+**The harness moves more than the models.** The same fitted model, scored four ways:
+
+![One model scored four ways: read as a move on the graph 0.508, floor 0.203, abstaining 0.087, read as text 0.085. The readout moves the score by about 0.43; all architectures together span about 0.1.](/assets/img/projects/symbolic-ai-models-readout.svg)
+
+Changing only how its output is read moves the score by about 0.43. Every architecture in the zoo, together, spans about 0.1. Any comparison that does not fix the readout is mostly comparing readouts.
+
+Working through these results also turned up a dozen problems with using the curriculum as a benchmark: a tokenizer that deleted underscores, node types fixed by tree shape, floors that read the answer. They are written up on the [langcurriculum page](/projects/langcurriculum). On 18 August I demoted the curriculum from benchmark to development harness, and the project's second half moved to a typed world runtime with solver kernels (ASP, SMT, Datalog, Lean, e-graphs) over real data: company ownership, 13F filings, flight routes and biographies.
+
+## Lessons
+
+Build the floor and the control before the model. Every surprising result in this project came from the scoring, not the architecture: a 6-lesson slice ranked the models nearly backwards compared with all 179, a floor that could see the answer flattered everything, and a readout change outweighed every architecture choice. A cheap, readable substrate may still be possible, but this harness taught me that "it beat the transformer" needs three more clauses before it means anything: above what floor, after renaming, and read how.

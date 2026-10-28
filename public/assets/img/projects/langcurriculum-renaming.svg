@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 410" role="img" aria-labelledby="t d" font-family="Inter, system-ui, sans-serif">
+  <title id="t">Rename every symbol and the leaderboard reorders</title>
+  <desc id="d">Masked-node label accuracy before and after every symbol in the episodes is renamed. In an earlier scoring run, analogy fell from 0.417 to 0.036, grammar from 0.302 to 0, ngram from 0.252 to 0.014 and ruleinduce from 0.230 to 0.151. Over all 179 lessons with 2,105 symbols permuted, corefer held (0.353 to 0.350), omegaclaw and ilp nearly held, and workspace fell from 0.352 to 0.221. A model that reads structure keeps its accuracy; one that memorised vocabulary loses it. Sources: symbolic-ai-models commit ef4a76b and README.</desc>
+  <style>
+    .ink{fill:#1a1815}.dim{fill:#54585f}.acc{fill:#d8541c}.rule{stroke:#1a1815;stroke-opacity:.16}
+    .inks{stroke:#1a1815;stroke-opacity:.55}.accs{stroke:#d8541c}
+    @media (prefers-color-scheme: dark){.ink{fill:#f4f1eb}.dim{fill:#9097a3}.acc{fill:#ff6b35}.rule{stroke:#f4f1eb}.inks{stroke:#f4f1eb}.accs{stroke:#ff6b35}}
+  </style>
+  <text class="ink" x="10" y="26" font-size="19" font-weight="600">Rename every symbol, and see what was skill</text>
+  <text class="ink" x="10" y="62" font-size="15" font-weight="600">Earlier scoring</text>
+  <text class="dim" x="10" y="82" font-size="12">commit ef4a76b · masked-node label accuracy</text>
+  <line class="rule" x1="160" y1="100" x2="160" y2="330"/><line class="rule" x1="340" y1="100" x2="340" y2="330"/>
+  <text class="dim" x="160" y="364" font-size="12" text-anchor="middle">original</text><text class="dim" x="340" y="364" font-size="12" text-anchor="middle">renamed</text>
+  <line class="accs" x1="160" y1="126.1" x2="340" y2="312.4" stroke-width="2.2"/>
+  <circle class="acc" cx="160" cy="126.1" r="3.5"/><circle class="acc" cx="340" cy="312.4" r="3.5"/>
+  <text class="acc" x="150" y="130.1" font-size="12" text-anchor="end">analogy 0.417</text>
+  <text class="acc" x="350" y="311.9" font-size="12">0.036</text>
+  <line class="inks" x1="160" y1="182.4" x2="340" y2="330.0" stroke-width="1.4"/>
+  <circle class="ink" cx="160" cy="182.4" r="3.5"/><circle class="ink" cx="340" cy="330.0" r="3.5"/>
+  <text class="ink" x="150" y="186.4" font-size="12" text-anchor="end">grammar 0.302</text>
+  <text class="ink" x="350" y="339.9" font-size="12">0.000</text>
+  <line class="inks" x1="160" y1="206.8" x2="340" y2="323.2" stroke-width="1.4"/>
+  <circle class="ink" cx="160" cy="206.8" r="3.5"/><circle class="ink" cx="340" cy="323.2" r="3.5"/>
+  <text class="ink" x="150" y="209.2" font-size="12" text-anchor="end">ngram 0.252</text>
+  <text class="ink" x="350" y="325.9" font-size="12">0.014</text>
+  <line class="inks" x1="160" y1="217.6" x2="340" y2="256.2" stroke-width="1.4"/>
+  <circle class="ink" cx="160" cy="217.6" r="3.5"/><circle class="ink" cx="340" cy="256.2" r="3.5"/>
+  <text class="ink" x="150" y="223.2" font-size="12" text-anchor="end">ruleinduce 0.230</text>
+  <text class="ink" x="350" y="260.2" font-size="12">0.151</text>
+  <text class="ink" x="470" y="62" font-size="15" font-weight="600">All 179 lessons</text>
+  <text class="dim" x="470" y="82" font-size="12">2,105 symbols permuted · README</text>
+  <line class="rule" x1="620" y1="100" x2="620" y2="330"/><line class="rule" x1="800" y1="100" x2="800" y2="330"/>
+  <text class="dim" x="620" y="364" font-size="12" text-anchor="middle">original</text><text class="dim" x="800" y="364" font-size="12" text-anchor="middle">renamed</text>
+  <line class="accs" x1="620" y1="157.4" x2="800" y2="158.9" stroke-width="2.2"/>
+  <circle class="acc" cx="620" cy="157.4" r="3.5"/><circle class="acc" cx="800" cy="158.9" r="3.5"/>
+  <text class="acc" x="610" y="145.6" font-size="12" text-anchor="end">corefer 0.353</text>
+  <text class="acc" x="810" y="159.6" font-size="12">0.350</text>
+  <line class="inks" x1="620" y1="157.9" x2="800" y2="166.2" stroke-width="1.4"/>
+  <circle class="ink" cx="620" cy="157.9" r="3.5"/><circle class="ink" cx="800" cy="166.2" r="3.5"/>
+  <text class="ink" x="610" y="159.6" font-size="12" text-anchor="end">omegaclaw 0.352</text>
+  <text class="ink" x="810" y="173.6" font-size="12">0.335</text>
+  <line class="inks" x1="620" y1="157.9" x2="800" y2="222.0" stroke-width="1.4"/>
+  <circle class="ink" cx="620" cy="157.9" r="3.5"/><circle class="ink" cx="800" cy="222.0" r="3.5"/>
+  <text class="ink" x="610" y="173.6" font-size="12" text-anchor="end">workspace 0.352</text>
+  <text class="ink" x="810" y="226.0" font-size="12">0.221</text>
+  <line class="inks" x1="620" y1="177.0" x2="800" y2="187.7" stroke-width="1.4"/>
+  <circle class="ink" cx="620" cy="177.0" r="3.5"/><circle class="ink" cx="800" cy="187.7" r="3.5"/>
+  <text class="ink" x="610" y="187.6" font-size="12" text-anchor="end">ilp 0.313</text>
+  <text class="ink" x="810" y="191.7" font-size="12">0.291</text>
+  <text class="dim" x="10" y="400" font-size="13">Structure survives a renaming; memorised vocabulary does not. Most of the curriculum's apparent skill was the second kind.</text>
+</svg>

@@ -178,6 +178,31 @@ The strongest test in the repo is a negative one. Adding difficulty knobs to 177
 
 Three real bugs were found by instruments rather than by reading. A vocabulary harvest was swallowing a `TypeError` inside an `except Exception` and silently dropping four lessons, so their section headings would have rendered in English in every language. The published language extract was missing 163 of the 989 translatable keys, because the probe that built it rendered *one* language and assumed the key set was universal — a case-marking language never looks up a preposition, so probing Finnish alone never asked for "at", and Spanish shipped with an English "at" in the middle of a Spanish sentence. And a hand-written pack turned out not to be self-sufficient: it falls back to the database under an ISO code the extract had never been told to copy.
 
+## What broke when it was used
+
+The curriculum's first real user was [symbolic-ai-models](/projects/symbolic-ai-models), a harness that trained about twenty neural and rule-based architectures on it in August 2026. Ten days of that turned up problems that no admission test here could have caught, because they only show once something is trying hard to score. The curriculum's last commit predates all of them, so every fix or mitigation lives in the harness, not in this repo.
+
+**Problems with the episodes themselves**
+
+- **Rigid templates.** The renderer has no randomness, so word order carries structure a model can exploit: 0.54 bits of order structure at depth 128 against −0.05 for natural English. Diagnosed, never fixed; a varied-presentation option was designed and not run.
+- **Scaffolding swamps the answer.** 98.6% of the tokens in an episode are instructions and framing, and 1.4% is the answer. A model can be excellent at next-token prediction and useless at the task (n-gram token lift 0.77, answer lift 0.05), so answer metrics had to be reported separately.
+- **Node type is almost fixed by the tree's shape.** A floor that only looks at shape gets the type right 86% of the time, and five of the seventeen node types never occur at all. Most apparent "type skill" was a lookup table.
+- **A fixed symbol pool.** Every label scored at evaluation had already appeared in training, and attributes such as colour, shape and name are drawn independently. Memorising vocabulary pays, which the renaming test exposed:
+
+![Masked-node accuracy before and after every symbol is renamed. Analogy falls from 0.417 to 0.036, grammar from 0.302 to 0, n-gram from 0.252 to 0.014. On all 179 lessons corefer holds at 0.353 to 0.350 while workspace falls from 0.352 to 0.221.](/assets/img/projects/langcurriculum-renaming.svg)
+
+- **Filling a hidden node is mostly copying.** The best model scores 0.492 where the answer is visible elsewhere in the graph and 0.003 where it is not. The task measures retrieval more than generation.
+- **More data buys memorisation.** Raising one model's example budget lifted its accuracy from 0.273 to 0.352, but its accuracy on renamed episodes only from 0.214 to 0.221: about 91% of what the extra data bought was vocabulary.
+
+**Problems with using it as a benchmark**
+
+- **Floors that were too generous or too harsh.** The label floor read unmasked parents and the agent floor was fitted differently from the model it judged; both were fixed. An episode floor that counted gold answers from the evaluation episodes themselves was recorded and left as a known bias.
+- **A slice that ranks backwards.** Every early number came from six lessons chosen early and never revisited. On those six, rule induction scored 0.206 *below* its floor; in the first sweep over all 179 it scored 0.250 above it, and analogy moved from −0.045 to +0.256 the same way. Three per cent of the curriculum ranked the models close to backwards.
+- **Interactive versions don't discriminate.** Turned into environments, nothing cleared its floor except on one task (repair), and a policy that paid to gather information was bit-identical to one that didn't.
+- **The tooling.** The harness's tokenizer deleted underscores, so 9 of 85 answer strings could not be produced at all. A feature built from the same training folds leaked. And an unpinned curriculum version could silently invalidate every result measured on it, which is why the harness now checksums the copy it uses.
+
+The verdict, written on 18 August, was to demote the curriculum from benchmark to development harness. It is very good at producing unlimited, contamination-free problems with known answers. On its own it is a weak judge of whether a system understood them, because its surface is too regular and its vocabulary too small. Both are fixable here (random presentation, an open symbol pool, a shape-blind type distribution), and they are the next thing this generator needs.
+
 ## Lessons
 
 **Measure the boundary; do not declare it.** Every coverage question here was answered by instrumenting the thing and rendering real episodes — which characters the font actually needs, which lessons a renderer can actually draw, which keys the grammar actually asks for. The one place that was declared rather than measured is the one place that was wrong for its entire existence, and it was wrong in the most expensive direction: silently, in production, in 57 languages.
