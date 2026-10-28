@@ -1,7 +1,8 @@
 ---
 title: GenieEDA
-date: 2026-07-01
-datePrecision: season
+date: 2026-09-27
+endDate: 2026-09-28
+datePrecision: day
 lane: building
 tags: [eda, hardware, pcb, agents, cloudflare, typescript]
 summary: "A contracting business for electronics design that never got a client: a free, local-first PCB workspace meant to lead into paid engineering, built mostly by a swarm of coding agents in one night, deployed to staging, and never launched."
@@ -24,7 +25,7 @@ critiques: []
 
 ## Problem
 
-Small hardware teams (embedded, robotics, IoT) lose weeks to board design that isn't their product. The tools lock a design into one vendor's file format, the reasoning behind each change lives in someone's head, and "the design-rule check is green" gets mistaken for "this board is ready to fabricate." In the summer of 2026 I wanted to sell the fix as a service: scope a board, engineer it, hand back an open project file with the evidence for every decision.
+Small hardware teams (embedded, robotics, IoT) lose weeks to board design that isn't their product. The tools lock a design into one vendor's file format, the reasoning behind each change lives in someone's head, and "the design-rule check is green" gets mistaken for "this board is ready to fabricate." In September 2026 I wanted to sell the fix as a service: scope a board, engineer it, hand back an open project file with the evidence for every decision.
 
 ## Solution
 
@@ -38,7 +39,7 @@ The workbench part is real. Opening the example CAN-node board gives a working s
 
 ## How
 
-Almost all of it was built in about fifteen hours on 27–28 September, and mostly not by me typing. I wrote a 77-task backlog and a master prompt, and Codex and Claude subagents worked through it in parallel, about seventy-five git worktrees, 356 commits. I reviewed, merged and steered.
+All of it was built in about fifteen hours on 27–28 September, and mostly not by me typing. I wrote a 77-task backlog and a master prompt, and Codex and Claude subagents worked through it in parallel, about seventy-five git worktrees, 356 commits. I reviewed, merged and steered.
 
 - **Code:** a TypeScript monorepo of about 117,000 lines in 25 packages, plus a Rust/WASM polygon kernel for board geometry
 - **Apps:** the website, the browser workbench (IndexedDB storage, a service worker, works offline), an unsigned Electron shell, and a pipeline that renders the launch film from scripted, real-time captures of the workbench
