@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-labelledby="t d">
+  <title id="t">runlaw architecture</title>
+  <desc id="d">Your app calls runlaw instead of OpenAI by changing its base URL. One Cloudflare Worker authenticates the call, applies the workspace's live policy, forwards it to the model provider, and asks a judge model about plain-language rules. Each workspace is its own Ledger Durable Object holding policy versions, traces and approvals. One global Accounts Durable Object holds users, sessions, API keys, credits, usage and rate-limit windows. The console reads and writes both through the same Worker.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1l9 5-9 5z" fill="#2e7d78"/></marker>
+    <marker id="g" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1l9 5-9 5z" fill="#8a8574"/></marker>
+    <marker id="o" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1l9 5-9 5z" fill="#b07527"/></marker>
+    <style>
+      .h{font:600 18px ui-sans-serif,system-ui,sans-serif;fill:#22241f}
+      .s{font:400 14px ui-sans-serif,system-ui,sans-serif;fill:#5d5b52}
+      .m{font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#2e7d78}
+      .k{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#8a8574;letter-spacing:.08em}
+      .card{fill:#fbf8f0;stroke:#cfc8b4;stroke-width:1.5}
+      .worker{fill:#f4efe3;stroke:#2e7d78;stroke-width:2}
+      .inner{fill:#fffdf8;stroke:#d8d1bd;stroke-width:1.2}
+      .do{fill:#f6f1e4;stroke:#b07527;stroke-width:1.8}
+      .ln{fill:none;stroke:#2e7d78;stroke-width:2.2}
+      .lg{fill:none;stroke:#8a8574;stroke-width:1.8;stroke-dasharray:5 5}
+      .lo{fill:none;stroke:#b07527;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1200" height="700" rx="26" fill="#ece7dc"/>
+
+  <text x="40" y="52" class="k">CLIENTS</text>
+  <rect x="40" y="70" width="220" height="132" rx="14" class="card"/>
+  <text x="60" y="102" class="h">Your app</text>
+  <text x="60" y="126" class="s">Any OpenAI client.</text>
+  <text x="60" y="146" class="s">Only base_url changes.</text>
+  <text x="60" y="180" class="m">Bearer rl_live_…</text>
+
+  <rect x="40" y="226" width="220" height="132" rx="14" class="card"/>
+  <text x="60" y="258" class="h">Console &amp; admin</text>
+  <text x="60" y="282" class="s">Policy editor, traces,</text>
+  <text x="60" y="302" class="s">approvals, keys, accounts.</text>
+  <text x="60" y="336" class="m">cookie rl_session</text>
+
+  <text x="320" y="52" class="k">ONE CLOUDFLARE WORKER</text>
+  <rect x="320" y="70" width="560" height="288" rx="18" class="worker"/>
+  <rect x="340" y="90" width="520" height="54" rx="10" class="inner"/>
+  <text x="358" y="114" class="h">Authenticate</text>
+  <text x="358" y="134" class="s">API key or session → user, workspace, role</text>
+  <text x="845" y="122" class="m" text-anchor="end">hash lookup</text>
+
+  <rect x="340" y="156" width="250" height="186" rx="10" class="inner"/>
+  <text x="358" y="182" class="h">Gateway</text>
+  <text x="358" y="202" class="m">/v1/chat/completions</text>
+  <text x="358" y="230" class="s">admit (credits, calls/min)</text>
+  <text x="358" y="252" class="s">input rules → forward</text>
+  <text x="358" y="274" class="s">output + tool-call rules</text>
+  <text x="358" y="296" class="s">return JSON or SSE</text>
+  <text x="358" y="318" class="s">write trace, charge tokens</text>
+
+  <rect x="606" y="156" width="254" height="186" rx="10" class="inner"/>
+  <text x="624" y="182" class="h">Control API</text>
+  <text x="624" y="202" class="m">/api/*</text>
+  <text x="624" y="230" class="s">policy + versions</text>
+  <text x="624" y="252" class="s">traces, approvals</text>
+  <text x="624" y="274" class="s">evaluate (replay a draft)</text>
+  <text x="624" y="296" class="s">auth, keys, account</text>
+  <text x="624" y="318" class="s">admin: requests, accounts</text>
+
+  <text x="940" y="52" class="k">MODEL PROVIDER</text>
+  <rect x="940" y="70" width="220" height="132" rx="14" class="card"/>
+  <text x="960" y="102" class="h">Your model</text>
+  <text x="960" y="126" class="s">The forwarded request,</text>
+  <text x="960" y="146" class="s">after input rules ran.</text>
+  <text x="960" y="180" class="m">OpenAI today</text>
+
+  <rect x="940" y="226" width="220" height="132" rx="14" class="card"/>
+  <text x="960" y="258" class="h">Judge model</text>
+  <text x="960" y="282" class="s">Plain-language rules</text>
+  <text x="960" y="302" class="s">and rewrites.</text>
+  <text x="960" y="336" class="m">gpt-6-luna</text>
+
+  <path d="M260 136 H330" class="ln" marker-end="url(#a)"/>
+  <path d="M260 292 H330" class="lg" marker-end="url(#g)"/>
+  <path d="M880 136 H930" class="ln" marker-end="url(#a)"/>
+  <path d="M880 292 H930" class="lg" marker-end="url(#g)"/>
+
+    <rect x="320" y="438" width="420" height="222" rx="16" class="do"/>
+  <text x="342" y="472" class="h">Ledger</text>
+  <text x="414" y="472" class="s">· one per workspace</text>
+  <text x="342" y="508" class="m">policy_versions</text>
+  <text x="502" y="508" class="s">every save; live = latest</text>
+  <text x="342" y="540" class="m">traces</text>
+  <text x="502" y="540" class="s">each call, rule by rule</text>
+  <text x="502" y="560" class="s">(newest 5,000 kept)</text>
+  <text x="342" y="592" class="m">approvals</text>
+  <text x="502" y="592" class="s">held tool calls</text>
+  <text x="342" y="636" class="s">Workspaces never share storage.</text>
+
+  <rect x="760" y="438" width="400" height="222" rx="16" class="do"/>
+  <text x="782" y="472" class="h">Accounts</text>
+  <text x="878" y="472" class="s">· one, global</text>
+  <text x="782" y="508" class="m">users, sessions, api_keys</text>
+  <text x="782" y="528" class="s">PBKDF2 passwords, hashed tokens</text>
+  <text x="782" y="560" class="m">credits, credit_events</text>
+  <text x="782" y="580" class="s">1 credit = 1,000 tokens</text>
+  <text x="782" y="612" class="m">rate, failures, requests</text>
+  <text x="782" y="632" class="s">calls/min, sign-in lockout</text>
+
+  <path d="M470 358 V428" class="lo" marker-end="url(#o)"/>
+  <path d="M700 358 V428" class="lo" marker-end="url(#o)"/>
+  <path d="M800 358 C 800 395, 900 395, 900 428" class="lo" marker-end="url(#o)"/>
+  <text x="40" y="460" class="k">DURABLE OBJECTS · SQLITE</text>
+  <text x="40" y="490" class="s">The Worker is stateless.</text>
+  <text x="40" y="512" class="s">Everything durable sits in</text>
+  <text x="40" y="534" class="s">a Durable Object: one per</text>
+  <text x="40" y="556" class="s">workspace for traffic, one</text>
+  <text x="40" y="578" class="s">for identity and billing.</text>
+</svg>

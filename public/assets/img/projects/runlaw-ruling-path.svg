@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="t d">
+  <title id="t">runlaw: the ruling path for one call</title>
+  <desc id="d">One chat completion through runlaw. 1, the Accounts Durable Object admits the caller or refuses with 403, 402 or 429. 2, input rules run, redacting the messages or blocking with a 400. 3, the request goes to the model and the whole answer is buffered. 4, output rules redact, rewrite or withhold the text. 5, tool-call rules check each proposed call and block it or hold it for approval. 6, the ruled answer is returned as JSON or re-sent as server-sent events. Afterwards the trace is written to the workspace Ledger and the tokens are charged. Held calls wait in the approvals queue; rules in monitor mode record the same events without changing anything.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1l9 5-9 5z" fill="#2e7d78"/></marker>
+    <marker id="o" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1l9 5-9 5z" fill="#b07527"/></marker>
+    <marker id="g" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1l9 5-9 5z" fill="#8a8574"/></marker>
+    <style>
+      .h{font:600 18px ui-sans-serif,system-ui,sans-serif;fill:#22241f}
+      .n{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#fbf8f0}
+      .s{font:400 14px ui-sans-serif,system-ui,sans-serif;fill:#5d5b52}
+      .m{font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#2e7d78}
+      .r{font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#b23a26}
+      .am{font:500 12.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#9a6420}
+      .k{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#8a8574;letter-spacing:.08em}
+      .card{fill:#fbf8f0;stroke:#cfc8b4;stroke-width:1.5}
+      .key{fill:#fbf8f0;stroke:#2e7d78;stroke-width:2}
+      .hold{fill:#f6f1e4;stroke:#b07527;stroke-width:1.8}
+      .note{fill:none;stroke:#b8b19c;stroke-width:1.4;stroke-dasharray:5 5}
+      .ln{fill:none;stroke:#2e7d78;stroke-width:2.2}
+      .lo{fill:none;stroke:#b07527;stroke-width:2}
+      .lg{fill:none;stroke:#8a8574;stroke-width:1.8;stroke-dasharray:5 5}
+      .dot{fill:#2e7d78}
+    </style>
+  </defs>
+  <rect width="1200" height="800" rx="26" fill="#ece7dc"/>
+
+  <text x="40" y="56" class="k">REQUEST PATH</text>
+  <rect x="40" y="74" width="340" height="196" rx="14" class="card"/>
+  <circle cx="72" cy="104" r="13" class="dot"/><text x="72" y="108.5" class="n" text-anchor="middle">1</text>
+  <text x="94" y="110" class="h">Admit</text>
+  <text x="60" y="142" class="s">Accounts checks the caller before</text>
+  <text x="60" y="163" class="s">any work is done.</text>
+  <text x="60" y="192" class="r">403  account suspended</text>
+  <text x="60" y="213" class="r">402  out of credits</text>
+  <text x="60" y="234" class="r">429  over calls/min, Retry-After</text>
+  <rect x="430" y="74" width="340" height="196" rx="14" class="key"/>
+  <circle cx="462" cy="104" r="13" class="dot"/><text x="462" y="108.5" class="n" text-anchor="middle">2</text>
+  <text x="484" y="110" class="h">Input rules</text>
+  <text x="450" y="142" class="m">pii · pattern · semantic</text>
+  <text x="450" y="163" class="s">Redact rewrites the messages, so</text>
+  <text x="450" y="184" class="s">the values never reach the model.</text>
+  <text x="450" y="205" class="s">Flag only records.</text>
+  <text x="450" y="234" class="r">block → 400 policy_violation</text>
+  <rect x="820" y="74" width="340" height="196" rx="14" class="card"/>
+  <circle cx="852" cy="104" r="13" class="dot"/><text x="852" y="108.5" class="n" text-anchor="middle">3</text>
+  <text x="874" y="110" class="h">Forward, buffered</text>
+  <text x="840" y="142" class="s">The stream flag is removed, so the</text>
+  <text x="840" y="163" class="s">whole answer comes back before</text>
+  <text x="840" y="184" class="s">anything reaches your app and the</text>
+  <text x="840" y="205" class="s">output rules can see all of it.</text>
+  <text x="40" y="326" class="k">RESPONSE PATH</text>
+  <rect x="820" y="344" width="340" height="204" rx="14" class="key"/>
+  <circle cx="852" cy="374" r="13" class="dot"/><text x="852" y="378.5" class="n" text-anchor="middle">4</text>
+  <text x="874" y="380" class="h">Output rules: text</text>
+  <text x="840" y="412" class="m">pii · pattern · semantic</text>
+  <text x="840" y="433" class="s">Redact in place. Semantic hits are</text>
+  <text x="840" y="454" class="s">rewritten by the judge model.</text>
+  <text x="840" y="483" class="r">block → text withheld,</text>
+  <text x="840" y="504" class="r">[runlaw] notice in its place</text>
+  <rect x="430" y="344" width="340" height="204" rx="14" class="key"/>
+  <circle cx="462" cy="374" r="13" class="dot"/><text x="462" y="378.5" class="n" text-anchor="middle">5</text>
+  <text x="484" y="380" class="h">Tool-call rules</text>
+  <text x="450" y="412" class="m">tool: amount &gt; 500 · semantic</text>
+  <text x="450" y="433" class="s">Each proposed call is checked</text>
+  <text x="450" y="454" class="s">against its arguments.</text>
+  <text x="450" y="483" class="r">block → call removed + notice</text>
+  <text x="450" y="504" class="am">require_approval → held,</text>
+  <text x="450" y="525" class="am">call removed + notice</text>
+  <rect x="40" y="344" width="340" height="204" rx="14" class="card"/>
+  <circle cx="72" cy="374" r="13" class="dot"/><text x="72" y="378.5" class="n" text-anchor="middle">6</text>
+  <text x="94" y="380" class="h">Return</text>
+  <text x="60" y="412" class="s">The ruled answer as JSON, or</text>
+  <text x="60" y="433" class="s">re-sent as server-sent events</text>
+  <text x="60" y="454" class="s">when the app asked to stream.</text>
+  <text x="60" y="483" class="m">x-runlaw-trace-id header</text>
+  <path d="M380 172 H420" class="ln" marker-end="url(#a)"/>
+  <path d="M770 172 H810" class="ln" marker-end="url(#a)"/>
+  <path d="M990 270 V334" class="ln" marker-end="url(#a)"/>
+  <path d="M820 446 H780" class="ln" marker-end="url(#a)"/>
+  <path d="M430 446 H390" class="ln" marker-end="url(#a)"/>
+  <text x="40" y="604" class="k">AFTER THE RESPONSE</text>
+  <rect x="40" y="622" width="340" height="150" rx="14" class="card"/>
+  <text x="60" y="658" class="h">Trace + usage</text>
+  <text x="60" y="690" class="s">Ledger: the request, what was</text>
+  <text x="60" y="711" class="s">forwarded and returned, and every</text>
+  <text x="60" y="732" class="s">rule event with its evidence.</text>
+  <text x="60" y="753" class="m">credits −= (model+judge tokens)/1,000</text>
+  <rect x="430" y="622" width="340" height="150" rx="14" class="hold"/>
+  <text x="450" y="658" class="h">Approvals queue</text>
+  <text x="450" y="690" class="s">A person approves or denies the</text>
+  <text x="450" y="711" class="s">held call in the console. The</text>
+  <text x="450" y="732" class="s">decision is recorded; the call is</text>
+  <text x="450" y="753" class="s">not executed by runlaw.</text>
+  <rect x="820" y="622" width="340" height="150" rx="14" class="note"/>
+  <text x="840" y="658" class="h">Monitor mode</text>
+  <text x="840" y="690" class="s">A rule in monitor mode writes the</text>
+  <text x="840" y="711" class="s">same event with enforced: false</text>
+  <text x="840" y="732" class="s">and changes nothing. Any rule, or</text>
+  <text x="840" y="753" class="s">the whole policy, can be in it.</text>
+  <path d="M210 548 V612" class="ln" marker-end="url(#a)"/>
+  <path d="M600 548 V612" class="lo" marker-end="url(#o)"/>
+</svg>

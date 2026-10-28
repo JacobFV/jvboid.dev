@@ -17,8 +17,8 @@ hero:
 threadImages:
   - src: "/assets/media/runlaw/hero.jpg"
     alt: "The runlaw homepage hero"
-  - src: "/assets/media/runlaw/traces.jpg"
-    alt: "A recorded call's trace, rule by rule"
+  - src: "/assets/img/projects/runlaw-architecture.svg"
+    alt: "runlaw architecture: one Worker in front of the model, with a Ledger Durable Object per workspace and a global Accounts Durable Object"
 links:
   demo: https://runlaw.jacobfv123.workers.dev
   github: https://github.com/JacobFV/runlaw
@@ -54,6 +54,10 @@ runlaw is four primitives:
 3. **Traces.** Every call is recorded: the original request, what was forwarded, each rule's outcome with evidence and confidence, the provider's answer, what was returned, latency and tokens.
 4. **Evaluations.** Replay a draft policy against recent real traffic before switching it on. The same evaluator is behind the playground and the live demo on the homepage.
 
+Setting a policy is the whole interface. You write it as JSON, replay the draft against your own recent calls, save it from the console or with `PUT /api/policy`, watch it in monitor mode, then switch it to enforce. Every save is a version, so rolling back means saving an older one again.
+
+![Setting and rolling out a runlaw policy: a JSON policy with a PII redaction rule, a tool rule that holds refunds over 500 for approval and a semantic rule that rewrites legal advice; then four steps: replay the draft against recent traces, save it as a new version, watch it in monitor mode, enforce; with a roll-back path that saves an older version again](/assets/img/projects/runlaw-policy-rollout.svg)
+
 ![The live demo panel on the homepage: a message with a card number and email is redacted before forwarding, and a proposed $1,200 refund is held by the refund-limit rule](/assets/media/runlaw/live-ruling.jpg)
 
 A held tool call doesn't reach the app. The app gets a notice instead of the call, and the call goes into an approvals queue for a person to approve or deny. Approving records the decision. It doesn't execute the action, and the docs say so.
@@ -62,9 +66,11 @@ A held tool call doesn't reach the app. The app gets a notice instead of the cal
 
 **One Worker, two kinds of Durable Object.** A Cloudflare Worker serves the static site and owns `/v1/*` and `/api/*`. Each workspace is its own SQLite-backed `Ledger` Durable Object holding its policy versions, traces (the most recent 5,000) and approvals. That isolates workspaces and makes each one strongly consistent without a shared database. A single `Accounts` Durable Object holds users, hashed sessions and API keys, access requests, credit balances, daily usage and the rate-limit windows.
 
-![The architecture diagram from the site: the application, the gateway with rule cards on the request and response paths, and the model](/assets/media/runlaw/architecture.jpg)
+![runlaw architecture: your app and the console call one Cloudflare Worker, which authenticates the caller, runs the gateway and the control API, forwards to the model and asks a judge model about plain-language rules; below it a Ledger Durable Object per workspace holds policy versions, traces and approvals, and one global Accounts Durable Object holds users, sessions, keys, credits and rate-limit windows](/assets/img/projects/runlaw-architecture.svg)
 
 **The ruling path.** Input rules run before anything is forwarded: redaction rewrites the messages, so redacted values never reach the provider. The upstream response is buffered so output and tool-call rules can see all of it. If the client asked for a stream, runlaw sends the ruled response as server-sent events afterwards. That costs time-to-first-token, a trade I made on purpose: a governance layer that streams first and rules later can't take back what it already sent. Semantic rules are one structured judge call each to `gpt-6-luna`, which returns a verdict, a confidence and a reason. Below the rule's threshold the call passes. If the judge itself fails, the policy's `on_judge_error` decides.
+
+![The ruling path for one call: admit the caller (403, 402 or 429 if not), run input rules (redact, or block with a 400), forward and buffer the whole answer, run output rules on the text (redact, rewrite or withhold), run tool-call rules (block, or hold for approval), then return JSON or server-sent events; afterwards the trace and usage are written, held calls wait in the approvals queue, and monitor-mode rules only record](/assets/img/projects/runlaw-ruling-path.svg)
 
 **Accounts without email.** There's no mail sender, so anything that needs one is out: no password reset, no verification links. Requesting access shows a link to create an account. An admin can switch sign-up to approval mode, and then the link only works once they approve the email. Passwords use PBKDF2-SHA-256 with a per-user salt. API keys and session tokens are stored only as SHA-256 hashes. Sign-in locks an email for 15 minutes after five failures, and sign-in, sign-up and access requests are also rate-limited per IP with Workers rate-limit bindings.
 
@@ -72,11 +78,7 @@ A held tool call doesn't reach the app. The app gets a notice instead of the cal
 
 **The console.** One HTML file, no framework. It has an overview with a calls-per-day chart, a trace explorer, the approvals queue, a policy editor with replay and version history, a playground, API keys, usage and settings. Admins get two more tabs: access requests, and accounts, where they can add or remove credits with a note, change limits, make an account unlimited, or suspend it.
 
-![The trace explorer from the homepage: recorded calls with their outcomes on the left, and one held call's timeline rule by rule on the right](/assets/media/runlaw/traces.jpg)
-
 **The site.** I first built it with a generic design direction and it looked like every AI landing page. So I went through the four companies I was positioning against, measured their type and layout in a headless browser, and redesigned in that register. Inter Tight Light for display, Instrument Serif italic for the turns of phrase, IBM Plex Mono for labels, one vermilion signal colour and full-bleed footage behind every section. The footage is openly licensed, and every clip is credited on its own page. A use-cases page walks through six deployments (support, payments, healthcare intake, coding agents, legal, internal copilots), each with the actual policy JSON it would run.
-
-![The payments use case: the copy on the left, and on the right a footage panel above the two tool rules that hold payments over \$1,000 and block those over \$25,000](/assets/media/runlaw/use-case-payments.jpg)
 
 ## Tests
 
