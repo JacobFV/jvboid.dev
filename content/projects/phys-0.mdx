@@ -1,0 +1,67 @@
+---
+title: phys-0
+date: 2026-05-15
+endDate: 2026-05-26
+datePrecision: day
+lane: building
+tags: [robotics, agents, mcp, embodied-ai, lab-automation, electron]
+summary: "An open lab console and MCP server that lets an AI agent run a low-cost SO-101 robot arm through 84 typed, validated, logged tools: experiments, editable 3D virtual worlds with physics, a camera that reads pH from vials, calibration and teleop. Chem-0 grown into a platform."
+resume_description: "open lab console + mcp server for agent-driven robotics: 84 typed tools over a shared backend (electron console, mcp, cli), editable 3d virtual worlds with rapier physics and real so-101 urdf meshes, python bridge for lerobot servos and placo ik, opencv vial detection reading ph from indicator dye, everything logged to sqlite. typescript, electron, three.js, rapier, python, opencv, lerobot."
+resume_brief:
+  problem: "Lab-automation agents either need industrial hardware or run hard-coded scripts, and nothing records why the robot did what it did."
+  task: "Built a local console and MCP server where every robot, simulation and measurement action is one of 84 typed, validated tools, written to an experiment record."
+  outcome: "An agent adds a virtual SO-101 to a world in **three tool calls**; on the real bench the camera reads pH from **up to 10 vials** in a frame into the record."
+  stack: "typescript, electron, three.js, rapier, mcp, python, opencv, lerobot, sqlite"
+hero:
+  src: "/assets/media/phys-0/poster.jpg"
+  alt: "The phys-0 launch video title card: the wordmark beside an animated SO-101 arm"
+video: "/assets/media/phys-0/phys-0-launch.mp4"
+links:
+  github: https://github.com/JacobFV/phys-0
+influences: [chem-0]
+realizes: []
+critiques: []
+---
+
+<Video
+  url="/assets/media/phys-0/phys-0-launch.mp4"
+  title="phys-0 launch video"
+  poster="/assets/media/phys-0/poster.jpg"
+  caption="94 seconds. The console, agent and editor sections are real screen recordings of the app (cursor and all); the bench shots are real camera frames; the two shots marked 'animation' are."
+/>
+
+- **One door for every action.** The agent, the Lab Console, any MCP client and the CLI all call the same 84 typed tools, so a move made by a person and a move made by a model are the same kind of record
+- **Worlds you can see.** Virtual benches are built in a 3D editor with the real SO-101 meshes, glassware, cameras and Rapier physics, and the agent can build them too
+- **A camera that measures.** On the real bench, OpenCV finds each vial and reads its indicator dye into an estimated pH
+
+## Problem
+
+[Chem-0](/projects/chem-0) asked whether an agent could run a cheap robot arm on a chemistry bench, and its answer was that the hard parts are not the model: calibration, feedback speed, servo overshoot, and keeping a trustworthy record of what happened. Those are platform problems. Every experiment re-solved them in scripts, and nothing a person did by hand was recorded the same way as what the agent did.
+
+## Solution
+
+phys-0 turns Chem-0 into a platform. A single TypeScript backend owns a registry of typed tools: arm control and calibration, cameras, LeRobot recording and policy training, virtual worlds and simulation, assets, experiment records. Everything that can act on the world goes through it, and everything that goes through it is validated and written down.
+
+<Topology3D id="phys-0" caption="Four ways in, one registry, and three kinds of world behind it: the record, the simulation, the real bench." />
+
+## How
+
+- **Console:** Electron, with experiments, worlds, assets, arms and artifacts; an agent chat that streams tool calls; camera feeds; metrics; and status-bar entry points for recording, training and replay
+- **Virtual worlds:** a three.js editor with Rapier physics, the SO-101's URDF meshes, about thirty-five glassware, sensor and lighting items, drag-in placement, transform gizmos and collision checks
+- **Hardware:** a Python bridge for LeRobot (Feetech servos), placo for inverse kinematics, a six-endpoint calibration wizard with a ghost setpoint, and leader/follower teleop for recording datasets
+- **Vision:** OpenCV vial detection and bromothymol-blue colour classification into an estimated pH, logged per vial
+- **Interfaces:** an MCP server, a `phys0` CLI and the console, all over the same backend and the same SQLite store
+
+![The 3D world editor with an SO-101 arm, a vial rack, a beaker and a flask dragged onto the bench](/assets/media/phys-0/editor.jpg)
+
+## Results
+
+In the recording, the agent was asked to add a virtual SO-101 to a world and list what was in it. It made three tool calls (`list_worlds`, `create_virtual_arm`, `list_virtual_entities`) and reported the new arm with its ID, pose and collision settings alongside the bench's thirteen other entities. On the real bench in May, the camera located the vials and estimated each one's pH from its dye:
+
+![A real camera frame from the bench: the SO-101 arm, a rack of vials each boxed and labelled with an estimated pH, and a multimeter](/assets/media/phys-0/vision-annotated.jpg)
+
+Only the SO-101 is verified hardware. The other robots in the asset catalogue (Franka Panda, UR5e, xArm 6, a PX4 drone) are unvalidated records, and the project's own ledger says not to present them as working. Making the video also turned up two bugs worth knowing about: the Titration-station template's bench falls through the floor under physics, which leaves its arm in collision, and the CLI's `sim start` does not see a world the same CLI just created.
+
+## Lessons
+
+Putting every action behind a typed tool was the right abstraction, and it paid off in an unexpected place: it made the agent cheap to trust, because its moves are the same records as a person's. The weak point is everything that touches the real world (calibration and servo compliance carried over from Chem-0), and the next version should spend its effort there rather than on more tools.
