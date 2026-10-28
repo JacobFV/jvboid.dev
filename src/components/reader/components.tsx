@@ -26,6 +26,7 @@ import { StatuteAtmosphere } from "./StatuteAtmosphere";
 import { Topology3D } from "./Topology3D";
 import { LittleBrain } from "./LittleBrain";
 import { LittleBrainAtmosphere } from "./LittleBrainAtmosphere";
+import { GenieAtmosphere } from "./GenieAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
@@ -288,4 +289,5 @@ export const readerComponents: MDXComponents = {
   CinemaAtmosphere,
   StatuteAtmosphere,
   LittleBrainAtmosphere,
+  GenieAtmosphere,
 };

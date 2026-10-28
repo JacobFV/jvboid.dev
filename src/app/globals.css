@@ -4840,3 +4840,100 @@ a:hover {
   font-size: 0.875rem;
   color: var(--color-ink-mute);
 }
+
+/* ---- GenieEDA: the dark lab (reader/GenieAtmosphere.tsx) ----------------
+   The staging site's tokens: `#0a0c0b` ground, `#e8eae4` ink, `#ff8a52`
+   orange, Instrument Sans (condensed for display), JetBrains Mono uppercase
+   for labels, square corners, no shadows. Dark is forced. */
+:root[data-page-theme="genie"] {
+  --color-bg-0: #0a0c0b;
+  --color-bg-1: #121514;
+  --color-bg-2: #1b1f1d;
+  --color-ink: #e8eae4;
+  --color-ink-dim: #9aa29b;
+  --color-ink-mute: #6c746d;
+  --color-accent: #ff8a52;
+  --genie-face: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --genie-mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+:root[data-page-theme="genie"] .biolume,
+:root[data-page-theme="genie"] [data-theme-toggle] {
+  display: none;
+}
+.genie-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #0a0c0b 0, #0a0c0bf2 calc(50% - 26rem), #0a0c0b 50%, #0a0c0bf2 calc(50% + 26rem), #0a0c0bd9 100%),
+    url("/assets/media/genieeda/home.jpg") right top / cover no-repeat,
+    #0a0c0b;
+  opacity: 0.9;
+}
+@media (max-width: 1180px) {
+  .genie-field {
+    background: #0a0c0b;
+  }
+}
+:root[data-page-theme="genie"] body,
+:root[data-page-theme="genie"] .prose-mdx,
+:root[data-page-theme="genie"] .standfirst {
+  font-family: var(--genie-face);
+}
+:root[data-page-theme="genie"] body {
+  background: transparent;
+}
+:root[data-page-theme="genie"] [data-page-title],
+:root[data-page-theme="genie"] .prose-mdx h2,
+:root[data-page-theme="genie"] .prose-mdx h3 {
+  font-family: var(--genie-face);
+  font-stretch: 75%;
+  font-variation-settings: "wdth" 75;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+:root[data-page-theme="genie"] [data-page-title] {
+  line-height: 0.88;
+}
+:root[data-page-theme="genie"] .prose-mdx h2 {
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.9rem);
+  line-height: 0.95;
+}
+:root[data-page-theme="genie"] [data-node-meta] {
+  font-family: var(--genie-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+:root[data-page-theme="genie"] header button,
+:root[data-page-theme="genie"] header [role="menu"],
+:root[data-page-theme="genie"] [data-node-link],
+:root[data-page-theme="genie"] .reader-image,
+:root[data-page-theme="genie"] .prose-mdx pre,
+:root[data-page-theme="genie"] .prose-mdx code,
+:root[data-page-theme="genie"] .prose-mdx iframe,
+:root[data-page-theme="genie"] .prose-mdx video {
+  border-radius: 0;
+  box-shadow: none;
+}
+:root[data-page-theme="genie"] [data-node-link] {
+  font-family: var(--genie-face);
+  font-weight: 600;
+  background: #ff8a52;
+  color: #0a0c0b;
+  border: 0;
+  padding: 0.55rem 1rem;
+}
+:root[data-page-theme="genie"] [data-node-link]:hover {
+  background: #ffa275;
+}
+:root[data-page-theme="genie"] .prose-mdx a {
+  color: #ff8a52;
+  text-underline-offset: 0.18em;
+}
+:root[data-page-theme="genie"] .prose-mdx strong {
+  color: #e8eae4;
+}

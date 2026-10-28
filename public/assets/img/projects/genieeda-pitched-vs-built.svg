@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" role="img" aria-labelledby="t d" font-family="'Instrument Sans', Inter, system-ui, sans-serif">
+  <title id="t">GenieEDA: what was pitched, and what existed</title>
+  <desc id="d">Three tiers were pitched. genieeda, the free local-first workspace: schematic editing, placement and manual routing, zone fill, its own design-rule checks, requirements, bill of materials and reviewed change proposals all worked in the browser; KiCad import, ERC/DRC and the fabrication release gate existed only as library code; hosted AI credits never existed. genie engineering, the paid service: only marketing and a disabled intake form. genie lab, a fab-lab kit and robot: a simulated lab in library code and a marketing page. Across all three, intake was switched off, robots.txt disallowed indexing, none of the three outreach sequences was approved, no board was fabricated, and there were zero clients.</desc>
+  <style>
+    .ink{fill:#e8eae4}.dim{fill:#9aa29b}.acc{fill:#ff8a52}.rule{stroke:#e8eae4;stroke-opacity:.18}
+    .mono{font-family:'JetBrains Mono',ui-monospace,monospace;letter-spacing:.08em}
+    .ok{fill:#7dbe6a}.lib{fill:#e3b341}.mkt{fill:#9aa29b}
+  </style>
+  <text class="ink" x="0" y="28" font-size="22" font-weight="700">what was pitched, and what existed</text>
+  <text class="dim mono" x="0" y="52" font-size="11">GENIEEDA · BUILT 27–28 SEPTEMBER 2026 · NEVER LAUNCHED</text>
+
+  <!-- legend -->
+  <g font-size="12" class="mono">
+    <rect class="ok" x="560" y="40" width="10" height="10"/><text class="dim" x="576" y="49">WORKS</text>
+    <rect class="lib" x="642" y="40" width="10" height="10"/><text class="dim" x="658" y="49">LIBRARY ONLY</text>
+    <rect class="mkt" x="770" y="40" width="10" height="10"/><text class="dim" x="786" y="49">PAGE ONLY</text>
+  </g>
+
+  <!-- columns -->
+  <g>
+    <line class="rule" x1="0" y1="72" x2="900" y2="72"/>
+    <text class="ink" x="0" y="104" font-size="18" font-weight="700">genieeda</text>
+    <text class="dim" x="0" y="124" font-size="13">free, local-first workspace · $0</text>
+    <text class="ink" x="310" y="104" font-size="18" font-weight="700">genie engineering</text>
+    <text class="dim" x="310" y="124" font-size="13">paid service · $5k–$100k+, "hypothesis"</text>
+    <text class="ink" x="620" y="104" font-size="18" font-weight="700">genie lab</text>
+    <text class="dim" x="620" y="124" font-size="13">fab-lab kit and robot</text>
+    <line class="rule" x1="0" y1="140" x2="900" y2="140"/>
+  </g>
+
+  <g font-size="14" class="ink">
+    <!-- genieeda -->
+    <rect class="ok" x="0" y="160" width="10" height="10"/><text x="20" y="170">schematic editing</text>
+    <rect class="ok" x="0" y="186" width="10" height="10"/><text x="20" y="196">placement, manual routing, zone fill</text>
+    <rect class="ok" x="0" y="212" width="10" height="10"/><text x="20" y="222">its own design-rule checks</text>
+    <rect class="ok" x="0" y="238" width="10" height="10"/><text x="20" y="248">requirements, BOM, CSV export</text>
+    <rect class="ok" x="0" y="264" width="10" height="10"/><text x="20" y="274">reviewed change proposals, undo</text>
+    <rect class="ok" x="0" y="290" width="10" height="10"/><text x="20" y="300">AI edits, with human approval</text>
+    <text class="dim" x="20" y="316" font-size="12">tested against a scripted model only</text>
+    <rect class="lib" x="0" y="334" width="10" height="10"/><text x="20" y="344">KiCad import, ERC/DRC, release gate</text>
+    <rect class="mkt" x="0" y="360" width="10" height="10"/><text x="20" y="370">hosted AI credits</text>
+
+    <!-- engineering -->
+    <rect class="mkt" x="310" y="160" width="10" height="10"/><text x="330" y="170">pilot, team and deep-work tiers</text>
+    <rect class="mkt" x="310" y="186" width="10" height="10"/><text x="330" y="196">board benchmark ("Boardbench")</text>
+    <rect class="mkt" x="310" y="212" width="10" height="10"/><text x="330" y="222">sales PDFs, three email sequences</text>
+    <rect class="lib" x="310" y="238" width="10" height="10"/><text x="330" y="248">intake form, portal, reviews (D1)</text>
+    <text class="dim" x="330" y="264" font-size="12">17 migrations, switched off</text>
+
+    <!-- lab -->
+    <rect class="lib" x="620" y="160" width="10" height="10"/><text x="640" y="170">simulated lab and robot</text>
+    <rect class="mkt" x="620" y="186" width="10" height="10"/><text x="640" y="196">office fab-lab kit</text>
+    <rect class="mkt" x="620" y="212" width="10" height="10"/><text x="640" y="222">launch film with physical footage</text>
+    <text class="dim" x="640" y="238" font-size="12">blocked: nothing physical was made</text>
+  </g>
+
+  <!-- outcome strip -->
+  <line class="rule" x1="0" y1="400" x2="900" y2="400"/>
+  <g class="mono" font-size="11">
+    <text class="dim" x="0" y="428">INTAKE</text><text class="ink" x="0" y="450" font-size="15">switched off</text>
+    <text class="dim" x="180" y="428">ROBOTS.TXT</text><text class="ink" x="180" y="450" font-size="15">Disallow: /</text>
+    <text class="dim" x="360" y="428">OUTREACH APPROVED</text><text class="ink" x="360" y="450" font-size="15">0 of 3</text>
+    <text class="dim" x="560" y="428">BOARDS MADE</text><text class="ink" x="560" y="450" font-size="15">0</text>
+    <text class="dim" x="720" y="428">CLIENTS</text><text class="acc" x="720" y="458" font-size="30" font-weight="700">0</text>
+  </g>
+  <text class="dim" x="0" y="500" font-size="13">The product was real and narrow. The business around it was a set of pages nobody could reach.</text>
+</svg>

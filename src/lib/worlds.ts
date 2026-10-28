@@ -104,6 +104,10 @@ export const WORLDS: Record<string, World> = {
   // lilac blooms, frosted panels, pill buttons, DM Sans and Manrope. Light is
   // forced — the app has one palette and no dark half.
   "/projects/my-little-brain": { id: "littlebrain", theme: "light" },
+  // genieeda's staging site: near-black, one orange, condensed Instrument
+  // Sans and uppercase mono labels, square corners. Dark is forced — the
+  // marketing site has one palette, and the light one is the workbench's.
+  "/projects/genieeda": { id: "genie", theme: "dark" },
 };
 
 /** Trailing slashes are stripped, and the lookup goes through hasOwnProperty:

@@ -1,0 +1,61 @@
+---
+title: GenieEDA
+date: 2026-07-01
+datePrecision: season
+lane: building
+tags: [eda, hardware, pcb, agents, cloudflare, typescript]
+summary: "A contracting business for electronics design that never got a client: a free, local-first PCB workspace meant to lead into paid engineering, built mostly by a swarm of coding agents in one night, deployed to staging, and never launched."
+resume_description: "local-first browser pcb workspace (schematic editing, placement and routing, its own drc, reviewed change proposals, bom) on a typescript monorepo with a rust/wasm geometry kernel and cloudflare workers, built by orchestrating ~75 coding-agent worktrees through a 77-task backlog. typescript, rust, wasm, cloudflare workers, d1."
+hero:
+  src: "/assets/media/genieeda/home.jpg"
+  alt: "The genieeda staging homepage: 'design electronics. ship hardware.' in condensed type, orange on near-black, over a dimmed bill-of-materials screen"
+links:
+  demo: https://genieeda-staging.jacobfv123.workers.dev/
+influences: []
+realizes: []
+critiques: []
+---
+
+<GenieAtmosphere />
+
+- **The idea:** free, local-first tools for designing circuit boards, and engineers for hire when a team needs the board actually done. Software as the funnel, a service as the business
+- **What existed:** a browser workbench that really edits schematics and boards, with reviewed, undoable changes; a marketing site, pricing, sales PDFs and a launch film
+- **What happened:** no clients. Looking back at the repository, it is easy to see why: nobody could have become one
+
+## Problem
+
+Small hardware teams (embedded, robotics, IoT) lose weeks to board design that isn't their product. The tools lock a design into one vendor's file format, the reasoning behind each change lives in someone's head, and "the design-rule check is green" gets mistaken for "this board is ready to fabricate." In the summer of 2026 I wanted to sell the fix as a service: scope a board, engineer it, hand back an open project file with the evidence for every decision.
+
+## Solution
+
+GenieEDA was three tiers. **genieeda**, a free workspace that runs in the browser with no account, keeps one open project file, and turns every edit into a reviewed, journaled diff. **genie engineering**, paid board design: a pilot board for $5k–15k, team capacity at $25k–50k a year, every number marked as an initial hypothesis. And **genie lab**, an office fab-lab kit with a robot, which was an idea and a page.
+
+![What was pitched next to what existed: the workspace's editing, routing, DRC, requirements, BOM and reviewed change proposals worked; KiCad import and the release gate were library code only; the engineering service and the lab were pages. Intake switched off, robots.txt disallowing everything, 0 of 3 outreach sequences approved, 0 boards made, 0 clients.](/assets/img/projects/genieeda-pitched-vs-built.svg)
+
+The workbench part is real. Opening the example CAN-node board gives a working schematic editor with 29 objects on 8 nets, its own structural electrical-rule check (labelled honestly as not KiCad's), undo and redo, and an inspector:
+
+![The GenieEDA workbench with the illustrative CAN node schematic open: an MCU and a CAN transceiver wired on a sheet, a tool palette, a symbol search, an inspector, and the nets list](/assets/media/genieeda/workbench-can-schematic.jpg)
+
+## How
+
+Almost all of it was built in about fifteen hours on 27–28 September, and mostly not by me typing. I wrote a 77-task backlog and a master prompt, and Codex and Claude subagents worked through it in parallel, about seventy-five git worktrees, 356 commits. I reviewed, merged and steered.
+
+- **Code:** a TypeScript monorepo of about 117,000 lines in 25 packages, plus a Rust/WASM polygon kernel for board geometry
+- **Apps:** the website, the browser workbench (IndexedDB storage, a service worker, works offline), an unsigned Electron shell, and a pipeline that renders the launch film from scripted, real-time captures of the workbench
+- **Hosting:** one Cloudflare Worker serving static assets, with 17 D1 migrations for identity, sync, jobs, reviews and an engineering portal, almost all of it behind a "planned release" flag
+- **AI:** six typed tools an agent could use to propose edits, each applied only after a person approves the diff. They were tested against a scripted fake model, never a real one
+
+<Video
+  url="/assets/media/genieeda/software-cut-720p.mp4"
+  title="GenieEDA, software-only cut"
+  poster="/assets/media/genieeda/software-cut-poster.webp"
+  caption="The 75-second launch film, software-only cut: every UI shot is a real-time capture of the workbench on an example project, with no speed-up. The cut with physical footage was never made, because no board was."
+/>
+
+## Results
+
+Zero clients, and the repository explains it better than I can. The intake form was switched off (`INTAKE_ENABLED=0`). `robots.txt` disallowed every page and the footer said "not indexed, no analytics", so nobody could find it. All three outbound email sequences sat at `approved: false`. The disclosures page said, accurately, that no engagement had been delivered and no legal entity or contact address had been published. No board was ever fabricated.
+
+## Lessons
+
+I built the product and the brochure and skipped the only part a business can't skip: asking someone to pay. Agents made it cheap to produce a convincing-looking company in a night, which made it easy to keep polishing the company instead of talking to a single hardware team. The workbench is a decent narrow tool. The next time I try to sell something, the first artifact will be a conversation, not a pricing page.
