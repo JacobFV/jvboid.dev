@@ -41,7 +41,9 @@ realizes: []
 critiques: []
 ---
 
-The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be [lazily](https://github.com/Super-Cognition-Labs/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization) [materialized](https://github.com/Super-Cognition-Labs/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization) into [explicit maps](https://super-cognition-labs.github.io/IBM-1/#programme) for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine. I walk through it in a [talk on LinkedIn](https://lnkd.in/p/djKYJK-W).
+The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be [lazily](https://github.com/Super-Cognition-Labs/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization) [materialized](https://github.com/Super-Cognition-Labs/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization) into [explicit maps](https://super-cognition-labs.github.io/IBM-1/) for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine. I walk through it in a [talk on LinkedIn](https://lnkd.in/p/djKYJK-W).
+
+<Topology3D id="ibm-1" caption="One kernel, many models, and a body: the kernel is materialized into each model only as far as its target reaches, every replica is folded back into it, and the same cortex closes the sensorimotor loop." />
 
 <LiveDemo
   url="https://super-cognition-labs.github.io/IBM-1/"
@@ -66,7 +68,7 @@ The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/anatomical_cortex_in_loop.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="cortex in the loop" />
-    <figcaption><strong>cortex in the loop</strong><span className="cap">0.17 mm COM drift under a 5 N push</span>The trained 1024-site cortical kernel holding the body upright: the cortex is the body's motor owner.</figcaption>
+    <figcaption><strong>cortex in the loop</strong><span className="cap">0.17 mm COM drift under a 5 N push</span>The trained 1024-site cortical kernel holding the body upright. What this shows is that the loop through cortex holds balance; a kernel with its sites shuffled holds it just as well, so it does not yet show that what the cortex <em>learned</em> is doing the work.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/video_prediction.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="video prediction" />
@@ -74,7 +76,7 @@ The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/cortex_severed.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="cortex in the loop, beside cortex severed" />
-    <figcaption><strong>cortex in the loop, beside cortex severed</strong><span className="cap">upright at 1.019 m · fallen at 0.590 m</span>With the cortex in the loop the body stays upright; severed from it, the body is on the floor by 2.90 s. The cortical dynamics carry the balance.</figcaption>
+    <figcaption><strong>cortex in the loop, beside cortex severed</strong><span className="cap">upright at 1.019 m · fallen at 0.590 m</span>With the cortex in the loop the body stays upright; severed from it, the body is on the floor by 2.90 s. The loop carries the balance; a shuffled kernel carries it too.</figcaption>
   </figure>
   <figure>
     <video src="/assets/media/ibm-1/anatomical_gait_skin.mp4" autoPlay loop muted playsInline preload="metadata" aria-label="one step, with skin" />
@@ -158,6 +160,7 @@ Every weight w_f starts at zero, so turning a relation on changes nothing until 
 | band-limited fusion is exact | real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16 | **held** |
 | the thalamocortical resonance | a spindle at 13.45 Hz; held-out +5503 nats/night, p = 7.2e-11 | **fitted** |
 | the slow oscillation sits at the band edge | 1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it | **fitted** |
+| what the kernel learned is what matters | a kernel with its sites shuffled holds the body just as well (peak COM within 1.7 µm); sharing one cortex across subjects measured neutral to slightly negative | **not shown** |
 
 ## §2b status
 
@@ -166,7 +169,7 @@ Where the programme stands, updated 9 September 2026. Every figure below is meas
 | what runs | measured | against |
 | --- | --- | --- |
 | one implicit kernel, published | fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. recovers **88.7%** of a task-specific kernel on the task that kernel was trained for | 0% for random |
-| 16 materializations, one 3.84M kernel | trained simultaneously to step 32,000, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual\_eeg **30.4%** top-1, optic\_nerve **22.8%**, ten per-subject terms mean **15.4%** | 0.5% chance |
+| 16 materializations, one 3.84M kernel | trained simultaneously to step 32,500, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual\_eeg peaked at **30.4%** top-1 (step 30,500; ±3.4 per evaluation), optic\_nerve **22–24%** late in the run, ten per-subject terms mean **≈15.5%**. The published kernel is the step-10,000 checkpoint (visual\_eeg 28.25%) | 0.5% chance |
 | image → cortex → EEG retrieval | **63.5%** top-1 on the designated test set, 200 images, median rank 1 | 127× chance |
 | a declared optic nerve into occipital cortex | three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved. displacing the port to a random region of equal size collapses retrieval to **0.44%** | 8.69% in place |
 | the substrate resolution has an interior optimum | controlled sweep, resolution the only variable: 128 → 19.4%, **512 → 23.0%**, 2048 → 23.0%, 8192 → 21.7% | both tails worse |
