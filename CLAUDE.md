@@ -75,6 +75,18 @@ editing this repo.
   `<Video>`, `<LiveDemo>`). Read the body first: the artifact is often
   already there, and adding it again just repeats it. See
   [CONTENT_MODEL.md](docs/CONTENT_MODEL.md#project-media).
+- **Projects need diagrams, not just screenshots.** A recurring problem
+  across Jacob's project entries: agents fill them with screenshots of the
+  UI and call that "visuals". A screenshot shows that a thing exists; it
+  doesn't explain how it works. Every project page that describes a
+  system needs real explanatory diagrams of its architecture, its data or
+  control flow, and the mechanism that makes it interesting. Hand-author
+  them as SVGs in `public/assets/img/projects/{slug}-*.svg` (see
+  `runlaw-*.svg`, `synthux-architecture.svg`, `ascii-art-pipeline.svg`),
+  with a `<title>` and `<desc>`, facts checked against the project's
+  source, and render each to PNG to check for overlap before
+  committing. Screenshots are supporting evidence of the UI — one or two,
+  never the main figures.
 - **Canonical URLs.** Every node lives at `/{kind-plural}/{slug}`. Use
   `nodeHref(node)` to compute links. Bare kind paths such as `/projects`
   are collection pages; old flat `/{slug}` routes should 404.
