@@ -1,5 +1,6 @@
 import type { Topology } from "@/lib/topology-types";
 import { ibm1Topology } from "./ibm-1";
+import { iphoneOnLinuxTopology } from "./iphone-on-linux";
 import { rlLabTopology } from "./rl-lab";
 import { symbolicAiHarness, symbolicAiWorkspace } from "./symbolic-ai-models";
 import { tensegraTopology } from "./tensegra";
@@ -8,5 +9,5 @@ import { tcnTopology } from "./typed-crystallization-networks";
 
 /** Every <Topology3D id="…"> figure on the site, by id. One file per project. */
 export const TOPOLOGIES: Record<string, Topology> = Object.fromEntries(
-  [symbolicAiHarness, symbolicAiWorkspace, tcnTopology, tensorComputerTopology, ibm1Topology, tensegraTopology, rlLabTopology].map((t) => [t.id, t]),
+  [symbolicAiHarness, symbolicAiWorkspace, tcnTopology, tensorComputerTopology, ibm1Topology, tensegraTopology, rlLabTopology, iphoneOnLinuxTopology].map((t) => [t.id, t]),
 );
