@@ -100,6 +100,10 @@ export const WORLDS: Record<string, World> = {
   // the Code of Hammurabi in the gutters. Light is forced — the site declares
   // its palette once, with no dark half and no toggle.
   "/projects/runlaw": { id: "statute", theme: "light" },
+  // My Little Brain's own soft lab: a pale sage ground with blush, mint and
+  // lilac blooms, frosted panels, pill buttons, DM Sans and Manrope. Light is
+  // forced — the app has one palette and no dark half.
+  "/projects/my-little-brain": { id: "littlebrain", theme: "light" },
 };
 
 /** Trailing slashes are stripped, and the lookup goes through hasOwnProperty:

@@ -4666,3 +4666,177 @@ a:hover {
 @media (prefers-reduced-motion: reduce) {
   .topo-label { transition: none; }
 }
+
+/* ---- My Little Brain: the soft lab (reader/LittleBrainAtmosphere.tsx) -----
+   The app's own tokens (apps/web/src/styles.css): ground `#f3f4ef`, text
+   `#58635b`, sage `#627956` with focus `#a9bf97`, blush `#cb93a9`, three
+   blooms behind everything, frosted white panels at 14px, pill buttons.
+   DM Sans for text, Manrope for display. Light is forced. */
+:root[data-page-theme="littlebrain"] {
+  --color-bg-0: #f3f4ef;
+  --color-bg-1: #eef1e9;
+  --color-bg-2: #e4edde;
+  --color-ink: #3f4a42;
+  --color-ink-dim: #58635b;
+  --color-ink-mute: #7d877f;
+  --color-accent: #627956;
+  --littlebrain-blush: #cb93a9;
+  --littlebrain-face: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --littlebrain-display: "Manrope", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  color-scheme: light;
+}
+:root[data-page-theme="littlebrain"] .biolume,
+:root[data-page-theme="littlebrain"] [data-theme-toggle] {
+  display: none;
+}
+:root[data-page-theme="littlebrain"] ::selection {
+  background: #d6e5cf;
+}
+.littlebrain-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 58% 38%, #fae2ed99 0, transparent 43%),
+    radial-gradient(ellipse at 20% 84%, #d6eadf99 0, transparent 43%),
+    radial-gradient(ellipse at 92% 12%, #e4dff499 0, transparent 40%),
+    #f3f4ef;
+}
+:root[data-page-theme="littlebrain"] body,
+:root[data-page-theme="littlebrain"] .prose-mdx,
+:root[data-page-theme="littlebrain"] .standfirst {
+  font-family: var(--littlebrain-face);
+}
+:root[data-page-theme="littlebrain"] body {
+  background: transparent;
+}
+:root[data-page-theme="littlebrain"] [data-page-title],
+:root[data-page-theme="littlebrain"] .prose-mdx h2,
+:root[data-page-theme="littlebrain"] .prose-mdx h3 {
+  font-family: var(--littlebrain-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: #4a5a4c;
+}
+:root[data-page-theme="littlebrain"] [data-node-meta] {
+  font-family: var(--littlebrain-face);
+  text-transform: none;
+  letter-spacing: 0;
+}
+:root[data-page-theme="littlebrain"] [data-node-link] {
+  border-radius: 999px;
+  background: #ffffff80;
+  border: 1px solid #fff;
+  backdrop-filter: blur(10px);
+  font-family: var(--littlebrain-face);
+  font-weight: 500;
+  color: var(--color-ink-dim);
+}
+:root[data-page-theme="littlebrain"] [data-node-link]:hover {
+  background: #fff;
+  color: var(--color-accent);
+}
+:root[data-page-theme="littlebrain"] .reader-image,
+:root[data-page-theme="littlebrain"] .prose-mdx iframe,
+:root[data-page-theme="littlebrain"] .prose-mdx pre {
+  border-radius: 14px;
+}
+:root[data-page-theme="littlebrain"] .prose-mdx a {
+  color: var(--color-accent);
+  text-decoration-color: #a9bf97;
+  text-underline-offset: 0.18em;
+}
+:root[data-page-theme="littlebrain"] .prose-mdx code {
+  background: #ffffff80;
+  border-radius: 6px;
+}
+
+/* <LittleBrain>: the brain itself, on a frosted panel like the app's stage. */
+.little-brain {
+  margin: 2.5rem 0;
+}
+.little-brain__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 36rem;
+  margin: 0 auto;
+  border-radius: 22px;
+  overflow: hidden;
+  cursor: grab;
+  background: radial-gradient(ellipse at 50% 45%, #f6e7f18a, #f4f8f0);
+  border: 1px solid #ffffffcc;
+}
+.little-brain__stage:active {
+  cursor: grabbing;
+}
+.little-brain__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.little-brain__status {
+  position: absolute;
+  inset: auto 0 1.25rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #7d877f;
+}
+.little-brain__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.little-brain__toggle,
+.little-brain__try {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.6rem 1.25rem;
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+.little-brain__toggle {
+  background: #ffffff80;
+  border: 1px solid #fff;
+  color: #58635b;
+}
+.little-brain__toggle:hover:not(:disabled),
+.little-brain__toggle[aria-pressed="true"] {
+  background: #e4edde;
+  color: #3f4a42;
+}
+.little-brain__toggle:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.little-brain__try {
+  background: #627956;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 6px 18px -8px #62795699;
+}
+.little-brain__try:hover {
+  background: #536a48;
+  box-shadow: 0 8px 22px -8px #627956;
+}
+.little-brain__toggle:focus-visible,
+.little-brain__try:focus-visible {
+  outline: 2px solid #a9bf97;
+  outline-offset: 3px;
+}
+.little-brain__caption {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-ink-mute);
+}
