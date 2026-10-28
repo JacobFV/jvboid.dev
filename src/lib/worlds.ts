@@ -96,6 +96,10 @@ export const WORLDS: Record<string, World> = {
   // either ever grows a page of its own — drop `pdf:` from its frontmatter and
   // place a `<Pdf>` in the body — add it here and the world is already built.
   "/projects/living-with-intelligence": { id: "academic", theme: null },
+  // runlaw's own printed annual: sand paper, one cobalt, Hanken Grotesk, and
+  // the Code of Hammurabi in the gutters. Light is forced — the site declares
+  // its palette once, with no dark half and no toggle.
+  "/projects/runlaw": { id: "statute", theme: "light" },
 };
 
 /** Trailing slashes are stripped, and the lookup goes through hasOwnProperty:

@@ -22,6 +22,7 @@ import { ReticleAtmosphere } from "./ReticleAtmosphere";
 import { EditorialAtmosphere } from "./EditorialAtmosphere";
 import { TensorAtmosphere } from "./TensorAtmosphere";
 import { CinemaAtmosphere } from "./CinemaAtmosphere";
+import { StatuteAtmosphere } from "./StatuteAtmosphere";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
@@ -278,4 +279,5 @@ export const readerComponents: MDXComponents = {
   EditorialAtmosphere,
   TensorAtmosphere,
   CinemaAtmosphere,
+  StatuteAtmosphere,
 };

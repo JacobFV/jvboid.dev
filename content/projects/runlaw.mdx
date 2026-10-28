@@ -27,23 +27,25 @@ realizes: []
 critiques: []
 ---
 
+<StatuteAtmosphere />
+
 <LiveDemo
   url="https://runlaw.jacobfv123.workers.dev"
   title="runlaw"
   caption="The live site. The 'A ruling, live' panel calls the real gateway as you type, and the console behind 'Sign in' is the product."
 />
 
-- A gateway that sits between an application and its model. Change the base URL of any OpenAI client and every call goes through a policy first
+- A gateway that sits between an application and its model. Change the base URL of any OpenAI client and every call goes through a policy first, which runlaw **enforces** before anything reaches your users
 - The policy is a versioned JSON document of rules. Exact rules catch personal data, patterns and tool-call arguments ("a refund over $500"). Plain-language rules ("the answer gives specific legal advice") are judged by a model
 - Each rule can flag, redact, rewrite, block or hold the call for a person, in enforce mode or in a monitor mode that only records
-- Every call leaves a trace: what came in, what each rule decided and why, what the model returned and what the app actually got
+- Every call leaves a trace: what came in, what each **rule** decided and why, what the model returned and what the app actually got
 - Built on Cloudflare Workers and Durable Objects, with a console, accounts, credits, rate limits, an admin panel and a marketing site
 
 ## Problem
 
-Companies are putting language models in front of customers and giving agents tools that move money, change records and send messages. The controls between the app and the model are usually a system prompt and a hope. A prompt can't promise that a card number never reaches the provider, that a refund over a limit waits for a person, or that a support bot won't tell someone which court to file in. When something does go wrong, there is rarely a record of what the model saw, what it proposed and which check, if any, looked at it.
+Companies are putting language models in front of customers and giving agents tools that move money, change records and send messages. The controls between the app and the model are usually a system prompt and a hope, not a **law**. A prompt can't promise that a card number never reaches the provider, that a refund over a limit waits for a person, or that a support bot won't tell someone which court to file in. When something does go wrong, there is rarely a record of what the model saw, what it proposed and which check, if any, looked at it.
 
-Several companies sell parts of this: model firewalls, red-teaming, agent monitoring. I wanted to build the smallest thing that was a *control layer*, not a dashboard. It had to enforce rules at runtime, be honest about which rulings are deterministic and which are a model's judgement, and show its working for every call.
+Several companies sell parts of this: model firewalls, red-teaming, agent monitoring. I wanted to build the smallest thing that was a *control layer*, not a dashboard. It had to **enforce** rules at runtime, be honest about which **rulings** are deterministic and which are a model's judgement, and show its working for every call.
 
 ## Solution
 
@@ -54,7 +56,27 @@ runlaw is four primitives:
 3. **Traces.** Every call is recorded: the original request, what was forwarded, each rule's outcome with evidence and confidence, the provider's answer, what was returned, latency and tokens.
 4. **Evaluations.** Replay a draft policy against recent real traffic before switching it on. The same evaluator is behind the playground and the live demo on the homepage.
 
-Setting a policy is the whole interface. You write it as JSON, replay the draft against your own recent calls, save it from the console or with `PUT /api/policy`, watch it in monitor mode, then switch it to enforce. Every save is a version, so rolling back means saving an older one again.
+Setting a policy is the whole interface. You write it as JSON, like this one:
+
+```json
+{
+  "name": "support",
+  "mode": "monitor",
+  "rules": [
+    { "id": "redact-pii", "type": "pii", "on": ["input", "output"],
+      "detect": ["email", "card_number"], "action": "redact" },
+    { "id": "refund-limit", "type": "tool", "on": ["tool_call"],
+      "tool": "issue_refund",
+      "when": { "arg": "amount", "op": ">", "value": 500 },
+      "action": "require_approval" },
+    { "id": "no-legal-advice", "type": "semantic", "on": ["output"],
+      "constraint": "The answer gives specific legal advice.",
+      "action": "rewrite", "threshold": 0.7 }
+  ]
+}
+```
+
+Then you replay the draft against your own recent calls, save it from the console or with `PUT /api/policy`, watch it in monitor mode, then switch it to enforce. Every save is a version, so rolling back means saving an older one again.
 
 ![Setting and rolling out a runlaw policy: a JSON policy with a PII redaction rule, a tool rule that holds refunds over 500 for approval and a semantic rule that rewrites legal advice; then four steps: replay the draft against recent traces, save it as a new version, watch it in monitor mode, enforce; with a roll-back path that saves an older version again](/assets/img/projects/runlaw-policy-rollout.svg)
 
@@ -68,7 +90,7 @@ A held tool call doesn't reach the app. The app gets a notice instead of the cal
 
 ![runlaw architecture: your app and the console call one Cloudflare Worker, which authenticates the caller, runs the gateway and the control API, forwards to the model and asks a judge model about plain-language rules; below it a Ledger Durable Object per workspace holds policy versions, traces and approvals, and one global Accounts Durable Object holds users, sessions, keys, credits and rate-limit windows](/assets/img/projects/runlaw-architecture.svg)
 
-**The ruling path.** Input rules run before anything is forwarded: redaction rewrites the messages, so redacted values never reach the provider. The upstream response is buffered so output and tool-call rules can see all of it. If the client asked for a stream, runlaw sends the ruled response as server-sent events afterwards. That costs time-to-first-token, a trade I made on purpose: a governance layer that streams first and rules later can't take back what it already sent. Semantic rules are one structured judge call each to `gpt-6-luna`, which returns a verdict, a confidence and a reason. Below the rule's threshold the call passes. If the judge itself fails, the policy's `on_judge_error` decides.
+**The ruling path.** Input rules run before anything is forwarded: redaction rewrites the messages, so redacted values never reach the provider. The upstream response is buffered so output and tool-call rules can see all of it. If the client asked for a stream, runlaw sends the ruled response as server-sent events afterwards. That costs time-to-first-token, a trade I made on purpose: a governance layer that streams first and rules later can't take back what it already sent. Semantic **rules** are one structured judge call each to `gpt-6-luna`, which returns a verdict, a confidence and a reason. Below the rule's threshold the call passes. If the judge itself fails, the policy's `on_judge_error` decides.
 
 ![The ruling path for one call: admit the caller (403, 402 or 429 if not), run input rules (redact, or block with a 400), forward and buffer the whole answer, run output rules on the text (redact, rewrite or withhold), run tool-call rules (block, or hold for approval), then return JSON or server-sent events; afterwards the trace and usage are written, held calls wait in the approvals queue, and monitor-mode rules only record](/assets/img/projects/runlaw-ruling-path.svg)
 
@@ -78,7 +100,9 @@ A held tool call doesn't reach the app. The app gets a notice instead of the cal
 
 **The console.** One HTML file, no framework. It has an overview with a calls-per-day chart, a trace explorer, the approvals queue, a policy editor with replay and version history, a playground, API keys, usage and settings. Admins get two more tabs: access requests, and accounts, where they can add or remove credits with a note, change limits, make an account unlimited, or suspend it.
 
-**The site.** The first two versions looked like every AI landing page: dark grounds, monospace labels, hairline grids, a serif accent word. The third was built with the [taste-skill](https://github.com/leonxlnx/taste-skill) art-direction process. It dealt an editorial "printed annual" direction: Hanken Grotesk, cobalt on sand, a two-by-two board for the hero, and a strict house style checked in a real browser at three widths. The idea comes from the name: law that runs. The pictures are archival: the Code of Hammurabi, one of the first laws written down so that anyone could check a ruling against it, and old photographs of the places these rules now apply (a switchboard, a tellers' cage, ENIAC). The live demo answers the question visitors asked most, *how do I set my policy?*: edit the JSON on the left, and the real gateway rules a test call on the right as you type. A use-cases page walks through six deployments, each with the policy JSON it would run.
+**The site.** The first two versions looked like every AI landing page: dark grounds, monospace labels, hairline grids, a serif accent word. The third was built with the [taste-skill](https://github.com/leonxlnx/taste-skill) art-direction process. It dealt an editorial "printed annual" direction: Hanken Grotesk, cobalt on sand, a two-by-two board for the hero, and a strict house style checked in a real browser at three widths. The idea comes from the name: **law** that runs. The pictures are archival: the Code of Hammurabi, one of the first laws written down so that anyone could check a **ruling** against it, and old photographs of the places these rules now apply (a switchboard, a tellers' cage, ENIAC). The live demo answers the question visitors asked most, *how do I set my policy?*: edit the JSON on the left, and the real gateway rules a test call on the right as you type. A use-cases page walks through six deployments, each with the policy JSON it would run. This page is set in the same style, with the stele in its margins.
+
+![The top of the Code of Hammurabi stele in the Louvre: a king stands before a seated god, above columns of carved law. Photograph by Fred Romero, CC BY 2.0, via Wikimedia Commons](/assets/media/runlaw/stele.jpg)
 
 ## Tests
 
@@ -100,7 +124,7 @@ There's no automated suite yet, and that's the first gap. I checked behaviour by
 
 ## Lessons
 
-**Say exactly what a rule can promise.** The positioning I started from said not to advertise mathematical guarantees, and that turned out to shape the whole product. An exact rule on a tool argument is deterministic: the amount is over the line or it isn't. A plain-language rule is a model's opinion with a confidence attached. Keeping those two visibly apart, in the UI, the docs and every trace, matters more than any single feature. The same goes for being clear about the edges: the gateway can't see a provider's hidden reasoning or what the app does after a tool call. Saying so on the security page makes the rest more believable.
+**Say exactly what a rule can promise.** The positioning I started from said not to advertise mathematical guarantees, and that turned out to shape the whole product. An exact **rule** on a tool argument is deterministic: the amount is over the line or it isn't. A plain-language rule is a model's opinion with a confidence attached. Keeping those two visibly apart, in the UI, the docs and every trace, matters more than any single feature. The same goes for being clear about the edges: the gateway can't see a provider's hidden reasoning or what the app does after a tool call. Saying so on the security page makes the rest more believable.
 
 **Buffering is the price of control.** Streaming tokens straight through would feel faster, but it would turn every output rule into an after-the-fact log entry.
 

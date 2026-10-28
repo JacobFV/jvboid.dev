@@ -4441,3 +4441,196 @@ a:hover {
 :root[data-page-theme="langcurriculum"] .prose-mdx figure > div {
   border-radius: 0;
 }
+
+
+/* ---- runlaw: the printed annual (reader/StatuteAtmosphere.tsx) ----------
+   runlaw's own tokens, off its stylesheet: sand `#e6dbc7`, surface `#ddd0b9`,
+   cobalt `#062b8a` for every ink, a muted `#3a5aa8`, a deep `#03184f` for the
+   solid blocks. Hanken Grotesk at 500 for display, tracked tight, 400 for
+   text. Square corners, flat fields, no gradients, no shadows, no hairlines.
+   Greyscale archival photographs; the Code of Hammurabi stands in the gutters.
+
+   Light is forced. The site declares this palette once, with no dark half and
+   no toggle, so the toggle goes too. */
+:root[data-page-theme="statute"] {
+  --color-bg-0: #e6dbc7;
+  --color-bg-1: #ddd0b9;
+  --color-bg-2: #d3c4a9;
+  --color-ink: #062b8a;
+  --color-ink-dim: #3a5aa8;
+  --color-ink-mute: #5a72b4;
+  --color-accent: #062b8a;
+  --statute-deep: #03184f;
+  --statute-face: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  color-scheme: light;
+}
+
+:root[data-page-theme="statute"] .biolume,
+:root[data-page-theme="statute"] [data-theme-toggle] {
+  display: none;
+}
+
+/* The stele in the gutters: the relief on the left, the carved law on the
+   right. Each runs the full height of the window beside the reading column
+   and never under it; below a width where the gutters can hold a picture,
+   the stones simply are not there. */
+.statute-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.statute-stone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  width: calc((100vw - 48rem) / 2 - 3rem);
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+}
+.statute-stone--relief {
+  left: 0;
+  object-position: 50% 22%;
+}
+.statute-stone--text {
+  right: 0;
+  object-position: 50% 50%;
+}
+@media (max-width: 1180px) {
+  .statute-field {
+    display: none;
+  }
+}
+
+/* One face for everything that is a sentence. */
+:root[data-page-theme="statute"] body,
+:root[data-page-theme="statute"] .prose-mdx,
+:root[data-page-theme="statute"] .standfirst {
+  font-family: var(--statute-face);
+}
+:root[data-page-theme="statute"] .prose-mdx p,
+:root[data-page-theme="statute"] .prose-mdx li {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+:root[data-page-theme="statute"] .prose-mdx strong,
+:root[data-page-theme="statute"] .prose-mdx b {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* Display: medium weight, tracked tight, sentence case. */
+:root[data-page-theme="statute"] [data-page-title],
+:root[data-page-theme="statute"] .prose-mdx h2,
+:root[data-page-theme="statute"] .prose-mdx h3 {
+  font-family: var(--statute-face);
+  font-weight: 500;
+  font-variation-settings: normal;
+  letter-spacing: -0.045em;
+  text-transform: none;
+}
+:root[data-page-theme="statute"] [data-page-title] {
+  line-height: 0.9;
+}
+:root[data-page-theme="statute"] .prose-mdx h2 {
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  line-height: 0.95;
+  margin-top: 3.5rem;
+}
+
+/* Labels are the text face at a small size, never mono caps. */
+:root[data-page-theme="statute"] [data-node-meta] {
+  font-family: var(--statute-face);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.875rem;
+  color: var(--color-ink-dim);
+}
+
+/* No hairlines: the rule under the header becomes a cobalt bar. */
+:root[data-page-theme="statute"] .rule {
+  border: 0;
+  height: 6px;
+  background: var(--color-ink);
+}
+
+/* Square and flat, all of it. A link chip is a sand block that turns cobalt. */
+:root[data-page-theme="statute"] header button,
+:root[data-page-theme="statute"] header [role="menu"],
+:root[data-page-theme="statute"] [data-node-link],
+:root[data-page-theme="statute"] .prose-mdx code,
+:root[data-page-theme="statute"] .prose-mdx pre,
+:root[data-page-theme="statute"] .reader-image,
+:root[data-page-theme="statute"] .prose-mdx iframe {
+  border-radius: 0;
+  box-shadow: none;
+}
+:root[data-page-theme="statute"] [data-node-link] {
+  font-family: var(--statute-face);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  background: var(--color-bg-1);
+  color: var(--color-ink);
+  padding: 0.55rem 1rem;
+  transition: background-color 0.15s, color 0.15s;
+}
+:root[data-page-theme="statute"] [data-node-link]:hover {
+  background: var(--color-ink);
+  color: var(--color-bg-0);
+}
+:root[data-page-theme="statute"] .prose-mdx a {
+  color: var(--color-ink);
+  text-decoration-thickness: 0.07em;
+  text-underline-offset: 0.18em;
+}
+
+/* Inline code sits on the surface; blocks are the deep field. */
+:root[data-page-theme="statute"] .prose-mdx code {
+  background: var(--color-bg-1);
+  color: var(--color-ink);
+  border: 0;
+  padding: 0.05em 0.3em;
+}
+:root[data-page-theme="statute"] .prose-mdx pre,
+:root[data-page-theme="statute"] .prose-mdx pre.shiki {
+  background: var(--statute-deep) !important;
+  border: 0;
+  padding: 1.25rem 1.4rem;
+}
+:root[data-page-theme="statute"] .prose-mdx pre code {
+  background: transparent;
+  color: #c7d3f5;
+  padding: 0;
+}
+
+/* Code in shades of blue, the way runlaw's own blocks are set. Shiki gives
+   each token its github-dark-dimmed colour as --shiki-dark; that colour names
+   the token's role, so it is what these attach to. Everything unnamed is the
+   base. */
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span {
+  color: #c7d3f5;
+}
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#768390" i] {
+  color: #6b80bf;
+}
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#8DDB8C" i],
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#F47067" i],
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#F69D50" i],
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#DCBDFB" i] {
+  color: #e6ecff;
+}
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#96D0FF" i] {
+  color: #8fa9ee;
+}
+:root[data-page-theme="statute"] .prose-mdx pre.shiki span[style*="#6CB6FF" i] {
+  color: #ffffff;
+}
+
+/* Pictures are plates: square, flat, no frame. */
+:root[data-page-theme="statute"] .reader-image {
+  border: 0;
+}
