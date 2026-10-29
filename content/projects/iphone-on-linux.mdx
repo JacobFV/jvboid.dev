@@ -16,11 +16,18 @@ hero:
   src: "/assets/media/iphone-on-linux/hero.jpg"
   alt: "Three screens from an emulated iPhone running on Linux: the iOS 14 lock screen, SpringBoard, and an app built on Linux showing Count: 1 after an injected tap"
   fit: contain
-video: "/assets/media/iphone-on-linux/iphone-on-linux-demo.mp4"
+video: "/assets/media/iphone-on-linux/iphone-on-linux-app-tour.mp4"
 influences: [computerworld]
 realizes: []
 critiques: []
 ---
+
+<Video
+  url="/assets/media/iphone-on-linux/iphone-on-linux-app-tour.mp4"
+  title="iPhone on Linux: an app tour on a fresh device"
+  poster="/assets/media/iphone-on-linux/app-tour-poster.jpg"
+  caption="About four minutes, recorded 29 October 2026 on a second machine: a fresh device rebuilt from the IPSW, taken through Setup Assistant, then through 21 of Apple's built-in apps and an app built on Linux. Every phone frame is a 1 Hz capture of the emulator's display; each section says how much it is sped up."
+/>
 
 <Video
   url="/assets/media/iphone-on-linux/iphone-on-linux-demo.mp4"
@@ -62,6 +69,13 @@ The emulator underneath is [Inferno](https://github.com/ChefKissInc/Inferno), Ch
 
 ## Results
 
+On 29 October the whole chain was rebuilt on a second machine from Apple's restore image alone, and a fresh device went through Setup Assistant to its Home screen for the first time. That run found why fresh devices used to stall at "Welcome to iPhone": the virtual touchscreen allowed 32 gestures per boot, and setup needs about 25 before that screen. With the limit raised, the device was toured through Apple's own apps, restarting automatically whenever the display froze:
+
+- **Opened and used:** Settings (into General), Clock (World Clock, Alarm, a running stopwatch, Timer), Notes (a new note), Calendar, Photos, Books, Health (into Health Details), Wallet, Home, TV, News, Mail, Safari, Messages, Music, Phone, FaceTime, Weather and the App Store
+- **Opened with nothing to show:** Reminders and Podcasts drew blank pages; anything that needs the internet says so, because the emulated phone has no network
+- **Did not open:** Maps and Stocks quit back to the Home screen
+- **Not attempted:** App Store apps, which are encrypted to a real device; the project does not decrypt them
+
 Real iOS boots to the lock screen and SpringBoard, completes Setup Assistant screens, and runs the stock Clock app. An app built on Linux installs and runs, and a tap on its button moves the counter from 0 to 1, verified before and after (the screenshots above). A navigation app goes through a full UI journey: opening items, scrolling a list, flipping a switch, saving, and reopening to find the saved state.
 
 ![Setup Assistant greeting, on the emulated device](/assets/media/iphone-on-linux/setup-hello.jpg)
@@ -70,7 +84,7 @@ Real iOS boots to the lock screen and SpringBoard, completes Setup Assistant scr
 
 Two emulated iPhones completed the same strict journey at once on one machine, then idled together using 64.6% of one CPU core on average and 10.76 GiB of memory at peak between them. That is a measured pair, not a capacity limit.
 
-It is a working prototype, not a product. The display intermittently freezes after some runs; the leading hypothesis is that the guest's frame bookkeeping falls out of step and the compositor waits on itself, and it is analysed from saved evidence but not yet fixed. A fresh device takes one to three minutes per Setup Assistant screen in pure CPU emulation. General App Store compatibility is not claimed.
+It is a working prototype, not a product. The display intermittently freezes (in the app tour, once every 3 to 16 apps, each costing a restart of about twelve minutes); the leading hypothesis is that the guest's frame bookkeeping falls out of step and the compositor waits on itself, and it is analysed from saved evidence but not yet fixed. A fresh device takes one to three minutes per Setup Assistant screen in pure CPU emulation. General App Store compatibility is not claimed.
 
 ## Lessons
 
