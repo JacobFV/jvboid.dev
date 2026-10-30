@@ -136,12 +136,22 @@ export const experience: {
         { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
         " (Aug 2026 – Present)",
       ],
+    ],
+  },
+  {
+    title: "Engineer",
+    org: "SuperCognition Labs",
+    href: "https://supercognitionlabs.com/",
+    range: "Jul 2026 – Oct 2026",
+    bullets: [
+      "Data engineering, machine learning, research. Worked on these 3 models (unpaid research collaboration to fill the gap while trying to get interviews):",
       [
-        "Developed/trained ",
-        { text: "IBM-1", href: "https://super-cognition-labs.github.io/IBM-1/" },
-        " topologically-constrained transformer foundation model for ",
-        { text: "SuperCognition Labs", href: "https://supercognitionlabs.com/" },
-        " (Jul 2026 – Present)",
+        "- Whole brain dynamics (SC-WBD-003/004): 26M model that integrates neural dynamics, anatomical priors, and heterogeneous EEG, MEG, fMRI, and intervention data for predicting optimal targets for transcranial magnetic stimulation. More at ",
+        { text: "https://sc-wbd.pages.dev", href: "https://sc-wbd.pages.dev" },
+      ],
+      [
+        "- Implicit brain model (IBM-1): ~100M mathematically generalized model that materializes task-specific smaller models from shared anatomical, topological, and physiological representations. Modeling the brain implicitly rather than thru an explicitly structured modality mapping allowed us to associate modalities that currently have no datasets and to more efficiently utilize the data trained on. More at ",
+        { text: "https://super-cognition-labs.github.io/IBM-1", href: "https://super-cognition-labs.github.io/IBM-1" },
       ],
     ],
   },
