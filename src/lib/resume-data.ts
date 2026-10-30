@@ -197,6 +197,7 @@ export const experience: {
         "scl-tesla-founders-event.jpg", 320, 180,
         "Speaking about one of SCL's whole brain foundation models at a Tesla founder's event",
       ),
+      media("scl-recording-eeg.jpg", 240, 180, "Recording my brain EEG state"),
     ],
   },
   {
