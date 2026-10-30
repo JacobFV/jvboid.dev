@@ -181,6 +181,7 @@ export const experience: {
         "iOS computer use 😃",
         "The agent controls a virtual cursor on the screen to complete the task “Book an Uber from here to SFO” using a BLE accessibility relay",
       ),
+      media("agi-developer-api-platform.jpg", 347, 180, "AGI's developer API platform"),
     ],
   },
   {
