@@ -123,28 +123,12 @@ export const experience: {
   media?: ExperienceMedia[];
 }[] = [
   {
-    title: "Independent ML & Robotics Research",
-    range: "Jul 2026 – Present",
-    bullets: [
-      [
-        "Developing ",
-        {
-          text: "morphology-agnostic, contact-centric encoder-diffusion robotics control policy",
-          href: "https://github.com/JacobFV/structured-psi0-latent-diffusion-dynamics",
-        },
-        " in collaboration with ",
-        { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
-        " (Aug 2026 – Oct 2026)",
-      ],
-    ],
-  },
-  {
     title: "Research Collaboration",
     org: "TalOS Robotics",
     href: "https://talosrobotics.ai/",
     range: "Aug 2026 – Oct 2026",
     bullets: [
-      "Robot learning and VLA research with the TalOS Robotics team. Worked on these 3 projects:",
+      "Robot learning and VLA research with the TalOS Robotics team. Worked on these 3 projects (unpaid research collaboration to fill the gap while trying to get interviews):",
       [
         "- RRP (relational robot policy): morphology-general control where a planner samples a structured latent packet, a body-side controller realizes it from proprioception and touch, and every attention layer adds declared relational terms from one registry of 75 factors. More at ",
         { text: "https://jvboid.dev/projects/rrp", href: "https://jvboid.dev/projects/rrp" },
