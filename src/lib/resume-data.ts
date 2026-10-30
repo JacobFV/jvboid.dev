@@ -198,6 +198,21 @@ export const experience: {
         "Speaking about one of SCL's whole brain foundation models at a Tesla founder's event",
       ),
       media("scl-recording-eeg.jpg", 240, 180, "Recording my brain EEG state"),
+      media(
+        "scl-openbci-recording.jpg", 300, 180,
+        "Analysing EEG in my OpenBCI pipeline",
+        "16 channels from a Cyton + Daisy, band-passed 1–45 Hz with a 60 Hz notch, and their power spectra",
+      ),
+      media(
+        "scl-eeg-simulator-signals.jpg", 89, 180,
+        "EEG acquisition chain simulator",
+        "The clipped, multiplexed electrode signal, the true neural component under it, and the compensated estimate that recovers it",
+      ),
+      media(
+        "scl-eeg-simulator-aliasing.jpg", 229, 180,
+        "Aliasing, one tone followed through",
+        "A 173 Hz interferer sampled at 250 SPS folds to 77 Hz, inside the EEG band",
+      ),
     ],
   },
   {
