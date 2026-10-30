@@ -10,7 +10,6 @@ import {
   type NodeKind,
 } from "@/lib/graph";
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
-import { CollectionTitle } from "@/components/chrome/CollectionTitle";
 import { PostThumb, postThumbImage } from "@/components/chrome/PostThumb";
 import { CoverArt } from "@/components/chrome/CoverArt";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
@@ -42,9 +41,9 @@ const KIND_DESCRIPTION: Record<NodeKind, string> = {
   vision: "Short, interview-style entries: background, focus, and where I'm headed.",
 };
 
-// Writings and readings carry their title alone: the standfirst under the
-// heading read as a subheader, and the home page dropped its equivalents.
-const BARE_HEADER: ReadonlySet<NodeKind> = new Set<NodeKind>(["paper", "reading"]);
+// Writings and readings (like projects) have no heading at all: the list
+// starts at the top of the page, under the nav that already names it.
+const UNTITLED: ReadonlySet<NodeKind> = new Set<NodeKind>(["paper", "reading"]);
 
 // The two kinds that are *objects* — a PDF, a book, a published page —
 // rather than writing that lives here. They already have covers on the
@@ -83,8 +82,6 @@ export default async function KindIndexPage({ params }: { params: Params }) {
   if (nodeKind === "project") {
     return (
       <main className="mx-auto max-w-5xl px-6 pt-10 pb-16">
-        <CollectionTitle>Projects</CollectionTitle>
-
         {nodes.length === 0 ? (
           <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
         ) : (
@@ -94,16 +91,17 @@ export default async function KindIndexPage({ params }: { params: Params }) {
     );
   }
 
-  const bare = BARE_HEADER.has(nodeKind);
 
   return (
     <main className="mx-auto max-w-3xl px-6 pt-10 pb-16">
-      <header className={bare ? "mt-14 mb-14" : "mt-14 mb-16"}>
-        <h1 data-page-title className="display-title">
-          {KIND_TITLE[nodeKind]}
-        </h1>
-        {!bare && <p className="standfirst mt-8">{KIND_DESCRIPTION[nodeKind]}</p>}
-      </header>
+      {!UNTITLED.has(nodeKind) && (
+        <header className="mt-14 mb-16">
+          <h1 data-page-title className="display-title">
+            {KIND_TITLE[nodeKind]}
+          </h1>
+          <p className="standfirst mt-8">{KIND_DESCRIPTION[nodeKind]}</p>
+        </header>
+      )}
 
       {/* No cards. An index is a list of things to read, so it is set as
           text: a numeral, the title in the serif, the summary, and a
