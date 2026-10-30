@@ -9,7 +9,7 @@ import type { Node } from "./graph-types";
 
 export const contact = {
   name: "Jacob Valdez",
-  email: "jacob@commandagi.com",
+  email: "jacobfv123@gmail.com",
   phone: "+1 (469) 968-9490",
   website: "jvboid.dev",
   github: "github.com/JacobFV",
