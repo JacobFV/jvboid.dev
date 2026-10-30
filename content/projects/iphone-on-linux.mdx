@@ -16,17 +16,17 @@ hero:
   src: "/assets/media/iphone-on-linux/hero.jpg"
   alt: "Three screens from an emulated iPhone running on Linux: the iOS 14 lock screen, SpringBoard, and an app built on Linux showing Count: 1 after an injected tap"
   fit: contain
-video: "/assets/media/iphone-on-linux/iphone-on-linux-app-tour.mp4"
+video: "/assets/media/iphone-on-linux/iphone-on-linux-app-tour-v2.mp4"
 influences: [computerworld]
 realizes: []
 critiques: []
 ---
 
 <Video
-  url="/assets/media/iphone-on-linux/iphone-on-linux-app-tour.mp4"
+  url="/assets/media/iphone-on-linux/iphone-on-linux-app-tour-v2.mp4"
   title="iPhone on Linux: an app tour on a fresh device"
   poster="/assets/media/iphone-on-linux/app-tour-poster.jpg"
-  caption="About four minutes, recorded 29 October 2026 on a second machine: a fresh device rebuilt from the IPSW, taken through Setup Assistant, then through 21 of Apple's built-in apps and an app built on Linux. Every phone frame is a 1 Hz capture of the emulator's display; each section says how much it is sped up."
+  caption="About five minutes, recorded 29 October 2026 on a second machine. Part 1: a fresh device rebuilt from the IPSW, taken through Setup Assistant, then through 21 of Apple's built-in apps. Part 2: apps we built and installed, some compiled on Linux, some built by Xcode on a macOS build runner, including open-source apps. Every phone frame is a real capture of the emulator's display; each section says how much it is sped up."
 />
 
 <Video
@@ -63,7 +63,7 @@ The emulator underneath is [Inferno](https://github.com/ChefKissInc/Inferno), Ch
 
 - **Host:** an aarch64 Linux machine, CPU emulation only (no hardware virtualization for this device). Each guest gets two virtual CPUs and 4 GB of memory.
 - **Firmware:** the user supplies Apple's iOS 14.0 beta 5 restore image; the tools decode it, stage the system and data volumes, seed the keybag and caches, and never download, decrypt or redistribute Apple's code.
-- **Apps:** built on Linux with clang against hand-written UIKit headers and link stubs, packaged as IPAs and staged into the image. Only your own unencrypted apps: App Store binaries are rejected by design.
+- **Apps:** small Objective-C apps built on Linux with clang against hand-written UIKit headers; Swift and SwiftUI apps compiled and linked on Linux or built by Xcode on a macOS build runner; all packaged as IPAs, ad-hoc signed and staged into the image. Only unencrypted apps you build yourself: App Store binaries are rejected by design.
 - **Control:** a QMP control channel into the emulator, a virtual multitouch device for taps, swipes and the home button, and a headless display read back as frames.
 - **Evidence:** every journey records its commands, control and display transcripts, timings, before and after screenshots and their hashes, and a review of whether the screen actually changed the way the action claimed. A run that cannot be checked does not count.
 
@@ -75,6 +75,25 @@ On 29 October the whole chain was rebuilt on a second machine from Apple's resto
 - **Opened with nothing to show:** Reminders and Podcasts drew blank pages; anything that needs the internet says so, because the emulated phone has no network
 - **Did not open:** Maps and Stocks quit back to the Home screen
 - **Not attempted:** App Store apps, which are encrypted to a real device; the project does not decrypt them
+
+Then came apps from outside Apple. Each is installed into the setup-complete device and opened by its own launch helper; the build column says where it was compiled.
+
+| App | Built | Result |
+|---|---|---|
+| Hello SwiftUI, Hello SPM | Linux (Swift 6.1, SwiftUI) | Runs: navigation title and grouped list |
+| Hello Mixed | Linux (Swift + Objective-C) | Runs |
+| Hello Async | Linux (Swift concurrency, embedded runtime) | Runs |
+| swift-2048 (open source, MIT) | Linux, from its Xcode project | Runs to its Start Game screen |
+| Notes Demo, Navigation Demo, Counter | Linux (our own Objective-C) | Run, including full tap journeys |
+| Hello Storyboard | Xcode on a macOS runner | Runs: storyboard, xib card and asset-catalog colour all load |
+| Simon Tatham's Puzzles (open source, MIT) | Xcode | Runs: the full game list with artwork |
+| vfr Reader (open source) | Xcode | Runs to its start screen |
+| ACEDrawingView (open source, Apache-2.0) | Xcode | Runs: drawing canvas and tools |
+| Tipulator (open source, MIT) | Xcode | Crashes at start in its own Auto Layout code (2014-era layout on iOS 14) |
+| NetNewsWire 6.0 (open source, MIT) | Xcode | Traps at start: it needs an App Group container the test signature does not grant |
+| SwiftUIKit, Clendar (open source) | Linux | Install and open, then return to the Home screen; under investigation |
+
+Apple's second Home screen page holds Files, Find My, Shortcuts, iTunes Store, Translate, Contacts, Watch, Tips, a Utilities folder and Feedback; Files opens to its Recents and Browse tabs and an iCloud Drive sign-in page, and the rest are being toured. Networking is half way: the phone switches to its USB-Ethernet configuration and a root helper inside iOS gives the interface an address and a route, but frames do not cross the USB link yet.
 
 Real iOS boots to the lock screen and SpringBoard, completes Setup Assistant screens, and runs the stock Clock app. An app built on Linux installs and runs, and a tap on its button moves the counter from 0 to 1, verified before and after (the screenshots above). A navigation app goes through a full UI journey: opening items, scrolling a list, flipping a switch, saving, and reopening to find the saved state.
 
