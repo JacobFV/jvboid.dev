@@ -41,9 +41,9 @@ const KIND_DESCRIPTION: Record<NodeKind, string> = {
   vision: "Short, interview-style entries: background, focus, and where I'm headed.",
 };
 
-// Writings and readings (like projects) have no heading at all: the list
-// starts at the top of the page, under the nav that already names it.
-const UNTITLED: ReadonlySet<NodeKind> = new Set<NodeKind>(["paper", "reading"]);
+// Posts, writings and readings (like projects) have no heading at all: the
+// list starts at the top of the page, under the nav that already names it.
+const UNTITLED: ReadonlySet<NodeKind> = new Set<NodeKind>(["post", "paper", "reading"]);
 
 // The two kinds that are *objects* — a PDF, a book, a published page —
 // rather than writing that lives here. They already have covers on the
