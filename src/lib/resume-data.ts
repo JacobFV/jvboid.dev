@@ -264,15 +264,6 @@ export const experience: {
     ],
   },
   {
-    title: "Full Stack Pipeline Engineer",
-    org: "FLORA",
-    href: "https://flora.ai",
-    range: "Jun 2024 – Jun 2024",
-    bullets: [
-      "typescript, python, modal, fal.ai, generative ai, difusion models, computer art, confy ui, react, serverless architecture",
-    ],
-  },
-  {
     title: "Humanoid Robot Prototyping",
     range: "Jan 2023 – Sep 2024",
     bullets: [
