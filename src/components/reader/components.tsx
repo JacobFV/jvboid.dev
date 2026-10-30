@@ -32,6 +32,7 @@ import { CupertinoAtmosphere } from "./cupertino/CupertinoAtmosphere";
 import { CupertinoActions } from "./cupertino/CupertinoActions";
 import { CupertinoStats } from "./cupertino/CupertinoStats";
 import { PhoneShelf } from "./cupertino/PhoneShelf";
+import { CupertinoSplit } from "./cupertino/CupertinoSplit";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
@@ -300,4 +301,5 @@ export const readerComponents: MDXComponents = {
   CupertinoActions,
   CupertinoStats,
   PhoneShelf,
+  CupertinoSplit,
 };

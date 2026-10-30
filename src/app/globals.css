@@ -5338,6 +5338,56 @@ a:hover {
   background: rgba(255, 255, 255, 0.26);
 }
 
+/* Code beside the screens it drew. */
+.cup-split {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+  margin: 3rem 0;
+  font-family: var(--cup-face);
+}
+@media (min-width: 56rem) {
+  .cup-split {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+}
+:root[data-page-theme="cupertino"] .cup-split__code pre {
+  margin: 0;
+  padding: 1.25rem 1.4rem;
+  border-radius: 20px;
+  background: var(--color-bg-1);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.cup-split__shots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.cup-split__shots[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.cup-split__shot {
+  margin: 0;
+}
+.cup-split__shot img {
+  display: block;
+  width: 100%;
+  border-radius: 1.5rem;
+  background: var(--color-bg-1);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+:root[data-page-theme="cupertino"] .prose-mdx .cup-split__shot figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+:root[data-page-theme="cupertino"] .prose-mdx .cup-split__caption {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 /* Tech specs: a definition table, hairlines only. */
 :root[data-page-theme="cupertino"] .prose-mdx table {
   max-width: 60rem;
@@ -5355,6 +5405,10 @@ a:hover {
   text-align: left;
 }
 :root[data-page-theme="cupertino"] .prose-mdx th {
+  font-family: var(--cup-face);
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  text-transform: none;
   font-weight: 600;
   color: var(--color-ink);
   border-bottom-color: var(--color-ink);
@@ -5366,6 +5420,21 @@ a:hover {
 }
 :root[data-page-theme="cupertino"] .prose-mdx td:not(:first-child) {
   color: var(--color-ink-dim);
+}
+:root[data-page-theme="cupertino"] .prose-mdx details td:first-child {
+  white-space: normal;
+  font-weight: 500;
+}
+:root[data-page-theme="cupertino"] .prose-mdx details table {
+  table-layout: fixed;
+}
+:root[data-page-theme="cupertino"] .prose-mdx details th:nth-child(1),
+:root[data-page-theme="cupertino"] .prose-mdx details td:nth-child(1) {
+  width: 42%;
+}
+:root[data-page-theme="cupertino"] .prose-mdx details th:nth-child(2),
+:root[data-page-theme="cupertino"] .prose-mdx details td:nth-child(2) {
+  width: 22%;
 }
 :root[data-page-theme="cupertino"] .prose-mdx details {
   max-width: 60rem;

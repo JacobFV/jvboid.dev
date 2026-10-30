@@ -19,7 +19,9 @@ editing this repo.
 
 - **No `/list` or standalone `/graph` page.** Broad browsing should happen
   through dedicated kind indexes like `/projects`, `/posts`, and
-  `/readings`. Graph context belongs at the bottom of content pages.
+  `/readings`. Graph context belongs at the bottom of content pages,
+  except project pages: Jacob dislikes the neighbourhood orbit there and
+  `[kind]/[slug]/page.tsx` skips it for `project` nodes. Don't add it back.
 - **The update stream is delisted.** `update` nodes are unlisted
   site-wide via `DELISTED_KINDS` in `src/lib/graph.ts` — no home-page
   section, no dock, no nav entry, no feed/sitemap/search presence. The

@@ -118,7 +118,14 @@ export function rehypeShiki() {
     const loaded = new Set(hl.getLoadedLanguages());
     const walk = (parent: Root | Element) => {
       parent.children.forEach((node: HastNode, i: number) => {
-        if (node.type !== "element") return;
+        // A fence placed inside a JSX block (`<Figure>…```c…```…</Figure>`)
+        // arrives as a child of an `mdxJsxFlowElement`, not an element; it
+        // wants highlighting just the same, so descend through anything that
+        // carries children.
+        if (node.type !== "element") {
+          if (node.children) walk(node as Element);
+          return;
+        }
         const child = node as Element;
         const code = child.children[0];
         if (

@@ -83,7 +83,9 @@ export default async function NodePage({ params }: { params: Params }) {
           </>
         )}
 
-        <LocalGraph focusId={node.id} />
+        {/* Jacob finds the neighbourhood orbit a poor picture of a project's
+            context, so projects go without it; the other kinds keep it. */}
+        {node.kind !== "project" && <LocalGraph focusId={node.id} />}
       </article>
     </main>
   );

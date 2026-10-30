@@ -32,7 +32,10 @@ critiques: []
   github="https://github.com/JacobFV/behavioral-iphone-inferno"
 />
 
-![Three screens from the emulated iPhone: the iOS 14 lock screen, SpringBoard, and an app built on Linux showing Count: 1 after an injected tap](/assets/media/iphone-on-linux/hero.jpg)
+<PhoneShelf
+  set="iphone-on-linux"
+  caption="Sixty-four captures of the emulator's display, scaled and nothing else. Drag the shelf. Tap a phone to watch it larger."
+/>
 
 <CupertinoStats
   items={[
@@ -45,21 +48,63 @@ critiques: []
 
 ## Real iOS. Not a lookalike.
 
-An emulated iPhone 11 boots Apple's unmodified iOS 14 on an ARM Linux server. The lock screen, SpringBoard, Setup Assistant, Clock, Settings, Safari: the operating system itself, with nothing re-implemented. A rack of devices can't be snapshotted or scaled. Apple's Simulator runs only on a Mac. This runs where agents are trained.
-
-## Every recording.
-
-<PhoneShelf
-  set="iphone-on-linux"
-  caption="Sixty-four captures of the emulator's display, scaled and nothing else. Drag the shelf. Tap a phone to watch it larger."
-/>
+An emulated iPhone 11 boots Apple's unmodified iOS 14 on an ARM Linux server. The lock screen, SpringBoard, Setup Assistant, Clock, Settings, Safari: the operating system itself, with nothing re-implemented. A rack of devices can't be snapshotted or scaled. Apple's Simulator runs only on a Mac. This runs where agents are trained, as ground truth for CommandAGI's verification infrastructure and for [Computerworld](/projects/computerworld).
 
 ## Your apps. Installed for real.
 
 Apps are compiled on Linux against UIKit, packaged as IPAs, signed and staged into the device image, then launched by iOS like anything from the App Store. A toolchain built for this compiles storyboards, nibs and asset catalogs too, so open-source apps from GitHub come across with no Mac involved.
 
-![An app built on Linux, before the tap: Count: 0](/assets/media/iphone-on-linux/counter-before.jpg)
-![The same app after an injected tap on Increment: Count: 1](/assets/media/iphone-on-linux/counter-after.jpg)
+<CupertinoSplit
+  images={[
+    { src: "/assets/media/iphone-on-linux/counter-before.jpg", alt: "Before the tap: Count: 0" },
+    { src: "/assets/media/iphone-on-linux/counter-after.jpg", alt: "After a tap injected on Increment: Count: 1" },
+  ]}
+  caption="The whole app, compiled on Linux with clang against hand-written UIKit headers and installed as an IPA. The agent's tap lands on the button at the bottom; the label above it is what the evidence compares, before and after."
+>
+
+```c
+// companion/ipa-demo/Main.m, trimmed
+@interface DemoController : UIViewController {
+    UILabel *_count;
+    NSUInteger _value;
+}
+@end
+
+@implementation DemoController
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    UIView *view = [self view];
+
+    UILabel *title = [[UILabel alloc] initWithFrame:Rect(20,100,374,60)];
+    [title setText:@"Imported IPA Demo"];
+    [view addSubview:title];
+
+    _count = [[UILabel alloc] initWithFrame:Rect(24,350,366,70)];
+    [_count setText:@"Count: 0"];
+    [_count setAccessibilityIdentifier:@"imported-count"];
+    [view addSubview:_count];
+
+    UIButton *button = [UIButton buttonWithType:1];
+    [button setFrame:Rect(62,460,290,70)];
+    [button setTitle:@"Increment" forState:0];
+    [button setAccessibilityIdentifier:@"imported-increment"];
+    [button addTarget:self action:@selector(increment:)
+         forControlEvents:1UL<<6];   // UIControlEventTouchUpInside
+    [view addSubview:button];
+}
+
+- (void)increment:(id)sender {
+    _value++;
+    [_count setText:[NSString stringWithFormat:@"Count: %lu", _value]];
+}
+@end
+
+int main(int argc, char **argv) {
+    return UIApplicationMain(argc, argv, nil, @"DemoDelegate");
+}
+```
+
+</CupertinoSplit>
 
 ## Driven by an agent. Checked like an experiment.
 
@@ -84,14 +129,11 @@ Two emulated iPhones completed the same strict journey together on one machine, 
   caption="Sixty-one seconds of real frames from runs between 6 and 11 October 2026: Setup Assistant, the lock screen, a full navigation journey, a tap moving a counter from 0 to 1, and two iPhones at once."
 />
 
-## Built in seven days. After a week spent the wrong way.
-
-The first attempt re-implemented iOS system libraries on a CPU emulator and reached zero percent parity with a real device. The lesson was to stop imitating the operating system and run the real one. What this project adds, on top of ChefKiss's [Inferno](https://github.com/ChefKissInc/Inferno) fork of QEMU, is everything an iPhone needs to be useful on a server: firmware prepared into bootable images, apps built and imported, a headless control layer, and evidence for every action. It exists as ground truth for CommandAGI's verification infrastructure and for [Computerworld](/projects/computerworld), a simulated computer world that includes an iOS shell.
-
 ## Tech specs.
 
 | | |
 |---|---|
+| Emulator | [Inferno](https://github.com/ChefKissInc/Inferno), ChefKiss's fork of QEMU for Apple's ARM devices, with a companion runner built here for firmware preparation, app import, headless control and evidence. |
 | Host | aarch64 Linux, CPU emulation only. Two virtual CPUs and 4 GB of memory per guest. |
 | Firmware | Apple's iOS 14.0 beta 5 restore image, supplied by the user. The tools stage it and never download, decrypt or redistribute Apple's code. |
 | Apps | Objective-C built with clang against hand-written UIKit headers; Swift and SwiftUI built on Linux or by Xcode. Ad-hoc signed IPAs. App Store binaries are rejected by design. |
