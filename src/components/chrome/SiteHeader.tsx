@@ -266,7 +266,9 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
               <Link
                 key={item.label}
                 href={item.href}
-                className="px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline"
+                // The label of the collection page you're on stays underlined.
+                aria-current={pathname === item.href ? "page" : undefined}
+                className="px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline aria-[current=page]:underline"
               >
                 {item.label}
               </Link>
