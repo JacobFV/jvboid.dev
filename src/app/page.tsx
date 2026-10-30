@@ -5,17 +5,10 @@ import { CoverGallery } from "@/components/chrome/CoverGallery";
 import { CoverArt } from "@/components/chrome/CoverArt";
 import { HomeField } from "@/components/chrome/HomeField";
 import { ProjectsBrowser, type ProjectItem } from "@/components/chrome/ProjectsBrowser";
-import { getGraph, isListedNode, nodeHref, nodeLinkHref, type Lane, type Node } from "@/lib/graph";
+import { getGraph, isListedNode, nodeHref, nodeLinkHref, type Node } from "@/lib/graph";
 import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
 import { imageRefsForNode } from "@/lib/project-face";
-
-const laneBg: Record<Lane, string> = {
-  research: "bg-[var(--color-lane-research)]",
-  building: "bg-[var(--color-lane-building)]",
-  writing: "bg-[var(--color-lane-writing)]",
-  personal: "bg-[var(--color-lane-personal)]",
-};
 
 const fmtDate = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 // A post is dated by the last time it changed: its latest revision, or
@@ -399,7 +392,6 @@ function RowLink({ node }: { node: Node }) {
       className="group grid grid-cols-1 items-baseline gap-x-5 gap-y-1 py-5 no-underline sm:grid-cols-[1fr_auto]"
     >
       <span className="font-block text-xl font-extrabold leading-snug tracking-tight text-[var(--color-ink)] transition-colors duration-500 group-hover:text-[var(--color-ink-dim)] sm:text-2xl">
-        <span className={`mr-3 inline-block h-1.5 w-1.5 rounded-full align-middle ${laneBg[node.lane]}`} aria-hidden />
         {node.title}
       </span>
       <span className="font-[family-name:var(--font-mono)] text-[0.66rem] tracking-[0.14em] text-[var(--color-ink-mute)] uppercase sm:text-right">
