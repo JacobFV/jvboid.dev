@@ -134,7 +134,7 @@ export const experience: {
         },
         " in collaboration with ",
         { text: "TalOS Robotics", href: "https://talosrobotics.ai/" },
-        " (Aug 2026 – Present)",
+        " (Aug 2026 – Oct 2026)",
       ],
     ],
   },
