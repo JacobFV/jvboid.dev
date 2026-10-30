@@ -154,6 +154,12 @@ export const experience: {
         { text: "https://super-cognition-labs.github.io/IBM-1", href: "https://super-cognition-labs.github.io/IBM-1" },
       ],
     ],
+    media: [
+      media(
+        "scl-tesla-founders-event.jpg", 320, 180,
+        "Speaking about one of SCL's whole brain foundation models at a Tesla founder's event",
+      ),
+    ],
   },
   {
     title: "API / Integration Architect",
