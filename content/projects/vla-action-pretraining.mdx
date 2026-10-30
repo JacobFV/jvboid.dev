@@ -1,0 +1,77 @@
+---
+title: "Dissecting Egocentric Action Pretraining in VLA Models"
+date: 2026-10-09
+lane: research
+tags: [robotics, vla, interpretability, humanoids, flow-matching, research]
+summary: "A mechanistic look at what happens to a vision-language model when it is pretrained on egocentric human video to become a robot's backbone: where it now reads the image, what happened to language, what the new scene code holds, and whether the action expert uses any of it. NeurIPS 2026 workshop paper with Talos Robotics AI."
+resume_description: "mechanistic interpretability study of the Ψ0 humanoid VLA: one Qwen3-VL-2B backbone before and after egocentric action pretraining, followed into its flow-matching action expert. NeurIPS 2026 UniReps workshop, with Talos Robotics AI. pytorch, activation patching, probing, steering vectors."
+datePrecision: month
+hero:
+  src: /assets/img/projects/vla-action-pretraining-pages.png
+  alt: "The first page of the paper with four more pages fanned out behind it, each showing the top of a figure"
+  fit: contain
+pdf: /assets/pdf/dissecting-egocentric-action-pretraining.pdf
+links:
+  github: https://github.com/JacobFV/vla-action-pretraining
+  paper: /assets/pdf/dissecting-egocentric-action-pretraining.pdf
+influences: [rrp]
+realizes: []
+critiques: []
+---
+
+Vision-language-action models are built on top of vision-language models on a bet: that the backbone's **grounding** — knowing what is in a scene and where — and its **language interface** — the reason you can tell a robot what to do in words — both survive being turned into a policy. Behavioural studies say the bet only partly pays off. VLAs ignore their instructions and follow visual priors, and action training lowers the backbone's scores on VLM benchmarks. Those studies show *that* something is lost. This paper asks where, what replaces it, and what the action actually reads.
+
+Written with [Talos Robotics AI](https://talosrobotics.ai/) — Tommaso Felice Banfi, Francesco Dorati, me, Lorenzo Ortolani, Giacomo Galbiati and Gabriel Voss — for the UniReps workshop at NeurIPS 2026.
+
+- [Read the paper](/assets/pdf/dissecting-egocentric-action-pretraining.pdf)
+- [LaTeX source and figures on GitHub](https://github.com/JacobFV/vla-action-pretraining)
+
+## The setup
+
+One backbone, two states. The base model is **Qwen3-VL-2B**. The action-pretrained model is the same network after stage 1 of **Ψ0**, a humanoid VLA trained on egocentric human video to predict FAST action tokens. Ψ0's **action expert** — a flow-matching policy trained afterwards on the frozen backbone — reads the backbone's last-layer states and the robot's joint state, and integrates ten Euler steps into a chunk of 30 joint targets for a Unitree G1 on the SIMPLE bend-and-pick task.
+
+Because the two backbones share an architecture and a starting point, every measurement can be a *diff*: the same probe, knockout or steering vector on the same layer, before and after action pretraining. Action effects are measured against a **noise floor (nf)** — how much the action moves just from resampling the flow noise — so "the image matters" has a scale.
+
+![Two 28-layer strips. The base VLM reads the image in layers 1–12 and reasons in language after; the action-pretrained backbone reads the task text in 1–3, leaves image tokens in place through 19, fuses the scene in 20–27 and acts at 28. Below, the action expert takes a thick input from the robot state (50.7× nf when removed), a dashed one from the last layer (1.8× nf for the image tokens) and one from layers 1–3. An attention boost toward the obstacle adds 0.1 mm of clearance; a control-barrier correction added at the output adds 10.4 mm.](/assets/img/projects/vla-action-pretraining-dissection.svg)
+
+## Action pretraining moves where the image is read
+
+Block the decision token's access to the image in layers 1..k, or from layer k on, and measure how much the next-token distribution changes. The base VLM has read the image by layer 12 and no longer needs it after 15 — the usual VLM shape, where the second half turns visual evidence into language. The action-pretrained backbone reads it between layers 20 and 22 and still needs it at 27. Its attention concentrates on objects only in layers 23–28, peaking at 27, and no layer predicts the final action token before 28.
+
+The weights agree: every language-model projection changed (cosine 0.54–0.64 to the original), while the vision tower barely moved (0.97). The scene code is built late, right next to the output that needs it — so anything meant to protect the VLM's knowledge during action training (gradient insulation, freezing, regularisation) has layers 20–28 to protect.
+
+![Where each model uses the image across its 28 layers: cumulative image knockout, the point after which the image is no longer needed, attention to the first token and to objects, how readable the action token is, and the action change when a layer is skipped. (a) base VLM, (b) after egocentric action pretraining.](/assets/img/projects/vla-action-pretraining-layers.png)
+
+## Language becomes a second-class input
+
+The action-pretrained states are not language-like at any layer. The likelihood of a fixed sentence falls from 2.9 to 30.9 nats per token — worse than a uniform guess at 11.9. Patchscopes recover a visual word from the base model's object tokens up to 54 % of the time, and from the action-pretrained ones at most 1 %.
+
+The instruction is still *in* there: its verb and the requested hand decode at every layer. What it lost is its causal grip. Add the difference between the decision token's states under two instructions, and in the base model that reproduces the effect of actually changing the instruction (KL 0.072 against 0.073). In the action-pretrained backbone the same vector does exactly as much as a random direction, at every layer. Anything that steers the policy through the prompt — language corrections, in-context examples — leans on a pathway action pretraining has weakened.
+
+## The new scene code is spatial, not semantic
+
+Probe ten scene properties at seven depths: 43 of the 70 cells are kept, 19 gained and 7 lost. The gains are all spatial and all late — obstacle position, whether the obstacle is left of the target, target position. The losses are object identity. Moving an object shifts the last layer's states along one direction shared across scenes, so the code behaves like a coordinate.
+
+It does not reach parts. When an instruction asks for one part of an object, blocking the instructed part moves the decision token exactly as much as blocking a different part of the same object (KL 1.141 against 1.144). Human video teaches where things are relative to the hands. Which tool, which handle, has to come from somewhere else.
+
+![Probe scores, action-pretrained minus base: ten scene properties at the last layer, and three of them across layers, each marked kept, gained or lost.](/assets/img/projects/vla-action-pretraining-probes.png)
+
+## The action expert goes around it
+
+The expert hardly uses what the backbone built. Removing the robot state changes the action by 51× the noise floor; removing the image tokens or swapping the instruction moves it by at most 2.5×, and the only layers whose skipping matters are the first three. On training episodes the image does matter (19.5×) — but only to recognise *which* episode it is; on unseen episodes that drops to 2.7×. The obstacle's position decodes linearly from every layer and moving it barely changes the action (1.3×). Decodable is not used.
+
+That has a practical edge. Boosting the expert's attention toward the obstacle tokens does nothing (+0.1 mm of clearance, interval −0.4 to 0.8, no unsafe chunk made safe at any strength). Adding a **control-barrier-function correction to the expert's output** at the ninth of ten flow steps raises clearance by 10.4 mm (6.7 to 13.7) — and does the same when the correction is *predicted from the backbone's own features*. Safety and steering signals work when they reach what the action reads.
+
+![Interventions on the action expert: (a) action change for removing the state, tokens, image or instruction, in units of the noise floor; (b) action change when each backbone layer is skipped, training and unseen episodes; (c) clearance gain from output injection against attention boosts.](/assets/img/projects/vla-action-pretraining-action.png)
+
+## What follows
+
+Four recommendations close the paper: protect the language pathway during action training and check it with causal tests, not only benchmarks; steer through what the policy reads — action tokens, the expert's output, the image; supply identity and part-level content from outside the backbone and train the action to depend on it; and add safety corrections at the expert's output, which moves the action without retraining. A second VLA, π0.5, shows the same loss of language and the same reliance on the robot state.
+
+This ran alongside my other work with Talos on the same model family: [RRP](/projects/rrp), and Ψ0.1, which fine-tunes the full pretrained Ψ0 with relational attention biases and morphology tokens.
+
+<Pdf
+  src="/assets/pdf/dissecting-egocentric-action-pretraining.pdf"
+  title="Dissecting Egocentric Action Pretraining in Vision-Language-Action Models"
+  caption="NeurIPS 2026 Workshop: UniReps. 30 pages with appendices."
+/>

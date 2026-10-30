@@ -1,0 +1,22 @@
+---
+title: "Dissecting Egocentric Action Pretraining in Vision-Language-Action Models"
+date: 2026-10-09
+lane: research
+tags: [robotics, vla, interpretability, humanoids, flow-matching]
+summary: "Egocentric action pretraining moves a VLM's image reading into its last quarter, strips language of its causal role, and builds a spatial, object-level scene code — which the flow-matching action expert then mostly ignores in favour of the robot state."
+hero:
+  src: /assets/img/papers/dissecting-egocentric-action-pretraining.png
+  alt: "First page of Dissecting Egocentric Action Pretraining in Vision-Language-Action Models"
+  fit: contain
+authors: [Tommaso Felice Banfi, Francesco Dorati, Jacob Valdez, Lorenzo Ortolani, Giacomo Galbiati, Gabriel Voss]
+venue: NeurIPS 2026 Workshop (UniReps)
+pdf: /assets/pdf/dissecting-egocentric-action-pretraining.pdf
+bibKey: banfi2026dissecting
+influences: []
+realizes: [vla-action-pretraining]
+critiques: []
+---
+
+[Open the PDF](/assets/pdf/dissecting-egocentric-action-pretraining.pdf). Source at [github.com/JacobFV/vla-action-pretraining](https://github.com/JacobFV/vla-action-pretraining).
+
+Vision-language-action models (VLAs) are built on vision-language models (VLMs) on the assumption that two properties carry over: grounding in the scene and a language interface for steering the robot. We compare one backbone before and after egocentric action pretraining and follow its states into the action expert, a flow-matching policy. Action pretraining reallocates the roles of the layers: the VLM reads the image in its first half, whereas the action-pretrained backbone fuses the scene only in its last quarter, attends to objects there, and forms action tokens at the final layer. Language loses its causal role inside the network: internal states can no longer be read as words, and the instruction direction no longer steers the decision. The new scene code is spatial and object-level: visual tokens form coherent regions and object positions are gained, whereas object identity and parts are not encoded. The action expert hardly uses this code and it acts mostly from the robot state, and a safety correction added to its output moves the action, whereas a change of its attention does not. Language is therefore a second-class input, and steering and safety signals have to reach what the action expert reads.

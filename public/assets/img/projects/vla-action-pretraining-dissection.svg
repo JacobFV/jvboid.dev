@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="880" viewBox="0 0 1400 880" role="img" aria-labelledby="title desc">
+  <title id="title">Where the action in Ψ0 actually comes from</title>
+  <desc id="desc">Two 28-layer strips compare Qwen3-VL-2B before and after egocentric action pretraining. The base VLM reads the image in layers 1 to 12 and reasons in language after that. The action-pretrained backbone reads the task text in layers 1 to 3, leaves image tokens in place through layer 19, fuses the scene in layers 20 to 27 and forms the action token at layer 28. Below, the flow-matching action expert reads the last-layer states, the first three layers and the robot state. Removing the robot state changes the action by 50.7 times the noise floor, removing the image tokens by 1.8 times. Boosting the expert's attention to the obstacle adds 0.1 millimetres of clearance, while adding a control-barrier-function correction to its output adds 10.4 millimetres.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b7bfcc"/>
+    </marker>
+    <marker id="arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4fd19b"/>
+    </marker>
+    <marker id="arr-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#f0788a"/>
+    </marker>
+    <style>
+      .h1{font:700 34px Inter,ui-sans-serif,system-ui,sans-serif;fill:#f4efe3}
+      .sub{font:500 15px Inter,ui-sans-serif,system-ui,sans-serif;fill:#9aa3b2}
+      .lab{font:600 17px Inter,ui-sans-serif,system-ui,sans-serif;fill:#e9e3d3}
+      .lab2{font:500 13px Inter,ui-sans-serif,system-ui,sans-serif;fill:#9aa3b2}
+      .cap{font:500 13px Inter,ui-sans-serif,system-ui,sans-serif;fill:#d9d1bd}
+      .num{font:500 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#6c7a8a}
+      .note{font:500 13px Inter,ui-sans-serif,system-ui,sans-serif;fill:#b7bfcc}
+      .big{font:700 16px Inter,ui-sans-serif,system-ui,sans-serif}
+      .box{fill:#161c28;stroke:#2c3548;stroke-width:1.5}
+    </style>
+  </defs>
+
+  <rect width="1400" height="880" fill="#0e131c"/>
+
+  <text class="h1" x="40" y="62">Where the action in Ψ0 actually comes from</text>
+  <text class="sub" x="40" y="92">One backbone (Qwen3-VL-2B) before and after egocentric action pretraining, followed into its flow-matching action expert</text>
+
+  <!-- layer numbers: layer L spans x = 270 + (L-1)*38 … +38 -->
+  <g class="num" text-anchor="middle">
+    <text x="289" y="134">1</text><text x="403" y="134">4</text><text x="555" y="134">8</text>
+    <text x="707" y="134">12</text><text x="859" y="134">16</text><text x="1011" y="134">20</text>
+    <text x="1163" y="134">24</text><text x="1315" y="134">28</text>
+  </g>
+
+  <!-- band A: base VLM -->
+  <text class="lab" x="40" y="166">Base VLM</text>
+  <text class="lab2" x="40" y="186">Qwen3-VL-2B</text>
+  <rect x="270" y="142" width="456" height="54" fill="#2a78d6" opacity="0.85"/>
+  <rect x="726" y="142" width="608" height="54" fill="#3a4458"/>
+  <g stroke="#0e131c" stroke-width="1.5" opacity="0.7">
+    <path d="M308 142v54M346 142v54M384 142v54M422 142v54M460 142v54M498 142v54M536 142v54M574 142v54M612 142v54M650 142v54M688 142v54M726 142v54M764 142v54M802 142v54M840 142v54M878 142v54M916 142v54M954 142v54M992 142v54M1030 142v54M1068 142v54M1106 142v54M1144 142v54M1182 142v54M1220 142v54M1258 142v54M1296 142v54"/>
+  </g>
+  <text class="cap" x="498" y="218" text-anchor="middle">reads the image (done by layer 12)</text>
+  <text class="cap" x="1030" y="218" text-anchor="middle">image no longer needed after 15 · language reasoning</text>
+
+  <!-- band B: action-pretrained backbone -->
+  <text class="lab" x="40" y="304">Ψ0 backbone</text>
+  <text class="lab2" x="40" y="324">after action pretraining</text>
+  <rect x="270" y="280" width="114" height="54" fill="#8a7fd6"/>
+  <rect x="384" y="280" width="608" height="54" fill="#3a4458"/>
+  <rect x="992" y="280" width="304" height="54" fill="#eb6834"/>
+  <rect x="1296" y="280" width="38" height="54" fill="#f2b43d"/>
+  <g stroke="#0e131c" stroke-width="1.5" opacity="0.7">
+    <path d="M308 280v54M346 280v54M384 280v54M422 280v54M460 280v54M498 280v54M536 280v54M574 280v54M612 280v54M650 280v54M688 280v54M726 280v54M764 280v54M802 280v54M840 280v54M878 280v54M916 280v54M954 280v54M992 280v54M1030 280v54M1068 280v54M1106 280v54M1144 280v54M1182 280v54M1220 280v54M1258 280v54M1296 280v54"/>
+  </g>
+  <text class="cap" x="327" y="356" text-anchor="middle">task text</text>
+  <text class="cap" x="688" y="356" text-anchor="middle">image tokens processed in place</text>
+  <text class="cap" x="1144" y="356" text-anchor="middle">scene fusion · object attention</text>
+  <text class="cap" x="1315" y="356" text-anchor="middle">act</text>
+
+  <!-- language note -->
+  <text class="note" x="40" y="414">Instruction steering vector</text>
+  <text class="note" x="40" y="434">= a random direction, every layer</text>
+
+  <!-- early layers → expert -->
+  <path d="M327 366 V500 H520 V532" fill="none" stroke="#b7bfcc" stroke-width="2.5" marker-end="url(#arr)"/>
+  <text class="note" x="342" y="488">layers 1–3: the only skips that matter</text>
+
+  <!-- last layer → expert -->
+  <path d="M1315 366 V462 H860 V532" fill="none" stroke="#b7bfcc" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <text class="note" x="1300" y="452" text-anchor="end">last-layer states · removing the image tokens: 1.8× nf</text>
+
+  <!-- robot state -->
+  <rect class="box" x="40" y="560" width="210" height="90" rx="10"/>
+  <text class="lab" x="145" y="601" text-anchor="middle">Robot state</text>
+  <text class="lab2" x="145" y="623" text-anchor="middle">joint positions</text>
+  <path d="M250 605 H446" stroke="#b7bfcc" stroke-width="10"/>
+  <path d="M444 590 L468 605 L444 620 z" fill="#b7bfcc"/>
+  <text class="note" x="354" y="640" text-anchor="middle">removing it: 50.7× nf</text>
+
+  <!-- action expert -->
+  <rect class="box" x="470" y="540" width="440" height="130" rx="12" stroke="#5a6680"/>
+  <text class="lab" x="690" y="584" text-anchor="middle">Action expert</text>
+  <text class="lab2" x="690" y="610" text-anchor="middle">flow matching · 10 Euler steps</text>
+  <text class="lab2" x="690" y="632" text-anchor="middle">trained afterwards on the frozen backbone</text>
+
+  <!-- output -->
+  <path d="M910 605 H1118" stroke="#b7bfcc" stroke-width="3" marker-end="url(#arr)"/>
+  <rect class="box" x="1130" y="560" width="210" height="90" rx="10"/>
+  <text class="lab" x="1235" y="601" text-anchor="middle">Action chunk</text>
+  <text class="lab2" x="1235" y="623" text-anchor="middle">30 joint targets · Unitree G1</text>
+
+  <!-- intervention: attention boost (no effect) -->
+  <rect x="380" y="730" width="420" height="96" rx="10" fill="#1f1418" stroke="#f0788a" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text class="cap" x="590" y="760" text-anchor="middle">Boost the expert's attention to the obstacle (β = 4)</text>
+  <text class="big" x="590" y="788" text-anchor="middle" fill="#f0788a">+0.1 mm [−0.4, 0.8]</text>
+  <text class="lab2" x="590" y="810" text-anchor="middle">no unsafe chunk made safe, at any strength</text>
+  <path d="M590 730 V682" stroke="#f0788a" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr-r)"/>
+
+  <!-- intervention: output injection (works) -->
+  <rect x="860" y="730" width="480" height="96" rx="10" fill="#122019" stroke="#4fd19b" stroke-width="1.5"/>
+  <text class="cap" x="1100" y="760" text-anchor="middle">Add a control-barrier correction at flow step 9 of 10</text>
+  <text class="big" x="1100" y="788" text-anchor="middle" fill="#4fd19b">+10.4 mm [6.7, 13.7]</text>
+  <text class="lab2" x="1100" y="810" text-anchor="middle">same when predicted from the backbone's own features</text>
+  <path d="M1020 730 V617" stroke="#4fd19b" stroke-width="2.5" marker-end="url(#arr-g)"/>
+
+  <text class="lab2" x="40" y="862">nf = noise floor, the action change from resampling flow noise. Clearance gains on 70 unsafe chunks, 95 % cluster-bootstrap intervals.</text>
+</svg>

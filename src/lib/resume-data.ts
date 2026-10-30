@@ -384,6 +384,7 @@ const ROBOTICS_RESUME = new Set([
   "ibm-1", "sc-wbd", "canvas-engineering", "recursive-omnimodal-video-action-model",
   "general-unified-world-modeling", "rl-lab", "computatrum",
   "broadening-and-building-beyond-classical-reinforcement-learning",
+  "vla-action-pretraining",
 ]);
 
 // Real work, but a hiring reader gets nothing from it: music, animation,
