@@ -28,6 +28,10 @@ import { Topology3D } from "./Topology3D";
 import { LittleBrain } from "./LittleBrain";
 import { LittleBrainAtmosphere } from "./LittleBrainAtmosphere";
 import { GenieAtmosphere } from "./GenieAtmosphere";
+import { CupertinoAtmosphere } from "./cupertino/CupertinoAtmosphere";
+import { CupertinoActions } from "./cupertino/CupertinoActions";
+import { CupertinoStats } from "./cupertino/CupertinoStats";
+import { PhoneShelf } from "./cupertino/PhoneShelf";
 import { Pdf, Video, LiveDemo } from "./Embeds";
 import { PullQuote } from "./PullQuote";
 import { SideMedia } from "./SideMedia";
@@ -292,4 +296,8 @@ export const readerComponents: MDXComponents = {
   StatuteAtmosphere,
   LittleBrainAtmosphere,
   GenieAtmosphere,
+  CupertinoAtmosphere,
+  CupertinoActions,
+  CupertinoStats,
+  PhoneShelf,
 };

@@ -5,7 +5,7 @@ endDate: 2026-10-11
 datePrecision: day
 lane: building
 tags: [ios, emulation, qemu, verification, agents, computer-use, infrastructure]
-summary: "Real, unmodified iOS running headless on ARM Linux, driven by an agent: an emulated iPhone 11 boots Apple's own iOS 14, imports apps built on Linux as real IPAs, takes taps through a virtual touchscreen, and leaves a hashed, reviewed record of every action. Built as ground truth for CommandAGI's emulator and verification infrastructure and for Computerworld."
+summary: "Apple's own iOS 14, running headless on an ARM Linux server. Apps built on Linux install as real IPAs. An agent drives the phone, and every tap leaves evidence."
 resume_description: "headless real-ios runtime on arm linux for agent automation and verification: an emulated iphone 11 (qemu, chefkiss inferno) boots unmodified ios 14, installs apps built on linux as ipas, and is driven through a qmp control channel and virtual multitouch with before/after-reviewed, hashed evidence for every action; two guests at once on one machine. python, c, qemu, aarch64."
 resume_brief:
   problem: "Agents that operate phones can only be verified on real devices or Apple's macOS-only simulator, so mobile automation can't run in Linux infrastructure."
@@ -17,100 +17,105 @@ hero:
   alt: "Three screens from an emulated iPhone running on Linux: the iOS 14 lock screen, SpringBoard, and an app built on Linux showing Count: 1 after an injected tap"
   fit: contain
 video: "/assets/media/iphone-on-linux/iphone-on-linux-app-tour-v3.mp4"
+links:
+  github: "https://github.com/JacobFV/behavioral-iphone-inferno"
 influences: [computerworld]
 realizes: []
 critiques: []
 ---
 
-<Video
-  url="/assets/media/iphone-on-linux/iphone-on-linux-app-tour-v3.mp4"
-  title="iPhone on Linux: an app tour on a fresh device"
+<CupertinoAtmosphere />
+
+<CupertinoActions
+  video="/assets/media/iphone-on-linux/iphone-on-linux-app-tour-v3.mp4"
   poster="/assets/media/iphone-on-linux/app-tour-poster.jpg"
-  caption="Recorded 29 and 30 October 2026 on a second machine. Part 1: a fresh device rebuilt from the IPSW, through Setup Assistant and 21 of Apple's built-in apps. Part 2: the phone on the internet (Safari on Wikipedia and Google, live Weather). Parts 3 and 4: more than thirty apps compiled on Linux, most with no Mac involved at all, including open-source apps from GitHub. Every phone frame is a real capture of the emulator's display; each section says how much it is sped up."
+  github="https://github.com/JacobFV/behavioral-iphone-inferno"
 />
+
+![Three screens from the emulated iPhone: the iOS 14 lock screen, SpringBoard, and an app built on Linux showing Count: 1 after an injected tap](/assets/media/iphone-on-linux/hero.jpg)
+
+<CupertinoStats
+  items={[
+    { value: "iOS 14", label: "Apple's own firmware, unmodified" },
+    { value: "30+", label: "apps compiled on Linux, most with no Mac at all" },
+    { value: "2", label: "iPhones at once on one machine" },
+    { value: "1,239", label: "commits in seven days" },
+  ]}
+/>
+
+## Real iOS. Not a lookalike.
+
+An emulated iPhone 11 boots Apple's unmodified iOS 14 on an ARM Linux server. The lock screen, SpringBoard, Setup Assistant, Clock, Settings, Safari: the operating system itself, with nothing re-implemented. A rack of devices can't be snapshotted or scaled. Apple's Simulator runs only on a Mac. This runs where agents are trained.
+
+## Every recording.
+
+<PhoneShelf
+  set="iphone-on-linux"
+  caption="Sixty-four captures of the emulator's display, scaled and nothing else. Drag the shelf. Tap a phone to watch it larger."
+/>
+
+## Your apps. Installed for real.
+
+Apps are compiled on Linux against UIKit, packaged as IPAs, signed and staged into the device image, then launched by iOS like anything from the App Store. A toolchain built for this compiles storyboards, nibs and asset catalogs too, so open-source apps from GitHub come across with no Mac involved.
+
+![An app built on Linux, before the tap: Count: 0](/assets/media/iphone-on-linux/counter-before.jpg)
+![The same app after an injected tap on Increment: Count: 1](/assets/media/iphone-on-linux/counter-after.jpg)
+
+## Driven by an agent. Checked like an experiment.
+
+Taps and swipes go in through a virtual touchscreen. Every action is captured before and after, reviewed, and recorded with hashes and transcripts. A run that cannot be checked does not count.
+
+<Topology3D id="iphone-on-linux" caption="Firmware and apps in. An emulated iPhone running real iOS. An agent's taps through a control channel, frames back, and a record of all of it." />
+
+## Online.
+
+The phone reaches the internet over a USB-Ethernet link into a small Linux bridge that routes its frames and answers its DNS. Safari loads Wikipedia and Google over HTTPS. Weather shows live data.
+
+## Two at once.
+
+Two emulated iPhones completed the same strict journey together on one machine, then idled using **64.6% of one CPU core** and **10.76 GiB of memory** between them. A measured pair, not a limit.
+
+## The demo.
 
 <Video
   url="/assets/media/iphone-on-linux/iphone-on-linux-demo.mp4"
   title="iPhone on Linux demo"
   poster="/assets/media/iphone-on-linux/demo-poster.jpg"
-  caption="61 seconds, built entirely from real frames the emulator captured during runs between 6 and 11 October 2026: Setup Assistant on a fresh device, the lock screen and a full navigation journey, a tap moving a counter from 0 to 1, and two iPhones at once. Each section is labelled with its run and how much it is sped up."
+  caption="Sixty-one seconds of real frames from runs between 6 and 11 October 2026: Setup Assistant, the lock screen, a full navigation journey, a tap moving a counter from 0 to 1, and two iPhones at once."
 />
 
-<PhoneGallery
-  set="iphone-on-linux"
-  caption="Every recording from the tours as its own clip: 64 portrait captures of the emulator's display, filterable by where the app came from. Tiles play while on screen; tap one to open it larger. The corner tag is the speed-up."
-/>
+## Built in seven days. After a week spent the wrong way.
 
-- **Real iOS, not a lookalike.** An emulated iPhone 11 boots Apple's own iOS 14 on ARM Linux: the lock screen, SpringBoard, Setup Assistant and the stock Clock app, all unmodified
-- **Your apps, installed for real.** Apps are compiled on Linux against UIKit headers and imported into the device image as IPAs, then launched by iOS like any other app
-- **Driven by an agent, checked like an experiment.** Taps and swipes go in through a virtual touchscreen; every action is captured before and after, reviewed, and recorded with hashes and transcripts
+The first attempt re-implemented iOS system libraries on a CPU emulator and reached zero percent parity with a real device. The lesson was to stop imitating the operating system and run the real one. What this project adds, on top of ChefKiss's [Inferno](https://github.com/ChefKissInc/Inferno) fork of QEMU, is everything an iPhone needs to be useful on a server: firmware prepared into bootable images, apps built and imported, a headless control layer, and evidence for every action. It exists as ground truth for CommandAGI's verification infrastructure and for [Computerworld](/projects/computerworld), a simulated computer world that includes an iOS shell.
 
-![The iOS 14 lock screen, running in the emulator on Linux](/assets/media/iphone-on-linux/lockscreen.jpg)
-![SpringBoard, the iOS home screen](/assets/media/iphone-on-linux/springboard.jpg)
-![An app built on Linux, imported as an IPA, before the tap: Count: 0](/assets/media/iphone-on-linux/counter-before.jpg)
-![The same app after an injected tap on Increment: Count: 1](/assets/media/iphone-on-linux/counter-after.jpg)
+## Tech specs.
 
-## Problem
+| | |
+|---|---|
+| Host | aarch64 Linux, CPU emulation only. Two virtual CPUs and 4 GB of memory per guest. |
+| Firmware | Apple's iOS 14.0 beta 5 restore image, supplied by the user. The tools stage it and never download, decrypt or redistribute Apple's code. |
+| Apps | Objective-C built with clang against hand-written UIKit headers; Swift and SwiftUI built on Linux or by Xcode. Ad-hoc signed IPAs. App Store binaries are rejected by design. |
+| Control | A QMP channel into the emulator, a virtual multitouch device, and a headless display read back as frames. |
+| Evidence | Commands, control and display transcripts, timings, before and after screenshots with hashes, and a review of whether the screen changed the way the action claimed. |
+| Known limits | The display intermittently freezes (about 45% of app sessions on 30 October; each costs a fresh boot). Setup takes one to three minutes per screen. Maps and Stocks quit at launch. General App Store compatibility is not claimed. |
 
-An agent that operates a phone has to be tested on a phone. The ways to do that today are a rack of real devices, which can't be snapshotted, scaled or run in a data centre, or Apple's iOS Simulator, which runs only on macOS and runs your app against macOS frameworks rather than the operating system on the device. Neither fits inside Linux infrastructure, where agents are trained and evaluated in their thousands.
-
-I needed iOS as ground truth for two things. **CommandAGI's emulator and verification infrastructure** has to check that an agent really did what it claims on a real interface, not just that its transcript reads well. And **[Computerworld](/projects/computerworld)**, a deterministic simulated computer world for training computer-use agents, draws an iOS shell among its five: to know whether a simulated iPhone behaves like a real one, you need a real one you can drive the same way, headlessly and repeatably.
-
-The first attempt, behavioral-iphone, went the other way: it re-implemented iOS system libraries on a CPU emulator. It reached zero percent parity with a real device, and that taught the lesson. Stop imitating the operating system, and run the real one.
-
-## Solution
-
-The emulator underneath is [Inferno](https://github.com/ChefKissInc/Inferno), ChefKiss's QEMU fork that emulates Apple's ARM devices. It can boot iOS; it does not, by itself, give you an iPhone an agent can use on a Linux server. What I built on top, over seven days and 1,239 commits, is that layer: a companion runner that prepares Apple's firmware into bootable disk images, builds and imports apps, drives the device without a screen, and turns every interaction into evidence.
-
-<Topology3D id="iphone-on-linux" caption="Firmware and apps in, an emulated iPhone running real iOS, an agent's taps through a control channel, frames back, and a record of all of it." />
-
-## How
-
-- **Host:** an aarch64 Linux machine, CPU emulation only (no hardware virtualization for this device). Each guest gets two virtual CPUs and 4 GB of memory.
-- **Firmware:** the user supplies Apple's iOS 14.0 beta 5 restore image; the tools decode it, stage the system and data volumes, seed the keybag and caches, and never download, decrypt or redistribute Apple's code.
-- **Apps:** small Objective-C apps built on Linux with clang against hand-written UIKit headers; Swift and SwiftUI apps compiled and linked on Linux or built by Xcode on a macOS build runner; all packaged as IPAs, ad-hoc signed and staged into the image. Only unencrypted apps you build yourself: App Store binaries are rejected by design.
-- **Control:** a QMP control channel into the emulator, a virtual multitouch device for taps, swipes and the home button, and a headless display read back as frames.
-- **Evidence:** every journey records its commands, control and display transcripts, timings, before and after screenshots and their hashes, and a review of whether the screen actually changed the way the action claimed. A run that cannot be checked does not count.
-
-## Results
-
-On 29 October the whole chain was rebuilt on a second machine from Apple's restore image alone, and a fresh device went through Setup Assistant to its Home screen for the first time. That run found why fresh devices used to stall at "Welcome to iPhone": the virtual touchscreen allowed 32 gestures per boot, and setup needs about 25 before that screen. With the limit raised, the device was toured through Apple's own apps, restarting automatically whenever the display froze:
-
-- **Opened and used:** Settings (into General), Clock (World Clock, Alarm, a running stopwatch, Timer), Notes (a new note), Calendar, Photos, Books, Health (into Health Details), Wallet, Home, TV, News, Mail, Safari, Messages, Music, Phone, FaceTime, Weather and the App Store
-- **Opened with nothing to show:** Reminders and Podcasts drew blank pages; anything that needs the internet says so, because the emulated phone has no network
-- **Did not open:** Maps and Stocks quit back to the Home screen
-- **Not attempted:** App Store apps, which are encrypted to a real device; the project does not decrypt them
-
-**On the internet (30 October).** The phone now reaches the internet over a USB-Ethernet (CDC-NCM) link: iOS switches its USB function to NCM, a small root helper inside iOS gives the interface an address and a route, and a userspace bridge in a little Linux VM carries the frames, routes them out and answers DNS. Safari loads Wikipedia and Google over HTTPS, and Weather shows live data. The last blocker was not USB at all: the bridge's DNS server had never started, because the command that stopped the old one also matched, and killed, its own shell.
-
-Then came apps from outside Apple, now more than thirty of them. Each is installed into the setup-complete device, opened by its own launch helper and touched by a script. Most were compiled entirely on Linux, code and resources (storyboards, nibs, asset catalogs) alike, with a toolchain built for this; no Mac was involved.
+<details>
+<summary>Every app that was tried</summary>
 
 | App | Built | Result |
 |---|---|---|
-| Hello SwiftUI, Hello SPM, Hello Mixed, Hello Async | Linux | Run: SwiftUI navigation, Swift calling Objective-C, async/await with the embedded runtime |
+| Settings, Clock, Notes, Calendar, Photos, Books, Health, Wallet, Home, TV, News, Mail, Safari, Messages, Music, Phone, FaceTime, Weather, App Store | Apple | Opened and used |
+| Reminders, Podcasts | Apple | Opened; blank without a network at the time |
+| Maps, Stocks | Apple | Quit at launch, with or without the network |
+| Hello SwiftUI, Hello SPM, Hello Mixed, Hello Async | Linux | Run: SwiftUI navigation, Swift calling Objective-C, async/await |
 | swift-2048 (MIT) | Linux, from its Xcode project | Runs and plays |
-| Hello Storyboard | Linux, no Mac | Runs: storyboard, xib card and asset-catalog colour, all compiled on Linux |
-| Clendar (a real 2021 App Store calendar app) | Linux, no Mac | Runs and navigates its settings |
-| Simon Tatham's Puzzles (MIT), vfr Reader, ACEDrawingView (Apache-2.0), jot (MIT) | Linux, no Mac | Run: the game list and a game, a PDF paged, finger drawing |
+| Hello Storyboard | Linux, no Mac | Runs: storyboard, xib and asset-catalog colour all compiled on Linux |
+| Clendar (a 2021 App Store calendar app) | Linux, no Mac | Runs and navigates its settings |
+| Simon Tatham's Puzzles, vfr Reader, ACEDrawingView, jot | Linux, no Mac | Run: a game, a PDF paged, finger drawing |
 | CalendarKit, CandySearch, iOS9Sampler, SaveTheDot, Birthdays, GreatReader, Proton, GoodAsOldPhones, SwiftUI 2048, Recipes, Fojusi, Stopwatch, MVCTodo, Artistry, QuoraDots, DesignPatterns, TumblrMenu, Recordings | Linux, no Mac (open source, from GitHub) | Run: day views, detail pages, a game played to Game Over, editors, lists |
 | Notes Demo, Navigation Demo, Counter | Linux (our own Objective-C) | Run, including full tap journeys |
-| CardsAgainst, Velik, CompositionalDiffable, Sol, SwiftUIKit | Linux | Crash at start (a launch image looked up by a name the Linux asset step does not produce; Core Data; others under investigation) |
+| CardsAgainst, Velik, CompositionalDiffable, Sol, SwiftUIKit | Linux | Crash at start (launch image lookup, Core Data, others under investigation) |
 | Tipulator (MIT) | Linux and Xcode | Crashes in its own 2014-era Auto Layout code |
 | NetNewsWire 6.0 (MIT) | Xcode code, Linux resources | Does not stay open (App Group container) |
-| Maps, Stocks | Apple | Quit at launch, with or without the network |
 
-Apple's second Home screen page holds Files, Find My, Shortcuts, iTunes Store, Translate, Contacts, Watch, Tips, a Utilities folder and Feedback, and has been toured too.
-
-Real iOS boots to the lock screen and SpringBoard, completes Setup Assistant screens, and runs the stock Clock app. An app built on Linux installs and runs, and a tap on its button moves the counter from 0 to 1, verified before and after (the screenshots above). A navigation app goes through a full UI journey: opening items, scrolling a list, flipping a switch, saving, and reopening to find the saved state.
-
-![Setup Assistant greeting, on the emulated device](/assets/media/iphone-on-linux/setup-hello.jpg)
-![Welcome to iPhone, Setup Assistant](/assets/media/iphone-on-linux/setup-welcome.jpg)
-![A navigation app built on Linux after a full journey: saved item 12, option on](/assets/media/iphone-on-linux/navigation-demo.jpg)
-
-Two emulated iPhones completed the same strict journey at once on one machine, then idled together using 64.6% of one CPU core on average and 10.76 GiB of memory at peak between them. That is a measured pair, not a capacity limit.
-
-It is a working prototype, not a product. The display intermittently freezes (on 30 October, during about 45% of app sessions; each costs a fresh boot); the leading hypothesis is that the guest's frame bookkeeping falls out of step and the compositor waits on itself, and it is analysed from saved evidence but not yet fixed. A fresh device takes one to three minutes per Setup Assistant screen in pure CPU emulation. General App Store compatibility is not claimed.
-
-## Lessons
-
-The cheapest way to get a real phone's behaviour was to stop modelling it. A week spent re-implementing system libraries bought nothing; a week spent building operational tooling around the real operating system bought an iPhone an agent can use. The other lesson is about trust: an agent that runs a phone will happily report success, so the infrastructure has to be built around evidence from the first day: a before, an after, a review and a hash for every claim.
+</details>

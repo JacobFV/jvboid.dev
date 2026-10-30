@@ -108,6 +108,13 @@ export const WORLDS: Record<string, World> = {
   // Sans and uppercase mono labels, square corners. Dark is forced — the
   // marketing site has one palette, and the light one is the workbench's.
   "/projects/genieeda": { id: "genie", theme: "dark" },
+  // An iPhone, the way Apple shows one: solid white, the system face, black
+  // type over grey, one blue for "Watch the film" and the link that would say
+  // Buy (here, the source), and every section fading up as it is reached.
+  // The subject is a real iPhone running real iOS, and that is the look it
+  // has everywhere it is sold. Light is forced; there is no other kind of
+  // iPhone page.
+  "/projects/iphone-on-linux": { id: "cupertino", theme: "light" },
 };
 
 /** Trailing slashes are stripped, and the lookup goes through hasOwnProperty:

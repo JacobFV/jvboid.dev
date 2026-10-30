@@ -4830,3 +4830,640 @@ a:hover {
 :root[data-page-theme="genie"] .prose-mdx strong {
   color: #e8eae4;
 }
+
+/* ---- iPhone on Linux: the Apple page (reader/cupertino/) -----------------
+   Solid white, the system face (SF on Apple devices, Inter elsewhere),
+   `#1d1d1f` type over `#6e6e73`, Apple's `#0066cc` for the two links a
+   product page allows, headlines centred and very large, body copy in a
+   narrow centred measure, and everything surfacing as the reader reaches
+   it. Light is forced. The choreography (which element is "in") is set by
+   CupertinoAtmosphere; the look of it is all here. */
+:root[data-page-theme="cupertino"] {
+  --color-bg-0: #ffffff;
+  --color-bg-1: #f5f5f7;
+  --color-bg-2: #e8e8ed;
+  --color-ink: #1d1d1f;
+  --color-ink-dim: #6e6e73;
+  --color-ink-mute: #86868b;
+  --color-accent: #0066cc;
+  --color-brass: #86868b;
+  --color-rule: #d2d2d7;
+  --page-dusk: #ffffff;
+  --cup-face: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-inter),
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --cup-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+:root[data-page-theme="cupertino"] html,
+:root[data-page-theme="cupertino"] body {
+  background: #fff;
+}
+:root[data-page-theme="cupertino"] .biolume,
+:root[data-page-theme="cupertino"] [data-theme-toggle] {
+  display: none;
+}
+:root[data-page-theme="cupertino"] ::selection {
+  background: #b3d7ff;
+  color: #1d1d1f;
+}
+:root[data-page-theme="cupertino"] body,
+:root[data-page-theme="cupertino"] header nav,
+:root[data-page-theme="cupertino"] header nav a,
+:root[data-page-theme="cupertino"] header nav button,
+:root[data-page-theme="cupertino"] header [role="menu"] a,
+:root[data-page-theme="cupertino"] .prose-mdx,
+:root[data-page-theme="cupertino"] .prose-mdx p,
+:root[data-page-theme="cupertino"] .standfirst,
+:root[data-page-theme="cupertino"] [data-node-meta],
+:root[data-page-theme="cupertino"] .rule-label {
+  font-family: var(--cup-face);
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+:root[data-page-theme="cupertino"] header nav a,
+:root[data-page-theme="cupertino"] header nav button {
+  font-size: 12px;
+}
+:root[data-page-theme="cupertino"] header [role="menu"] {
+  border-radius: 14px;
+  border-color: var(--color-rule);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.18);
+}
+:root[data-page-theme="cupertino"] a:hover {
+  color: var(--color-accent);
+}
+
+/* The page is wide and centred, the way a product page is; the body copy
+   stays a readable measure in the middle of it. */
+:root[data-page-theme="cupertino"] main {
+  max-width: 68rem;
+  padding-top: 2rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx {
+  max-width: none;
+}
+:root[data-page-theme="cupertino"] .prose-mdx > * + * {
+  margin-top: 1.25rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx > p {
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+  font-size: 1.3125rem;
+  line-height: 1.45;
+  color: var(--color-ink-dim);
+  text-wrap: pretty;
+}
+:root[data-page-theme="cupertino"] .prose-mdx > p strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+:root[data-page-theme="cupertino"] .prose-mdx a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+:root[data-page-theme="cupertino"] .prose-mdx a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+:root[data-page-theme="cupertino"] .prose-mdx h2,
+:root[data-page-theme="cupertino"] .prose-mdx h3 {
+  font-family: var(--cup-face);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--color-ink);
+  max-width: 22ch;
+  margin-inline: auto;
+}
+:root[data-page-theme="cupertino"] .prose-mdx h2 {
+  font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
+  line-height: 1.05;
+  margin-top: 7rem;
+  margin-bottom: 1.5rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx h3 {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  line-height: 1.15;
+  margin-top: 4rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx h2 + p,
+:root[data-page-theme="cupertino"] .prose-mdx h3 + p {
+  margin-top: 0;
+}
+:root[data-page-theme="cupertino"] .prose-mdx code {
+  font-family: var(--font-mono);
+  background: var(--color-bg-1);
+  border-radius: 6px;
+  color: var(--color-ink);
+}
+:root[data-page-theme="cupertino"] .prose-mdx ul,
+:root[data-page-theme="cupertino"] .prose-mdx ol {
+  max-width: 40rem;
+  margin-inline: auto;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--color-ink-dim);
+}
+:root[data-page-theme="cupertino"] .prose-mdx li + li {
+  margin-top: 0.5rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx li strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* The hero: name, one line, the two links. Nothing else. */
+:root[data-page-theme="cupertino"] main article > header {
+  text-align: center;
+  margin-top: 3.5rem;
+  margin-bottom: 1.5rem;
+}
+:root[data-page-theme="cupertino"] [data-page-title] {
+  font-family: var(--cup-face);
+  font-variation-settings: normal;
+  font-weight: 600;
+  font-size: clamp(2.75rem, 1.5rem + 6vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+:root[data-page-theme="cupertino"] .standfirst {
+  font-family: var(--cup-face);
+  font-variation-settings: normal;
+  font-weight: 400;
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--color-ink-dim);
+  max-width: 34em;
+  margin-inline: auto;
+  margin-top: 1.25rem;
+}
+:root[data-page-theme="cupertino"] [data-node-meta] {
+  justify-content: center;
+  font-size: 0.8125rem;
+  letter-spacing: 0;
+  color: var(--color-ink-mute);
+  margin-top: 1.25rem;
+}
+/* The pills duplicate the two links below; CupertinoActions is the one that
+   gets the Apple treatment. The hero's rule goes too: product pages have no
+   hairlines. */
+:root[data-page-theme="cupertino"] [data-node-link],
+:root[data-page-theme="cupertino"] main article > header .rule {
+  display: none;
+}
+:root[data-page-theme="cupertino"] [data-node-meta] + div:has([data-node-link]) {
+  display: none;
+}
+
+.cup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2.25rem;
+  margin: 0 auto 3rem;
+  font-family: var(--cup-face);
+}
+.cup-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.1875rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--color-accent);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+}
+.cup-link svg {
+  transition: transform 300ms var(--cup-ease);
+}
+.cup-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.cup-link:hover svg {
+  transform: translateX(2px);
+}
+
+/* Figures: full width, large radius, no chrome of their own. */
+:root[data-page-theme="cupertino"] .prose-mdx .reader-image,
+:root[data-page-theme="cupertino"] .prose-mdx video,
+:root[data-page-theme="cupertino"] .prose-mdx iframe {
+  border-radius: 20px;
+  background: var(--color-bg-1);
+}
+:root[data-page-theme="cupertino"] .prose-mdx .reader-image {
+  margin-inline: auto;
+}
+:root[data-page-theme="cupertino"] .prose-mdx figure {
+  margin-block: 3rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx figcaption {
+  font-family: var(--cup-face);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-mute);
+  max-width: 44rem;
+  margin: 1rem auto 0;
+  text-align: center;
+}
+:root[data-page-theme="cupertino"] .prose-mdx .reader-image-grid {
+  margin-block: 3rem;
+}
+:root[data-page-theme="cupertino"] .prose-mdx .reader-caption {
+  font-family: var(--cup-face);
+  color: var(--color-ink-mute);
+}
+
+/* The figures row. Value on top (the dd), its line under it (the dt). */
+.cup-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 2.5rem 2rem;
+  max-width: 60rem;
+  margin: 4rem auto;
+  font-family: var(--cup-face);
+  text-align: center;
+}
+.cup-stat {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+}
+.cup-stat__value {
+  font-size: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-ink);
+  margin: 0;
+}
+.cup-stat__label {
+  font-size: 1.0625rem;
+  line-height: 1.35;
+  color: var(--color-ink-dim);
+  max-width: 16em;
+  margin-inline: auto;
+  text-wrap: balance;
+}
+
+/* The shelf: full-bleed rail of phones, Apple's gallery tabs above it. */
+.cup-shelf {
+  margin: 2.5rem 0 3rem;
+  font-family: var(--cup-face);
+}
+.cup-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.cup-tab {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-family: var(--cup-face);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+  background: var(--color-bg-1);
+  cursor: pointer;
+  transition: background 300ms var(--cup-ease), color 300ms var(--cup-ease);
+}
+.cup-tab:hover {
+  background: var(--color-bg-2);
+}
+.cup-tab[aria-selected="true"] {
+  background: var(--color-ink);
+  color: #fff;
+}
+.cup-shelf__rail {
+  display: flex;
+  gap: 1.75rem;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 1.5rem max(2rem, calc(50vw - 11rem)) 2rem;
+  scroll-padding-inline: 2rem;
+  align-items: flex-start;
+  list-style: none;
+}
+.cup-shelf__item {
+  flex: 0 0 auto;
+  width: clamp(11rem, 30vw, 13.5rem);
+}
+.cup-phone {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--cup-face);
+  color: var(--color-ink);
+}
+.cup-phone__screen {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 19.5;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  background: #000;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 18px 40px -18px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 420ms var(--cup-ease), transform 420ms var(--cup-ease);
+}
+.cup-phone:hover .cup-phone__screen {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 26px 52px -18px rgba(0, 0, 0, 0.4);
+}
+.cup-phone__screen video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+.cup-phone__name {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+.cup-phone__note {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-ink-dim);
+}
+.cup-phone__meta {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+.cup-shelf__caption {
+  margin: 0.5rem auto 0;
+  max-width: 44rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-ink-mute);
+}
+/* The rail's own edge mask is sized for small covers; phones with captions
+   want a wider dissolve. */
+.cover-gallery.cup-shelf__rail {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5rem, #000 calc(100% - 5rem), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 5rem, #000 calc(100% - 5rem), transparent 100%);
+}
+
+/* The film, and a phone opened larger: a dark room with one thing in it. */
+.cup-film {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-family: var(--cup-face);
+  animation: cup-film-in 360ms var(--cup-ease) both;
+}
+@keyframes cup-film-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.cup-film__frame {
+  width: min(100%, 1280px);
+  animation: cup-film-rise 480ms var(--cup-ease) both;
+}
+.cup-film__frame video {
+  display: block;
+  width: 100%;
+  max-height: 86vh;
+  border-radius: 18px;
+  background: #000;
+}
+@keyframes cup-film-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cup-film__phone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: min(100%, 24rem);
+  max-height: 100%;
+  animation: cup-film-rise 480ms var(--cup-ease) both;
+}
+.cup-film__phone video {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 70vh;
+  aspect-ratio: 9 / 19.5;
+  border-radius: 1.75rem;
+  background: #000;
+}
+.cup-film__caption {
+  color: #fff;
+  text-align: center;
+}
+.cup-film__title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.cup-film__caption p {
+  margin: 0.35rem auto 0;
+  max-width: 34em;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+}
+.cup-film__meta {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+.cup-film__close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition: background 300ms var(--cup-ease);
+}
+.cup-film__close:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* Tech specs: a definition table, hairlines only. */
+:root[data-page-theme="cupertino"] .prose-mdx table {
+  max-width: 60rem;
+  margin-inline: auto;
+  font-family: var(--cup-face);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--color-ink);
+}
+:root[data-page-theme="cupertino"] .prose-mdx th,
+:root[data-page-theme="cupertino"] .prose-mdx td {
+  padding: 0.85rem 1rem 0.85rem 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+  text-align: left;
+}
+:root[data-page-theme="cupertino"] .prose-mdx th {
+  font-weight: 600;
+  color: var(--color-ink);
+  border-bottom-color: var(--color-ink);
+}
+:root[data-page-theme="cupertino"] .prose-mdx td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-ink);
+}
+:root[data-page-theme="cupertino"] .prose-mdx td:not(:first-child) {
+  color: var(--color-ink-dim);
+}
+:root[data-page-theme="cupertino"] .prose-mdx details {
+  max-width: 60rem;
+  margin: 2rem auto;
+  font-family: var(--cup-face);
+}
+:root[data-page-theme="cupertino"] .prose-mdx summary {
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.0625rem;
+  color: var(--color-accent);
+  list-style: none;
+}
+:root[data-page-theme="cupertino"] .prose-mdx summary::-webkit-details-marker {
+  display: none;
+}
+:root[data-page-theme="cupertino"] .prose-mdx summary::after {
+  content: " +";
+}
+:root[data-page-theme="cupertino"] .prose-mdx details[open] summary::after {
+  content: " −";
+}
+:root[data-page-theme="cupertino"] .prose-mdx summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* The diagram and the related graph are dark objects in a white room:
+   give them Apple's rounded tile and the section's breathing room. */
+:root[data-page-theme="cupertino"] .topology3d {
+  margin-block: 3rem;
+}
+:root[data-page-theme="cupertino"] main article > section {
+  margin-top: 7rem;
+}
+:root[data-page-theme="cupertino"] main article > section .rule-label {
+  justify-content: center;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+}
+:root[data-page-theme="cupertino"] main article > section .rule-label::after {
+  display: none;
+}
+:root[data-page-theme="cupertino"] .neighborhood-tv {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+/* The fade-in. Everything the reader has not reached yet is transparent and
+   a touch low; CupertinoAtmosphere marks it `in` as it arrives. The hero's
+   children stagger. A safety animation lets everything through after two
+   seconds whether or not the script ran, so a failed hydration costs the
+   motion and nothing else. */
+:root[data-page-theme="cupertino"] main article > header > *,
+:root[data-page-theme="cupertino"] main article .prose-mdx > *,
+:root[data-page-theme="cupertino"] main article > section {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 900ms var(--cup-ease),
+    transform 900ms var(--cup-ease);
+  animation: cup-safety 1ms linear 2200ms forwards;
+}
+:root[data-page-theme="cupertino"] main article > header > :nth-child(2) {
+  transition-delay: 120ms;
+}
+:root[data-page-theme="cupertino"] main article > header > :nth-child(3) {
+  transition-delay: 220ms;
+}
+:root[data-page-theme="cupertino"] main article .prose-mdx > :first-child,
+:root[data-page-theme="cupertino"] main article .prose-mdx > :nth-child(2) {
+  transition-delay: 320ms;
+}
+:root[data-page-theme="cupertino"] main article [data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+@keyframes cup-safety {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-page-theme="cupertino"] main article > header > *,
+  :root[data-page-theme="cupertino"] main article .prose-mdx > *,
+  :root[data-page-theme="cupertino"] main article > section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+  .cup-film,
+  .cup-film__frame,
+  .cup-film__phone {
+    animation: none;
+  }
+}
