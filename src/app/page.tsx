@@ -273,14 +273,14 @@ export default function HomePage() {
 
       {/* ---- Readings ---- */}
       {recentReadings.length > 0 && (
-        <Section title="Readings" link={{ href: "/readings", label: "all" }}>
+        <Section title="Things you should read" link={{ href: "/readings", label: "all" }}>
           <ReadingCoverRail nodes={recentReadings} />
         </Section>
       )}
 
-      {/* ---- Papers ---- */}
+      {/* ---- Papers ---- tucked up under the readings, as one pair of shelves */}
       {recentPapers.length > 0 && (
-        <Section title="Writings" link={{ href: "/papers", label: "all" }}>
+        <Section title="Writings" link={{ href: "/papers", label: "all" }} className="mt-16">
           <CoverRail nodes={recentPapers} variant="paper" />
         </Section>
       )}
@@ -308,18 +308,20 @@ function Section({
   link,
   children,
   id,
+  className = "mt-40",
 }: {
   eyebrow?: string;
   title: string;
   link?: { href: string; label: string };
   children: React.ReactNode;
   id?: string;
+  className?: string;
 }) {
   // The heading sits on the rule, small and letterspaced, with the
   // section's link at the far end of the same line: the running head of
   // a magazine section rather than a heading above a card.
   return (
-    <section id={id} className="mt-40 scroll-mt-20">
+    <section id={id} className={`${className} scroll-mt-20`}>
       <div className="rule-label mb-10">
         <h2 className="font-[inherit] text-[inherit] tracking-[inherit] uppercase">
           {eyebrow ? `${eyebrow} · ${title}` : title}
