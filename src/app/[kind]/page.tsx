@@ -124,7 +124,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
             const withThumb = Boolean(thumb);
             const plainPost = node.kind === "post" && !thumb;
             return (
-              <li key={node.id} className="border-t border-[var(--color-rule)] last:border-b">
+              <li key={node.id} className="border-t border-[var(--color-rule)] first:border-t-0 last:border-b">
                 <Link
                   href={href}
                   {...(offsite ? { target: "_blank", rel: "noreferrer" } : {})}
