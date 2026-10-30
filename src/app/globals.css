@@ -839,6 +839,42 @@ body {
   will-change: transform, opacity;
 }
 
+/* ---- Inline diagrams (reader/Diagram.tsx, lib/remark-inline-svg.ts) ----
+   A diagram is real SVG in the page, drawn at its own width (`--diagram-w`,
+   from its viewBox): on a wide window it bleeds out of the reading column
+   and sits centred on the viewport, and on a narrow one it keeps a floor
+   under its width and scrolls sideways, so its type never shrinks below
+   legibility. The ids and styles inside were scoped at build time. */
+.diagram {
+  --diagram-max: min(var(--diagram-w, 60rem), calc(100vw - 2rem));
+  width: var(--diagram-max);
+  margin: 3rem 0 3rem calc(50% - var(--diagram-max) / 2);
+}
+.diagram__canvas {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.diagram__canvas > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: min(var(--diagram-w, 60rem), 56rem);
+  aspect-ratio: var(--diagram-w) / var(--diagram-h);
+}
+.diagram__canvas > svg text {
+  user-select: text;
+  -webkit-user-select: text;
+}
+.diagram__caption {
+  margin: 0.75rem auto 0;
+  max-width: 44rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-mute);
+}
+
 /* ---- Hexagon walls (components/chrome/HexFit.tsx) ----
    Two contentless floats per shaped block. HexFit measures where the
    block sits inside the hexagon and writes the size and the polygons;
@@ -5029,19 +5065,13 @@ a:hover {
 :root[data-page-theme="cupertino"] .prose-mdx .reader-image {
   margin-inline: auto;
 }
-/* A diagram is drawn on the page, not in a tile. */
-:root[data-page-theme="cupertino"] .prose-mdx .reader-image[src$=".svg"] {
-  background: none;
-  border-radius: 0;
-}
-:root[data-page-theme="cupertino"] .prose-mdx .reader-figure:has(.reader-image[src$=".svg"]) .reader-caption {
-  display: block;
-  margin-top: 0.75rem;
-  text-align: center;
+/* Diagrams are inline SVG (`.diagram`), not pictures; their caption takes
+   the page's face. */
+:root[data-page-theme="cupertino"] .prose-mdx .diagram__caption {
+  font-family: var(--cup-face);
   font-size: 0.875rem;
-  color: var(--color-ink-mute);
-  max-width: 44rem;
-  margin-inline: auto;
+  letter-spacing: 0;
+  text-transform: none;
 }
 :root[data-page-theme="cupertino"] .prose-mdx figure {
   margin-block: 3rem;

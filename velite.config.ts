@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { remarkDecodeMathEntities } from "./src/lib/remark-decode-math-entities";
 import { remarkImageGrid } from "./src/lib/remark-image-grid";
+import { remarkInlineSvg } from "./src/lib/remark-inline-svg";
 import { rehypeShiki } from "./src/lib/rehype-shiki";
 
 // Shared shape for graph nodes. Frontmatter validation. See docs/CONTENT_MODEL.md.
@@ -44,7 +45,7 @@ const baseFields = {
   // parsing so LaTeX inside posts doesn't crash the build.
   body: s.mdx({
     copyLinkedFiles: false,
-    remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
+    remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkInlineSvg, remarkImageGrid],
     rehypePlugins: [rehypeShiki, rehypeKatex],
   }),
 };
@@ -85,7 +86,7 @@ const postRevisions = defineCollection({
     legacy: s.boolean(),
     body: s.mdx({
       copyLinkedFiles: false,
-      remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
+      remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkInlineSvg, remarkImageGrid],
       rehypePlugins: [rehypeShiki, rehypeKatex],
     }),
   }),
@@ -308,7 +309,7 @@ const loop = defineCollection({
       slug: s.path(),
       body: s.mdx({
         copyLinkedFiles: false,
-        remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
+        remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkInlineSvg, remarkImageGrid],
         rehypePlugins: [rehypeShiki, rehypeKatex],
       }),
     })
@@ -331,7 +332,7 @@ const bio = defineCollection({
       slug: s.path(),
       body: s.mdx({
         copyLinkedFiles: false,
-        remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkImageGrid],
+        remarkPlugins: [remarkGfm, remarkMath, remarkDecodeMathEntities, remarkInlineSvg, remarkImageGrid],
         rehypePlugins: [rehypeShiki, rehypeKatex],
       }),
     })

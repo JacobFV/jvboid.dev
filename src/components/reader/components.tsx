@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { MDXComponents } from "@/lib/mdx";
 import { ReaderImage } from "./ReaderImage";
 import { ImageGrid } from "./ImageGrid";
+import { Diagram } from "./Diagram";
 import { ScreenshotRow } from "./ScreenshotRow";
 import { PhoneGallery } from "./PhoneGallery";
 import { ScreenshotTimeline } from "./ScreenshotTimeline";
@@ -231,6 +232,8 @@ export const readerComponents: MDXComponents = {
   pre: Pre,
   hr: HR,
   img: ReaderImage,
+  // Inlined SVG diagrams; produced by remarkInlineSvg, never written by hand.
+  Diagram,
   table: Table,
   th: TH,
   td: TD,

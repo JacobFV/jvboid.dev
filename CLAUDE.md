@@ -87,8 +87,14 @@ editing this repo.
   `runlaw-*.svg`, `synthux-architecture.svg`, `ascii-art-pipeline.svg`),
   with a `<title>` and `<desc>`, facts checked against the project's
   source, and render each to PNG to check for overlap before
-  committing. Screenshots are supporting evidence of the UI — one or two,
-  never the main figures.
+  committing. Place one in the body as a plain `![caption](/assets/….svg)`:
+  `remarkInlineSvg` (velite) inlines every local SVG image as a `<Diagram>`
+  at build time, with its ids and `<style>` selectors scoped, so the text
+  is selectable and the drawing renders at its own width instead of being
+  shrunk into the column as a picture. Diagrams are flat and quiet: boxes,
+  hairline arrows, one accent; no 3D, no orbiting, no WebGL (Topology3D
+  was removed for exactly that). Screenshots are supporting evidence of
+  the UI — one or two, never the main figures.
 - **Canonical URLs.** Every node lives at `/{kind-plural}/{slug}`. Use
   `nodeHref(node)` to compute links. Bare kind paths such as `/projects`
   are collection pages; old flat `/{slug}` routes should 404.
