@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 
 Taps and swipes go in through a virtual touchscreen. Every action is captured before and after, reviewed, and recorded with hashes and transcripts. A run that cannot be checked does not count.
 
-<Topology3D id="iphone-on-linux" caption="Firmware and apps in. An emulated iPhone running real iOS. An agent's taps through a control channel, frames back, and a record of all of it." />
+![How it fits together: Apple's firmware and apps built on Linux are staged into disk images; Inferno emulates an iPhone 11 running real iOS 14 and the imported app; an agent's taps go in through a companion runner, a QMP control channel and a virtual multitouch device; frames come back and are reviewed before and after each action; the runner and the review both write the evidence record.](/assets/img/projects/iphone-on-linux-flow.svg)
 
 ## Online.
 

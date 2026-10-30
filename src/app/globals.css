@@ -5061,6 +5061,20 @@ a:hover {
 :root[data-page-theme="cupertino"] .prose-mdx .reader-image {
   margin-inline: auto;
 }
+/* A diagram is drawn on the page, not in a tile. */
+:root[data-page-theme="cupertino"] .prose-mdx .reader-image[src$=".svg"] {
+  background: none;
+  border-radius: 0;
+}
+:root[data-page-theme="cupertino"] .prose-mdx .reader-figure:has(.reader-image[src$=".svg"]) .reader-caption {
+  display: block;
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-ink-mute);
+  max-width: 44rem;
+  margin-inline: auto;
+}
 :root[data-page-theme="cupertino"] .prose-mdx figure {
   margin-block: 3rem;
 }

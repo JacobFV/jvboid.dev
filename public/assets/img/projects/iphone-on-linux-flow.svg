@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 500" width="1320" height="500" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">How iPhone on Linux fits together</title>
+  <desc id="d">Apple's IPSW and apps built on Linux with clang are staged into disk images. Inferno, a QEMU fork, emulates an iPhone 11 that boots unmodified iOS 14 and runs the imported app. An agent drives it through a companion runner, a QMP control channel and a virtual multitouch device; frames come back from the headless display and are reviewed before and after each action; the runner and the review both write an evidence record of hashes and transcripts.</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+
+  <!-- preparation: firmware and apps into the image -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M210 92 H270"/>
+    <path d="M210 212 H240 V92" marker-end="none"/>
+    <path d="M440 92 H500"/>
+  </g>
+  <!-- observation: frames out, reviewed, to the agent -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M770 92 H840"/>
+    <path d="M1010 92 H1050"/>
+    <path d="M1135 124 V300"/>
+  </g>
+  <!-- control: taps in -->
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M1100 332 H1010"/>
+    <path d="M840 332 H790"/>
+    <path d="M620 332 H570"/>
+    <path d="M485 300 V265 H560 V230"/>
+  </g>
+  <!-- evidence: runner and review both write the record -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" stroke-dasharray="4 4">
+    <path d="M1220 105 H1290 V442 H810" marker-end="url(#a-grey)"/>
+    <path d="M925 364 V442"/>
+  </g>
+
+  <!-- boxes -->
+  <g>
+    <rect x="40" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Apple IPSW</text>
+    <text x="125" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">iOS 14, user-supplied</text>
+
+    <rect x="40" y="180" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="208" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Linux clang build</text>
+    <text x="125" y="227" text-anchor="middle" font-size="12" fill="#6e6e73">apps against UIKit headers</text>
+
+    <rect x="270" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="355" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Disk staging</text>
+    <text x="355" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">volumes · IPA import</text>
+
+    <rect x="500" y="40" width="270" height="190" rx="18" fill="#f5f5f7"/>
+    <text x="635" y="72" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Inferno (QEMU)</text>
+    <text x="635" y="91" text-anchor="middle" font-size="12" fill="#6e6e73">an emulated iPhone 11</text>
+    <rect x="518" y="118" width="110" height="72" rx="12" fill="#fff" stroke="#d2d2d7"/>
+    <text x="573" y="149" text-anchor="middle" font-size="14" font-weight="600" fill="#1d1d1f">real iOS 14</text>
+    <text x="573" y="167" text-anchor="middle" font-size="12" fill="#6e6e73">unmodified</text>
+    <path d="M628 154 H642" fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)"/>
+    <rect x="642" y="118" width="110" height="72" rx="12" fill="#fff" stroke="#d2d2d7"/>
+    <text x="697" y="149" text-anchor="middle" font-size="14" font-weight="600" fill="#1d1d1f">the app</text>
+    <text x="697" y="167" text-anchor="middle" font-size="12" fill="#6e6e73">a real IPA</text>
+    <text x="635" y="214" text-anchor="middle" font-size="12" fill="#6e6e73">aarch64 Linux host · CPU emulation</text>
+
+    <rect x="840" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="925" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Frames</text>
+    <text x="925" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">headless display</text>
+
+    <rect x="1050" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1135" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Before / after review</text>
+    <text x="1135" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">did the screen really change?</text>
+
+    <rect x="1100" y="300" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1185" y="328" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Agent</text>
+    <text x="1185" y="347" text-anchor="middle" font-size="12" fill="#6e6e73">or an operator</text>
+
+    <rect x="840" y="300" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="925" y="328" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Companion runner</text>
+    <text x="925" y="347" text-anchor="middle" font-size="12" fill="#6e6e73">journeys · launch helpers</text>
+
+    <rect x="620" y="300" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="705" y="328" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Control channel</text>
+    <text x="705" y="347" text-anchor="middle" font-size="12" fill="#6e6e73">QMP</text>
+
+    <rect x="400" y="300" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="485" y="328" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Virtual multitouch</text>
+    <text x="485" y="347" text-anchor="middle" font-size="12" fill="#6e6e73">taps · swipes · home</text>
+
+    <rect x="600" y="410" width="210" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="705" y="438" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Evidence record</text>
+    <text x="705" y="457" text-anchor="middle" font-size="12" fill="#6e6e73">hashes · transcripts · screenshots</text>
+  </g>
+
+  <!-- path labels -->
+  <g font-size="11" fill="#6e6e73">
+    <text x="805" y="80" text-anchor="middle">frames</text>
+    <text x="1160" y="215" text-anchor="start">what changed</text>
+    <text x="1045" y="322" text-anchor="middle" fill="#0066cc">taps</text>
+    <text x="595" y="322" text-anchor="middle" fill="#0066cc">events</text>
+    <text x="1300" y="280" text-anchor="start" transform="rotate(90 1300 280)">every action, recorded</text>
+  </g>
+</svg>
