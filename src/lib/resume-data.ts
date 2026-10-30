@@ -195,6 +195,9 @@ export const experience: {
     // The "AGI" thumbnail from this LinkedIn entry was the one image missing
     // from the handoff — the file that arrived under it was a duplicate of the
     // Human Robots prototype photo. Add it here when the real file turns up.
+    media: [
+      media("agi-ces-2026-booth.jpg", 240, 180, "At one of AGI Inc's booths at CES 2026, Las Vegas"),
+    ],
   },
   {
     title: "Software Engineer",
