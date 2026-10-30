@@ -139,6 +139,24 @@ export const experience: {
     ],
   },
   {
+    title: "Research Collaboration",
+    org: "TalOS Robotics",
+    href: "https://talosrobotics.ai/",
+    range: "Aug 2026 – Oct 2026",
+    bullets: [
+      "Robot learning and VLA research with the TalOS Robotics team. Worked on these 3 projects:",
+      [
+        "- RRP (relational robot policy): morphology-general control where a planner samples a structured latent packet, a body-side controller realizes it from proprioception and touch, and every attention layer adds declared relational terms from one registry of 75 factors. More at ",
+        { text: "https://jvboid.dev/projects/rrp", href: "https://jvboid.dev/projects/rrp" },
+      ],
+      "- Ψ0.1: behaviour cloning of the full pretrained Ψ0 humanoid VLA with relational QK attention biases and morphology tokens, against the identical fine-tune without the structure on the SIMPLE benchmark.",
+      [
+        "- Dissecting Egocentric Action Pretraining in Vision-Language-Action Models (NeurIPS 2026 UniReps workshop): mechanistic study of Ψ0's backbone before and after action pretraining, followed into its action expert. More at ",
+        { text: "https://github.com/JacobFV/vla-action-pretraining", href: "https://github.com/JacobFV/vla-action-pretraining" },
+      ],
+    ],
+  },
+  {
     title: "Engineer",
     org: "SuperCognition Labs",
     href: "https://supercognitionlabs.com/",
