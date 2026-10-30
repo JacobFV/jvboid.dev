@@ -155,6 +155,26 @@ export const experience: {
         { text: "https://github.com/JacobFV/vla-action-pretraining", href: "https://github.com/JacobFV/vla-action-pretraining" },
       ],
     ],
+    media: [
+      media(
+        "talos-vla-paper-cover.jpg", 139, 180,
+        "Dissecting Egocentric Action Pretraining in Vision-Language-Action Models",
+        "NeurIPS 2026 Workshop: UniReps",
+      ),
+      media(
+        "talos-g1-simulation.jpg", 320, 180,
+        "Ψ0 on a Unitree G1 in simulation",
+        "A bend-and-pick scene from the paper's counterfactual set, where the obstacle is moved, removed or replaced",
+      ),
+      media(
+        "talos-rrp-report-cover.jpg", 139, 180,
+        "Relational attention for a structured semantic latent packet: toward morphology-general robot control",
+      ),
+      media(
+        "talos-h1-stairs-simulation.jpg", 320, 180,
+        "The H1 humanoid on RRP's step course in MuJoCo",
+      ),
+    ],
   },
   {
     title: "Engineer",
