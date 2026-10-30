@@ -24,7 +24,6 @@ import { EditorialAtmosphere } from "./EditorialAtmosphere";
 import { TensorAtmosphere } from "./TensorAtmosphere";
 import { CinemaAtmosphere } from "./CinemaAtmosphere";
 import { StatuteAtmosphere } from "./StatuteAtmosphere";
-import { Topology3D } from "./Topology3D";
 import { LittleBrain } from "./LittleBrain";
 import { LittleBrainAtmosphere } from "./LittleBrainAtmosphere";
 import { GenieAtmosphere } from "./GenieAtmosphere";
@@ -270,8 +269,6 @@ export const readerComponents: MDXComponents = {
   // The PHASER post's signal path, in the same hairline idiom.
   PhaserDiagram,
   TensegraComputation,
-  // 3D network-topology figures; specs in src/lib/topologies/.
-  Topology3D,
   // My Little Brain's own 3D brain, with a link out to the app.
   LittleBrain,
   RrpFactorTiles,

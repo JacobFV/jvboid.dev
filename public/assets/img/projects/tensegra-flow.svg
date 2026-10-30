@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 540" width="1320" height="540" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">Tensegra: the interface between a network and an exact executor</title>
+  <desc id="d">Tokens attend by content, plus a structural bias built from a declared entity graph through soft token-to-entity bindings, one bias per relation. The attention output updates a recurrent workspace, which re-grounds its bindings, proposes a typed operation with operands and a readiness estimate, and passes it to an admissibility gate. An exact, protected executor runs admitted proposals, advancing the entity graph rather than the weights, and a return encoder feeds the typed result back into the workspace. In later worlds a policy reads the workspace to choose whether to compute, reuse, probe or stop, scored by verified success minus cost.</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0" y="0" width="100%" height="100%" rx="18" fill="#fff"/>
+
+  <!-- content path: tokens → attention → workspace -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M210 72 H560"/>
+    <path d="M660 104 V220"/>
+  </g>
+  <!-- structure path: graph → binding → bias → attention; workspace re-grounds binding -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M210 292 H300"/>
+    <path d="M385 260 V214"/>
+    <path d="M470 182 H515 V88 H560"/>
+    <path d="M560 252 H515 V308 H470"/>
+  </g>
+  <!-- execution path: proposal → gate → exact executor → graph, and the return -->
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M760 236 H795 V72 H830"/>
+    <path d="M1000 72 H1070"/>
+    <path d="M1155 104 V220"/>
+    <path d="M1070 252 H1000"/>
+    <path d="M830 268 H760"/>
+    <path d="M1155 284 V500 H20 V292 H40"/>
+  </g>
+  <!-- metacontrol, in the later worlds -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a-grey)">
+    <path d="M600 284 V432 H470"/>
+    <path d="M300 432 H210"/>
+  </g>
+
+  <g>
+    <rect x="40" y="40" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Tokens</text>
+    <text x="125" y="87" text-anchor="middle" font-size="12" fill="#6e6e73">measurements · text</text>
+
+    <rect x="300" y="150" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="385" y="178" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Structural bias</text>
+    <text x="385" y="197" text-anchor="middle" font-size="12" fill="#6e6e73">one Bᵣ per relation</text>
+
+    <rect x="300" y="260" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="385" y="288" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Soft binding</text>
+    <text x="385" y="307" text-anchor="middle" font-size="12" fill="#6e6e73">token ↔ entity</text>
+
+    <rect x="40" y="260" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="125" y="288" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Entity graph</text>
+    <text x="125" y="307" text-anchor="middle" font-size="12" fill="#6e6e73">identities · typed relations</text>
+
+    <rect x="560" y="40" width="200" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="660" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Attention</text>
+    <text x="660" y="87" text-anchor="middle" font-size="12" fill="#6e6e73">QKᵀ/√d + Σ λᵣ Bᵣ</text>
+
+    <rect x="560" y="220" width="200" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="660" y="248" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Workspace</text>
+    <text x="660" y="267" text-anchor="middle" font-size="12" fill="#6e6e73">Hₜ, recurrent microsteps</text>
+
+    <rect x="830" y="40" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="915" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Proposal</text>
+    <text x="915" y="87" text-anchor="middle" font-size="12" fill="#6e6e73">op · operands · ready?</text>
+
+    <rect x="1070" y="40" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1155" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Admissibility gate</text>
+    <text x="1155" y="87" text-anchor="middle" font-size="12" fill="#6e6e73">legal and ready only</text>
+
+    <rect x="1070" y="220" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1155" y="248" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Exact executor</text>
+    <text x="1155" y="267" text-anchor="middle" font-size="12" fill="#6e6e73">protected, outside the weights</text>
+
+    <rect x="830" y="220" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="915" y="248" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Return encoder</text>
+    <text x="915" y="267" text-anchor="middle" font-size="12" fill="#6e6e73">typed result → workspace</text>
+
+    <rect x="300" y="400" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="385" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Policy</text>
+    <text x="385" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">compute · reuse · probe · stop</text>
+
+    <rect x="40" y="400" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Task utility</text>
+    <text x="125" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">verified success − cost</text>
+  </g>
+
+  <g font-size="11" fill="#6e6e73">
+    <text x="385" y="60" text-anchor="middle">content</text>
+    <text x="528" y="138" text-anchor="start">bias</text>
+    <text x="528" y="330" text-anchor="start">re-ground</text>
+    <text x="1035" y="62" text-anchor="middle" fill="#0066cc">admit</text>
+    <text x="1035" y="242" text-anchor="middle" fill="#0066cc">result</text>
+    <text x="600" y="518" text-anchor="middle" fill="#0066cc">execution advances the graph, not the weights</text>
+    <text x="612" y="360" text-anchor="start">later worlds</text>
+  </g>
+</svg>

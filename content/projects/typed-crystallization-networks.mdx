@@ -39,7 +39,7 @@ TCN learns inside generated transition systems: worlds with an observation, an o
 
 When a stage is learned, it is **crystallized**: the soft graph becomes an exact program, written out as content-addressed, stdlib-only Python, and published to a library. The library feeds the operator registry, so the next stage's graph can choose the published program as one of its candidates.
 
-<Topology3D id="typed-crystallization-networks" caption="One tick in the world, the training step at the end of an episode, and the outer loop that turns a learned graph into a reusable operator." />
+![One tick in the world, the training step at the end of an episode, and the outer loop that turns a learned graph into a reusable operator.](/assets/img/projects/typed-crystallization-networks-flow.svg)
 
 The name is not a freezing schedule. I tried progressive, irreversible freezing four separate ways, and plain argmax at equal compute beat all of them (3.78 and 3.63 against 2.94 and 2.53). The project kept the word for the conversion and dropped the schedule.
 

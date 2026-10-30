@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 420" width="1320" height="420" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">Inside the workspace model</title>
+  <desc id="d">A hidden node is walked up to its goal signature: which region, under what parent type, in which slot. A learned policy of 84 signatures maps that to how often each of six codelets has been right there before, setting their strengths. The six codelets (mirror, peer, echo, parent, sibling, frame) search the region memory in parallel, each proposing a filler. Their agreement sets the workspace temperature: a cold, settled workspace commits its answer; a hot one defers to a back-off prior instead of guessing.</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0" y="0" width="100%" height="100%" rx="18" fill="#fff"/>
+
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M190 220 H230"/>
+    <path d="M400 220 H420 V92 H440"/>
+    <path d="M610 92 H660"/>
+    <path d="M610 348 H660"/>
+  </g>
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M850 220 H900"/>
+  </g>
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M1070 220 H1085 V132 H1110"/>
+  </g>
+  <g fill="none" stroke="#86868b" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a-grey)">
+    <path d="M1070 220 H1085 V308 H1110"/>
+  </g>
+
+  <g>
+    <rect x="40" y="188" width="150" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="115" y="216" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Hidden node</text>
+    <text x="115" y="235" text-anchor="middle" font-size="12" fill="#6e6e73">one masked slot</text>
+
+    <rect x="230" y="188" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="315" y="216" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Goal signature</text>
+    <text x="315" y="235" text-anchor="middle" font-size="12" fill="#6e6e73">region · parent · slot</text>
+
+    <rect x="440" y="60" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="525" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Learned policy</text>
+    <text x="525" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">84 signatures → hit rates</text>
+
+    <rect x="440" y="316" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="525" y="344" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Region memory</text>
+    <text x="525" y="363" text-anchor="middle" font-size="12" fill="#6e6e73">one per top-level field</text>
+
+    <rect x="660" y="40" width="190" height="360" rx="18" fill="#f5f5f7"/>
+    <text x="755" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Six codelets</text>
+    <text x="755" y="86" text-anchor="middle" font-size="12" fill="#6e6e73">in parallel, each a filler</text>
+    <g font-size="13" font-weight="600" fill="#1d1d1f" text-anchor="middle">
+      <rect x="690" y="104" width="130" height="38" rx="10" fill="#fff" stroke="#d2d2d7"/><text x="755" y="128">mirror</text>
+      <rect x="690" y="150" width="130" height="38" rx="10" fill="#fff" stroke="#d2d2d7"/><text x="755" y="174">peer</text>
+      <rect x="690" y="196" width="130" height="38" rx="10" fill="#fff" stroke="#d2d2d7"/><text x="755" y="220">echo</text>
+      <rect x="690" y="242" width="130" height="38" rx="10" fill="#fff" stroke="#d2d2d7"/><text x="755" y="266">parent</text>
+      <rect x="690" y="288" width="130" height="38" rx="10" fill="#fff" stroke="#d2d2d7"/><text x="755" y="312">sibling</text>
+      <rect x="690" y="334" width="130" height="38" rx="10" fill="#fff" stroke="#d2d2d7"/><text x="755" y="358">frame</text>
+    </g>
+
+    <rect x="900" y="188" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="985" y="216" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Temperature</text>
+    <text x="985" y="235" text-anchor="middle" font-size="12" fill="#6e6e73">how far the codelets agree</text>
+
+    <rect x="1110" y="100" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1195" y="128" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Commit</text>
+    <text x="1195" y="147" text-anchor="middle" font-size="12" fill="#6e6e73">cold: settled, answer</text>
+
+    <rect x="1110" y="276" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="1195" y="304" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Back-off prior</text>
+    <text x="1195" y="323" text-anchor="middle" font-size="12" fill="#6e6e73">hot: unsettled, defer</text>
+  </g>
+
+  <g font-size="11" fill="#6e6e73">
+    <text x="635" y="80" text-anchor="middle">strengths</text>
+    <text x="635" y="336" text-anchor="middle">fillers</text>
+    <text x="875" y="208" text-anchor="middle">agreement</text>
+    <text x="1097" y="124" text-anchor="end" fill="#0066cc">cold</text>
+    <text x="1097" y="320" text-anchor="end">hot</text>
+  </g>
+</svg>

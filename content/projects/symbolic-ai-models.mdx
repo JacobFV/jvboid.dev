@@ -37,8 +37,6 @@ So before building anything clever I built the comparison: every model, the same
 
 Episodes come from [langcurriculum](/projects/langcurriculum), vendored byte for byte and pinned by checksum over 179 lessons × 5 seeds × 7 languages. Each episode is generated as a typed term, so the answer is known by construction. The harness turns it into two views: prose for next-token prediction, and a term graph with 15% of its nodes hidden for masked-node prediction.
 
-<Topology3D id="symbolic-ai-harness" caption="Drag to turn it. The chips step through the pipeline; every model on the page passes through the same path." />
-
 Neural models share one training loop (AdamW, cosine decay, gradient clipping, a joint loss on both tasks). Rule-based models fit in a single pass on CPU. Train and evaluation sets are seed ranges, not files, so a held-out set cannot leak by being copied.
 
 The headline metric is dollars per episode solved above the floor. That is the number that would decide whether a symbolic substrate is worth building, and it forces the cost of a model's runtime into the same sentence as its accuracy.
@@ -52,7 +50,7 @@ The headline metric is dollars per episode solved above the floor. That is the n
 
 The most interesting model to watch was the workspace, a small Copycat-style system. It walks up from the hidden node to a goal signature, asks a learned policy which of six codelets has been right in that situation before, lets them propose fillers in parallel, and commits only if they agree. The learned policy is short enough to print: 84 signatures, each mapped to codelet hit rates.
 
-<Topology3D id="symbolic-ai-workspace" caption="The workspace model. Temperature is codelet agreement: a settled workspace commits, an unsettled one defers to a back-off prior." />
+![The workspace model: a hidden node is walked up to its goal signature, a learned policy of 84 signatures sets the strengths of six codelets, the codelets search the region memory in parallel and each propose a filler, and their agreement sets the temperature: a settled workspace commits, an unsettled one defers to a back-off prior.](/assets/img/projects/symbolic-ai-models-workspace.svg)
 
 ## Results
 

@@ -4528,38 +4528,6 @@ a:hover {
   border: 0;
 }
 
-/* ── <Topology3D> labels ──────────────────────────────────────────────
-   HTML pinned to 3D positions (drei <Html>), so they keep one pixel size
-   at every canvas width and take the page's own ink, world or theme. The
-   halo is the page ground, so a label crossing an edge stays legible. */
-.topo-label {
-  transform: translate(-50%, -100%);
-  text-align: center;
-  white-space: nowrap;
-  line-height: 1.15;
-  text-shadow:
-    0 0 3px var(--color-bg-0),
-    0 0 3px var(--color-bg-0),
-    0 0 6px var(--color-bg-0);
-  transition: color 240ms ease;
-}
-.topo-label__name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-ink);
-}
-.topo-label__sub {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 10.5px;
-  color: var(--color-ink-dim);
-}
-.topo-label.is-on .topo-label__name {
-  color: var(--color-accent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .topo-label { transition: none; }
-}
-
 /* ---- My Little Brain: the soft lab (reader/LittleBrainAtmosphere.tsx) -----
    The app's own tokens (apps/web/src/styles.css): ground `#f3f4ef`, text
    `#58635b`, sage `#627956` with focus `#a9bf97`, blush `#cb93a9`, three
@@ -5476,11 +5444,8 @@ a:hover {
   text-underline-offset: 0.15em;
 }
 
-/* The diagram and the related graph are dark objects in a white room:
-   give them Apple's rounded tile and the section's breathing room. */
-:root[data-page-theme="cupertino"] .topology3d {
-  margin-block: 3rem;
-}
+/* The related graph is a dark object in a white room: give it Apple's
+   rounded tile and the section's breathing room. */
 :root[data-page-theme="cupertino"] main article > section {
   margin-top: 7rem;
 }

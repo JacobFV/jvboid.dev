@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 450" width="1320" height="450" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">One cycle of the tensor computer's step()</title>
+  <desc id="d">A soft program counter fetches one 112-wide instruction from the learned program by dot product and it is decoded and sharpened at temperature τ; a fault cascade (PC, opcode, register) decides how much of the cycle commits. Operands are soft register reads. The ALU computes all 32 operations and blends them by opcode weight, setting flags; memory is read and written softly through a router into the L1 cache, RAM and the NTM; push, pop, call and return go through the stack; the GPU draws into the framebuffer and six peripheral ports transfer. Writeback mixes the ALU result, the loaded value, the popped value and the I/O transfer into rd, and the next PC blends branch target, return address and PC + 1. Every update is x + w·(x_taken − x).</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0" y="0" width="100%" height="100%" rx="18" fill="#fff"/>
+
+  <!-- fetch: program and PC into decode; the fault cascade off decode -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M220 80 H270"/>
+    <path d="M220 222 H245 V104 H270"/>
+    <path d="M350 124 V190"/>
+    <path d="M560 124 V190"/>
+    <path d="M770 60 V42 H1085 V222 H1110"/>
+    <path d="M1085 352 H1060"/>
+    <path d="M1190 254 V320"/>
+  </g>
+  <!-- memory: the router reads and writes every store, softly -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a-grey)">
+    <path d="M980 254 V302 H350 V320"/>
+    <path d="M560 302 V320"/>
+    <path d="M770 302 V320"/>
+  </g>
+  <!-- datapath -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M430 100 H480"/>
+    <path d="M640 92 H690"/>
+    <path d="M850 80 H1110"/>
+    <path d="M850 104 H875 V222 H900"/>
+    <path d="M770 124 V190"/>
+    <path d="M900 236 H850"/>
+    <path d="M640 222 H690"/>
+  </g>
+  <!-- the state carried into the next cycle -->
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M745 254 V276 H455 V76 H480"/>
+    <path d="M1190 60 V24 H30 V352 H60"/>
+    <path d="M140 320 V254"/>
+  </g>
+
+  <g>
+    <rect x="60" y="60" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="140" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">program I_mem</text>
+    <text x="140" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">2^A × 112, learned</text>
+
+    <rect x="60" y="190" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="140" y="218" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">PC</text>
+    <text x="140" y="237" text-anchor="middle" font-size="12" fill="#6e6e73">soft one-hot</text>
+
+    <rect x="60" y="320" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="140" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">next PC</text>
+    <text x="140" y="367" text-anchor="middle" font-size="12" fill="#6e6e73">branch · return · +1</text>
+
+    <rect x="270" y="60" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="350" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">fetch / decode</text>
+    <text x="350" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">PCᵀ · I_mem, sharpened at τ</text>
+
+    <rect x="270" y="190" width="160" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="350" y="218" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">fault cascade</text>
+    <text x="350" y="237" text-anchor="middle" font-size="12" fill="#6e6e73">PC · opcode · register</text>
+
+    <rect x="270" y="320" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="350" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">L1 cache</text>
+    <text x="350" y="367" text-anchor="middle" font-size="12" fill="#6e6e73">learned eviction</text>
+
+    <rect x="480" y="60" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="560" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">registers</text>
+    <text x="560" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">16 × 32, soft reads</text>
+
+    <rect x="480" y="190" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="560" y="218" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">stack</text>
+    <text x="560" y="237" text-anchor="middle" font-size="12" fill="#6e6e73">push · pop · call · return</text>
+
+    <rect x="480" y="320" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="560" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">RAM</text>
+    <text x="560" y="367" text-anchor="middle" font-size="12" fill="#6e6e73">64 MB</text>
+
+    <rect x="690" y="60" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="770" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">ALU</text>
+    <text x="770" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">all 32 ops, blended</text>
+
+    <rect x="690" y="190" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="770" y="218" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">writeback</text>
+    <text x="770" y="237" text-anchor="middle" font-size="12" fill="#6e6e73">into rd</text>
+
+    <rect x="690" y="320" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="770" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">NTM</text>
+    <text x="770" y="367" text-anchor="middle" font-size="12" fill="#6e6e73">256 slots</text>
+
+    <rect x="900" y="190" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="980" y="218" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">memory router</text>
+    <text x="980" y="237" text-anchor="middle" font-size="12" fill="#6e6e73">soft read + write</text>
+
+    <rect x="900" y="320" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="980" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">peripherals</text>
+    <text x="980" y="367" text-anchor="middle" font-size="12" fill="#6e6e73">6 ports</text>
+
+    <rect x="1110" y="60" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1190" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">flags</text>
+    <text x="1190" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">from the blended result</text>
+
+    <rect x="1110" y="190" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1190" y="218" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">GPU</text>
+    <text x="1190" y="237" text-anchor="middle" font-size="12" fill="#6e6e73">plot · fill · blit</text>
+
+    <rect x="1110" y="320" width="160" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1190" y="348" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">framebuffer</text>
+    <text x="1190" y="367" text-anchor="middle" font-size="12" fill="#6e6e73">480 × 640 × 3</text>
+  </g>
+
+  <!-- path labels -->
+  <g font-size="11" fill="#6e6e73">
+    <text x="600" y="18" text-anchor="middle" fill="#0066cc">next PC = blend of branch target, return address, PC + 1</text>
+    <text x="600" y="290" text-anchor="middle" fill="#0066cc">rd = mix of ALU result, loaded value, popped value, I/O</text>
+    <text x="875" y="316" text-anchor="middle">gated by LOAD / STORE weight</text>
+    <text x="350" y="270" text-anchor="middle">decides how much of the cycle commits</text>
+    <text x="930" y="58" text-anchor="middle">soft I/O, every cycle</text>
+  </g>
+  <text x="660" y="428" text-anchor="middle" font-size="12" fill="#6e6e73">Every unit computes every cycle. Each update is x + w·(x_taken − x), with w the weight of the instruction being that kind of instruction.</text>
+</svg>

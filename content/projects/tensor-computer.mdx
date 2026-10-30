@@ -67,7 +67,7 @@ the entire computation, so a program — encoded as 112 real-valued
 parameters per instruction — is just another differentiable object you
 can optimize. One cycle of the soft machine, step by step:
 
-<Topology3D id="tensor-computer" caption="One cycle of step(): every unit computes every cycle, and each update is blended by how much the current instruction is that kind of instruction." />
+![One cycle of step(): every unit computes every cycle, and each update is blended by how much the current instruction is that kind of instruction.](/assets/img/projects/tensor-computer-flow.svg)
 
 To prove the architecture is real and not a toy, the implementation
 carries four independent backends — the JAX machine, a reference C VM, a

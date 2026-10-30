@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 640" width="1320" height="640" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">Typed Crystallization Networks: the tick, the training step, and the outer loop</title>
+  <desc id="d">A world host shows the actor only what it may see. A soft typed program graph, a softmax over legal operator and binding pairs with explicit recurrent state, feeds policy, value and prediction heads; the policy is bound into a typed action and returned to the host, which steps and writes a step record. At the end of an episode, prediction, probe and reward losses train the graph. Crystallizing takes the argmax, prunes and content-addresses the graph into an exact program, or discrete search finds one with a certificate; the program goes into a library, which feeds the operator registry, so the next graph can choose it as an operator. A frozen agent runs closed-loop in the world and reproduces its fixtures bit for bit.</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0" y="0" width="100%" height="100%" rx="18" fill="#fff"/>
+
+  <!-- the tick: observe, compute, act -->
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M210 92 H270"/>
+    <path d="M440 92 H500"/>
+    <path d="M770 92 H840"/>
+    <path d="M1010 92 H1070"/>
+    <path d="M1155 60 V22 H125 V60"/>
+  </g>
+  <!-- the training step, at the end of an episode -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M125 124 V260"/>
+    <path d="M210 292 H270"/>
+    <path d="M440 292 H470 V160 H500"/>
+  </g>
+  <!-- the outer loop: crystallize, publish, reuse -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M700 200 V400"/>
+    <path d="M645 500 V464"/>
+    <path d="M560 432 H440"/>
+    <path d="M270 432 H210"/>
+    <path d="M125 400 V360 H530 V200"/>
+  </g>
+  <!-- the frozen agent, closed loop -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a-grey)">
+    <path d="M730 432 H1155 V500"/>
+    <path d="M1155 564 V600 H20 V92 H40"/>
+  </g>
+
+  <g>
+    <rect x="40" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">World host</text>
+    <text x="125" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">generator · step · replay</text>
+
+    <rect x="270" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="355" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Actor view</text>
+    <text x="355" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">only what it may see</text>
+
+    <rect x="500" y="40" width="270" height="160" rx="18" fill="#f5f5f7"/>
+    <text x="635" y="72" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Typed program graph</text>
+    <text x="635" y="91" text-anchor="middle" font-size="12" fill="#6e6e73">a softmax over legal (op, binding) pairs</text>
+    <rect x="520" y="128" width="230" height="54" rx="12" fill="#fff" stroke="#d2d2d7"/>
+    <text x="635" y="151" text-anchor="middle" font-size="14" font-weight="600" fill="#1d1d1f">recurrent state</text>
+    <text x="635" y="169" text-anchor="middle" font-size="12" fill="#6e6e73">explicit delays</text>
+
+    <rect x="840" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="925" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Heads</text>
+    <text x="925" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">policy · value · predict</text>
+
+    <rect x="1070" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1155" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Bind action</text>
+    <text x="1155" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">typed arguments</text>
+
+    <rect x="40" y="260" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="125" y="288" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Step record</text>
+    <text x="125" y="307" text-anchor="middle" font-size="12" fill="#6e6e73">latents · reward</text>
+
+    <rect x="270" y="260" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="355" y="288" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Losses</text>
+    <text x="355" y="307" text-anchor="middle" font-size="12" fill="#6e6e73">predict · probe · reward</text>
+
+    <rect x="40" y="400" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="125" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Operator registry</text>
+    <text x="125" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">candidates for the next graph</text>
+
+    <rect x="270" y="400" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="355" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Library</text>
+    <text x="355" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">content-addressed programs</text>
+
+    <rect x="560" y="400" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="645" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Crystallize</text>
+    <text x="645" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">argmax · prune · digest</text>
+
+    <rect x="560" y="500" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="645" y="528" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Discrete search</text>
+    <text x="645" y="547" text-anchor="middle" font-size="12" fill="#6e6e73">with a certificate</text>
+
+    <rect x="1070" y="500" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1155" y="528" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Frozen agent</text>
+    <text x="1155" y="547" text-anchor="middle" font-size="12" fill="#6e6e73">exact program, bit for bit</text>
+  </g>
+
+  <!-- the graph reads and writes its recurrent state every tick -->
+  <path d="M635 104 V124" fill="none" stroke="#0066cc" stroke-width="1.5" marker-start="url(#a-blue)" marker-end="url(#a-blue)"/>
+
+  <g font-size="11" fill="#6e6e73">
+    <text x="640" y="16" text-anchor="middle" fill="#0066cc">one tick: observe, compute, act</text>
+    <text x="135" y="196" text-anchor="start">host steps, records</text>
+    <text x="460" y="230" text-anchor="end">end of episode: train</text>
+    <text x="760" y="300" text-anchor="start">exact program</text>
+    <text x="500" y="424" text-anchor="middle">publish</text>
+    <text x="240" y="424" text-anchor="middle">feeds</text>
+    <text x="330" y="352" text-anchor="middle">published programs return as new operators</text>
+    <text x="940" y="424" text-anchor="middle">run closed-loop</text>
+    <text x="600" y="616" text-anchor="middle">the frozen agent acts in the same world and reproduces its fixtures</text>
+  </g>
+</svg>

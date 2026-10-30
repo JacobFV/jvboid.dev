@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="1200" height="480" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">How phys-0 fits together</title>
+  <desc id="d">An LLM agent, the Electron Lab Console, any MCP client and the phys0 CLI all call one backend registry of 84 typed tools. Every call is written to a SQLite experiment record. The tools build and simulate virtual worlds in three.js with Rapier physics, or reach the real SO-101 arm through a Python bridge running LeRobot and placo inverse kinematics. A USB camera watches the arm's bench; OpenCV vial vision reads indicator dye into an estimated pH, which also lands in the record.</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0" y="0" width="100%" height="100%" rx="18" fill="#fff"/>
+
+  <!-- four ways in, one door -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5">
+    <path d="M210 72 H270 V200"/>
+    <path d="M210 162 H270"/>
+    <path d="M210 252 H270"/>
+    <path d="M210 342 H270 V200"/>
+    <path d="M270 200 H320" marker-end="url(#a-grey)"/>
+  </g>
+  <!-- simulation -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M520 170 H570 V72 H620"/>
+  </g>
+  <!-- real hardware -->
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M520 200 H620"/>
+    <path d="M790 200 H870"/>
+  </g>
+  <!-- the camera closes the loop -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M955 232 V300"/>
+    <path d="M870 332 H790"/>
+  </g>
+  <!-- the record -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a-grey)">
+    <path d="M420 250 V380"/>
+    <path d="M620 332 H560 V412 H520"/>
+  </g>
+
+  <!-- boxes -->
+  <g>
+    <rect x="40" y="40" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">LLM agent</text>
+    <text x="125" y="87" text-anchor="middle" font-size="12" fill="#6e6e73">plans, calls tools</text>
+
+    <rect x="40" y="130" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="158" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Lab Console</text>
+    <text x="125" y="177" text-anchor="middle" font-size="12" fill="#6e6e73">Electron</text>
+
+    <rect x="40" y="220" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="248" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">MCP clients</text>
+    <text x="125" y="267" text-anchor="middle" font-size="12" fill="#6e6e73">any MCP host</text>
+
+    <rect x="40" y="310" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="338" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">phys0 CLI</text>
+    <text x="125" y="357" text-anchor="middle" font-size="12" fill="#6e6e73">from a shell</text>
+
+    <rect x="320" y="150" width="200" height="100" rx="18" fill="#f5f5f7"/>
+    <text x="420" y="192" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Tool registry</text>
+    <text x="420" y="211" text-anchor="middle" font-size="12" fill="#6e6e73">84 typed, validated tools</text>
+    <text x="420" y="229" text-anchor="middle" font-size="12" fill="#6e6e73">one TypeScript backend</text>
+
+    <rect x="620" y="40" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="705" y="68" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Virtual worlds</text>
+    <text x="705" y="87" text-anchor="middle" font-size="12" fill="#6e6e73">three.js · Rapier physics</text>
+
+    <rect x="620" y="168" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="705" y="196" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Python bridge</text>
+    <text x="705" y="215" text-anchor="middle" font-size="12" fill="#6e6e73">LeRobot · placo IK</text>
+
+    <rect x="870" y="168" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="955" y="196" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">SO-101 arm</text>
+    <text x="955" y="215" text-anchor="middle" font-size="12" fill="#6e6e73">Feetech servos</text>
+
+    <rect x="870" y="300" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="955" y="328" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">USB camera</text>
+    <text x="955" y="347" text-anchor="middle" font-size="12" fill="#6e6e73">watches the bench</text>
+
+    <rect x="620" y="300" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="705" y="328" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Vial vision</text>
+    <text x="705" y="347" text-anchor="middle" font-size="12" fill="#6e6e73">OpenCV · dye → pH</text>
+
+    <rect x="320" y="380" width="200" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="420" y="408" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Experiment record</text>
+    <text x="420" y="427" text-anchor="middle" font-size="12" fill="#6e6e73">SQLite + artifacts</text>
+  </g>
+
+  <!-- path labels -->
+  <g font-size="11" fill="#6e6e73">
+    <text x="295" y="190" text-anchor="middle">tool calls</text>
+    <text x="595" y="60" text-anchor="middle">build · simulate</text>
+    <text x="570" y="190" text-anchor="middle" fill="#0066cc">servo commands</text>
+    <text x="830" y="190" text-anchor="middle" fill="#0066cc">moves</text>
+    <text x="968" y="270" text-anchor="start">in view</text>
+    <text x="830" y="322" text-anchor="middle">frames</text>
+    <text x="440" y="320" text-anchor="start">every call, written down</text>
+    <text x="590" y="432" text-anchor="middle">pH per vial</text>
+  </g>
+</svg>

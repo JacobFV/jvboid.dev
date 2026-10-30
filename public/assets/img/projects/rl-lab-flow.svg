@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 540" width="1440" height="540" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title id="t">One RL Lab run</title>
+  <desc id="d">A run document, one JSON file, binds an agent (mind, weights, memory) to a robot (segments, legs, wheels) as a participant. In the arena, exact polygon physics feeds a lidar ring and foveated eyes; a policy, neural, scripted or an LLM, decides at its own rate and sets each joint channel's Laplace transfer function, nine numbers, which the channel shapes into joint motor commands back into the physics. A score closes two loops: per-run learning writes only the agent's memory back, and a population search breeds the next run document through genes that are dotted paths into it.</desc>
+  <defs>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#86868b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 9 5 1 9" fill="none" stroke="#0066cc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0" y="0" width="100%" height="100%" rx="18" fill="#fff"/>
+
+  <!-- binding: document to participant -->
+  <g fill="none" stroke="#86868b" stroke-width="1.5" marker-end="url(#a-grey)">
+    <path d="M210 180 H245 V78 H280"/>
+    <path d="M210 204 H245 V292 H280"/>
+    <path d="M450 92 H500 V192 H520"/>
+    <path d="M450 292 H500 V192" marker-end="none"/>
+    <path d="M690 192 H760"/>
+  </g>
+  <!-- arena: physics to senses to policy -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" marker-end="url(#a-ink)">
+    <path d="M930 192 H1000"/>
+    <path d="M845 160 V92 H1000"/>
+    <path d="M1170 80 H1240"/>
+    <path d="M1170 192 H1205 V108 H1240"/>
+  </g>
+  <!-- action space: policy to Laplace channels to motors to physics -->
+  <g fill="none" stroke="#0066cc" stroke-width="1.5" marker-end="url(#a-blue)">
+    <path d="M1325 124 V160"/>
+    <path d="M1325 224 V292 H1170"/>
+    <path d="M1000 292 H890 V224"/>
+  </g>
+  <!-- the two loops that improve a run -->
+  <g fill="none" stroke="#1d1d1f" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#a-ink)">
+    <path d="M800 224 V400"/>
+    <path d="M760 432 H450"/>
+    <path d="M280 432 H260 V108 H280"/>
+    <path d="M845 464 V500 H125 V464"/>
+    <path d="M125 400 V224"/>
+  </g>
+
+  <g>
+    <rect x="40" y="160" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="125" y="188" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Run document</text>
+    <text x="125" y="207" text-anchor="middle" font-size="12" fill="#6e6e73">one JSON file</text>
+
+    <rect x="280" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="365" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Agent</text>
+    <text x="365" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">mind · weights · memory</text>
+
+    <rect x="280" y="260" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="365" y="288" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Robot</text>
+    <text x="365" y="307" text-anchor="middle" font-size="12" fill="#6e6e73">segments · legs · wheels</text>
+
+    <rect x="520" y="160" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="605" y="188" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Participant</text>
+    <text x="605" y="207" text-anchor="middle" font-size="12" fill="#6e6e73">agent + robot + team</text>
+
+    <rect x="760" y="160" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="845" y="188" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Exact physics</text>
+    <text x="845" y="207" text-anchor="middle" font-size="12" fill="#6e6e73">SAT contacts · impulses</text>
+
+    <rect x="1000" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1085" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Lidar ring</text>
+    <text x="1085" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">everywhere, coarsely</text>
+
+    <rect x="1000" y="160" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1085" y="188" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Eyes</text>
+    <text x="1085" y="207" text-anchor="middle" font-size="12" fill="#6e6e73">foveated cone, steerable</text>
+
+    <rect x="1240" y="60" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1325" y="88" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Policy</text>
+    <text x="1325" y="107" text-anchor="middle" font-size="12" fill="#6e6e73">neural · scripted · LLM</text>
+
+    <rect x="1240" y="160" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1325" y="188" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Laplace channels</text>
+    <text x="1325" y="207" text-anchor="middle" font-size="12" fill="#6e6e73">9 numbers per joint</text>
+
+    <rect x="1000" y="260" width="170" height="64" rx="14" fill="#f5f5f7"/>
+    <text x="1085" y="288" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Joint motors</text>
+    <text x="1085" y="307" text-anchor="middle" font-size="12" fill="#6e6e73">a shaped sine per channel</text>
+
+    <rect x="760" y="400" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="845" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Score</text>
+    <text x="845" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">at the end of the run</text>
+
+    <rect x="280" y="400" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="365" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Learning</text>
+    <text x="365" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">(1+1)-ES · reflect</text>
+
+    <rect x="40" y="400" width="170" height="64" rx="14" fill="#fff" stroke="#d2d2d7"/>
+    <text x="125" y="428" text-anchor="middle" font-size="15" font-weight="600" fill="#1d1d1f">Search</text>
+    <text x="125" y="447" text-anchor="middle" font-size="12" fill="#6e6e73">genes = dotted paths</text>
+  </g>
+
+  <g font-size="11" fill="#6e6e73">
+    <text x="725" y="182" text-anchor="middle">into the arena</text>
+    <text x="920" y="82" text-anchor="middle">120 Hz world</text>
+    <text x="1205" y="72" text-anchor="middle">at its own rate</text>
+    <text x="1340" y="146" text-anchor="start" fill="#0066cc">transfer function</text>
+    <text x="1250" y="282" text-anchor="middle" fill="#0066cc">shape a sine</text>
+    <text x="945" y="282" text-anchor="middle" fill="#0066cc">joint commands</text>
+    <text x="810" y="320" text-anchor="start">score</text>
+    <text x="605" y="422" text-anchor="middle">after every run</text>
+    <text x="290" y="200" text-anchor="start">only its memory is written back</text>
+    <text x="485" y="490" text-anchor="middle">breed the next run</text>
+    <text x="140" y="320" text-anchor="start">next document</text>
+  </g>
+</svg>

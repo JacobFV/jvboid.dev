@@ -38,7 +38,7 @@ RL Lab splits the document into **agents** (model, weights, hyperparameters, pol
 
 There are two top-level documents, deliberately not variants of each other. A **run** is one arena simulated once. A **search** owns a population, breeds, and produces generations — its results have a different shape, so it is a different document, and its *evaluations* happen to be runs. The schema is the interface: the inspector has no tabs, just a tree with the same shape as the document, so a parameter is always found inside the thing it configures.
 
-<Topology3D id="rl-lab" caption="One run: a mind bound to a body, its senses, its transfer-function action space, the physics, and the two loops that improve it (per-run learning and population search)." />
+![One run: a mind bound to a body, its senses, its transfer-function action space, the physics, and the two loops that improve it (per-run learning and population search).](/assets/img/projects/rl-lab-flow.svg)
 
 ## How
 
