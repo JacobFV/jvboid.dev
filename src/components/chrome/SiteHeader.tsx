@@ -202,6 +202,12 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
 
   const themeGlyph = theme === "dark" ? "☀" : "☾";
 
+  // On a page that only the More menu links to (Readings, Writings,
+  // Resume), that page joins the nav after Posts for as long as you're on
+  // it, so the underline has a label to sit under.
+  const moreHere = MORE_NAV.find((item) => !item.external && item.href === pathname);
+  const nav = moreHere ? [...NAV, moreHere] : NAV;
+
   return (
     <>
       <header
@@ -262,11 +268,11 @@ export function SiteHeader({ titles }: { titles: NodeTitles }) {
 
           {/* Desktop nav */}
           <div className="hidden shrink-0 items-center gap-1 sm:flex">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                // The label of the collection page you're on stays underlined.
+                // The label of the page you're on stays underlined.
                 aria-current={pathname === item.href ? "page" : undefined}
                 className="px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-ink-dim)] no-underline underline-offset-4 hover:text-[var(--color-accent)] hover:underline aria-[current=page]:underline"
               >
