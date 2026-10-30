@@ -3,6 +3,7 @@ import type { MDXComponents } from "@/lib/mdx";
 import { ReaderImage } from "./ReaderImage";
 import { ImageGrid } from "./ImageGrid";
 import { ScreenshotRow } from "./ScreenshotRow";
+import { PhoneGallery } from "./PhoneGallery";
 import { ScreenshotTimeline } from "./ScreenshotTimeline";
 import { PresentationSlides } from "./PresentationSlides";
 import { XPost } from "./XPost";
@@ -232,6 +233,7 @@ export const readerComponents: MDXComponents = {
   // Injected by remark-image-grid around runs of consecutive images.
   ImageGrid,
   ScreenshotRow,
+  PhoneGallery,
   ScreenshotTimeline,
   PresentationSlides,
   XPost,
