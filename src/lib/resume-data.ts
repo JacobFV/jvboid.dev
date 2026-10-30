@@ -128,7 +128,7 @@ export const experience: {
     href: "https://talosrobotics.ai/",
     range: "Aug 2026 – Oct 2026",
     bullets: [
-      "Robot learning and VLA research with the TalOS Robotics team. Worked on these 3 projects (unpaid research collaboration to fill the gap while trying to get interviews):",
+      "Robot learning and VLA research with the TalOS Robotics team. Worked on these 3 projects:",
       [
         "- RRP (relational robot policy): morphology-general control where a planner samples a structured latent packet, a body-side controller realizes it from proprioception and touch, and every attention layer adds declared relational terms from one registry of 75 factors. More at ",
         { text: "https://jvboid.dev/projects/rrp", href: "https://jvboid.dev/projects/rrp" },
@@ -138,6 +138,7 @@ export const experience: {
         "- Dissecting Egocentric Action Pretraining in Vision-Language-Action Models (NeurIPS 2026 UniReps workshop): mechanistic study of Ψ0's backbone before and after action pretraining, followed into its action expert. More at ",
         { text: "https://github.com/JacobFV/vla-action-pretraining", href: "https://github.com/JacobFV/vla-action-pretraining" },
       ],
+      "- Unpaid research collaboration to fill the gap while trying to get interviews.",
     ],
     media: [
       media(
@@ -166,7 +167,7 @@ export const experience: {
     href: "https://supercognitionlabs.com/",
     range: "Jul 2026 – Oct 2026",
     bullets: [
-      "Data engineering, machine learning, research. Worked on these 3 models (unpaid research collaboration to fill the gap while trying to get interviews):",
+      "Data engineering, machine learning, research. Worked on these 3 models:",
       [
         "- Whole brain dynamics (SC-WBD-003/004): 26M model that integrates neural dynamics, anatomical priors, and heterogeneous EEG, MEG, fMRI, and intervention data for predicting optimal targets for transcranial magnetic stimulation. More at ",
         { text: "https://sc-wbd.pages.dev", href: "https://sc-wbd.pages.dev" },
@@ -175,6 +176,7 @@ export const experience: {
         "- Implicit brain model (IBM-1): ~100M mathematically generalized model that materializes task-specific smaller models from shared anatomical, topological, and physiological representations. Modeling the brain implicitly rather than thru an explicitly structured modality mapping allowed us to associate modalities that currently have no datasets and to more efficiently utilize the data trained on. More at ",
         { text: "https://super-cognition-labs.github.io/IBM-1", href: "https://super-cognition-labs.github.io/IBM-1" },
       ],
+      "- Unpaid research collaboration to fill the gap while trying to get interviews.",
     ],
     media: [
       media(
