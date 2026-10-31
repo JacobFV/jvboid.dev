@@ -12,7 +12,7 @@ import {
 import { ProjectsBrowser } from "@/components/chrome/ProjectsBrowser";
 import { PostThumb, postThumbImage } from "@/components/chrome/PostThumb";
 import { CoverArt } from "@/components/chrome/CoverArt";
-import { byProjectRank, projectItemsFromNodes, withAdjacentProjects } from "@/lib/project-items";
+import { projectItemsFromNodes } from "@/lib/project-items";
 import { getPostRevisionSummary } from "@/lib/post-revisions";
 
 type Params = Promise<{ kind: string }>;
@@ -77,7 +77,10 @@ export default async function KindIndexPage({ params }: { params: Params }) {
 
   const nodes = getGraph()
     .nodes.filter((n) => n.kind === nodeKind && isListedNode(n))
-    .sort(nodeKind === "project" ? byProjectRank : byDateDesc);
+    // Every index is newest first, projects included. The curated order
+    // (`byProjectRank`, with its welded pairs) is the home page's and stays
+    // there; a list page should be legible as a list.
+    .sort(byDateDesc);
 
   if (nodeKind === "project") {
     return (
@@ -85,7 +88,7 @@ export default async function KindIndexPage({ params }: { params: Params }) {
         {nodes.length === 0 ? (
           <p className="text-[var(--color-ink-dim)]">No entries yet.</p>
         ) : (
-          <ProjectsBrowser projects={projectItemsFromNodes(withAdjacentProjects(nodes))} />
+          <ProjectsBrowser projects={projectItemsFromNodes(nodes)} />
         )}
       </main>
     );
