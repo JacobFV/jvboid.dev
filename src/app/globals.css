@@ -866,6 +866,47 @@ body {
   user-select: text;
   -webkit-user-select: text;
 }
+/* A diagram drawn in the flat house palette (`data-palette="page"` on its
+   root) takes the page's own ink and ground: its fixed greys map onto the
+   tokens, so it reads the same on paper, in the dark, and inside a world. */
+.diagram svg[data-palette="page"] [fill="#fff"],
+.diagram svg[data-palette="page"] [fill="#ffffff"] {
+  fill: var(--color-bg-0);
+}
+/* The full-size backing panel disappears into the page altogether. */
+.diagram svg[data-palette="page"] > rect[width="100%"] {
+  fill: none;
+}
+.diagram svg[data-palette="page"] [fill="#f5f5f7"] {
+  fill: var(--color-bg-1);
+}
+.diagram svg[data-palette="page"] [fill="#1d1d1f"] {
+  fill: var(--color-ink);
+}
+.diagram svg[data-palette="page"] [stroke="#1d1d1f"] {
+  stroke: var(--color-ink);
+}
+.diagram svg[data-palette="page"] [fill="#6e6e73"] {
+  fill: var(--color-ink-dim);
+}
+.diagram svg[data-palette="page"] [stroke="#6e6e73"] {
+  stroke: var(--color-ink-dim);
+}
+.diagram svg[data-palette="page"] [fill="#86868b"] {
+  fill: var(--color-ink-mute);
+}
+.diagram svg[data-palette="page"] [stroke="#86868b"] {
+  stroke: var(--color-ink-mute);
+}
+.diagram svg[data-palette="page"] [stroke="#d2d2d7"] {
+  stroke: var(--color-rule);
+}
+.diagram svg[data-palette="page"] [fill="#0066cc"] {
+  fill: var(--color-accent);
+}
+.diagram svg[data-palette="page"] [stroke="#0066cc"] {
+  stroke: var(--color-accent);
+}
 .diagram__caption {
   margin: 0.75rem auto 0;
   max-width: 44rem;
@@ -4640,7 +4681,7 @@ a:hover {
 :root[data-page-theme="littlebrain"] .prose-mdx pre {
   border-radius: 14px;
 }
-:root[data-page-theme="littlebrain"] .prose-mdx a {
+:root[data-page-theme="littlebrain"] .prose-mdx a:not(.little-brain__try) {
   color: var(--color-accent);
   text-decoration-color: #a9bf97;
   text-underline-offset: 0.18em;

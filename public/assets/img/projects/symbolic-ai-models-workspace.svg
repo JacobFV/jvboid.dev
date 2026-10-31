@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 420" width="1320" height="420" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg data-palette="page" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 420" width="1320" height="420" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <title id="t">Inside the workspace model</title>
   <desc id="d">A hidden node is walked up to its goal signature: which region, under what parent type, in which slot. A learned policy of 84 signatures maps that to how often each of six codelets has been right there before, setting their strengths. The six codelets (mirror, peer, echo, parent, sibling, frame) search the region memory in parallel, each proposing a filler. Their agreement sets the workspace temperature: a cold, settled workspace commits its answer; a hot one defers to a back-off prior instead of guessing.</desc>
   <defs>

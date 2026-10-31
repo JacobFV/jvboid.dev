@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 540" width="1440" height="540" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg data-palette="page" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 540" width="1440" height="540" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <title id="t">One RL Lab run</title>
   <desc id="d">A run document, one JSON file, binds an agent (mind, weights, memory) to a robot (segments, legs, wheels) as a participant. In the arena, exact polygon physics feeds a lidar ring and foveated eyes; a policy, neural, scripted or an LLM, decides at its own rate and sets each joint channel's Laplace transfer function, nine numbers, which the channel shapes into joint motor commands back into the physics. A score closes two loops: per-run learning writes only the agent's memory back, and a population search breeds the next run document through genes that are dotted paths into it.</desc>
   <defs>

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 500" width="1320" height="500" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg data-palette="page" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 500" width="1320" height="500" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <title id="t">How iPhone on Linux fits together</title>
   <desc id="d">Apple's IPSW and apps built on Linux with clang are staged into disk images. Inferno, a QEMU fork, emulates an iPhone 11 that boots unmodified iOS 14 and runs the imported app. An agent drives it through a companion runner, a QMP control channel and a virtual multitouch device; frames come back from the headless display and are reviewed before and after each action; the runner and the review both write an evidence record of hashes and transcripts.</desc>
   <defs>

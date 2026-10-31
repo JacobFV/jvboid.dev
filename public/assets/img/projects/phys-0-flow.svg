@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="1200" height="480" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg data-palette="page" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="1200" height="480" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
   <title id="t">How phys-0 fits together</title>
   <desc id="d">An LLM agent, the Electron Lab Console, any MCP client and the phys0 CLI all call one backend registry of 84 typed tools. Every call is written to a SQLite experiment record. The tools build and simulate virtual worlds in three.js with Rapier physics, or reach the real SO-101 arm through a Python bridge running LeRobot and placo inverse kinematics. A USB camera watches the arm's bench; OpenCV vial vision reads indicator dye into an estimated pH, which also lands in the record.</desc>
   <defs>
