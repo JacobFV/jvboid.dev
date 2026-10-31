@@ -63,16 +63,27 @@ function decodeAnatomy(buffer: ArrayBuffer): THREE.BufferGeometry {
 
 type Loaded = { cortex: THREE.Group; subcortex: THREE.Group };
 
-async function loadAnatomy(signal: AbortSignal): Promise<Loaded> {
-  const cortex = new THREE.Group();
-  const subcortex = new THREE.Group();
+type Manifest = { meshes: Array<{ name: string; file: string; kind: string }> };
+
+async function loadManifest(signal: AbortSignal): Promise<Manifest> {
   const res = await fetch(`${BASE}/manifest.json`, { signal });
   if (!res.ok) throw new Error(`manifest ${res.status}`);
-  const manifest = (await res.json()) as { meshes: Array<{ name: string; file: string; kind: string }> };
+  return (await res.json()) as Manifest;
+}
+
+/**
+ * The 28 meshes at one of two resolutions. `lo/` holds ~6% twins of each
+ * (scripts/decimate-anatomy.py, about 1 MB in all) so a brain is on screen
+ * within a second; the full 15.8 MB set then replaces it in place.
+ */
+async function loadAnatomy(manifest: Manifest, variant: "lo" | "hi", signal: AbortSignal): Promise<Loaded> {
+  const cortex = new THREE.Group();
+  const subcortex = new THREE.Group();
+  const dir = variant === "lo" ? `${BASE}/lo` : BASE;
   await Promise.all(
     manifest.meshes.map(async (entry) => {
       if (!/^[a-z-]+\.bin$/.test(entry.file)) throw new Error("bad anatomy path");
-      const r = await fetch(`${BASE}/${entry.file}`, { signal });
+      const r = await fetch(`${dir}/${entry.file}`, { signal });
       if (!r.ok) throw new Error(`${entry.file} ${r.status}`);
       const isCortex = entry.kind === "cortex";
       const mesh = new THREE.Mesh(
@@ -273,17 +284,26 @@ function Brain({ inside, still, onStatus }: { inside: boolean; still: boolean; o
   useEffect(() => {
     const ac = new AbortController();
     onStatus("loading");
-    loadAnatomy(ac.signal)
-      .then((a) => {
-        setAnatomy(a);
+    (async () => {
+      const manifest = await loadManifest(ac.signal);
+      // Low first, so something is there to look at; a failure here is not
+      // fatal, the full set is still coming.
+      try {
+        setAnatomy(await loadAnatomy(manifest, "lo", ac.signal));
         onStatus("ready");
-      })
-      .catch((e) => {
-        if (!ac.signal.aborted) {
-          console.warn("my-little-brain anatomy:", e);
-          onStatus("failed");
-        }
-      });
+      } catch (e) {
+        if (ac.signal.aborted) return;
+        console.warn("my-little-brain anatomy (lo):", e);
+      }
+      // Swapping state disposes the low set through the effect below.
+      setAnatomy(await loadAnatomy(manifest, "hi", ac.signal));
+      onStatus("ready");
+    })().catch((e) => {
+      if (!ac.signal.aborted) {
+        console.warn("my-little-brain anatomy:", e);
+        onStatus("failed");
+      }
+    });
     return () => ac.abort();
   }, [onStatus]);
 
